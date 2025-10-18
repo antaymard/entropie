@@ -1,9 +1,10 @@
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
+import { Server } from 'socket.io';
 
 let io;
 
 async function initWebSocket(server) {
-    io = require("socket.io")(server, {
+    io = new Server(server, {
         path: "/ws",
         cors: {
             origin: [

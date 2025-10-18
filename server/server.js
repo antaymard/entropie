@@ -1,5 +1,4 @@
 import express from "express";
-import bodyParser from "body-parser";
 import http from "http";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -9,12 +8,16 @@ import { styleText } from 'node:util';
 
 const app = express();
 const server = http.createServer(app);
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
 initWebSocket(server).then(() =>
     console.log(styleText("green", "✅ Websocket server initialisé."))
 );
+
+// SERVE STATIC WEB APP
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 app.use(express.static(path.join(__dirname, "..", "app", "dist")));
 

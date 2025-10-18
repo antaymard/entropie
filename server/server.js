@@ -4,6 +4,9 @@ import path from "path";
 import { fileURLToPath } from "url";
 // import config from './utils/config.js';
 import { styleText } from 'node:util';
+import { initWebSocket } from "./websocket/initWebSocket.js";
+
+import errorHandler from "./middlewares/errorHandler.js";
 
 
 const app = express();
@@ -20,6 +23,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.use(express.static(path.join(__dirname, "..", "app", "dist")));
+
+// Endpoints here
+
+// use error handling middleware in last position
+app.use(errorHandler);
 
 app.get("*splat", (req, res, next) => {
     console.log(req.query)

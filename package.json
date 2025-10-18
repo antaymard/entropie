@@ -1,0 +1,8 @@
+{
+  "name": "entropie",
+  "version": "0.0.1",
+  "description": "An app to handle complex project",
+  "main": "index.js",
+  "author": "antaymard <antaymard@gmail.com>",
+  "license": "MIT"
+}

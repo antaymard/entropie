@@ -4,7 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 // import config from './utils/config.js';
 import { styleText } from 'node:util';
-import { initWebSocket } from "./websocket/initWebSocket.js";
+import { initWebSocket } from "./ws/setup.js";
 
 import errorHandler from "./middlewares/errorHandler.js";
 

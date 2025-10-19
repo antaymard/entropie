@@ -41,4 +41,5 @@ function getIo() {
     return io;
 }
 
-module.exports = { initWebSocket, getIo };
+export { initWebSocket, getIo };
+

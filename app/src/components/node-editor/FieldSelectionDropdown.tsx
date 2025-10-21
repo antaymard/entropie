@@ -17,11 +17,11 @@ export default function FieldSelectionDropdown({
   // Add field to the formik values
   function addField({
     id = crypto.randomUUID(),
-    label,
+    name,
     type,
     options,
   }: NodeField) {
-    const newField = { id, label, type, visual: "default", options };
+    const newField = { id, name, type, visual: "default", options };
     setFieldValue("fields", [...values.fields, newField]);
   }
 
@@ -29,7 +29,7 @@ export default function FieldSelectionDropdown({
     ...field,
     onclick: () =>
       addField({
-        label: field.label,
+        name: field.label,
         type: field.type,
         options: field.options,
       }),

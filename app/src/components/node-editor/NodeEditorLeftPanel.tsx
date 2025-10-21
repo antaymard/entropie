@@ -116,13 +116,13 @@ function FieldListItem({
   const { values, setFieldValue } = useFormikContext<NodeTemplate>();
 
   const [isRenaming, setIsRenaming] = useState<boolean>(false);
-  const [tempName, setTempName] = useState<string>(field.label);
+  const [tempName, setTempName] = useState<string>(field.name);
 
   const handleRename = () => {
     // Trouve l'index du champ dans le tableau
     const fieldIndex = values.fields.findIndex((f) => f.id === field.id);
     if (fieldIndex !== -1 && tempName.trim() !== "") {
-      setFieldValue(`fields.${fieldIndex}.label`, tempName.trim());
+      setFieldValue(`fields.${fieldIndex}.name`, tempName.trim());
     }
     setIsRenaming(false);
   };
@@ -131,7 +131,7 @@ function FieldListItem({
     if (e.key === "Enter") {
       handleRename();
     } else if (e.key === "Escape") {
-      setTempName(field.label);
+      setTempName(field.name);
       setIsRenaming(false);
     }
   };
@@ -156,7 +156,7 @@ function FieldListItem({
               className="cursor-text"
               onDoubleClick={() => setIsRenaming(true)}
             >
-              {field.label}
+              {field.name}
             </p>
           )}
         </div>

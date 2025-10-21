@@ -11,8 +11,8 @@ export interface NodeTemplate {
 
   // Layouts visuels pour node et window
   visuals: {
-    node: Record<string, NodeVariant>;
-    window: Record<string, NodeVariant>;
+    node: Record<string, NodeVisual>;
+    window: Record<string, NodeVisual>;
   };
 
   // Variants par défaut
@@ -35,13 +35,13 @@ export type FieldType =
 
 export interface NodeField {
   id?: string;
-  label: string;
+  name: string;
   type: FieldType;
   visual?: string;
   options?: Record<string, unknown>; // currency, placeholder, select options, etc.
 }
 
-export interface NodeVariant {
+export interface NodeVisual {
   name: string;
   description: string;
   layout: LayoutElement;

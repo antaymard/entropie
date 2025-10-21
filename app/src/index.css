@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@theme {
+  --radius: 15px;
+  --font-sans: "Poppins", sans-serif;
+  --color-text: #475569;
+}
+
+@layer base {
+  body {
+    color: var(--color-text);
+  }
+}

@@ -1,8 +1,31 @@
-import NodeEditorLeftPanel from "./NodeEditorLeftPanel";
-import NodeEditorMainPanel from "./NodeEditorMainPanel";
 import { HiOutlineXMark } from "react-icons/hi2";
+import { Formik, Form } from "formik";
+
+import type { NodeTemplate } from "../../types";
+import NodeEditorLeftPanel from "./NodeEditorLeftPanel";
 
 export default function NodeEditor() {
+  const initialValues: NodeTemplate = {
+    name: "",
+    description: "",
+    icon: "",
+    is_system: false,
+    user_id: null,
+    fields: [],
+    visuals: {
+      node: {},
+      window: {},
+    },
+    default_visuals: {
+      node: "",
+      window: "",
+    },
+  };
+
+  const handleSubmit = (values: NodeTemplate) => {
+    console.log("Form submitted:", values);
+  };
+
   return (
     <div className="rounded bg-white border-gray-300 border-2">
       {/* Header section */}
@@ -19,10 +42,20 @@ export default function NodeEditor() {
         </button>
       </div>
 
-      <div className="grid grid-cols-[minmax(0,310px)_auto]">
-        <NodeEditorLeftPanel />
-        <NodeEditorMainPanel />
-      </div>
+      {/* Form section */}
+      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+        {({ values }) => (
+          <Form>
+            <div className="grid grid-cols-[minmax(0,310px)_auto]">
+              <NodeEditorLeftPanel />
+              {/* <NodeEditorMainPanel /> */}
+              <pre className="p-4 bg-gray-50 overflow-auto">
+                {JSON.stringify(values, null, 2)}
+              </pre>
+            </div>
+          </Form>
+        )}
+      </Formik>
     </div>
   );
 }

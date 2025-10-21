@@ -1,0 +1,55 @@
+export interface NodeTemplate {
+  id?: string;
+  name: string;
+  description: string;
+  icon: string;
+  is_system: boolean;
+  user_id: string | null;
+
+  // Définition des champs (colonnes)
+  fields: NodeField[];
+
+  // Layouts visuels pour node et window
+  visuals: {
+    node: Record<string, NodeVariant>;
+    window: Record<string, NodeVariant>;
+  };
+
+  // Variants par défaut
+  default_visuals: {
+    node: string; // variant_id
+    window: string; // variant_id
+  };
+}
+
+export type FieldType =
+  | "url"
+  | "short_text"
+  | "select"
+  | "image"
+  | "image_url"
+  | "number"
+  | "date"
+  | "rich_text"
+  | "boolean";
+
+export interface NodeField {
+  id?: string;
+  label: string;
+  type: FieldType;
+  visual?: string;
+  options?: Record<string, unknown>; // currency, placeholder, select options, etc.
+}
+
+export interface NodeVariant {
+  name: string;
+  description: string;
+  layout: LayoutElement;
+}
+
+export interface LayoutElement {
+  element: "root" | "div" | "field" | "separator" | "spacer" | "text" | "image";
+  data?: string | { field_id?: string; text?: string; url?: string };
+  style?: Record<string, unknown>;
+  children?: LayoutElement[];
+}

@@ -3,8 +3,9 @@ import { Formik } from "formik";
 
 import type { NodeTemplate } from "../../types";
 import NodeEditorLeftPanel from "./NodeEditorLeftPanel";
-import NodeEditororTreePanel from "./NodeEditorTreePanel";
+import NodeEditorTreePanel from "./NodeEditorTreePanel";
 import { DndContext } from "@dnd-kit/core";
+import { SortableContext } from "@dnd-kit/sortable";
 
 export default function NodeEditor() {
   const initialValues: NodeTemplate = {
@@ -34,6 +35,16 @@ export default function NodeEditor() {
     console.log("Form submitted:", values);
   };
 
+  function getLayoutItems(element: any) {
+    let ids = [element.id];
+    element.children?.forEach((child: any) => {
+      ids = [...ids, ...getLayoutItems(child)];
+    });
+    return ids;
+  }
+
+  const layoutIds = getLayoutItems(initialValues.visuals.node.default.layout);
+
   return (
     <div className="rounded bg-white border-gray-300 border-2">
       {/* Header section */}
@@ -53,10 +64,13 @@ export default function NodeEditor() {
       {/* Form section */}
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
         {({ values }) => (
-          <DndContext>
+          <DndContext onDragEnd={console.log}>
             <div className="grid grid-cols-[minmax(0,310px)_minmax(0,310px)_auto]">
               <NodeEditorLeftPanel />
-              <NodeEditororTreePanel />
+
+              <SortableContext items={layoutIds}>
+                <NodeEditorTreePanel />
+              </SortableContext>
               <pre className="p-4 bg-gray-50 overflow-auto">
                 {JSON.stringify(values, null, 2)}
               </pre>

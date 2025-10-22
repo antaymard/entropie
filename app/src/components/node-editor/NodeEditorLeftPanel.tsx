@@ -120,8 +120,10 @@ function FieldListItem({
   const [isRenaming, setIsRenaming] = useState<boolean>(false);
   const [tempName, setTempName] = useState<string>(field.name);
 
-  const { attributes, listeners, setNodeRef, transform } =
-    useDraggable({ id: field.id });
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: field.id,
+    data: { type: "field", field },
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),

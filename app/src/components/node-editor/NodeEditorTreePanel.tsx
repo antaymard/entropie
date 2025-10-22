@@ -2,8 +2,12 @@ import { useFormikContext } from "formik";
 
 import type { NodeTemplate } from "../../types";
 import type { LayoutElement } from "../../types/node.types";
-import { useDroppable } from "@dnd-kit/core";
+import { useDroppable, useDraggable } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 export default function NodeEditorTreePanel() {
@@ -52,75 +56,84 @@ export default function NodeEditorTreePanel() {
 }
 
 function LayoutRenderer({ layout }: { layout: LayoutElement }) {
-  const { setNodeRef } = useDroppable({ id: layout.id });
-
-  function renderTreeItem() {
-    switch (layout.element) {
-      case "root":
-        return <RootElement layout={layout} />;
-      case "div":
-        return <SortableElement layout={layout} />;
-      case "field":
-        return <p>Field Element</p>;
-    }
+  switch (layout.element) {
+    case "root":
+      return <RootElement layout={layout} />;
+    case "div":
+      return <DivElement layout={layout} />;
+    case "field":
+      return <FieldElement layout={layout} />;
   }
-
-  return renderTreeItem();
 }
 
 function RootElement({ layout }: { layout: LayoutElement }) {
-  const { setNodeRef } = useDroppable({ id: "root" });
+  const { setNodeRef } = useDroppable({ id: layout.id });
+
   return (
     <div ref={setNodeRef} className="border min-h-20 p-2">
-      {layout.element}
-      {layout.children?.map((child) => (
-        <LayoutRenderer key={child.id} layout={child} />
-      ))}
+      <div className="text-xs text-gray-500 mb-1">{layout.element}</div>
+      <SortableContext
+        items={layout.children?.map((c) => c.id) || []}
+        strategy={verticalListSortingStrategy}
+      >
+        {layout.children?.map((child) => (
+          <LayoutRenderer key={child.id} layout={child} />
+        ))}
+      </SortableContext>
     </div>
   );
 }
 
-function SortableElement({ layout }: { layout: LayoutElement }) {
-  const { attributes, listeners, setNodeRef, transform } = useSortable({
+function DivElement({ layout }: { layout: LayoutElement }) {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({
+      id: layout.id,
+    });
+  const { setNodeRef: setDropRef } = useDroppable({ id: layout.id });
+
+  return (
+    <div
+      ref={(node) => {
+        setNodeRef(node);
+        setDropRef(node);
+      }}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+      }}
+      className="border min-h-20 p-2 mb-2 bg-white"
+      {...attributes}
+      {...listeners}
+    >
+      <div className="text-xs text-gray-500 mb-1">{layout.element}</div>
+      <SortableContext
+        items={layout.children?.map((c) => c.id) || []}
+        strategy={verticalListSortingStrategy}
+      >
+        {layout.children?.map((child) => (
+          <LayoutRenderer key={child.id} layout={child} />
+        ))}
+      </SortableContext>
+    </div>
+  );
+}
+
+function FieldElement({ layout }: { layout: LayoutElement }) {
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: layout.id,
   });
 
   return (
     <div
-      className="border min-h-20 p-2"
-      {...attributes}
-      {...listeners}
       ref={setNodeRef}
       style={{
         transform: CSS.Transform.toString(transform),
       }}
+      className="border min-h-10 p-2 mb-2 bg-blue-50"
+      {...attributes}
+      {...listeners}
     >
-      {layout.element}
-      {layout.children?.map((child) => (
-        <LayoutRenderer key={child.id} layout={child} />
-      ))}
+      <div className="text-xs text-gray-500">Field: {layout.id}</div>
     </div>
   );
 }
-
-// function ContainerElement() {
-//   const { attributes, listeners, setNodeRef, transform } = useSortable({
-//     id: layout.id,
-//     data: {
-//       type: "container",
-//       element: layout,
-//     },
-//   });
-//   return (
-//     <div
-//       className="border min-h-20 p-2"
-//       // aria-disabled={layout.element === "root"}
-//       ref={setNodeRef}
-//     >
-//       {layout.element}
-//       {layout.children?.map((child) => (
-//         <LayoutRenderer key={child.id} layout={child} />
-//       ))}
-//     </div>
-//   );
-// }

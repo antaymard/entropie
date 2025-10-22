@@ -121,7 +121,7 @@ function FieldListItem({
   const [tempName, setTempName] = useState<string>(field.name);
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: field.id,
+    id: "f" + field.id, // Prefixe 'f' pour éviter les conflits d'ID
     data: { type: "field", field },
   });
 

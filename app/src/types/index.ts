@@ -2,6 +2,6 @@
 export type {
   NodeTemplate,
   NodeField,
-  NodeVariant,
   LayoutElement,
+  NodeVisual,
 } from "./node.types";

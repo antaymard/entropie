@@ -27,7 +27,7 @@ export default function TextInput({
       {label && (
         <label
           htmlFor={name}
-          className="text-sm font-medium text-gray-700 flex items-center gap-1"
+          className="text-sm font-medium flex items-center gap-1"
         >
           {label}
           {required && <span className="text-red-500">*</span>}

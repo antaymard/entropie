@@ -15,12 +15,7 @@ export default function FieldSelectionDropdown({
   const { values, setFieldValue } = useFormikContext<NodeTemplate>();
 
   // Add field to the formik values
-  function addField({
-    id = crypto.randomUUID(),
-    name,
-    type,
-    options,
-  }: NodeField) {
+  function addField({ id, name, type, options }: NodeField) {
     const newField = { id, name, type, visual: "default", options };
     setFieldValue("fields", [...values.fields, newField]);
   }
@@ -29,6 +24,7 @@ export default function FieldSelectionDropdown({
     ...field,
     onclick: () =>
       addField({
+        id: crypto.randomUUID(),
         name: field.label,
         type: field.type,
         options: field.options,

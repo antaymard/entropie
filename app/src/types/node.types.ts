@@ -34,7 +34,7 @@ export type FieldType =
   | "boolean";
 
 export interface NodeField {
-  id?: string;
+  id: string;
   name: string;
   type: FieldType;
   visual?: string;
@@ -48,8 +48,9 @@ export interface NodeVisual {
 }
 
 export interface LayoutElement {
+  id: string; // Random if not field, field_id if field
   element: "root" | "div" | "field" | "separator" | "spacer" | "text" | "image";
-  data?: string | { field_id?: string; text?: string; url?: string };
+  data?: string;
   style?: Record<string, unknown>;
   children?: LayoutElement[];
 }

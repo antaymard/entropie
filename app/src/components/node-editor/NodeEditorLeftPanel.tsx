@@ -9,6 +9,8 @@ import {
   type FieldDefinition,
 } from "../fields/fieldDefinitions";
 import FieldSelectionDropdown from "./FieldSelectionDropdown";
+import { useDraggable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
 
 // Where to describe the node, edit properties and set the fields for the node
 export default function NodeEditorLeftPanel() {
@@ -118,6 +120,13 @@ function FieldListItem({
   const [isRenaming, setIsRenaming] = useState<boolean>(false);
   const [tempName, setTempName] = useState<string>(field.name);
 
+  const { attributes, listeners, setNodeRef, transform } =
+    useDraggable({ id: field.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+  };
+
   const handleRename = () => {
     // Trouve l'index du champ dans le tableau
     const fieldIndex = values.fields.findIndex((f) => f.id === field.id);
@@ -137,7 +146,13 @@ function FieldListItem({
   };
 
   return (
-    <div className="rounded-md bg-gray-100 px-3 py-2 hover:bg-gray-200 flex items-center justify-between">
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      style={style}
+      className="rounded-md bg-gray-100 px-3 py-2 hover:bg-gray-200 flex items-center justify-between"
+    >
       <div className="flex items-center justify-between flex-1">
         <div className="flex gap-2 items-center">
           {IconComponent && <IconComponent size={18} />}

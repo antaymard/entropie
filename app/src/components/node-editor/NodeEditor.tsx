@@ -1,8 +1,10 @@
 import { HiOutlineXMark } from "react-icons/hi2";
-import { Formik, Form } from "formik";
+import { Formik } from "formik";
 
 import type { NodeTemplate } from "../../types";
 import NodeEditorLeftPanel from "./NodeEditorLeftPanel";
+import NodeEditororTreePanel from "./NodeEditorTreePanel";
+import { DndContext } from "@dnd-kit/core";
 
 export default function NodeEditor() {
   const initialValues: NodeTemplate = {
@@ -13,7 +15,13 @@ export default function NodeEditor() {
     user_id: null,
     fields: [],
     visuals: {
-      node: {},
+      node: {
+        default: {
+          name: "Nouveau visuel",
+          description: "Description du visuel",
+          layout: { element: "root", children: [], id: "root" },
+        },
+      },
       window: {},
     },
     default_visuals: {
@@ -45,15 +53,15 @@ export default function NodeEditor() {
       {/* Form section */}
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
         {({ values }) => (
-          <Form>
-            <div className="grid grid-cols-[minmax(0,310px)_auto]">
+          <DndContext>
+            <div className="grid grid-cols-[minmax(0,310px)_minmax(0,310px)_auto]">
               <NodeEditorLeftPanel />
-              {/* <NodeEditorMainPanel /> */}
+              <NodeEditororTreePanel />
               <pre className="p-4 bg-gray-50 overflow-auto">
                 {JSON.stringify(values, null, 2)}
               </pre>
             </div>
-          </Form>
+          </DndContext>
         )}
       </Formik>
     </div>

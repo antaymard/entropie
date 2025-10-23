@@ -1,5 +1,6 @@
 import { HiOutlineXMark } from "react-icons/hi2";
 import { Formik } from "formik";
+import { get } from "lodash";
 
 import type { NodeTemplate } from "../../types";
 import type { LayoutElement } from "../../types/node.types";
@@ -7,8 +8,14 @@ import type { DragEndEvent } from "@dnd-kit/core";
 import NodeEditorLeftPanel from "./NodeEditorLeftPanel";
 import NodeEditorTreePanel from "./NodeEditorTreePanel";
 import { DndContext } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
+import { useState } from "react";
 
 export default function NodeEditor() {
+  const [visualToEditPath, setVisualToEditPath] = useState<string>(
+    "visuals.node.default.layout"
+  );
+
   const initialValues: NodeTemplate = {
     name: "",
     description: "",
@@ -32,9 +39,80 @@ export default function NodeEditor() {
     },
   };
 
-  const handleSubmit = (values: NodeTemplate) => {
+  const handleSaveTemplate = (values: NodeTemplate) => {
     console.log("Form submitted:", values);
   };
+
+  function handleAddElementToLayout(
+    elementToAdd: LayoutElement,
+    targetElementId: string,
+    layout: LayoutElement
+  ): LayoutElement {
+    // Regarder si le targetElementId est root ou s'il contient div-. Si non, on ne fait rien
+    if (targetElementId !== "root" && !targetElementId.startsWith("div-")) {
+      return layout;
+    }
+
+    const findAndAddElement = (currentLayout: LayoutElement): LayoutElement => {
+      if (currentLayout.id === targetElementId) {
+        // Si on a trouvé l'élément cible, on l'ajoute
+        return {
+          ...currentLayout,
+          children: [...(currentLayout.children || []), elementToAdd],
+        };
+      }
+
+      // Sinon, on cherche dans les enfants
+      if (currentLayout.children) {
+        return {
+          ...currentLayout,
+          children: currentLayout.children.map((child) =>
+            findAndAddElement(child)
+          ),
+        };
+      }
+
+      return currentLayout;
+    };
+
+    return findAndAddElement(layout);
+  }
+
+  function handleDragEnd(
+    event: DragEndEvent,
+    values: NodeTemplate,
+    setFieldValue: any
+  ) {
+    const { active, over } = event;
+    if (!over) return console.log("No over element");
+    console.log({ active, over });
+
+    // Ajout depuis le panel de gauche
+    if (active?.data?.current?.action === "add") {
+      const nodeVisualLayoutToEdit = get(
+        values,
+        visualToEditPath
+      ) as LayoutElement;
+
+      // Check if active.data.current.id is already in the layout to avoid duplicates
+      const isDuplicate = nodeVisualLayoutToEdit.children?.some(
+        (child) => child.id === active.data.current?.element?.id
+      );
+      if (isDuplicate) {
+        console.log("Element is already in the layout");
+        return;
+      }
+
+      const updatedLayout = handleAddElementToLayout(
+        active.data.current.element as LayoutElement,
+        String(over.id),
+        nodeVisualLayoutToEdit
+      );
+      console.log({ updatedLayout });
+      setFieldValue(visualToEditPath, updatedLayout);
+      console.log("Element added to layout");
+    }
+  }
 
   return (
     <div className="rounded bg-white border-gray-300 border-2">
@@ -53,73 +131,12 @@ export default function NodeEditor() {
       </div>
 
       {/* Form section */}
-      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+      <Formik initialValues={initialValues} onSubmit={handleSaveTemplate}>
         {({ values, setFieldValue }) => {
-          const defaultVariantId = values.default_visuals?.node || "default";
-
-          const handleDragEnd = (event: DragEndEvent) => {
-            const { active, over } = event;
-
-            if (!over) return;
-
-            console.log("Drag ended:", { active, over });
-
-            // Si on drag un field depuis LeftPanel (nouveau field à ajouter au layout)
-            if (active.data.current?.type === "field") {
-              const field = active.data.current.field;
-              const overId = over.id;
-
-              // Créer un nouvel élément field pour le layout
-              const newFieldElement: LayoutElement = {
-                id: field.id,
-                element: "field",
-              };
-
-              // Fonction récursive pour ajouter l'élément dans le bon conteneur
-              const addFieldToLayout = (
-                layout: LayoutElement,
-                targetId: string
-              ): LayoutElement => {
-                if (layout.id === targetId) {
-                  // On a trouvé le conteneur cible
-                  return {
-                    ...layout,
-                    children: [...(layout.children || []), newFieldElement],
-                  };
-                }
-
-                // Chercher dans les enfants
-                if (layout.children) {
-                  return {
-                    ...layout,
-                    children: layout.children.map((child) =>
-                      addFieldToLayout(child, targetId)
-                    ),
-                  };
-                }
-
-                return layout;
-              };
-
-              const currentLayout =
-                values.visuals.node[defaultVariantId].layout;
-              const updatedLayout = addFieldToLayout(
-                currentLayout,
-                overId as string
-              );
-              setFieldValue(
-                `visuals.node.${defaultVariantId}.layout`,
-                updatedLayout
-              );
-              return;
-            }
-
-            // Sinon, c'est un réarrangement interne (TODO: à implémenter)
-            console.log("Réarrangement interne à implémenter");
-          };
-
           return (
-            <DndContext onDragEnd={handleDragEnd}>
+            <DndContext
+              onDragEnd={(e) => handleDragEnd(e, values, setFieldValue)}
+            >
               <div className="grid grid-cols-[minmax(0,310px)_minmax(0,310px)_auto]">
                 <NodeEditorLeftPanel />
                 <NodeEditorTreePanel />

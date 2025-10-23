@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useFormikContext } from "formik";
 import TextArea from "../form-ui/TextArea";
 import TextInput from "../form-ui/TextInput";
-import type { NodeField, NodeTemplate } from "../../types";
+import type { LayoutElement, NodeField, NodeTemplate } from "../../types";
 import { HiMiniPlusCircle, HiCog8Tooth } from "react-icons/hi2";
 import {
   fieldDefinitions,
@@ -121,8 +121,11 @@ function FieldListItem({
   const [tempName, setTempName] = useState<string>(field.name);
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: "f" + field.id, // Prefixe 'f' pour éviter les conflits d'ID
-    data: { type: "field", field },
+    id: `add_${field.id}`,
+    data: {
+      element: { id: field.id, element: "field" } as LayoutElement,
+      action: "add",
+    },
   });
 
   const style = {

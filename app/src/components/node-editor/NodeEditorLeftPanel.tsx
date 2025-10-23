@@ -121,7 +121,7 @@ function FieldListItem({
   const [tempName, setTempName] = useState<string>(field.name);
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: `add_${field.id}`,
+    id: `add_${field.id}`, // id for dndkit, not for db. Is different to avoid simultaneous drag bc conflits
     data: {
       element: { id: field.id, element: "field" } as LayoutElement,
       action: "add",

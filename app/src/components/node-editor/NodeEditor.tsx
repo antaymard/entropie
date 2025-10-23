@@ -4,7 +4,7 @@ import { get } from "lodash";
 
 import type { NodeTemplate } from "../../types";
 import type { LayoutElement } from "../../types/node.types";
-import type { DragEndEvent } from "@dnd-kit/core";
+import type { DragEndEvent, DragOverEvent } from "@dnd-kit/core";
 import NodeEditorLeftPanel from "./NodeEditorLeftPanel";
 import NodeEditorTreePanel from "./NodeEditorTreePanel";
 import { DndContext } from "@dnd-kit/core";
@@ -48,11 +48,6 @@ export default function NodeEditor() {
     targetElementId: string,
     layout: LayoutElement
   ): LayoutElement {
-    // Regarder si le targetElementId est root ou s'il contient div-. Si non, on ne fait rien
-    if (targetElementId !== "root" && !targetElementId.startsWith("div-")) {
-      return layout;
-    }
-
     const findAndAddElement = (currentLayout: LayoutElement): LayoutElement => {
       if (currentLayout.id === targetElementId) {
         // Si on a trouvé l'élément cible, on l'ajoute
@@ -78,6 +73,56 @@ export default function NodeEditor() {
     return findAndAddElement(layout);
   }
 
+  function handleMoveElementInLayout(
+    elementId: string,
+    newParentId: string,
+    layout: LayoutElement
+  ): LayoutElement {
+    let elementToMove: LayoutElement | null = null;
+
+    // First, remove the element from its current position
+    const findAndRemoveElement = (
+      currentLayout: LayoutElement
+    ): LayoutElement => {
+      if (currentLayout.children) {
+        const filteredChildren = currentLayout.children.filter((child) => {
+          if (child.id === elementId) {
+            elementToMove = child;
+            return false; // Remove this child
+          }
+          return true;
+        });
+
+        return {
+          ...currentLayout,
+          children: filteredChildren.map((child) =>
+            findAndRemoveElement(child)
+          ),
+        };
+      }
+
+      return currentLayout;
+    };
+
+    layout = findAndRemoveElement(layout);
+
+    // If we found the element to move, we need to add it to the new parent
+    if (elementToMove) {
+      layout = handleAddElementToLayout(elementToMove, newParentId, layout);
+    }
+
+    return layout;
+  }
+
+  // When item is dragged over the tree (TO DO LATER)
+  function handleDragOver(e: DragOverEvent) {
+    // console.log(e);
+    // if (overElementId !== e.over?.id) {
+    //   setOverElementId(e.over?.id ? String(e.over.id) : null);
+    // }
+  }
+
+  // When item is dropped in the tree
   function handleDragEnd(
     event: DragEndEvent,
     values: NodeTemplate,
@@ -85,15 +130,21 @@ export default function NodeEditor() {
   ) {
     const { active, over } = event;
     if (!over) return console.log("No over element");
-    console.log({ active, over });
+    console.log("Over ", over?.id);
+
+    // Regarder si le targetElementId est root ou s'il contient div-. Si non, on ne fait rien
+    if (over.id !== "root" && !String(over.id).startsWith("div-")) {
+      return console.log("Not a valid drop target");
+    }
+
+    const action = active.data.current?.action;
+    const nodeVisualLayoutToEdit = get(
+      values,
+      visualToEditPath
+    ) as LayoutElement;
 
     // Ajout depuis le panel de gauche
-    if (active?.data?.current?.action === "add") {
-      const nodeVisualLayoutToEdit = get(
-        values,
-        visualToEditPath
-      ) as LayoutElement;
-
+    if (action === "add") {
       // Check if active.data.current.id is already in the layout to avoid duplicates
       const isDuplicate = nodeVisualLayoutToEdit.children?.some(
         (child) => child.id === active.data.current?.element?.id
@@ -103,14 +154,27 @@ export default function NodeEditor() {
         return;
       }
 
+      // Add and update layout
       const updatedLayout = handleAddElementToLayout(
-        active.data.current.element as LayoutElement,
+        active.data.current?.element as LayoutElement,
         String(over.id),
         nodeVisualLayoutToEdit
       );
       console.log({ updatedLayout });
       setFieldValue(visualToEditPath, updatedLayout);
       console.log("Element added to layout");
+    }
+
+    // Réorganisation des éléments dans le tree
+    else if (action === "sort") {
+      const updatedLayout = handleMoveElementInLayout(
+        String(active.id),
+        String(over.id),
+        nodeVisualLayoutToEdit
+      );
+      console.log({ updatedLayout });
+      setFieldValue(visualToEditPath, updatedLayout);
+      console.log("Element moved in layout");
     }
   }
 
@@ -136,6 +200,7 @@ export default function NodeEditor() {
           return (
             <DndContext
               onDragEnd={(e) => handleDragEnd(e, values, setFieldValue)}
+              onDragOver={handleDragOver}
             >
               <div className="grid grid-cols-[minmax(0,310px)_minmax(0,310px)_auto]">
                 <NodeEditorLeftPanel />

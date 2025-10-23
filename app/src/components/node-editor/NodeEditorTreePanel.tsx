@@ -42,7 +42,7 @@ export default function NodeEditorTreePanel() {
       </div>
 
       <h3 className="font-semibold">Apparence du bloc</h3>
-      <div className="h-80 bg-amber-100">
+      <div className="min-h-80 bg-amber-100">
         {nodeVisual?.layout && <TreeRenderer layout={nodeVisual.layout} />}
       </div>
     </div>

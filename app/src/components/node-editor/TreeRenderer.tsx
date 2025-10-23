@@ -26,6 +26,7 @@ export default function TreeRecursiveLayoutRenderer({
   }
 }
 
+// Root is only droppable, not draggable
 function RootElement({ layout }: { layout: LayoutElement }) {
   const { setNodeRef } = useDroppable({
     id: layout.id, // = root
@@ -46,6 +47,7 @@ function RootElement({ layout }: { layout: LayoutElement }) {
   );
 }
 
+// Div is droppable and draggable (sortable)
 function DivElement({ layout }: { layout: LayoutElement }) {
   const {
     attributes,
@@ -55,16 +57,16 @@ function DivElement({ layout }: { layout: LayoutElement }) {
     transition,
     isDragging,
   } = useSortable({
-    id: layout.id,
-    data: { type: "container", element: layout },
+    id: layout.id, // div-abc123
+    data: { type: "container", element: layout, action: "sort" },
   });
 
   return (
     <div
       ref={setNodeRef}
       style={{
-        transform: CSS.Transform.toString(transform),
-        transition: isDragging ? "none" : transition, // Pas de transition pendant le drag
+        transform: isDragging ? CSS.Transform.toString(transform) : undefined,
+        // transition: isDragging ? "none" : transition, // Pas de transition pendant le drag
         opacity: isDragging ? 0.5 : 1,
       }}
       className="border min-h-20 p-2 mb-2 bg-white relative"
@@ -107,14 +109,14 @@ function FieldElement({ layout }: { layout: LayoutElement }) {
     isDragging,
   } = useSortable({
     id: layout.id,
-    data: { type: "field", element: layout },
+    data: { type: "field", element: layout, action: "sort" }, // ???
   });
 
   return (
     <div
       ref={setNodeRef}
       style={{
-        transform: CSS.Transform.toString(transform),
+        transform: isDragging ? CSS.Transform.toString(transform) : undefined,
         transition: isDragging ? "none" : transition, // Pas de transition pendant le drag
         opacity: isDragging ? 0.5 : 1,
       }}

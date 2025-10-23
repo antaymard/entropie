@@ -8,6 +8,11 @@ import { CSS } from "@dnd-kit/utilities";
 
 import type { NodeTemplate } from "../../types";
 import type { LayoutElement } from "../../types/node.types";
+import { getFieldDetailsFromId } from "../utils/nodeUtils";
+import { useFormikContext } from "formik";
+import { deleteElementFromLayout } from "../utils/editorUtils";
+import { useNodeEditorContext } from "../../hooks/useNodeEditorContext";
+import { get } from "lodash";
 
 // Layout & Children are a LayoutElement type
 
@@ -61,6 +66,22 @@ function DivElement({ layout }: { layout: LayoutElement }) {
     data: { type: "container", element: layout, action: "sort" },
   });
 
+  const { currentVisualLayoutPath } = useNodeEditorContext();
+  const { values, setFieldValue } = useFormikContext<NodeTemplate>();
+
+  const nodeVisualLayoutToEdit = get(
+    values,
+    currentVisualLayoutPath
+  ) as LayoutElement;
+
+  function handleDelete(elementId: string) {
+    const updatedLayout = deleteElementFromLayout(
+      elementId,
+      nodeVisualLayoutToEdit
+    );
+    setFieldValue(currentVisualLayoutPath, updatedLayout);
+  }
+
   return (
     <div
       ref={setNodeRef}
@@ -71,12 +92,18 @@ function DivElement({ layout }: { layout: LayoutElement }) {
       }}
       className="border min-h-20 p-2 mb-2 bg-white relative"
     >
-      <div
-        className="text-xs text-gray-500 mb-1 cursor-grab active:cursor-grabbing bg-gray-100 px-2 py-1 rounded inline-block"
-        {...attributes}
-        {...listeners}
-      >
-        📦 {layout.element}
+
+      <div className="flex items-center justify-between mb-1">
+        <div
+          className="text-xs text-gray-500 cursor-grab active:cursor-grabbing bg-gray-100 px-2 py-1 rounded inline-block"
+          {...attributes}
+          {...listeners}
+        >
+          📦 {layout.element}
+        </div>
+        <button type="button" className="text-gray-400 hover:text-red-500" onClick={() => handleDelete(layout.id)}>
+          🗑️
+        </button>
       </div>
 
       <div className="mt-2">
@@ -112,6 +139,26 @@ function FieldElement({ layout }: { layout: LayoutElement }) {
     data: { type: "field", element: layout, action: "sort" }, // ???
   });
 
+  const { values: nodeTemplate } = useFormikContext<NodeTemplate>();
+  const fieldDetails = getFieldDetailsFromId(layout.id, nodeTemplate);
+
+  const { currentVisualLayoutPath } = useNodeEditorContext();
+  const { values, setFieldValue } = useFormikContext<NodeTemplate>();
+
+  const nodeVisualLayoutToEdit = get(
+    values,
+    currentVisualLayoutPath
+  ) as LayoutElement;
+
+  function handleDelete(elementId: string) {
+    const updatedLayout = deleteElementFromLayout(
+      elementId,
+      nodeVisualLayoutToEdit
+    );
+    setFieldValue(currentVisualLayoutPath, updatedLayout);
+  }
+
+
   return (
     <div
       ref={setNodeRef}
@@ -120,11 +167,17 @@ function FieldElement({ layout }: { layout: LayoutElement }) {
         transition: isDragging ? "none" : transition, // Pas de transition pendant le drag
         opacity: isDragging ? 0.5 : 1,
       }}
-      className="border min-h-10 p-2 mb-2 bg-blue-50"
-      {...attributes}
-      {...listeners}
+      className="border flex items-center justify-between min-h-10 p-2 mb-2 bg-blue-50 cursor-grab active:cursor-grabbing"
+
     >
-      <div className="text-xs text-gray-500">Field: {layout.id}</div>
+      <div {...attributes}
+        {...listeners} className="flex gap-2 items-center text-gray-500">
+        {fieldDetails?.icon && <fieldDetails.icon />}
+        {fieldDetails?.nodeField.name}
+      </div>
+      <button type="button" className="text-gray-400 hover:text-red-500" onClick={() => handleDelete(layout.id)}>
+        🗑️
+      </button>
     </div>
   );
 }

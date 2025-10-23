@@ -24,7 +24,7 @@ export default function NodeEditorTreePanel() {
   }
 
   return (
-    <div className="border-gray-300 border-r-2 px-5 py-4">
+    <div className="border-gray-300 border-r px-5 py-4">
       {/* Disposition elements */}
       <div className="flex gap-2">
         <button

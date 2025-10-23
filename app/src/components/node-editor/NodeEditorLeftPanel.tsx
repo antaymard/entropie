@@ -23,7 +23,7 @@ export default function NodeEditorLeftPanel() {
   const blockName = values.name;
 
   return (
-    <div className="px-5 py-4 border-r-2 border-gray-300">
+    <div className="px-5 py-4 border-r border-gray-300">
       {fieldDropdownOpen && (
         <div
           className="absolute inset-0"

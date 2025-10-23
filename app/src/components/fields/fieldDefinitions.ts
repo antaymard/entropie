@@ -12,6 +12,7 @@ interface FieldDefinition {
   icon?: React.ComponentType<any>;
   options?: Record<string, unknown>;
   nodeVisualComponents: Record<string, string>;
+  windowVisualComponents: Record<string, string>;
 }
 
 const fieldDefinitions: FieldDefinition[] = [
@@ -24,6 +25,9 @@ const fieldDefinitions: FieldDefinition[] = [
     nodeVisualComponents: {
       default: "",
     },
+    windowVisualComponents: {
+      default: "",
+    },
   },
   {
     type: "rich_text",
@@ -34,6 +38,9 @@ const fieldDefinitions: FieldDefinition[] = [
     nodeVisualComponents: {
       default: "",
     },
+    windowVisualComponents: {
+      default: "",
+    },
   },
   {
     type: "image_url",
@@ -42,6 +49,9 @@ const fieldDefinitions: FieldDefinition[] = [
     icon: HiOutlinePhoto,
     options: {},
     nodeVisualComponents: {
+      default: "",
+    },
+    windowVisualComponents: {
       default: "",
     },
   },

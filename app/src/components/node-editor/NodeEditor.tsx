@@ -8,11 +8,12 @@ import type { DragEndEvent, DragOverEvent } from "@dnd-kit/core";
 import NodeEditorLeftPanel from "./NodeEditorLeftPanel";
 import NodeEditorTreePanel from "./NodeEditorTreePanel";
 import { DndContext } from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
 import { useState } from "react";
+import { addElementToLayout, moveElementInLayout } from "../utils/editorUtils";
+import { NodeEditorContext } from "../../stores/node-editor-stores/NodeEditorContext";
 
 export default function NodeEditor() {
-  const [visualToEditPath, setVisualToEditPath] = useState<string>(
+  const [currentVisualLayoutPath, setCurrentVisualLayoutPath] = useState<string>(
     "visuals.node.default.layout"
   );
 
@@ -43,76 +44,9 @@ export default function NodeEditor() {
     console.log("Form submitted:", values);
   };
 
-  function handleAddElementToLayout(
-    elementToAdd: LayoutElement,
-    targetElementId: string,
-    layout: LayoutElement
-  ): LayoutElement {
-    const findAndAddElement = (currentLayout: LayoutElement): LayoutElement => {
-      if (currentLayout.id === targetElementId) {
-        // Si on a trouvé l'élément cible, on l'ajoute
-        return {
-          ...currentLayout,
-          children: [...(currentLayout.children || []), elementToAdd],
-        };
-      }
 
-      // Sinon, on cherche dans les enfants
-      if (currentLayout.children) {
-        return {
-          ...currentLayout,
-          children: currentLayout.children.map((child) =>
-            findAndAddElement(child)
-          ),
-        };
-      }
 
-      return currentLayout;
-    };
 
-    return findAndAddElement(layout);
-  }
-
-  function handleMoveElementInLayout(
-    elementId: string,
-    newParentId: string,
-    layout: LayoutElement
-  ): LayoutElement {
-    let elementToMove: LayoutElement | null = null;
-
-    // First, remove the element from its current position
-    const findAndRemoveElement = (
-      currentLayout: LayoutElement
-    ): LayoutElement => {
-      if (currentLayout.children) {
-        const filteredChildren = currentLayout.children.filter((child) => {
-          if (child.id === elementId) {
-            elementToMove = child;
-            return false; // Remove this child
-          }
-          return true;
-        });
-
-        return {
-          ...currentLayout,
-          children: filteredChildren.map((child) =>
-            findAndRemoveElement(child)
-          ),
-        };
-      }
-
-      return currentLayout;
-    };
-
-    layout = findAndRemoveElement(layout);
-
-    // If we found the element to move, we need to add it to the new parent
-    if (elementToMove) {
-      layout = handleAddElementToLayout(elementToMove, newParentId, layout);
-    }
-
-    return layout;
-  }
 
   // When item is dragged over the tree (TO DO LATER)
   function handleDragOver(e: DragOverEvent) {
@@ -140,7 +74,7 @@ export default function NodeEditor() {
     const action = active.data.current?.action;
     const nodeVisualLayoutToEdit = get(
       values,
-      visualToEditPath
+      currentVisualLayoutPath
     ) as LayoutElement;
 
     // Ajout depuis le panel de gauche
@@ -155,64 +89,73 @@ export default function NodeEditor() {
       }
 
       // Add and update layout
-      const updatedLayout = handleAddElementToLayout(
+      const updatedLayout = addElementToLayout(
         active.data.current?.element as LayoutElement,
         String(over.id),
         nodeVisualLayoutToEdit
       );
       console.log({ updatedLayout });
-      setFieldValue(visualToEditPath, updatedLayout);
+      setFieldValue(currentVisualLayoutPath, updatedLayout);
       console.log("Element added to layout");
     }
 
     // Réorganisation des éléments dans le tree
     else if (action === "sort") {
-      const updatedLayout = handleMoveElementInLayout(
+      const updatedLayout = moveElementInLayout(
         String(active.id),
         String(over.id),
         nodeVisualLayoutToEdit
       );
       console.log({ updatedLayout });
-      setFieldValue(visualToEditPath, updatedLayout);
+      setFieldValue(currentVisualLayoutPath, updatedLayout);
       console.log("Element moved in layout");
     }
   }
 
   return (
-    <div className="rounded bg-white border-gray-300 border-2">
-      {/* Header section */}
-      <div className="flex items-center justify-between px-5 py-4 border-b-2 border-gray-300">
-        <h2 className="font-semibold text-lg">
-          <span className="text-xl">🔧</span> Éditeur de blocs
-        </h2>
-        <button
-          type="button"
-          className="hover:bg-gray-100 cursor-pointer"
-          onClick={() => console.log("close")}
-        >
-          <HiOutlineXMark size={20} />
-        </button>
-      </div>
+    <NodeEditorContext.Provider
+      value={{
+        // overElementId,
+        // setOverElementId,
+        currentVisualLayoutPath,
+        setCurrentVisualLayoutPath,
+      }}
+    >
+      <div className="rounded bg-white border-gray-300 border">
+        {/* Header section */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-300">
+          <h2 className="font-semibold text-lg">
+            <span className="text-xl">🔧</span> Éditeur de blocs
+          </h2>
+          <button
+            type="button"
+            className="hover:bg-gray-100 cursor-pointer"
+            onClick={() => console.log("close")}
+          >
+            <HiOutlineXMark size={20} />
+          </button>
+        </div>
 
-      {/* Form section */}
-      <Formik initialValues={initialValues} onSubmit={handleSaveTemplate}>
-        {({ values, setFieldValue }) => {
-          return (
-            <DndContext
-              onDragEnd={(e) => handleDragEnd(e, values, setFieldValue)}
-              onDragOver={handleDragOver}
-            >
-              <div className="grid grid-cols-[minmax(0,310px)_minmax(0,310px)_auto]">
-                <NodeEditorLeftPanel />
-                <NodeEditorTreePanel />
-                <pre className="p-4 bg-gray-50 overflow-auto">
-                  {JSON.stringify(values, null, 2)}
-                </pre>
-              </div>
-            </DndContext>
-          );
-        }}
-      </Formik>
-    </div>
+        {/* Form section */}
+        <Formik initialValues={initialValues} onSubmit={handleSaveTemplate}>
+          {({ values, setFieldValue }) => {
+            return (
+              <DndContext
+                onDragEnd={(e) => handleDragEnd(e, values, setFieldValue)}
+                onDragOver={handleDragOver}
+              >
+                <div className="grid grid-cols-[minmax(0,310px)_minmax(0,310px)_auto]">
+                  <NodeEditorLeftPanel />
+                  <NodeEditorTreePanel />
+                  <pre className="p-4 bg-gray-100 overflow-auto">
+                    {JSON.stringify(values, null, 2)}
+                  </pre>
+                </div>
+              </DndContext>
+            );
+          }}
+        </Formik>
+      </div>
+    </NodeEditorContext.Provider>
   );
 }

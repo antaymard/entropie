@@ -10,7 +10,7 @@ import type { NodeTemplate } from "../../types";
 import type { LayoutElement } from "../../types/node.types";
 import { getFieldDetailsFromId } from "../utils/nodeUtils";
 import { useFormikContext } from "formik";
-import { deleteElementFromLayout } from "../utils/editorUtils";
+import { deleteElementFromLayout, reorderElementAmongSiblings } from "../utils/editorUtils";
 import { useNodeEditorContext } from "../../hooks/useNodeEditorContext";
 import { get } from "lodash";
 
@@ -21,13 +21,35 @@ export default function TreeRecursiveLayoutRenderer({
 }: {
   layout: LayoutElement;
 }) {
+
+  const { currentVisualLayoutPath } = useNodeEditorContext();
+  const { values: nodeTemplate, setFieldValue } = useFormikContext<NodeTemplate>();
+
+  const nodeVisualLayoutToEdit = get(
+    nodeTemplate,
+    currentVisualLayoutPath
+  ) as LayoutElement;
+
+  function handleDelete(elementId: string) {
+    const updatedLayout = deleteElementFromLayout(
+      elementId,
+      nodeVisualLayoutToEdit
+    );
+    setFieldValue(currentVisualLayoutPath, updatedLayout);
+  }
+
+  function handleReorder(elementId: string, operation: 'up' | 'down') {
+    const updatedLayout = reorderElementAmongSiblings(elementId, operation, nodeVisualLayoutToEdit);
+    setFieldValue(currentVisualLayoutPath, updatedLayout);
+  }
+
   switch (layout.element) {
     case "root":
       return <RootElement layout={layout} />;
     case "div":
-      return <DivElement layout={layout} />;
+      return <DivElement layout={layout} nodeTemplate={nodeTemplate} handleDelete={handleDelete} handleReorder={handleReorder} />;
     case "field":
-      return <FieldElement layout={layout} />;
+      return <FieldElement layout={layout} nodeTemplate={nodeTemplate} handleDelete={handleDelete} handleReorder={handleReorder} />;
   }
 }
 
@@ -53,7 +75,7 @@ function RootElement({ layout }: { layout: LayoutElement }) {
 }
 
 // Div is droppable and draggable (sortable)
-function DivElement({ layout }: { layout: LayoutElement }) {
+function DivElement({ layout, handleDelete, handleReorder }: { layout: LayoutElement, nodeTemplate: NodeTemplate, handleDelete: (id: string) => void, handleReorder: (id: string, direction: 'up' | 'down') => void }) {
   const {
     attributes,
     listeners,
@@ -66,28 +88,13 @@ function DivElement({ layout }: { layout: LayoutElement }) {
     data: { type: "container", element: layout, action: "sort" },
   });
 
-  const { currentVisualLayoutPath } = useNodeEditorContext();
-  const { values, setFieldValue } = useFormikContext<NodeTemplate>();
-
-  const nodeVisualLayoutToEdit = get(
-    values,
-    currentVisualLayoutPath
-  ) as LayoutElement;
-
-  function handleDelete(elementId: string) {
-    const updatedLayout = deleteElementFromLayout(
-      elementId,
-      nodeVisualLayoutToEdit
-    );
-    setFieldValue(currentVisualLayoutPath, updatedLayout);
-  }
 
   return (
     <div
       ref={setNodeRef}
       style={{
         transform: isDragging ? CSS.Transform.toString(transform) : undefined,
-        // transition: isDragging ? "none" : transition, // Pas de transition pendant le drag
+        transition: isDragging ? "none" : transition, // Pas de transition pendant le drag
         opacity: isDragging ? 0.5 : 1,
       }}
       className="border min-h-20 p-2 mb-2 bg-white relative"
@@ -101,9 +108,8 @@ function DivElement({ layout }: { layout: LayoutElement }) {
         >
           📦 {layout.element}
         </div>
-        <button type="button" className="text-gray-400 hover:text-red-500" onClick={() => handleDelete(layout.id)}>
-          🗑️
-        </button>
+
+        <OrganizeButtons layoutId={layout.id} handleDelete={handleDelete} handleReorder={handleReorder} />
       </div>
 
       <div className="mt-2">
@@ -126,7 +132,7 @@ function DivElement({ layout }: { layout: LayoutElement }) {
   );
 }
 
-function FieldElement({ layout }: { layout: LayoutElement }) {
+function FieldElement({ layout, nodeTemplate, handleDelete, handleReorder }: { layout: LayoutElement, nodeTemplate: NodeTemplate, handleDelete: (id: string) => void, handleReorder: (id: string, direction: 'up' | 'down') => void }) {
   const {
     attributes,
     listeners,
@@ -139,25 +145,7 @@ function FieldElement({ layout }: { layout: LayoutElement }) {
     data: { type: "field", element: layout, action: "sort" }, // ???
   });
 
-  const { values: nodeTemplate } = useFormikContext<NodeTemplate>();
   const fieldDetails = getFieldDetailsFromId(layout.id, nodeTemplate);
-
-  const { currentVisualLayoutPath } = useNodeEditorContext();
-  const { values, setFieldValue } = useFormikContext<NodeTemplate>();
-
-  const nodeVisualLayoutToEdit = get(
-    values,
-    currentVisualLayoutPath
-  ) as LayoutElement;
-
-  function handleDelete(elementId: string) {
-    const updatedLayout = deleteElementFromLayout(
-      elementId,
-      nodeVisualLayoutToEdit
-    );
-    setFieldValue(currentVisualLayoutPath, updatedLayout);
-  }
-
 
   return (
     <div
@@ -175,9 +163,25 @@ function FieldElement({ layout }: { layout: LayoutElement }) {
         {fieldDetails?.icon && <fieldDetails.icon />}
         {fieldDetails?.nodeField.name}
       </div>
-      <button type="button" className="text-gray-400 hover:text-red-500" onClick={() => handleDelete(layout.id)}>
-        🗑️
-      </button>
+
+      <OrganizeButtons layoutId={layout.id} handleDelete={handleDelete} handleReorder={handleReorder} />
+
+
     </div>
   );
+}
+
+function OrganizeButtons({ layoutId, handleDelete, handleReorder }: { layoutId: string, handleDelete: (id: string) => void, handleReorder: (id: string, direction: 'up' | 'down') => void }) {
+  return <div className="flex items-center justify-between gap-1">
+    {/* Bouton pour up l'element among siblings, un up, un down, et on laisse le delete */}
+    <button type="button" className="text-gray-400 hover:text-gray-500" onClick={() => handleReorder(layoutId, 'up')}>
+      ⬆️
+    </button>
+    <button type="button" className="text-gray-400 hover:text-gray-500" onClick={() => handleReorder(layoutId, 'down')}>
+      ⬇️
+    </button>
+    <button type="button" className="text-gray-400 hover:text-red-500" onClick={() => handleDelete(layoutId)}>
+      🗑️
+    </button>
+  </div>
 }

@@ -101,3 +101,35 @@ export function deleteElementFromLayout(
 
     return findAndRemoveElement(layout);
 }
+
+export function reorderElementAmongSiblings(elementId: string, operation: 'up' | 'down', layout: LayoutElement): LayoutElement {
+    const findAndReorder = (currentLayout: LayoutElement): LayoutElement => {
+        if (currentLayout.children) {
+            const index = currentLayout.children.findIndex(child => child.id === elementId);
+            if (index !== -1) {
+                const newIndex = operation === 'up' ? index - 1 : index + 1;
+                if (newIndex >= 0 && newIndex < currentLayout.children.length) {
+                    // Créer une nouvelle copie du tableau au lieu de le modifier directement
+                    const newChildren = [...currentLayout.children];
+                    const [movedChild] = newChildren.splice(index, 1);
+                    newChildren.splice(newIndex, 0, movedChild);
+
+                    return {
+                        ...currentLayout,
+                        children: newChildren,
+                    };
+                }
+            }
+            return {
+                ...currentLayout,
+                children: currentLayout.children.map(child =>
+                    findAndReorder(child)
+                ),
+            };
+        }
+
+        return currentLayout;
+    };
+
+    return findAndReorder(layout);
+}

@@ -8,9 +8,12 @@ import { CSS } from "@dnd-kit/utilities";
 
 import type { NodeTemplate } from "../../types";
 import type { LayoutElement } from "../../types/node.types";
-import { getFieldDetailsFromId } from "../utils/nodeUtils";
+import { getFieldFromId } from "../utils/nodeUtils";
 import { useFormikContext } from "formik";
-import { deleteElementFromLayout, reorderElementAmongSiblings } from "../utils/editorUtils";
+import {
+  deleteElementFromLayout,
+  reorderElementAmongSiblings,
+} from "../utils/editorUtils";
 import { useNodeEditorContext } from "../../hooks/useNodeEditorContext";
 import { get } from "lodash";
 
@@ -21,9 +24,9 @@ export default function TreeRecursiveLayoutRenderer({
 }: {
   layout: LayoutElement;
 }) {
-
   const { currentVisualLayoutPath } = useNodeEditorContext();
-  const { values: nodeTemplate, setFieldValue } = useFormikContext<NodeTemplate>();
+  const { values: nodeTemplate, setFieldValue } =
+    useFormikContext<NodeTemplate>();
 
   const nodeVisualLayoutToEdit = get(
     nodeTemplate,
@@ -38,8 +41,12 @@ export default function TreeRecursiveLayoutRenderer({
     setFieldValue(currentVisualLayoutPath, updatedLayout);
   }
 
-  function handleReorder(elementId: string, operation: 'up' | 'down') {
-    const updatedLayout = reorderElementAmongSiblings(elementId, operation, nodeVisualLayoutToEdit);
+  function handleReorder(elementId: string, operation: "up" | "down") {
+    const updatedLayout = reorderElementAmongSiblings(
+      elementId,
+      operation,
+      nodeVisualLayoutToEdit
+    );
     setFieldValue(currentVisualLayoutPath, updatedLayout);
   }
 
@@ -47,9 +54,23 @@ export default function TreeRecursiveLayoutRenderer({
     case "root":
       return <RootElement layout={layout} />;
     case "div":
-      return <DivElement layout={layout} nodeTemplate={nodeTemplate} handleDelete={handleDelete} handleReorder={handleReorder} />;
+      return (
+        <DivElement
+          layout={layout}
+          nodeTemplate={nodeTemplate}
+          handleDelete={handleDelete}
+          handleReorder={handleReorder}
+        />
+      );
     case "field":
-      return <FieldElement layout={layout} nodeTemplate={nodeTemplate} handleDelete={handleDelete} handleReorder={handleReorder} />;
+      return (
+        <FieldElement
+          layout={layout}
+          nodeTemplate={nodeTemplate}
+          handleDelete={handleDelete}
+          handleReorder={handleReorder}
+        />
+      );
   }
 }
 
@@ -75,7 +96,16 @@ function RootElement({ layout }: { layout: LayoutElement }) {
 }
 
 // Div is droppable and draggable (sortable)
-function DivElement({ layout, handleDelete, handleReorder }: { layout: LayoutElement, nodeTemplate: NodeTemplate, handleDelete: (id: string) => void, handleReorder: (id: string, direction: 'up' | 'down') => void }) {
+function DivElement({
+  layout,
+  handleDelete,
+  handleReorder,
+}: {
+  layout: LayoutElement;
+  nodeTemplate: NodeTemplate;
+  handleDelete: (id: string) => void;
+  handleReorder: (id: string, direction: "up" | "down") => void;
+}) {
   const {
     attributes,
     listeners,
@@ -88,7 +118,6 @@ function DivElement({ layout, handleDelete, handleReorder }: { layout: LayoutEle
     data: { type: "container", element: layout, action: "sort" },
   });
 
-
   return (
     <div
       ref={setNodeRef}
@@ -99,7 +128,6 @@ function DivElement({ layout, handleDelete, handleReorder }: { layout: LayoutEle
       }}
       className="border min-h-20 p-2 mb-2 bg-white relative"
     >
-
       <div className="flex items-center justify-between mb-1">
         <div
           className="text-xs text-gray-500 cursor-grab active:cursor-grabbing bg-gray-100 px-2 py-1 rounded inline-block"
@@ -109,7 +137,11 @@ function DivElement({ layout, handleDelete, handleReorder }: { layout: LayoutEle
           📦 {layout.element}
         </div>
 
-        <OrganizeButtons layoutId={layout.id} handleDelete={handleDelete} handleReorder={handleReorder} />
+        <OrganizeButtons
+          layoutId={layout.id}
+          handleDelete={handleDelete}
+          handleReorder={handleReorder}
+        />
       </div>
 
       <div className="mt-2">
@@ -132,7 +164,17 @@ function DivElement({ layout, handleDelete, handleReorder }: { layout: LayoutEle
   );
 }
 
-function FieldElement({ layout, nodeTemplate, handleDelete, handleReorder }: { layout: LayoutElement, nodeTemplate: NodeTemplate, handleDelete: (id: string) => void, handleReorder: (id: string, direction: 'up' | 'down') => void }) {
+function FieldElement({
+  layout,
+  nodeTemplate,
+  handleDelete,
+  handleReorder,
+}: {
+  layout: LayoutElement;
+  nodeTemplate: NodeTemplate;
+  handleDelete: (id: string) => void;
+  handleReorder: (id: string, direction: "up" | "down") => void;
+}) {
   const {
     attributes,
     listeners,
@@ -145,7 +187,7 @@ function FieldElement({ layout, nodeTemplate, handleDelete, handleReorder }: { l
     data: { type: "field", element: layout, action: "sort" }, // ???
   });
 
-  const fieldDetails = getFieldDetailsFromId(layout.id, nodeTemplate);
+  const fieldDetails = getFieldFromId(layout.id, nodeTemplate);
 
   return (
     <div
@@ -156,32 +198,60 @@ function FieldElement({ layout, nodeTemplate, handleDelete, handleReorder }: { l
         opacity: isDragging ? 0.5 : 1,
       }}
       className="border flex items-center justify-between min-h-10 p-2 mb-2 bg-blue-50 cursor-grab active:cursor-grabbing"
-
     >
-      <div {...attributes}
-        {...listeners} className="flex gap-2 items-center text-gray-500">
-        {fieldDetails?.icon && <fieldDetails.icon />}
+      <div
+        {...attributes}
+        {...listeners}
+        className="flex gap-2 items-center text-gray-500"
+      >
+        {fieldDetails?.fieldDefinition?.icon && (
+          <fieldDetails.fieldDefinition.icon />
+        )}
         {fieldDetails?.nodeField.name}
       </div>
 
-      <OrganizeButtons layoutId={layout.id} handleDelete={handleDelete} handleReorder={handleReorder} />
-
-
+      <OrganizeButtons
+        layoutId={layout.id}
+        handleDelete={handleDelete}
+        handleReorder={handleReorder}
+      />
     </div>
   );
 }
 
-function OrganizeButtons({ layoutId, handleDelete, handleReorder }: { layoutId: string, handleDelete: (id: string) => void, handleReorder: (id: string, direction: 'up' | 'down') => void }) {
-  return <div className="flex items-center justify-between gap-1">
-    {/* Bouton pour up l'element among siblings, un up, un down, et on laisse le delete */}
-    <button type="button" className="text-gray-400 hover:text-gray-500" onClick={() => handleReorder(layoutId, 'up')}>
-      ⬆️
-    </button>
-    <button type="button" className="text-gray-400 hover:text-gray-500" onClick={() => handleReorder(layoutId, 'down')}>
-      ⬇️
-    </button>
-    <button type="button" className="text-gray-400 hover:text-red-500" onClick={() => handleDelete(layoutId)}>
-      🗑️
-    </button>
-  </div>
+function OrganizeButtons({
+  layoutId,
+  handleDelete,
+  handleReorder,
+}: {
+  layoutId: string;
+  handleDelete: (id: string) => void;
+  handleReorder: (id: string, direction: "up" | "down") => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-1">
+      {/* Bouton pour up l'element among siblings, un up, un down, et on laisse le delete */}
+      <button
+        type="button"
+        className="text-gray-400 hover:text-gray-500"
+        onClick={() => handleReorder(layoutId, "up")}
+      >
+        ⬆️
+      </button>
+      <button
+        type="button"
+        className="text-gray-400 hover:text-gray-500"
+        onClick={() => handleReorder(layoutId, "down")}
+      >
+        ⬇️
+      </button>
+      <button
+        type="button"
+        className="text-gray-400 hover:text-red-500"
+        onClick={() => handleDelete(layoutId)}
+      >
+        🗑️
+      </button>
+    </div>
+  );
 }

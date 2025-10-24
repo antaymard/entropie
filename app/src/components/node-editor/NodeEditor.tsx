@@ -13,8 +13,11 @@ import { addElementToLayout, moveElementInLayout } from "../utils/editorUtils";
 import { NodeEditorContext } from "../../stores/node-editor-stores/NodeEditorContext";
 
 export default function NodeEditor() {
-  const [currentVisualLayoutPath, setCurrentVisualLayoutPath] = useState<string>(
-    "visuals.node.default.layout"
+  const [currentVisualLayoutPath, setCurrentVisualLayoutPath] =
+    useState<string>("visuals.node.default.layout");
+  const [overElementId, setOverElementId] = useState<string | null>(null);
+  const [selectedElementId, setSelectedElementId] = useState<string | null>(
+    null
   );
 
   const initialValues: NodeTemplate = {
@@ -43,10 +46,6 @@ export default function NodeEditor() {
   const handleSaveTemplate = (values: NodeTemplate) => {
     console.log("Form submitted:", values);
   };
-
-
-
-
 
   // When item is dragged over the tree (TO DO LATER)
   function handleDragOver(e: DragOverEvent) {
@@ -115,10 +114,12 @@ export default function NodeEditor() {
   return (
     <NodeEditorContext.Provider
       value={{
-        // overElementId,
-        // setOverElementId,
+        overElementId,
+        setOverElementId,
         currentVisualLayoutPath,
         setCurrentVisualLayoutPath,
+        selectedElementId,
+        setSelectedElementId,
       }}
     >
       <div className="rounded bg-white border-gray-300 border">

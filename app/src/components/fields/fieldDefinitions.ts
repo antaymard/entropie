@@ -5,12 +5,12 @@ import {
 } from "react-icons/hi2";
 import type { FieldType } from "../../types/node.types";
 
-interface FieldDefinition {
+export interface FieldDefinition {
   type: FieldType;
   label: string;
   description: string;
   icon?: React.ComponentType<any>;
-  options?: Record<string, unknown>;
+  settings?: Record<string, unknown>;
   nodeVisualComponents: Record<string, string>;
   windowVisualComponents: Record<string, string>;
 }
@@ -21,7 +21,7 @@ const fieldDefinitions: FieldDefinition[] = [
     label: "Texte court", // Appelation du champ visible pour le user
     description: "Texte court sans mise en forme.", // Visible pour le user
     icon: HiMinus,
-    options: {},
+    settings: {},
     nodeVisualComponents: {
       default: "",
     },
@@ -34,7 +34,7 @@ const fieldDefinitions: FieldDefinition[] = [
     label: "Texte enrichi", // Appelation du champ visible pour le user
     description: "Textes longs avec mise en forme.", // Visible pour le user
     icon: HiOutlineBars3BottomLeft,
-    options: {},
+    settings: {},
     nodeVisualComponents: {
       default: "",
     },

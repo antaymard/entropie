@@ -37,7 +37,6 @@ export interface NodeField {
   id: string;
   name: string;
   type: FieldType;
-  visual?: string;
   options?: Record<string, unknown>; // currency, placeholder, select options, etc.
 }
 
@@ -51,6 +50,7 @@ export interface LayoutElement {
   id: string; // Random if not field, field_id if field
   element: "root" | "div" | "field" | "separator" | "spacer" | "text" | "image";
   data?: string;
+  visual?: string;
   style?: Record<string, unknown>;
   children?: LayoutElement[];
 }

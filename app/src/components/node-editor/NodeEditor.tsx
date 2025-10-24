@@ -7,7 +7,7 @@ import type { LayoutElement } from "../../types/node.types";
 import type { DragEndEvent, DragOverEvent } from "@dnd-kit/core";
 import NodeEditorLeftPanel from "./NodeEditorLeftPanel";
 import NodeEditorTreePanel from "./NodeEditorTreePanel";
-import { DndContext } from "@dnd-kit/core";
+import { DndContext, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { useState } from "react";
 import { addElementToLayout, moveElementInLayout } from "../utils/editorUtils";
 import { NodeEditorContext } from "../../stores/node-editor-stores/NodeEditorContext";
@@ -18,6 +18,14 @@ export default function NodeEditor() {
   const [overElementId, setOverElementId] = useState<string | null>(null);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(
     null
+  );
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Distance minimale en pixels avant d'activer le drag
+      },
+    })
   );
 
   const initialValues: NodeTemplate = {
@@ -144,6 +152,7 @@ export default function NodeEditor() {
               <DndContext
                 onDragEnd={(e) => handleDragEnd(e, values, setFieldValue)}
                 onDragOver={handleDragOver}
+                sensors={sensors}
               >
                 <div className="grid grid-cols-[minmax(0,310px)_minmax(0,310px)_auto]">
                   <NodeEditorLeftPanel />

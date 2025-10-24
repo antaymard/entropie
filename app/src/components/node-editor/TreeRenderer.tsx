@@ -16,6 +16,8 @@ import {
 } from "../utils/editorUtils";
 import { useNodeEditorContext } from "../../hooks/useNodeEditorContext";
 import { get } from "lodash";
+import { RxDragHandleDots2 } from "react-icons/rx";
+import { HiMiniTrash, HiOutlineArrowSmallDown, HiOutlineArrowSmallUp } from "react-icons/hi2";
 
 // Layout & Children are a LayoutElement type
 
@@ -81,15 +83,21 @@ function RootElement({ layout }: { layout: LayoutElement }) {
   });
 
   return (
-    <div ref={setNodeRef} className="border min-h-20 p-2">
-      <div className="text-xs text-gray-500 mb-1">{layout.element}</div>
+    <div ref={setNodeRef} className="flex flex-col gap-2 rounded-md bg-gray-100 p-2 pb-5">
+      <div className="text-xs text-gray-500">Bloc</div>
       <SortableContext
         items={layout.children?.map((c) => c.id) || []}
         strategy={verticalListSortingStrategy}
       >
-        {layout.children?.map((child) => (
-          <TreeRecursiveLayoutRenderer key={child.id} layout={child} />
-        ))}
+        {layout.children?.length === 0 ? (
+          <div className="text-xs text-gray-400 text-center py-4 border border-dashed border-gray-300 rounded">
+            Glisser des champs ici
+          </div>
+        ) : (
+          layout.children?.map((child) => (
+            <TreeRecursiveLayoutRenderer key={child.id} layout={child} />
+          ))
+        )}
       </SortableContext>
     </div>
   );
@@ -126,15 +134,16 @@ function DivElement({
         transition: isDragging ? "none" : transition, // Pas de transition pendant le drag
         opacity: isDragging ? 0.5 : 1,
       }}
-      className="border min-h-20 p-2 mb-2 bg-white relative"
+      className="group rounded-md border border-gray-300 min-h-20 p-2"
     >
       <div className="flex items-center justify-between mb-1">
         <div
-          className="text-xs text-gray-500 cursor-grab active:cursor-grabbing bg-gray-100 px-2 py-1 rounded inline-block"
+          className="flex items-center gap-1 text-xs text-gray-500 cursor-grab active:cursor-grabbing bg-white px-2 py-1 rounded"
           {...attributes}
           {...listeners}
         >
-          📦 {layout.element}
+          <RxDragHandleDots2 size={14} />
+          Section
         </div>
 
         <OrganizeButtons
@@ -150,8 +159,8 @@ function DivElement({
           strategy={verticalListSortingStrategy}
         >
           {layout.children?.length === 0 ? (
-            <div className="text-xs text-gray-400 text-center py-4 border-2 border-dashed border-gray-300 rounded">
-              Drop items here
+            <div className="text-xs text-gray-400 text-center py-4 border border-dashed border-gray-300 rounded">
+              Glisser ici
             </div>
           ) : (
             layout.children?.map((child) => (
@@ -197,17 +206,19 @@ function FieldElement({
         transition: isDragging ? "none" : transition, // Pas de transition pendant le drag
         opacity: isDragging ? 0.5 : 1,
       }}
-      className="border flex items-center justify-between min-h-10 p-2 mb-2 bg-blue-50 cursor-grab active:cursor-grabbing"
+      className="group flex items-center justify-between text-gray-500 cursor-grab active:cursor-grabbing bg-white px-2 py-1 rounded"
     >
       <div
         {...attributes}
         {...listeners}
-        className="flex gap-2 items-center text-gray-500"
+        className="flex gap-2 items-center text-gray-500 flex-1 min-w-0"
       >
         {fieldDetails?.fieldDefinition?.icon && (
           <fieldDetails.fieldDefinition.icon />
         )}
-        {fieldDetails?.nodeField.name}
+        <p className="truncate flex-1">
+          {fieldDetails?.nodeField.name}
+        </p>
       </div>
 
       <OrganizeButtons
@@ -233,24 +244,24 @@ function OrganizeButtons({
       {/* Bouton pour up l'element among siblings, un up, un down, et on laisse le delete */}
       <button
         type="button"
-        className="text-gray-400 hover:text-gray-500"
+        className="text-gray-400 hidden group-hover:block hover:text-text"
         onClick={() => handleReorder(layoutId, "up")}
       >
-        ⬆️
+        <HiOutlineArrowSmallUp size={18} />
       </button>
       <button
         type="button"
-        className="text-gray-400 hover:text-gray-500"
+        className="text-gray-400 hidden group-hover:block hover:text-text"
         onClick={() => handleReorder(layoutId, "down")}
       >
-        ⬇️
+        <HiOutlineArrowSmallDown size={18} />
       </button>
       <button
         type="button"
-        className="text-gray-400 hover:text-red-500"
+        className="text-gray-400 hidden group-hover:block hover:text-red-500"
         onClick={() => handleDelete(layoutId)}
       >
-        🗑️
+        <HiMiniTrash size={18} />
       </button>
     </div>
   );

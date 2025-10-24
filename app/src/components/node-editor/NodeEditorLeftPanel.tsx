@@ -4,6 +4,8 @@ import TextArea from "../form-ui/TextArea";
 import TextInput from "../form-ui/TextInput";
 import type { LayoutElement, NodeField, NodeTemplate } from "../../types";
 import { HiMiniPlusCircle, HiCog8Tooth } from "react-icons/hi2";
+import { RxDragHandleDots2 } from "react-icons/rx";
+
 import {
   fieldDefinitions,
   type FieldDefinition,
@@ -120,7 +122,7 @@ function FieldListItem({
   const [isRenaming, setIsRenaming] = useState<boolean>(false);
   const [tempName, setTempName] = useState<string>(field.name);
 
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `add_${field.id}`, // id for dndkit, not for db. Is different to avoid simultaneous drag bc conflits
     data: {
       element: { id: field.id, element: "field" } as LayoutElement,
@@ -150,40 +152,50 @@ function FieldListItem({
     }
   };
 
+  // Here goes the component JSX, here because used in two places (normal and drag preview)
+  const component = <div className="group rounded-md bg-gray-100 px-3 py-2 hover:bg-gray-200 flex items-center gap-2 cursor-grab active:cursor-grabbing"
+  >
+    <div className="flex gap-2 items-center flex-1 min-w-0">
+      <RxDragHandleDots2 size={18} />
+      {IconComponent && <IconComponent size={18} />}
+      {isRenaming ? (
+        <input
+          type="text"
+          value={tempName}
+          onChange={(e) => setTempName(e.target.value)}
+          onBlur={handleRename}
+          onKeyDown={handleKeyDown}
+          autoFocus
+          className="outline-none flex-1"
+        />
+      ) : (
+        <p
+          className="cursor-text truncate flex-1"
+          onDoubleClick={() => setIsRenaming(true)}
+        >
+          {field.name}
+        </p>
+      )}
+    </div>
+    <button type="button" className="shrink-0 group-hover:block hidden ">
+      <HiCog8Tooth size={20} />
+    </button>
+  </div>;
+
   return (
-    <div
-      ref={setNodeRef}
-      {...attributes}
-      {...listeners}
-      style={style}
-      className="rounded-md bg-gray-100 px-3 py-2 hover:bg-gray-200 flex items-center justify-between"
-    >
-      <div className="flex items-center justify-between flex-1">
-        <div className="flex gap-2 items-center">
-          {IconComponent && <IconComponent size={18} />}
-          {isRenaming ? (
-            <input
-              type="text"
-              value={tempName}
-              onChange={(e) => setTempName(e.target.value)}
-              onBlur={handleRename}
-              onKeyDown={handleKeyDown}
-              autoFocus
-              className="outline-none"
-            />
-          ) : (
-            <p
-              className="cursor-text"
-              onDoubleClick={() => setIsRenaming(true)}
-            >
-              {field.name}
-            </p>
-          )}
-        </div>
-        <button type="button">
-          <HiCog8Tooth size={20} />
-        </button>
+    <div className="relative">
+      <div
+        ref={setNodeRef}
+        {...attributes}
+        {...listeners}
+        style={style}
+      >
+        {component}
+
       </div>
+      {isDragging && <div className="absolute top-0 w-full">
+        {component}
+      </div>}
     </div>
   );
 }

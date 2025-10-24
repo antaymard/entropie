@@ -47,7 +47,7 @@ const fieldDefinitions: FieldDefinition[] = [
     label: "Image URL",
     description: "Ajouter une image via une URL externe.",
     icon: HiOutlinePhoto,
-    options: {},
+    settings: {},
     nodeVisualComponents: {
       default: "",
     },

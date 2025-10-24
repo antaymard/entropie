@@ -1,4 +1,7 @@
 import { useFormikContext } from "formik";
+import { HiOutlineSquaresPlus } from "react-icons/hi2";
+import { PiTextAa } from "react-icons/pi";
+import { RiSeparator } from "react-icons/ri";
 
 import type { NodeTemplate } from "../../types";
 import type { LayoutElement } from "../../types/node.types";
@@ -23,28 +26,65 @@ export default function NodeEditorTreePanel() {
     setFieldValue(`visuals.node.${defaultVariantId}.layout`, updatedLayout);
   }
 
+  const formattingElements = [
+    {
+      element: "div" as const,
+      label: "Section",
+      icon: HiOutlineSquaresPlus,
+      prefix: "div-",
+    },
+    {
+      element: "text" as const,
+      label: "Texte statique",
+      icon: PiTextAa,
+      prefix: "txt-",
+      disabled: true,
+    },
+    {
+      element: "separator" as const,
+      label: "Séparateur",
+      icon: RiSeparator,
+      prefix: "sep-",
+      disabled: true,
+    },
+  ];
+
   return (
-    <div className="border-gray-300 border-r px-5 py-4">
+    <div className="space-y-4 border-gray-300 border-r px-5 py-4">
+      <h3 className="font-semibold">Apparence du bloc</h3>
       {/* Disposition elements */}
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() =>
-            addElementToLayout({
-              id: "div-" + Math.random().toString(36).slice(2, 9),
-              element: "div",
-              children: [],
-            })
-          }
-        >
-          Ajout container
-        </button>
+      <div className="">
+        <h4 className="text-sm font-medium mb-2">Ajouter un élément de mise en page</h4>
+
+        <div className="flex flex-wrap gap-1 mb-4">
+          {formattingElements.map(({ element, label, icon: Icon, prefix, disabled }, i) => (
+            <button
+              key={i}
+              type="button"
+              disabled={disabled}
+              className="text-sm flex items-center gap-1 border border-gray-300 rounded px-2 py-1 hover:bg-gray-100"
+              onClick={() =>
+                addElementToLayout({
+                  id: prefix + Math.random().toString(36).slice(2, 9),
+                  element,
+                  children: [],
+                })
+              }
+            >
+              <Icon size={16} />
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <h3 className="font-semibold">Apparence du bloc</h3>
-      <div className="min-h-80 bg-amber-100">
+      <div className="">
+        <h4 className="text-sm font-medium mb-2">Structure du bloc</h4>
+
         {nodeVisual?.layout && <TreeRenderer layout={nodeVisual.layout} />}
       </div>
     </div>
   );
 }
+
+

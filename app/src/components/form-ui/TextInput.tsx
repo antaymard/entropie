@@ -37,7 +37,7 @@ export default function TextInput({
         id={name}
         type="text"
         className={`
-          px-3 py-2 
+          px-3 py-2 placeholder-gray-400 placeholder:italic
           border rounded-md 
           transition-colors
           bg-gray-100 hover:bg-gray-200

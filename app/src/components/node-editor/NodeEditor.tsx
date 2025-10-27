@@ -7,10 +7,16 @@ import type { LayoutElement } from "../../types/node.types";
 import type { DragEndEvent, DragOverEvent } from "@dnd-kit/core";
 import NodeEditorLeftPanel from "./NodeEditorLeftPanel";
 import NodeEditorTreePanel from "./NodeEditorTreePanel";
-import { DndContext, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import {
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import { useState } from "react";
 import { addElementToLayout, moveElementInLayout } from "../utils/editorUtils";
 import { NodeEditorContext } from "../../stores/node-editor-stores/NodeEditorContext";
+import NodeEditorRightPanel from "./NodeEditorRightPanel";
 
 export default function NodeEditor() {
   const [currentVisualLayoutPath, setCurrentVisualLayoutPath] =
@@ -154,12 +160,13 @@ export default function NodeEditor() {
                 onDragOver={handleDragOver}
                 sensors={sensors}
               >
-                <div className="grid grid-cols-[minmax(0,310px)_minmax(0,310px)_auto]">
+                <div className="grid grid-cols-[minmax(0,310px)_minmax(0,310px)_auto_minmax(0,310px)]">
                   <NodeEditorLeftPanel />
                   <NodeEditorTreePanel />
                   <pre className="p-4 bg-gray-100 overflow-auto">
                     {JSON.stringify(values, null, 2)}
                   </pre>
+                  <NodeEditorRightPanel />
                 </div>
               </DndContext>
             );

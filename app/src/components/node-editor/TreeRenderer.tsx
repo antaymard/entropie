@@ -8,7 +8,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 import type { NodeTemplate } from "../../types";
 import type { LayoutElement } from "../../types/node.types";
-import { getFieldFromId } from "../utils/nodeUtils";
+import { getFieldFromId } from "../utils/editorUtils";
 import { useFormikContext } from "formik";
 import {
   deleteElementFromLayout,
@@ -17,7 +17,11 @@ import {
 import { useNodeEditorContext } from "../../hooks/useNodeEditorContext";
 import { get } from "lodash";
 import { RxDragHandleDots2 } from "react-icons/rx";
-import { HiMiniTrash, HiOutlineArrowSmallDown, HiOutlineArrowSmallUp } from "react-icons/hi2";
+import {
+  HiMiniTrash,
+  HiOutlineArrowSmallDown,
+  HiOutlineArrowSmallUp,
+} from "react-icons/hi2";
 
 // Layout & Children are a LayoutElement type
 
@@ -78,12 +82,21 @@ export default function TreeRecursiveLayoutRenderer({
 
 // Root is only droppable, not draggable
 function RootElement({ layout }: { layout: LayoutElement }) {
+  const { selectedElementId, setSelectedElementId } = useNodeEditorContext();
+  const isSelected = selectedElementId === layout.id;
+
   const { setNodeRef } = useDroppable({
     id: layout.id, // = root
   });
 
   return (
-    <div ref={setNodeRef} className="flex flex-col gap-2 rounded-md bg-gray-100 p-2 pb-5">
+    <div
+      ref={setNodeRef}
+      className={`flex flex-col gap-2 rounded-md bg-gray-100 p-2 pb-5 ${
+        isSelected ? "ring-2 ring-blue-500" : "hover:ring-1 hover:ring-blue-200"
+      }`}
+      onClick={() => setSelectedElementId(layout.id)}
+    >
       <div className="text-xs text-gray-500">Bloc</div>
       <SortableContext
         items={layout.children?.map((c) => c.id) || []}
@@ -126,6 +139,9 @@ function DivElement({
     data: { type: "container", element: layout, action: "sort" },
   });
 
+  const { selectedElementId, setSelectedElementId } = useNodeEditorContext();
+  const isSelected = selectedElementId === layout.id;
+
   return (
     <div
       ref={setNodeRef}
@@ -134,7 +150,13 @@ function DivElement({
         transition: isDragging ? "none" : transition, // Pas de transition pendant le drag
         opacity: isDragging ? 0.5 : 1,
       }}
-      className="group rounded-md border border-gray-300 min-h-20 p-2"
+      onClick={(e) => {
+        e.stopPropagation();
+        setSelectedElementId(layout.id);
+      }}
+      className={`group rounded-md border border-gray-300 min-h-20 p-2 ${
+        isSelected ? "ring-2 ring-blue-500" : "hover:ring-1 hover:ring-blue-200"
+      }`}
     >
       <div className="flex items-center justify-between mb-1">
         <div
@@ -159,7 +181,7 @@ function DivElement({
           strategy={verticalListSortingStrategy}
         >
           {layout.children?.length === 0 ? (
-            <div className="text-xs text-gray-400 text-center py-4 border border-dashed border-gray-300 rounded">
+            <div className="text-xs text-gray-400 text-center py-4">
               Glisser ici
             </div>
           ) : (
@@ -197,6 +219,8 @@ function FieldElement({
   });
 
   const fieldDetails = getFieldFromId(layout.id, nodeTemplate);
+  const { setSelectedElementId, selectedElementId } = useNodeEditorContext();
+  const isSelected = selectedElementId === layout.id;
 
   return (
     <div
@@ -206,7 +230,13 @@ function FieldElement({
         transition: isDragging ? "none" : transition, // Pas de transition pendant le drag
         opacity: isDragging ? 0.5 : 1,
       }}
-      className="group flex items-center justify-between text-gray-500 cursor-grab active:cursor-grabbing bg-white px-2 py-1 rounded"
+      onClick={(e) => {
+        e.stopPropagation();
+        setSelectedElementId(layout.id);
+      }}
+      className={`group flex items-center justify-between text-gray-500 cursor-grab active:cursor-grabbing bg-white px-2 py-1 rounded ${
+        isSelected ? "ring-2 ring-blue-500" : "hover:ring-1 hover:ring-blue-200"
+      }`}
     >
       <div
         {...attributes}
@@ -216,9 +246,7 @@ function FieldElement({
         {fieldDetails?.fieldDefinition?.icon && (
           <fieldDetails.fieldDefinition.icon />
         )}
-        <p className="truncate flex-1">
-          {fieldDetails?.nodeField.name}
-        </p>
+        <p className="truncate flex-1">{fieldDetails?.nodeField.name}</p>
       </div>
 
       <OrganizeButtons

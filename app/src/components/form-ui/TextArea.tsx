@@ -75,7 +75,7 @@ export default function TextArea({
       <textarea
         id={name}
         className={`
-            px-3 py-2 
+            px-3 py-2 placeholder-gray-400 placeholder:italic
             border rounded-md 
             transition-colors
             resize-none

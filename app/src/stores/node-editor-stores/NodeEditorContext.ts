@@ -6,7 +6,7 @@ export interface NodeEditorContextType {
   currentVisualLayoutPath: string;
   setCurrentVisualLayoutPath: (path: string) => void;
   selectedElementId?: string | null;
-  setSelectedElementId?: (id: string | null) => void;
+  setSelectedElementId: (id: string | null) => void;
 }
 
 export const NodeEditorContext = createContext<

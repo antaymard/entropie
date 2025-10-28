@@ -1,6 +1,6 @@
 import { HiOutlineXMark } from "react-icons/hi2";
 import { Formik } from "formik";
-import { get } from "lodash";
+import { get, min } from "lodash";
 
 import type { NodeTemplate } from "../../types";
 import type { LayoutElement } from "../../types/node.types";
@@ -17,6 +17,7 @@ import { useState } from "react";
 import { addElementToLayout, moveElementInLayout } from "../utils/editorUtils";
 import { NodeEditorContext } from "../../stores/node-editor-stores/NodeEditorContext";
 import NodeEditorRightPanel from "./NodeEditorRightPanel";
+import NodeEditorPreviewPanel from "./NodeEditorPreviewPanel";
 
 export default function NodeEditor() {
   const [currentVisualLayoutPath, setCurrentVisualLayoutPath] =
@@ -46,7 +47,18 @@ export default function NodeEditor() {
         default: {
           name: "Nouveau visuel",
           description: "Description du visuel",
-          layout: { element: "root", children: [], id: "root" },
+          layout: {
+            element: "root",
+            children: [],
+            id: "root",
+            style: {
+              display: "flex",
+              flexDirection: "column",
+              gap: "8px",
+              width: "300px",
+              minHeight: "100px",
+            },
+          },
         },
       },
       window: {},
@@ -160,12 +172,10 @@ export default function NodeEditor() {
                 onDragOver={handleDragOver}
                 sensors={sensors}
               >
-                <div className="grid grid-cols-[minmax(0,310px)_minmax(0,310px)_auto_minmax(0,310px)]">
+                <div className="grid grid-cols-[minmax(0,310px)_minmax(0,310px)_auto_minmax(0,350px)]">
                   <NodeEditorLeftPanel />
                   <NodeEditorTreePanel />
-                  <pre className="p-4 bg-gray-100 overflow-auto">
-                    {JSON.stringify(values, null, 2)}
-                  </pre>
+                  <NodeEditorPreviewPanel />
                   <NodeEditorRightPanel />
                 </div>
               </DndContext>

@@ -175,7 +175,7 @@ function DivElement({
         />
       </div>
 
-      <div className="mt-2">
+      <div className="mt-2 space-y-1">
         <SortableContext
           items={layout.children?.map((c) => c.id) || []}
           strategy={verticalListSortingStrategy}
@@ -286,7 +286,7 @@ function OrganizeButtons({
       </button>
       <button
         type="button"
-        className="text-gray-400 hidden group-hover:block hover:text-red-500"
+        className="text-gray-400 hidden group-hover:block hover:text-pink-400"
         onClick={() => handleDelete(layoutId)}
       >
         <HiMiniTrash size={18} />

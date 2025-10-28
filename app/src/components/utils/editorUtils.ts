@@ -1,3 +1,4 @@
+import { useFormikContext } from "formik";
 import type { LayoutElement, NodeField, NodeTemplate } from "../../types";
 import {
   fieldDefinitions,
@@ -137,11 +138,13 @@ export function reorderElementAmongSiblings(
   return findAndReorder(layout);
 }
 
+// A transformer en hook si besoin d'utiliser useFormikContext
 export function getFieldFromId(
   fieldId: string,
   nodeTemplate: NodeTemplate
-): { nodeField: NodeField; fieldDefinition: FieldDefinition | null } | null {
+): { nodeField: NodeField | null; fieldDefinition: FieldDefinition | null } {
   // Parcourir les champs du modèle de nœud pour trouver celui qui correspond à l'ID
+
   for (const field of nodeTemplate.fields) {
     if (field.id === fieldId) {
       // Récupérer l'icone depuis fieldDefinitions
@@ -155,7 +158,10 @@ export function getFieldFromId(
       };
     }
   }
-  return null;
+  return {
+    nodeField: null,
+    fieldDefinition: null,
+  };
 }
 
 export function returnElementPathInLayout(

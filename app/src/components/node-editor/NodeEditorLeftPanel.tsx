@@ -3,7 +3,7 @@ import { useFormikContext } from "formik";
 import TextArea from "../form-ui/TextArea";
 import TextInput from "../form-ui/TextInput";
 import type { LayoutElement, NodeField, NodeTemplate } from "../../types";
-import { HiMiniPlusCircle, HiCog8Tooth } from "react-icons/hi2";
+import { HiMiniPlusCircle, HiMiniTrash } from "react-icons/hi2";
 import { RxDragHandleDots2 } from "react-icons/rx";
 
 import {
@@ -122,17 +122,23 @@ function FieldListItem({
   const [isRenaming, setIsRenaming] = useState<boolean>(false);
   const [tempName, setTempName] = useState<string>(field.name);
 
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: `add_${field.id}`, // id for dndkit, not for db. Is different to avoid simultaneous drag bc conflits
-    data: {
-      element: { id: field.id, element: "field" } as LayoutElement,
-      action: "add",
-    },
-  });
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: `add_${field.id}`, // id for dndkit, not for db. Is different to avoid simultaneous drag bc conflits
+      data: {
+        element: { id: field.id, element: "field" } as LayoutElement,
+        action: "add",
+      },
+    });
 
   const style = {
     transform: CSS.Transform.toString(transform),
   };
+
+  function deleteNodeField(fieldId: string) {
+    const updatedFields = values.fields.filter((f) => f.id !== fieldId);
+    setFieldValue("fields", updatedFields);
+  }
 
   const handleRename = () => {
     // Trouve l'index du champ dans le tableau
@@ -153,49 +159,46 @@ function FieldListItem({
   };
 
   // Here goes the component JSX, here because used in two places (normal and drag preview)
-  const component = <div className="group rounded-md bg-gray-100 px-3 py-2 hover:bg-gray-200 flex items-center gap-2 cursor-grab active:cursor-grabbing"
-  >
-    <div className="flex gap-2 items-center flex-1 min-w-0">
-      <RxDragHandleDots2 size={18} />
-      {IconComponent && <IconComponent size={18} />}
-      {isRenaming ? (
-        <input
-          type="text"
-          value={tempName}
-          onChange={(e) => setTempName(e.target.value)}
-          onBlur={handleRename}
-          onKeyDown={handleKeyDown}
-          autoFocus
-          className="outline-none flex-1"
-        />
-      ) : (
-        <p
-          className="cursor-text truncate flex-1"
-          onDoubleClick={() => setIsRenaming(true)}
-        >
-          {field.name}
-        </p>
-      )}
+  const component = (
+    <div className="group rounded-md bg-gray-100 px-3 py-2 hover:bg-gray-200 flex items-center gap-2 cursor-grab active:cursor-grabbing">
+      <div className="flex gap-2 items-center flex-1 min-w-0">
+        <RxDragHandleDots2 size={18} />
+        {IconComponent && <IconComponent size={18} />}
+        {isRenaming ? (
+          <input
+            type="text"
+            value={tempName}
+            onChange={(e) => setTempName(e.target.value)}
+            onBlur={handleRename}
+            onKeyDown={handleKeyDown}
+            autoFocus
+            className="outline-none flex-1"
+          />
+        ) : (
+          <p
+            className="cursor-text truncate flex-1"
+            onDoubleClick={() => setIsRenaming(true)}
+          >
+            {field.name}
+          </p>
+        )}
+      </div>
+      <button
+        type="button"
+        className="shrink-0 group-hover:block hidden hover:text-pink-400 text-gray-400"
+        onClick={() => deleteNodeField(field.id)}
+      >
+        <HiMiniTrash size={18} />
+      </button>
     </div>
-    <button type="button" className="shrink-0 group-hover:block hidden ">
-      <HiCog8Tooth size={20} />
-    </button>
-  </div>;
+  );
 
   return (
     <div className="relative">
-      <div
-        ref={setNodeRef}
-        {...attributes}
-        {...listeners}
-        style={style}
-      >
+      <div ref={setNodeRef} {...attributes} {...listeners} style={style}>
         {component}
-
       </div>
-      {isDragging && <div className="absolute top-0 w-full">
-        {component}
-      </div>}
+      {isDragging && <div className="absolute top-0 w-full">{component}</div>}
     </div>
   );
 }

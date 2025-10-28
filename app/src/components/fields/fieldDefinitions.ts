@@ -2,9 +2,14 @@ import {
   HiMinus,
   HiOutlineBars3BottomLeft,
   HiOutlinePhoto,
+  HiOutlineCheckCircle,
+  HiGlobeEuropeAfrica,
 } from "react-icons/hi2";
 import type { FieldType } from "../../types/node.types";
+
 import TextInput from "../form-ui/TextInput";
+import Toggle from "../form-ui/Toggle";
+import Selector from "../form-ui/Selector";
 
 interface FieldDefinition {
   type: FieldType;
@@ -25,18 +30,10 @@ interface FieldDefinition {
 const fieldDefinitions: FieldDefinition[] = [
   {
     type: "short_text",
-    label: "Texte court", // Appelation du champ visible pour le user
+    label: "Texte", // Appelation du champ visible pour le user
     description: "Texte court sans mise en forme.", // Visible pour le user
     icon: HiMinus,
-    settings: [
-      {
-        name: "maxLength",
-        label: "Longueur maximale",
-        component: TextInput,
-        description: "Nombre maximal de caractères autorisés.",
-        defaultValue: 255,
-      },
-    ],
+    settings: [],
     nodeVisualComponents: {
       default: "",
     },
@@ -49,6 +46,32 @@ const fieldDefinitions: FieldDefinition[] = [
     label: "Texte enrichi", // Appelation du champ visible pour le user
     description: "Textes longs avec mise en forme.", // Visible pour le user
     icon: HiOutlineBars3BottomLeft,
+    nodeVisualComponents: {
+      default: "",
+    },
+    windowVisualComponents: {
+      default: "",
+    },
+  },
+  {
+    type: "boolean",
+    label: "Checkbox",
+    description: "Un case à cocher.", // Visible pour le user
+    icon: HiOutlineCheckCircle,
+    settings: [],
+    nodeVisualComponents: {
+      default: "",
+    },
+    windowVisualComponents: {
+      default: "",
+    },
+  },
+  {
+    type: "url",
+    label: "Lien URL",
+    description: "Ajouter un lien URL.",
+    icon: HiGlobeEuropeAfrica,
+    settings: [],
     nodeVisualComponents: {
       default: "",
     },

@@ -35,7 +35,7 @@ export default function NodeEditorTreePanel() {
       defaultStyle: {
         display: "flex",
         flexDirection: "column",
-        gap: 8,
+        gap: "8px",
         justifyContent: "start",
       },
     },

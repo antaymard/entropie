@@ -23,8 +23,8 @@ export interface NodeTemplate {
 }
 
 export type FieldType =
-  | "url"
   | "short_text"
+  | "url"
   | "select"
   | "image"
   | "image_url"
@@ -50,7 +50,7 @@ export interface LayoutElement {
   id: string; // Random if not field, field_id if field
   element: "root" | "div" | "field" | "separator" | "spacer" | "text" | "image";
   data?: string;
-  visual?: string;
+  visual?: string; // Ici, ça indique quel component on utilisera dans les node renderers
   style?: Record<string, unknown>;
   children?: LayoutElement[];
 }

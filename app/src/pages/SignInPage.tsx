@@ -4,6 +4,7 @@ import { useState } from "react";
 export default function SignIn() {
   const { signIn } = useAuthActions();
   const [step, setStep] = useState<"signUp" | "signIn">("signIn");
+
   return (
     <div className="h-screen w-full flex items-center justify-center bg-gray-100">
       <form

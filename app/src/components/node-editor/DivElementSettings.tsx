@@ -33,6 +33,7 @@ export function DivElementSettings({ elementPath }: { elementPath: string }) {
             icon={<AiOutlineColumnHeight />}
           />
         </div>
+        <p className="text-xs">TODO : Redimensionnable ?</p>
       </div>
       <div className="px-5 py-4 space-y-4">
         <h3 className="font-semibold">Disposition</h3>
@@ -106,6 +107,9 @@ export function DivElementSettings({ elementPath }: { elementPath: string }) {
               icon={<TbBoxAlignBottom />}
             />
           </div>
+          <p className="text-xs">
+            TODO : changer tout à la fois ou individuellement ?
+          </p>
         </div>
       </div>
     </div>

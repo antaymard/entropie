@@ -6,7 +6,11 @@ import type {
 } from "../../types/node.types";
 import { useNodeEditorContext } from "../../hooks/useNodeEditorContext";
 import { get } from "lodash";
-import type { CSSProperties } from "react";
+import { useContext, type CSSProperties } from "react";
+import ShortTextField from "../fields/ShortTextField";
+import UrlField from "../fields/UrlField";
+import ImageUrlField from "../fields/ImageUrlField";
+import { NodeEditorContext } from "../../stores/node-editor-stores/NodeEditorContext";
 
 export default function NodeTemplateRenderer() {
   const { values } = useFormikContext<NodeTemplate>();
@@ -30,13 +34,14 @@ function LayoutRenderer({
   fields: NodeField[];
 }) {
   const style = element.style as CSSProperties | undefined;
+  const { selectedElementId } = useContext(NodeEditorContext);
 
   switch (element.element) {
     case "root":
       return (
         <div
           style={style}
-          className="min-w-28 min-h-12 rounded border border-gray-300 bg-white shadow"
+          className="min-w-28 min-h-12 rounded border border-gray-300 bg-white overflow-clip"
         >
           {element.children?.map((child) => (
             <LayoutRenderer key={child.id} element={child} fields={fields} />
@@ -67,7 +72,14 @@ function LayoutRenderer({
         );
       }
       return (
-        <div style={style} className="field-container">
+        <div
+          style={style}
+          className={
+            selectedElementId === element.id
+              ? "outline-2 outline-blue-400 rounded outline-offset-8"
+              : ""
+          }
+        >
           <FieldRenderer field={field} visual={element.visual} />
         </div>
       );
@@ -117,12 +129,7 @@ function FieldRenderer({
     switch (field.type) {
       case "short_text":
         return (
-          <div className="field-short-text">
-            <div className="text-xs text-gray-500 mb-1">{field.name}</div>
-            <div className="border border-gray-300 rounded px-2 py-1 text-sm bg-white">
-              Texte court...
-            </div>
-          </div>
+          <ShortTextField field={field} isTemplatePreview visual={visual} />
         );
 
       case "rich_text":
@@ -136,14 +143,7 @@ function FieldRenderer({
         );
 
       case "url":
-        return (
-          <div className="field-url">
-            <div className="text-xs text-gray-500 mb-1">{field.name}</div>
-            <div className="border border-gray-300 rounded px-2 py-1 text-sm bg-white text-blue-600">
-              https://example.com
-            </div>
-          </div>
-        );
+        return <UrlField field={field} isTemplatePreview visual={visual} />;
 
       case "select":
         return (
@@ -158,12 +158,7 @@ function FieldRenderer({
       case "image":
       case "image_url":
         return (
-          <div className="field-image">
-            <div className="text-xs text-gray-500 mb-1">{field.name}</div>
-            <div className="border border-gray-300 rounded bg-gray-100 h-24 flex items-center justify-center text-gray-400 text-xs">
-              Image
-            </div>
-          </div>
+          <ImageUrlField field={field} isTemplatePreview visual={visual} />
         );
 
       case "number":

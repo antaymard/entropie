@@ -9,8 +9,8 @@ const schema = defineSchema({
   // CANVAS
   // ============================================================================
   canvases: defineTable({
-    userId: v.string(),
-    title: v.string(),
+    creatorId: v.string(),
+    name: v.string(),
     icon: v.optional(v.string()),
     description: v.optional(v.string()),
 
@@ -34,11 +34,11 @@ const schema = defineSchema({
     // isFavorite: v.optional(v.boolean()),
     // tags: v.optional(v.array(v.string())),
   })
-    .index("by_user", ["userId"])
+    .index("by_creator", ["creatorId"])
     // .index("by_user_favorite", ["userId", "isFavorite"])
-    .searchIndex("search_title", {
-      searchField: "title",
-      filterFields: ["userId"],
+    .searchIndex("search_name", {
+      searchField: "name",
+      filterFields: ["creatorId"],
     }),
 
   // ============================================================================
@@ -47,6 +47,7 @@ const schema = defineSchema({
   nodeDisplays: defineTable({
     // Relations
     canvasId: v.id("canvases"),
+    name: v.string(), // Nom affiché du node
     frameId: v.optional(v.id("frames")), // null = sur le canvas root
     nodeDataId: v.id("nodeData"),
     templateId: v.id("nodeTemplates"), // Dénormalisé pour perf
@@ -80,7 +81,7 @@ const schema = defineSchema({
   // NODE DATA (contenu des nodes)
   // ============================================================================
   nodeData: defineTable({
-    userId: v.string(),
+    creatorId: v.string(),
     templateId: v.id("nodeTemplates"),
 
     // Valeurs des champs (flexibles selon le template)
@@ -113,9 +114,9 @@ const schema = defineSchema({
     //   )
     // ),
   })
-    .index("by_user", ["userId"])
+    .index("by_creator", ["creatorId"])
     .index("by_template", ["templateId"])
-    .index("by_user_template", ["userId", "templateId"]),
+    .index("by_creator_template", ["creatorId", "templateId"]),
   // Pour retrouver les nodes à sync
   // .index("by_external_sync", [
   //   "externalSync.isActive",
@@ -127,7 +128,7 @@ const schema = defineSchema({
   // ============================================================================
   frames: defineTable({
     canvasId: v.id("canvases"),
-    title: v.string(),
+    name: v.string(),
     description: v.optional(v.string()),
 
     // Position et taille

@@ -21,17 +21,23 @@ const schema = defineSchema({
         type: v.string(), // customNode or frame or pre-built node types
         name: v.optional(v.string()), // Displayed on the node
         templateId: v.id("nodeTemplates"),
+
         position: v.object({
           x: v.number(),
           y: v.number(),
         }),
         width: v.number(),
         height: v.number(),
+        color: v.optional(v.string()),
+        locked: v.optional(v.boolean()),
+        hidden: v.optional(v.boolean()),
+
         data: v.any(),
         parentId: v.optional(v.string()),
         extent: v.optional(
           v.union(v.literal("parent"), v.array(v.array(v.number()))) // [[x1,y1], [x2,y2]]
         ),
+        extendParent: v.optional(v.boolean()),
       })
     ), // ReactFlow nodes (position, data, type, etc.)
     edges: v.array(

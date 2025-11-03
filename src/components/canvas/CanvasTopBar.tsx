@@ -1,8 +1,70 @@
-export default function CanvasTopBar() {
+import { useState, useRef, useEffect } from "react";
+
+export default function CanvasTopBar({
+  canvasName,
+  onRename,
+}: {
+  canvasName?: string;
+  onRename?: (newName: string) => void;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(canvasName || "Sans nom");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setEditValue(canvasName || "Sans nom");
+  }, [canvasName]);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const handleDoubleClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleBlur = () => {
+    setIsEditing(false);
+    if (editValue.trim() && editValue !== canvasName && onRename) {
+      onRename(editValue.trim());
+    } else {
+      setEditValue(canvasName || "Sans nom");
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      inputRef.current?.blur();
+    } else if (e.key === "Escape") {
+      setEditValue(canvasName || "Sans nom");
+      setIsEditing(false);
+    }
+  };
+
   return (
     <div className="h-15 flex items-center justify-between px-4 border-b border-gray-300 bg-white ">
       <div></div>
-      <h1 className="font-semibold">Entropie App</h1>
+      {isEditing ? (
+        <input
+          ref={inputRef}
+          type="text"
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          className="font-semibold text-center bg-transparent border-b border-gray-400 focus:outline-none focus:border-blue-500"
+        />
+      ) : (
+        <h1
+          className="font-semibold cursor-pointer hover:text-gray-600"
+          onDoubleClick={handleDoubleClick}
+        >
+          {canvasName || "Sans nom"}
+        </h1>
+      )}
       <div></div>
     </div>
   );

@@ -154,6 +154,7 @@ const schema = defineSchema({
   // ============================================================================
   edges: defineTable({
     canvasId: v.id("canvases"),
+    frameId: v.optional(v.id("frames")), // null = sur le canvas root
 
     // Source et target
     sourceDisplayId: v.id("nodeDisplays"),

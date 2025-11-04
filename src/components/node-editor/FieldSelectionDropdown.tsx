@@ -15,8 +15,7 @@ export default function FieldSelectionDropdown({
   const { values, setFieldValue } = useFormikContext<NodeTemplate>();
 
   // Add field to the formik values
-  function addField({ id, name, type, options }: NodeField) {
-    const newField = { id, name, type, visual: "default", options };
+  function addField(newField: NodeField) {
     setFieldValue("fields", [...values.fields, newField]);
   }
 

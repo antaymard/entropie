@@ -3,7 +3,6 @@
 // ===========================================================================
 
 export interface NodeTemplate {
-  id?: string;
   name: string;
   description: string;
   icon: string;

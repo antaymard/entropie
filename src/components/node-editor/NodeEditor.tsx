@@ -18,14 +18,22 @@ import { addElementToLayout, moveElementInLayout } from "../utils/editorUtils";
 import { NodeEditorContext } from "../../stores/node-editor-stores/NodeEditorContext";
 import NodeEditorRightPanel from "./NodeEditorRightPanel";
 import NodeEditorPreviewPanel from "./NodeEditorPreviewPanel";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
+import toast from "react-hot-toast";
 
-export default function NodeEditor() {
+export default function NodeEditor({ templateId }: { templateId: Id<"nodeTemplates"> | "new" }) {
   const [currentVisualLayoutPath, setCurrentVisualLayoutPath] =
     useState<string>("visuals.node.default.layout");
   const [overElementId, setOverElementId] = useState<string | null>(null);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(
     null
   );
+  const createOrUpdateTemplate = useMutation(api.templates.createOrUpdateTemplate);
+  const template = useQuery(api.templates.getTemplateById, templateId === "new" ? "skip" : { templateId }) as
+    | NodeTemplate
+    | undefined;
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -39,8 +47,8 @@ export default function NodeEditor() {
     name: "",
     description: "",
     icon: "",
-    is_system: false,
-    user_id: null,
+    isSystem: false,
+    creatorId: null,
     fields: [],
     visuals: {
       node: {
@@ -63,14 +71,17 @@ export default function NodeEditor() {
       },
       window: {},
     },
-    default_visuals: {
+    defaultVisuals: {
       node: "default",
       window: "",
     },
   };
 
-  const handleSaveTemplate = (values: NodeTemplate) => {
-    console.log("Form submitted:", values);
+  const handleSaveTemplate = async (values: NodeTemplate) => {
+    // return console.log(values);
+
+    await createOrUpdateTemplate({ templateId, data: values });
+    toast.success("Template sauvegardé avec succès !");
   };
 
   // When item is dragged over the tree (TO DO LATER)
@@ -137,6 +148,8 @@ export default function NodeEditor() {
     }
   }
 
+  if (template === undefined) return null;
+
   return (
     <NodeEditorContext.Provider
       value={{
@@ -148,41 +161,33 @@ export default function NodeEditor() {
         setSelectedElementId,
       }}
     >
-      <div className="rounded border-gray-300 border h-full">
-        {/* Header section
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-300">
-          <h2 className="font-semibold text-lg">
-            <span className="text-xl">🔧</span> Éditeur de blocs
-          </h2>
-          <button
-            type="button"
-            className="hover:bg-gray-100 cursor-pointer"
-            onClick={() => console.log("close")}
-          >
-            <HiOutlineXMark size={20} />
-          </button>
-        </div> */}
 
-        {/* Form section */}
-        <Formik initialValues={initialValues} onSubmit={handleSaveTemplate}>
-          {({ values, setFieldValue }) => {
-            return (
-              <DndContext
-                onDragEnd={(e) => handleDragEnd(e, values, setFieldValue)}
-                onDragOver={handleDragOver}
-                sensors={sensors}
-              >
-                <div className="grid grid-cols-[minmax(0,310px)_minmax(0,310px)_auto_minmax(0,350px)] h-full ">
-                  <NodeEditorLeftPanel />
-                  <NodeEditorTreePanel />
-                  <NodeEditorPreviewPanel />
-                  <NodeEditorRightPanel />
-                </div>
-              </DndContext>
-            );
-          }}
-        </Formik>
-      </div>
+      {/* Form section */}
+      <Formik initialValues={template || initialValues} onSubmit={handleSaveTemplate}>
+        {({ values, setFieldValue, handleSubmit }) => {
+          return (
+            <div className="h-full flex flex-col gap-2">
+              <div className="flex flex-col rounded-md border-gray-300 border flex-1">
+                <DndContext
+                  onDragEnd={(e) => handleDragEnd(e, values, setFieldValue)}
+                  onDragOver={handleDragOver}
+                  sensors={sensors}
+                >
+                  <div className="grid grid-cols-[minmax(0,310px)_minmax(0,310px)_auto_minmax(0,350px)] h-full">
+                    <NodeEditorLeftPanel />
+                    <NodeEditorTreePanel />
+                    <NodeEditorPreviewPanel />
+                    <NodeEditorRightPanel />
+                  </div>
+                </DndContext>
+              </div>
+              <div className="flex justify-end">
+                <button type="button" onClick={handleSubmit} className="p-2 bg-green-500 hover:bg-green-600 text-white w-fit rounded-sm" >Sauvegarder</button>
+              </div>
+            </div>
+          );
+        }}
+      </Formik>
     </NodeEditorContext.Provider>
   );
 }

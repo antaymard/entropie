@@ -1,10 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import type { NodeTemplate } from "../../../types";
 import { useState } from "react";
 import Modal from "../../../components/modal/Modal";
 import NodeEditor from "../../../components/node-editor/NodeEditor";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 export const Route = createFileRoute("/settings/templates/")({
   component: RouteComponent,
@@ -15,7 +16,7 @@ function RouteComponent() {
     | NodeTemplate[]
     | undefined;
 
-  const [editingTemplateId, setEditingTemplateId] = useState<string | null>(
+  const [editingTemplateId, setEditingTemplateId] = useState<Id<"nodeTemplates"> | "new" | null>(
     null
   );
 
@@ -35,11 +36,14 @@ function RouteComponent() {
       );
 
     return (
-      <ul>
-        {userTemplates.map((template) => (
-          <li key={template.id}>{template.name}</li>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {userTemplates.map((template, i) => (
+          <div key={i} className="border border-gray-300 p-4 rounded-md cursor-pointer" onClick={() => setEditingTemplateId(template._id)}>
+            <h3 className="text-lg font-semibold">{template.name}</h3>
+            <p className="text-sm text-gray-500">{template.description}</p>
+          </div>
         ))}
-      </ul>
+      </div>
     );
   }
 
@@ -52,8 +56,8 @@ function RouteComponent() {
 
       <div>{renderUserTemplates()}</div>
 
-      <Modal
-        isModalOpen={editingTemplateId !== null}
+      {editingTemplateId && <Modal
+        isModalOpen
         clickOutsideToClose={false}
         close={() => setEditingTemplateId(null)}
         modalStyle={{
@@ -62,8 +66,8 @@ function RouteComponent() {
         }}
         modalTitle={editingTemplateId === "new" ? "Nouveau template" : "TODO"}
       >
-        <NodeEditor />
-      </Modal>
+        <NodeEditor templateId={editingTemplateId} />
+      </Modal>}
     </>
   );
 }

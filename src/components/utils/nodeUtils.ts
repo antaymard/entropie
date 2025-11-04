@@ -15,6 +15,7 @@ export function toReactFlowNode(dbNode: Partial<CanvasNode>): CanvasNode {
     connectable: !locked,
     deletable: !locked,
     locked,
+    selected: false,
     color: dbNode.color ?? "default",
     hidden: dbNode.hidden ?? false,
   } as CanvasNode;

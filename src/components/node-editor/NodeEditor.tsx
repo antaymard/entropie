@@ -148,8 +148,8 @@ export default function NodeEditor() {
         setSelectedElementId,
       }}
     >
-      <div className="rounded bg-white border-gray-300 border">
-        {/* Header section */}
+      <div className="rounded border-gray-300 border h-full">
+        {/* Header section
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-300">
           <h2 className="font-semibold text-lg">
             <span className="text-xl">🔧</span> Éditeur de blocs
@@ -161,7 +161,7 @@ export default function NodeEditor() {
           >
             <HiOutlineXMark size={20} />
           </button>
-        </div>
+        </div> */}
 
         {/* Form section */}
         <Formik initialValues={initialValues} onSubmit={handleSaveTemplate}>
@@ -172,7 +172,7 @@ export default function NodeEditor() {
                 onDragOver={handleDragOver}
                 sensors={sensors}
               >
-                <div className="grid grid-cols-[minmax(0,310px)_minmax(0,310px)_auto_minmax(0,350px)]">
+                <div className="grid grid-cols-[minmax(0,310px)_minmax(0,310px)_auto_minmax(0,350px)] h-full ">
                   <NodeEditorLeftPanel />
                   <NodeEditorTreePanel />
                   <NodeEditorPreviewPanel />

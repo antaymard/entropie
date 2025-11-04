@@ -73,14 +73,10 @@ function RouteComponent() {
     [setContextMenu]
   );
 
-  if (!canvas) {
-    return <div>Chargement du canvas...</div>;
-  }
-
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full bg-gray-50">
       <ReactFlowProvider>
-        <CanvasTopBar canvasName={canvas.name} canvasId={canvasId} />
+        <CanvasTopBar canvasName={canvas?.name} canvasId={canvasId} />
         <div style={{ height: "calc(100% - 64px)", width: "100%" }}>
           <ReactFlow
             panOnScroll
@@ -93,7 +89,7 @@ function RouteComponent() {
             onEdgesChange={onEdgesChange}
             onPaneContextMenu={(e) => handleRightClick(e, "canvas", null)}
           >
-            <Background />
+            <Background bgColor="#f9fafb" />
             <Controls />
             {/* <Panel position="bottom-center">TODO</Panel> */}
           </ReactFlow>

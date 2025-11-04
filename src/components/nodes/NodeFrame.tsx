@@ -1,6 +1,5 @@
 import { NodeResizer, type NodeProps } from "@xyflow/react";
 import { memo } from "react";
-import { useNode } from "../../stores/canvasStore";
 
 interface NodeData {
   name?: string;
@@ -9,23 +8,21 @@ interface NodeData {
   [key: string]: unknown;
 }
 
-function NodeFrame({ id, selected }: NodeProps) {
+function NodeFrame(node: NodeProps) {
   // ✅ Récupère uniquement ce node, re-render seulement si LUI change
-  const node = useNode(id);
 
   if (!node) return null;
-
   const data = node.data as NodeData;
 
   return (
     <>
-      <NodeResizer minWidth={100} minHeight={100} isVisible={selected} />
+      <NodeResizer minWidth={100} minHeight={100} isVisible={node?.selected} />
       <div
         style={{
           width: "100%",
           height: "100%",
           backgroundColor: data.color || "#ffffff",
-          border: selected ? "2px solid #1a73e8" : "1px solid #e0e0e0",
+          border: node.selected ? "2px solid #1a73e8" : "1px solid #e0e0e0",
           borderRadius: "4px",
           padding: "8px",
         }}

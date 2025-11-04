@@ -7,8 +7,8 @@ export interface NodeTemplate {
   name: string;
   description: string;
   icon: string;
-  is_system: boolean;
-  user_id: string | null;
+  isSystem: boolean;
+  creatorId: string | null;
 
   // Définition des champs (colonnes)
   fields: NodeField[];
@@ -20,7 +20,7 @@ export interface NodeTemplate {
   };
 
   // Variants par défaut
-  default_visuals: {
+  defaultVisuals: {
     node: string; // variant_id
     window: string; // variant_id
   };
@@ -41,6 +41,7 @@ export interface NodeField {
   id: string;
   name: string;
   type: FieldType;
+  description?: string;
   options?: Record<string, unknown>; // currency, placeholder, select options, etc.
 }
 

@@ -18,6 +18,21 @@ export const getLastModifiedCanvas = query({
   },
 });
 
+export const getUserCanvases = query({
+  args: {},
+  handler: async (ctx) => {
+    const authUserId = await requireAuth(ctx);
+
+    // Récupérer tous les canvas de l'utilisateur
+    const canvases = await ctx.db
+      .query("canvases")
+      .withIndex("by_creator", (q) => q.eq("creatorId", authUserId))
+      .collect();
+
+    return canvases;
+  },
+});
+
 export const createCanvas = mutation({
   args: {
     name: v.string(),

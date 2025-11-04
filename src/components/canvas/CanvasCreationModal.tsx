@@ -20,6 +20,13 @@ export default function CanvasCreationModal({
   return (
     <Formik
       initialValues={{ name: "" }}
+      validate={(values) => {
+        const errors: { name?: string } = {};
+        if (!values.name.trim()) {
+          errors.name = "Le nom ne peut pas être vide";
+        }
+        return errors;
+      }}
       onSubmit={async (values) => {
         try {
           console.log("omf");
@@ -36,7 +43,7 @@ export default function CanvasCreationModal({
         <Modal
           modalTitle="Créer un espace"
           isModalOpen={isModalOpen}
-          setIsModalOpen={setIsModalOpen}
+          close={() => setIsModalOpen(false)}
           footer={
             <>
               <div />
@@ -50,11 +57,7 @@ export default function CanvasCreationModal({
             </>
           }
         >
-          <TextInput
-            name="name"
-            label="Nom de l'espace"
-            placeholder="Mon espace de travail"
-          />
+          <TextInput name="name" label="Nom de l'espace" placeholder="" />
         </Modal>
       )}
     </Formik>

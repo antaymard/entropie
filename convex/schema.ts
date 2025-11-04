@@ -72,6 +72,60 @@ const schema = defineSchema({
       searchField: "name",
       filterFields: ["creatorId"],
     }),
+
+  // ============================================================================
+  // NODE TEMPLATES
+  // ============================================================================
+  nodeTemplates: defineTable({
+    name: v.string(),
+    description: v.string(),
+    icon: v.string(),
+    isSystem: v.boolean(),
+    creatorId: v.optional(v.id("users")), // null if system template
+
+    // Field definitions (columns)
+    fields: v.array(
+      v.object({
+        id: v.string(),
+        name: v.string(),
+        description: v.optional(v.string()),
+        type: v.union(
+          v.literal("short_text"),
+          v.literal("url"),
+          v.literal("select"),
+          v.literal("image"),
+          v.literal("image_url"),
+          v.literal("number"),
+          v.literal("date"),
+          v.literal("rich_text"),
+          v.literal("boolean")
+        ),
+        options: v.optional(v.any()), // currency, placeholder, select options, etc.
+      })
+    ),
+
+    // Visual layouts for node and window
+    visuals: v.object({
+      node: v.any(), // Record<string, NodeVisual>
+      window: v.any(), // Record<string, NodeVisual>
+    }),
+
+    // Default variants
+    defaultVisuals: v.object({
+      node: v.string(), // variant_id
+      window: v.string(), // variant_id
+    }),
+
+    // Metadata
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_creator", ["creatorId"])
+    .index("by_system", ["isSystem"])
+    .searchIndex("search_name", {
+      searchField: "name",
+      filterFields: ["creatorId", "isSystem"],
+    }),
 });
 
 export default schema;

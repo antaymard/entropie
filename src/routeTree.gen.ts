@@ -9,9 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteRouteImport } from './routes/settings/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CanvasCanvasIdRouteImport } from './routes/canvas/$canvasId'
+import { Route as SettingsTemplatesIndexRouteImport } from './routes/settings/templates/index'
+import { Route as SettingsTemplatesTemplateIdRouteImport } from './routes/settings/templates/$templateId'
 
+const SettingsRouteRoute = SettingsRouteRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -22,35 +30,79 @@ const CanvasCanvasIdRoute = CanvasCanvasIdRouteImport.update({
   path: '/canvas/$canvasId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsTemplatesIndexRoute = SettingsTemplatesIndexRouteImport.update({
+  id: '/templates/',
+  path: '/templates/',
+  getParentRoute: () => SettingsRouteRoute,
+} as any)
+const SettingsTemplatesTemplateIdRoute =
+  SettingsTemplatesTemplateIdRouteImport.update({
+    id: '/templates/$templateId',
+    path: '/templates/$templateId',
+    getParentRoute: () => SettingsRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/settings': typeof SettingsRouteRouteWithChildren
   '/canvas/$canvasId': typeof CanvasCanvasIdRoute
+  '/settings/templates/$templateId': typeof SettingsTemplatesTemplateIdRoute
+  '/settings/templates': typeof SettingsTemplatesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/settings': typeof SettingsRouteRouteWithChildren
   '/canvas/$canvasId': typeof CanvasCanvasIdRoute
+  '/settings/templates/$templateId': typeof SettingsTemplatesTemplateIdRoute
+  '/settings/templates': typeof SettingsTemplatesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/settings': typeof SettingsRouteRouteWithChildren
   '/canvas/$canvasId': typeof CanvasCanvasIdRoute
+  '/settings/templates/$templateId': typeof SettingsTemplatesTemplateIdRoute
+  '/settings/templates/': typeof SettingsTemplatesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/canvas/$canvasId'
+  fullPaths:
+    | '/'
+    | '/settings'
+    | '/canvas/$canvasId'
+    | '/settings/templates/$templateId'
+    | '/settings/templates'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/canvas/$canvasId'
-  id: '__root__' | '/' | '/canvas/$canvasId'
+  to:
+    | '/'
+    | '/settings'
+    | '/canvas/$canvasId'
+    | '/settings/templates/$templateId'
+    | '/settings/templates'
+  id:
+    | '__root__'
+    | '/'
+    | '/settings'
+    | '/canvas/$canvasId'
+    | '/settings/templates/$templateId'
+    | '/settings/templates/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SettingsRouteRoute: typeof SettingsRouteRouteWithChildren
   CanvasCanvasIdRoute: typeof CanvasCanvasIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -65,11 +117,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CanvasCanvasIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings/templates/': {
+      id: '/settings/templates/'
+      path: '/templates'
+      fullPath: '/settings/templates'
+      preLoaderRoute: typeof SettingsTemplatesIndexRouteImport
+      parentRoute: typeof SettingsRouteRoute
+    }
+    '/settings/templates/$templateId': {
+      id: '/settings/templates/$templateId'
+      path: '/templates/$templateId'
+      fullPath: '/settings/templates/$templateId'
+      preLoaderRoute: typeof SettingsTemplatesTemplateIdRouteImport
+      parentRoute: typeof SettingsRouteRoute
+    }
   }
 }
 
+interface SettingsRouteRouteChildren {
+  SettingsTemplatesTemplateIdRoute: typeof SettingsTemplatesTemplateIdRoute
+  SettingsTemplatesIndexRoute: typeof SettingsTemplatesIndexRoute
+}
+
+const SettingsRouteRouteChildren: SettingsRouteRouteChildren = {
+  SettingsTemplatesTemplateIdRoute: SettingsTemplatesTemplateIdRoute,
+  SettingsTemplatesIndexRoute: SettingsTemplatesIndexRoute,
+}
+
+const SettingsRouteRouteWithChildren = SettingsRouteRoute._addFileChildren(
+  SettingsRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SettingsRouteRoute: SettingsRouteRouteWithChildren,
   CanvasCanvasIdRoute: CanvasCanvasIdRoute,
 }
 export const routeTree = rootRouteImport

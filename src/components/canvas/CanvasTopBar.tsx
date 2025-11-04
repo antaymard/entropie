@@ -2,6 +2,10 @@ import { useMutation } from "convex/react";
 import { useState, useRef, useEffect } from "react";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { api } from "../../../convex/_generated/api";
+import { useCanvasStore } from "../../stores/canvasStore";
+import { toDbNode } from "../utils/nodeUtils";
+import toast from "react-hot-toast";
+import { toastError } from "../utils/errorUtils";
 
 export default function CanvasTopBar({
   canvasId,
@@ -14,10 +18,28 @@ export default function CanvasTopBar({
   const [editValue, setEditValue] = useState(canvasName || "Sans nom");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const updateCanvas = useMutation(api.canvases.updateCanvas);
+  const updateCanvasDetails = useMutation(api.canvases.updateCanvasDetails);
+  const updateCanvasContent = useMutation(api.canvases.updateCanvasContent);
 
-  const handleUpdateCanvas = async (newName: string) => {
-    await updateCanvas({
+  const nodes = useCanvasStore((state) => state.nodes);
+  const edges = useCanvasStore((state) => state.edges);
+
+  const handleUpdateCanvasContent = async () => {
+    try {
+      const nodesToSave = nodes.map(toDbNode);
+      await updateCanvasContent({
+        canvasId: canvasId as Id<"canvases">,
+        nodes: nodesToSave,
+        edges,
+      });
+      toast.success("Sauvegardé", { position: "top-right" });
+    } catch (error) {
+      toastError(error, "Erreur lors de la sauvegarde du canvas.");
+    }
+  };
+
+  const handleUpdateCanvasDetails = async (newName: string) => {
+    await updateCanvasDetails({
       canvasId: canvasId as Id<"canvases">,
       name: newName,
     });
@@ -41,7 +63,7 @@ export default function CanvasTopBar({
   const handleBlur = () => {
     setIsEditing(false);
     if (editValue.trim() && editValue !== canvasName) {
-      handleUpdateCanvas(editValue.trim());
+      handleUpdateCanvasDetails(editValue.trim());
     } else {
       setEditValue(canvasName || "Sans nom");
     }
@@ -71,13 +93,21 @@ export default function CanvasTopBar({
         />
       ) : (
         <h1
-          className="font-semibold cursor-pointer hover:text-gray-600"
+          className="font-semibold cursor-pointer hover:text-black text-lg"
           onDoubleClick={handleDoubleClick}
         >
           {canvasName || "Sans nom"}
         </h1>
       )}
-      <div></div>
+      <div>
+        <button
+          type="button"
+          className="rounded-sm bg-green-500 text-white px-3 py-1 hover:bg-green-600 font-semibold"
+          onClick={handleUpdateCanvasContent}
+        >
+          Sauvegarder
+        </button>
+      </div>
     </div>
   );
 }

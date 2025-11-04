@@ -27,6 +27,8 @@ export default function ContextMenu({
             type: "default",
             position: newNodePosition,
             data: { label: "Nouveau node" },
+            width: 150,
+            height: 150,
           });
           closeMenu();
         }}

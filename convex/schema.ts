@@ -18,9 +18,9 @@ const schema = defineSchema({
     nodes: v.array(
       v.object({
         id: v.string(),
-        type: v.string(), // customNode or frame or pre-built node types
         name: v.optional(v.string()), // Displayed on the node
-        templateId: v.id("nodeTemplates"),
+        type: v.string(), // customNode or frame or pre-built node types
+        templateId: v.optional(v.id("nodeTemplates")), // If based on a template
 
         position: v.object({
           x: v.number(),
@@ -31,6 +31,7 @@ const schema = defineSchema({
         color: v.optional(v.string()),
         locked: v.optional(v.boolean()),
         hidden: v.optional(v.boolean()),
+        zIndex: v.optional(v.number()),
 
         data: v.any(),
         parentId: v.optional(v.string()),

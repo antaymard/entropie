@@ -61,7 +61,7 @@ export const getCanvas = query({
   },
 });
 
-export const updateCanvas = mutation({
+export const updateCanvasDetails = mutation({
   args: {
     canvasId: v.id("canvases"),
     name: v.optional(v.string()),
@@ -93,6 +93,35 @@ export const updateCanvas = mutation({
       updatedAt: Date.now(),
     });
 
+    return canvasId;
+  },
+});
+
+export const updateCanvasContent = mutation({
+  args: {
+    canvasId: v.id("canvases"),
+    nodes: v.array(v.any()),
+    edges: v.array(v.any()),
+  },
+  handler: async (ctx, { canvasId, nodes, edges }) => {
+    const authUserId = await requireAuth(ctx);
+
+    console.log(nodes);
+
+    // Vérifier si l'utilisateur est le créateur du canvas
+    const canvas = await ctx.db.get(canvasId);
+    if (!canvas) {
+      throw new Error("Canvas non trouvé");
+    }
+    if (canvas.creatorId !== authUserId) {
+      throw new Error("Vous n'avez pas accès à ce canvas");
+    }
+    // Mettre à jour le contenu du canvas
+    await ctx.db.patch(canvasId, {
+      nodes,
+      edges,
+      updatedAt: Date.now(),
+    });
     return canvasId;
   },
 });

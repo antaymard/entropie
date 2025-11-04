@@ -4,7 +4,6 @@ import {
   Background,
   ReactFlow,
   Controls,
-  type Node,
   type Edge,
   ReactFlowProvider,
 } from "@xyflow/react";
@@ -16,6 +15,8 @@ import nodeTypes from "../../components/nodes/nodeTypes";
 import { useCanvasStore } from "../../stores/canvasStore";
 import { useCallback, useEffect, useState } from "react";
 import ContextMenu from "../../components/canvas/context-menus";
+import type { CanvasNode } from "../../types/node.types";
+import { toReactFlowNode } from "../../components/utils/nodeUtils";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -49,7 +50,10 @@ function RouteComponent() {
 
   // Load data from database into store
   useEffect(() => {
-    if (canvas?.nodes) setNodes(canvas.nodes as Node[]);
+    if (canvas?.nodes) {
+      const reactFlowNodes = canvas.nodes.map(toReactFlowNode);
+      setNodes(reactFlowNodes as CanvasNode[]);
+    }
     if (canvas?.edges) setEdges(canvas.edges as Edge[]);
   }, [canvas, setNodes, setEdges]);
 

@@ -4,7 +4,7 @@ import NodeContextMenu from "./NodeContextMenu";
 
 export const contextMenuContainerClassName = "flex flex-col p-1 gap-1 ";
 export const contextMenuButtonClassName =
-  "hover:bg-gray-200 p-2 rounded-sm flex items-center gap-2 text-sm";
+  "hover:bg-gray-200 p-2 rounded-sm flex items-center gap-2";
 
 export default function ContextMenu({
   contextMenu,

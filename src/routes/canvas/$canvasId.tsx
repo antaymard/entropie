@@ -6,6 +6,7 @@ import {
   Controls,
   type Node,
   type Edge,
+  ReactFlowProvider,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { api } from "../../../convex/_generated/api";
@@ -74,30 +75,32 @@ function RouteComponent() {
 
   return (
     <div className="h-full w-full">
-      <CanvasTopBar canvasName={canvas.name} canvasId={canvasId} />
-      <div style={{ height: "calc(100% - 64px)", width: "100%" }}>
-        <ReactFlow
-          panOnScroll
-          selectionOnDrag
-          panOnDrag={false}
-          nodeTypes={nodeTypes}
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onPaneContextMenu={(e) => handleRightClick(e, "canvas", null)}
-        >
-          <Background />
-          <Controls />
-          {/* <Panel position="bottom-center">TODO</Panel> */}
-        </ReactFlow>
-      </div>
-      {contextMenu.type && (
-        <ContextMenu
-          contextMenu={contextMenu}
-          setContextMenu={setContextMenu}
-        />
-      )}
+      <ReactFlowProvider>
+        <CanvasTopBar canvasName={canvas.name} canvasId={canvasId} />
+        <div style={{ height: "calc(100% - 64px)", width: "100%" }}>
+          <ReactFlow
+            panOnScroll
+            selectionOnDrag
+            panOnDrag={[1]}
+            nodeTypes={nodeTypes}
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onPaneContextMenu={(e) => handleRightClick(e, "canvas", null)}
+          >
+            <Background />
+            <Controls />
+            {/* <Panel position="bottom-center">TODO</Panel> */}
+          </ReactFlow>
+        </div>
+        {contextMenu.type && (
+          <ContextMenu
+            contextMenu={contextMenu}
+            setContextMenu={setContextMenu}
+          />
+        )}
+      </ReactFlowProvider>
     </div>
   );
 }

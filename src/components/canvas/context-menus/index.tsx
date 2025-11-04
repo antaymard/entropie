@@ -4,7 +4,7 @@ import NodeContextMenu from "./NodeContextMenu";
 
 export const contextMenuContainerClassName = "flex flex-col p-1 gap-1 ";
 export const contextMenuButtonClassName =
-  "hover:bg-gray-200 p-2 rounded-sm flex items-center gap-2";
+  "hover:bg-gray-200 p-2 rounded-sm flex items-center gap-2 text-sm";
 
 export default function ContextMenu({
   contextMenu,
@@ -22,6 +22,7 @@ export default function ContextMenu({
   }) => void;
 }) {
   const { type, position, element } = contextMenu;
+  const contextMenuOffset = 10; // Pour décaler un peu le menu du curseur
 
   const handleClose = () => {
     setContextMenu({ type: null, position: { x: 0, y: 0 }, element: null });
@@ -56,10 +57,10 @@ export default function ContextMenu({
         }}
       />
       <div
-        className="bg-white rounded-md border border-gray-300 absolute"
+        className="bg-white rounded-md border border-gray-300 absolute shadow-lg"
         style={{
-          top: position.y,
-          left: position.x,
+          top: position.y + contextMenuOffset,
+          left: position.x + contextMenuOffset,
         }}
       >
         {renderContextMenu()}

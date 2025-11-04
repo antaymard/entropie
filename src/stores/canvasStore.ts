@@ -2,19 +2,20 @@ import { create } from "zustand";
 import { applyNodeChanges, applyEdgeChanges } from "@xyflow/react";
 import type { Node, Edge, NodeChange, EdgeChange } from "@xyflow/react";
 import { devtools } from "zustand/middleware";
+import type { CanvasNode } from "../types/node.types";
 
 interface CanvasStore {
-  nodes: Node[];
+  nodes: CanvasNodeNode[];
   edges: Edge[];
 
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
 
-  setNodes: (nodes: Node[]) => void;
+  setNodes: (nodes: CanvasNode[]) => void;
   setEdges: (edges: Edge[]) => void;
 
   updateNodeData: (id: string, data: Record<string, unknown>) => void;
-  addNode: (node: Node) => void;
+  addNode: (node: CanvasNode) => void;
   deleteNode: (id: string) => void;
 }
 
@@ -58,6 +59,6 @@ export const useCanvasStore = create<CanvasStore>()(
 );
 
 // Hook helper pour récupérer un node spécifique (optimisé)
-export const useNode = (nodeId: string) => {
+export const useNode = (nodeId: string): CanvasNode | undefined => {
   return useCanvasStore((state) => state.nodes.find((n) => n.id === nodeId));
 };

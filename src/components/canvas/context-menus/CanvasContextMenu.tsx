@@ -24,11 +24,16 @@ export default function ContextMenu({
         onClick={() => {
           addNode({
             id: `node-${Date.now()}`,
-            type: "default",
+            name: "test",
+            type: "test",
             position: newNodePosition,
+            color: "yellow",
             data: { label: "Nouveau node" },
             width: 150,
-            height: 150,
+            height: 100,
+            locked: false,
+            hidden: false,
+            zIndex: 0,
           });
           closeMenu();
         }}

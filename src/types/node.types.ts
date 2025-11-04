@@ -76,8 +76,8 @@ export interface CanvasNode {
   };
   width: number;
   height: number;
-  zIndex?: number;
-  color: string;
+  zIndex: number;
+  color: NodeColors;
   locked: boolean;
   hidden: boolean;
   data: Record<string, unknown>;
@@ -96,3 +96,11 @@ export interface CanvasNode {
   connectable?: boolean;
   deletable?: boolean;
 }
+
+export type NodeColors =
+  | "blue"
+  | "green"
+  | "red"
+  | "yellow"
+  | "purple"
+  | "default";

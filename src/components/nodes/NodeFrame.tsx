@@ -1,37 +1,54 @@
 import { NodeResizer, type NodeProps } from "@xyflow/react";
 import { memo } from "react";
+import type { CanvasNode, NodeColors } from "../../types/node.types";
+import { useNode } from "../../stores/canvasStore";
 
-interface NodeData {
-  name?: string;
-  color?: string;
-  label?: string;
-  [key: string]: unknown;
+const nodeColorClassNames = {
+  blue: {
+    border: "border-blue-500",
+    background: "bg-blue-100",
+  },
+  green: {
+    border: "border-green-500",
+    background: "bg-green-100",
+  },
+  red: {
+    border: "border-red-500",
+    background: "bg-red-100",
+  },
+  yellow: {
+    border: "border-yellow-500",
+    background: "bg-yellow-100",
+  },
+  purple: {
+    border: "border-purple-500",
+    background: "bg-purple-100",
+  },
+  default: {
+    border: "border-gray-500",
+    background: "bg-gray-100",
+  },
+};
+
+function getNodeColorClasses(color: NodeColors) {
+  return nodeColorClassNames[color] || nodeColorClassNames["default"];
 }
 
-function NodeFrame(node: NodeProps) {
-  // ✅ Récupère uniquement ce node, re-render seulement si LUI change
-
-  if (!node) return null;
-  const data = node.data as NodeData;
+function NodeFrame(node: CanvasNode) {
+  const canvasNode = useNode(node.id);
+  if (!canvasNode) return null;
 
   return (
     <>
-      <NodeResizer minWidth={100} minHeight={100} isVisible={node?.selected} />
+      <NodeResizer
+        minWidth={100}
+        minHeight={100}
+        isVisible={canvasNode?.selected}
+      />
       <div
-        style={{
-          width: "100%",
-          height: "100%",
-          backgroundColor: data.color || "#ffffff",
-          border: node.selected ? "2px solid #1a73e8" : "1px solid #e0e0e0",
-          borderRadius: "4px",
-          padding: "8px",
-        }}
+        className={`border rounded-sm ${getNodeColorClasses(canvasNode.color).border}`}
       >
-        <div style={{ fontWeight: "bold", marginBottom: "8px" }}>
-          {data.name || "Sans nom"}
-        </div>
-        {/* Ici vous pouvez rendre le contenu spécifique du node */}
-        {data.label && <div>{data.label}</div>}
+        {canvasNode.color}
       </div>
     </>
   );

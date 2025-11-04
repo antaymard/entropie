@@ -11,6 +11,8 @@
 import type * as auth from "../auth.js";
 import type * as canvases from "../canvases.js";
 import type * as http from "../http.js";
+import type * as lib_auth from "../lib/auth.js";
+import type * as templates from "../templates.js";
 
 import type {
   ApiFromModules,
@@ -30,6 +32,8 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   canvases: typeof canvases;
   http: typeof http;
+  "lib/auth": typeof lib_auth;
+  templates: typeof templates;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 

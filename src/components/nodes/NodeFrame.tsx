@@ -1,0 +1,57 @@
+import { NodeResizer, type NodeProps } from "@xyflow/react";
+import { memo } from "react";
+import type { CanvasNode, NodeColors } from "../../types/node.types";
+import { useNode } from "../../stores/canvasStore";
+
+const nodeColorClassNames = {
+  blue: {
+    border: "border-blue-500",
+    background: "bg-blue-100",
+  },
+  green: {
+    border: "border-green-500",
+    background: "bg-green-100",
+  },
+  red: {
+    border: "border-red-500",
+    background: "bg-red-100",
+  },
+  yellow: {
+    border: "border-yellow-500",
+    background: "bg-yellow-100",
+  },
+  purple: {
+    border: "border-purple-500",
+    background: "bg-purple-100",
+  },
+  default: {
+    border: "border-gray-500",
+    background: "bg-gray-100",
+  },
+};
+
+function getNodeColorClasses(color: NodeColors) {
+  return nodeColorClassNames[color] || nodeColorClassNames["default"];
+}
+
+function NodeFrame(node: CanvasNode) {
+  const canvasNode = useNode(node.id);
+  if (!canvasNode) return null;
+
+  return (
+    <>
+      <NodeResizer
+        minWidth={100}
+        minHeight={100}
+        isVisible={canvasNode?.selected}
+      />
+      <div
+        className={`border rounded-sm ${getNodeColorClasses(canvasNode.color).border}`}
+      >
+        {canvasNode.color}
+      </div>
+    </>
+  );
+}
+
+export default memo(NodeFrame);

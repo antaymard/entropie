@@ -1,10 +1,14 @@
+// ===========================================================================
+// Node Template Types
+// ===========================================================================
+
 export interface NodeTemplate {
   id?: string;
   name: string;
   description: string;
   icon: string;
-  is_system: boolean;
-  user_id: string | null;
+  isSystem: boolean;
+  creatorId: string | null;
 
   // Définition des champs (colonnes)
   fields: NodeField[];
@@ -16,7 +20,7 @@ export interface NodeTemplate {
   };
 
   // Variants par défaut
-  default_visuals: {
+  defaultVisuals: {
     node: string; // variant_id
     window: string; // variant_id
   };
@@ -37,6 +41,7 @@ export interface NodeField {
   id: string;
   name: string;
   type: FieldType;
+  description?: string;
   options?: Record<string, unknown>; // currency, placeholder, select options, etc.
 }
 
@@ -54,3 +59,48 @@ export interface LayoutElement {
   style?: Record<string, unknown>;
   children?: LayoutElement[];
 }
+
+// ===========================================================================
+// Nodes on the canvas
+// ===========================================================================
+
+// Made for react flow
+export interface CanvasNode {
+  id: string;
+  name?: string;
+  type: string;
+  templateId?: string;
+  position: {
+    x: number;
+    y: number;
+  };
+  width: number;
+  height: number;
+  zIndex: number;
+  color: NodeColors;
+  locked: boolean;
+  hidden: boolean;
+  data: Record<string, unknown>;
+  parentId?: string;
+  extent?: any | null; //  "parent" | [[number, number], [number, number]]
+  extendParent?: boolean;
+
+  // ====== React Flow metadata, not stored in DB
+  resizing?: boolean;
+  dragging?: boolean;
+  selected?: boolean;
+  // Adapted from locked
+  focusable?: boolean;
+  draggable?: boolean;
+  selectable?: boolean;
+  connectable?: boolean;
+  deletable?: boolean;
+}
+
+export type NodeColors =
+  | "blue"
+  | "green"
+  | "red"
+  | "yellow"
+  | "purple"
+  | "default";

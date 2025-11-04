@@ -9,189 +9,123 @@ const schema = defineSchema({
   // CANVAS
   // ============================================================================
   canvases: defineTable({
-    creatorId: v.string(),
+    creatorId: v.id("users"),
     name: v.string(),
     icon: v.optional(v.string()),
     description: v.optional(v.string()),
 
-    // Settings du canvas
-    // settings: v.object({
-    //   gridSize: v.optional(v.number()),
-    //   snapToGrid: v.optional(v.boolean()),
-    //   backgroundColor: v.optional(v.string()),
-    //   defaultZoom: v.optional(v.number()),
-    // }),
+    // Nodes et edges (dénormalisés pour ReactFlow)
+    nodes: v.array(
+      v.object({
+        id: v.string(),
+        name: v.optional(v.string()), // Displayed on the node
+        type: v.string(), // customNode or frame or pre-built node types
+        templateId: v.optional(v.id("nodeTemplates")), // If based on a template
 
-    // Partage et permissions
-    // sharing: v.object({
-    //   isPublic: v.boolean(),
-    //   sharedWith: v.array(v.string()), // userIds
-    //   permissions: v.optional(v.any()), // Record<userId, "read" | "write">
-    // }),
+        position: v.object({
+          x: v.number(),
+          y: v.number(),
+        }),
+        width: v.number(),
+        height: v.number(),
+        color: v.optional(v.string()),
+        locked: v.optional(v.boolean()),
+        hidden: v.optional(v.boolean()),
+        zIndex: v.optional(v.number()),
+
+        data: v.any(),
+        parentId: v.optional(v.string()),
+        extent: v.optional(
+          v.union(v.literal("parent"), v.array(v.array(v.number()))) // [[x1,y1], [x2,y2]]
+        ),
+        extendParent: v.optional(v.boolean()),
+      })
+    ), // ReactFlow nodes (position, data, type, etc.)
+    edges: v.array(
+      v.object({
+        id: v.string(),
+        source: v.string(), // node id
+        target: v.string(), // node id
+
+        // Handles optionnels
+        sourceHandle: v.optional(v.string()),
+        targetHandle: v.optional(v.string()),
+
+        // Style
+        // type: v.optional(v.string()), // "default", "straight", "step", "smoothstep"
+        // animated: v.optional(v.boolean()),
+        // label: v.optional(v.string()),
+        // style: v.optional(v.any()),
+        // className: v.optional(v.string()),
+
+        // Data custom
+        data: v.optional(v.any()),
+      })
+    ), // ReactFlow edges (source, target, style, etc.)
 
     // Metadata
-    // lastViewedAt: v.optional(v.number()),
-    // isFavorite: v.optional(v.boolean()),
-    // tags: v.optional(v.array(v.string())),
+    createdAt: v.number(),
+    updatedAt: v.number(),
   })
     .index("by_creator", ["creatorId"])
-    // .index("by_user_favorite", ["userId", "isFavorite"])
     .searchIndex("search_name", {
       searchField: "name",
       filterFields: ["creatorId"],
     }),
 
   // ============================================================================
-  // NODE DISPLAYS (apparence et position des nodes)
+  // NODE TEMPLATES
   // ============================================================================
-  nodeDisplays: defineTable({
-    // Relations
-    canvasId: v.id("canvases"),
-    name: v.string(), // Nom affiché du node
-    frameId: v.optional(v.id("frames")), // null = sur le canvas root
-    nodeDataId: v.id("nodeData"),
-    templateId: v.id("nodeTemplates"), // Dénormalisé pour perf
+  nodeTemplates: defineTable({
+    name: v.string(),
+    description: v.string(),
+    icon: v.string(),
+    isSystem: v.boolean(),
+    creatorId: v.optional(v.id("users")), // null if system template
 
-    // Position et taille
-    position: v.object({
-      x: v.number(),
-      y: v.number(),
+    // Field definitions (columns)
+    fields: v.array(
+      v.object({
+        id: v.string(),
+        name: v.string(),
+        description: v.optional(v.string()),
+        type: v.union(
+          v.literal("short_text"),
+          v.literal("url"),
+          v.literal("select"),
+          v.literal("image"),
+          v.literal("image_url"),
+          v.literal("number"),
+          v.literal("date"),
+          v.literal("rich_text"),
+          v.literal("boolean")
+        ),
+        options: v.optional(v.any()), // currency, placeholder, select options, etc.
+      })
+    ),
+
+    // Visual layouts for node and window
+    visuals: v.object({
+      node: v.any(), // Record<string, NodeVisual>
+      window: v.any(), // Record<string, NodeVisual>
     }),
-    size: v.object({
-      width: v.number(),
-      height: v.number(),
+
+    // Default variants
+    defaultVisuals: v.object({
+      node: v.string(), // variant_id
+      window: v.string(), // variant_id
     }),
-
-    // Apparence
-    color: v.optional(v.string()),
-    zIndex: v.number(),
-    isLocked: v.boolean(),
-
-    // Variants visuels
-    nodeVariantId: v.string(), // UUID du variant dans nodeTemplate.visuals.node
-    windowVariantId: v.string(), // UUID du variant dans nodeTemplate.visuals.window
-  })
-    .index("by_canvas", ["canvasId"])
-    .index("by_canvas_zindex", ["canvasId", "zIndex"])
-    .index("by_nodeData", ["nodeDataId"])
-    .index("by_frame", ["frameId"])
-    .index("by_template", ["templateId"]), // Pour retrouver tous les nodes d'un template
-
-  // ============================================================================
-  // NODE DATA (contenu des nodes)
-  // ============================================================================
-  nodeData: defineTable({
-    creatorId: v.string(),
-    templateId: v.id("nodeTemplates"),
-
-    // Valeurs des champs (flexibles selon le template)
-    fieldValues: v.any(), // Record<field_id, any>
 
     // Metadata
     createdAt: v.number(),
     updatedAt: v.number(),
-
-    // Pour les nodes connectés à des sources externes
-    // externalSync: v.optional(
-    //   v.object({
-    //     source: v.string(), // "n8n", "api", "web_scraping", etc.
-    //     endpoint: v.optional(v.string()),
-    //     lastFetchedAt: v.optional(v.number()),
-    //     fetchInterval: v.optional(v.number()), // en ms
-    //     isActive: v.optional(v.boolean()),
-    //   })
-    // ),
-
-    // Historisation (pour ton use case de surveillance)
-    // history: v.optional(
-    //   v.array(
-    //     v.object({
-    //       timestamp: v.number(),
-    //       fieldValues: v.any(),
-    //       changedBy: v.optional(v.string()),
-    //       changeType: v.optional(v.string()), // "manual", "automation", "external_sync"
-    //     })
-    //   )
-    // ),
   })
     .index("by_creator", ["creatorId"])
-    .index("by_template", ["templateId"])
-    .index("by_creator_template", ["creatorId", "templateId"]),
-  // Pour retrouver les nodes à sync
-  // .index("by_external_sync", [
-  //   "externalSync.isActive",
-  //   "externalSync.lastFetchedAt",
-  // ]),
-
-  // ============================================================================
-  // FRAMES (zones géographiques sur le canvas)
-  // ============================================================================
-  frames: defineTable({
-    canvasId: v.id("canvases"),
-    name: v.string(),
-    description: v.optional(v.string()),
-
-    // Position et taille
-    position: v.object({
-      x: v.number(),
-      y: v.number(),
+    .index("by_system", ["isSystem"])
+    .searchIndex("search_name", {
+      searchField: "name",
+      filterFields: ["creatorId", "isSystem"],
     }),
-    size: v.object({
-      width: v.number(),
-      height: v.number(),
-    }),
-
-    // Style
-    backgroundColor: v.optional(v.string()),
-    borderColor: v.optional(v.string()),
-    borderWidth: v.optional(v.number()),
-
-    zIndex: v.number(),
-    isLocked: v.optional(v.boolean()),
-  }).index("by_canvas", ["canvasId"]),
-
-  // ============================================================================
-  // EDGES (connecteurs entre nodes)
-  // ============================================================================
-  edges: defineTable({
-    canvasId: v.id("canvases"),
-    frameId: v.optional(v.id("frames")), // null = sur le canvas root
-
-    // Source et target
-    sourceDisplayId: v.id("nodeDisplays"),
-    targetDisplayId: v.id("nodeDisplays"),
-
-    // Style
-    style: v.optional(
-      v.object({
-        color: v.optional(v.string()),
-        width: v.optional(v.number()),
-        type: v.optional(
-          v.union(
-            v.literal("straight"),
-            v.literal("curved"),
-            v.literal("step"),
-            v.literal("smoothstep")
-          )
-        ),
-        animated: v.optional(v.boolean()),
-        dashed: v.optional(v.boolean()),
-      })
-    ),
-
-    // Label
-    label: v.optional(v.string()),
-    labelPosition: v.optional(v.number()), // 0 à 1 (position sur l'edge)
-
-    // Metadata
-    relationshipType: v.optional(v.string()), // "depends_on", "related_to", "child_of", etc.
-    isLocked: v.optional(v.boolean()),
-  })
-    .index("by_canvas", ["canvasId"])
-    .index("by_source", ["sourceDisplayId"])
-    .index("by_target", ["targetDisplayId"])
-    .index("by_canvas_source", ["canvasId", "sourceDisplayId"])
-    .index("by_canvas_target", ["canvasId", "targetDisplayId"]),
 });
 
 export default schema;

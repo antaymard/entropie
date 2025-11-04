@@ -1,15 +1,27 @@
+import { useMutation } from "convex/react";
 import { useState, useRef, useEffect } from "react";
+import type { Id } from "../../../convex/_generated/dataModel";
+import { api } from "../../../convex/_generated/api";
 
 export default function CanvasTopBar({
+  canvasId,
   canvasName,
-  onRename,
 }: {
+  canvasId: Id<"canvases">;
   canvasName?: string;
-  onRename?: (newName: string) => void;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(canvasName || "Sans nom");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const updateCanvas = useMutation(api.canvases.updateCanvas);
+
+  const handleUpdateCanvas = async (newName: string) => {
+    await updateCanvas({
+      canvasId: canvasId as Id<"canvases">,
+      name: newName,
+    });
+  };
 
   useEffect(() => {
     setEditValue(canvasName || "Sans nom");
@@ -28,8 +40,8 @@ export default function CanvasTopBar({
 
   const handleBlur = () => {
     setIsEditing(false);
-    if (editValue.trim() && editValue !== canvasName && onRename) {
-      onRename(editValue.trim());
+    if (editValue.trim() && editValue !== canvasName) {
+      handleUpdateCanvas(editValue.trim());
     } else {
       setEditValue(canvasName || "Sans nom");
     }

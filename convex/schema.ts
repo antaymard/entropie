@@ -43,8 +43,8 @@ const schema = defineSchema({
     edges: v.array(
       v.object({
         id: v.string(),
-        sourceId: v.string(), // node id
-        targetId: v.string(), // node id
+        source: v.string(), // node id
+        target: v.string(), // node id
 
         // Handles optionnels
         sourceHandle: v.optional(v.string()),

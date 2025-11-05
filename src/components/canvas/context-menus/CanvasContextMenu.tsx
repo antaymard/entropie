@@ -1,6 +1,8 @@
 import { useViewport } from "@xyflow/react";
 import { contextMenuButtonClassName, contextMenuContainerClassName } from ".";
 import { useCanvasStore } from "../../../stores/canvasStore";
+import prebuiltNodesList from "../../nodes/prebuilt-nodes/prebuiltNodesList";
+import type { NodeColors } from "../../../types/node.types";
 
 export default function ContextMenu({
   closeMenu,
@@ -19,30 +21,24 @@ export default function ContextMenu({
 
   return (
     <div className={contextMenuContainerClassName}>
-      <button
-        className={contextMenuButtonClassName}
-        onClick={() => {
-          addNode({
-            id: `node-${Date.now()}`,
-            name: "test",
-            type: "test",
-            position: newNodePosition,
-            color: "yellow",
-            data: { label: "Nouveau node" },
-            width: 150,
-            height: 100,
-            locked: false,
-            hidden: false,
-            zIndex: 0,
-          });
-          closeMenu();
-        }}
-      >
-        Ajouter un node
-      </button>
-      <button className={contextMenuButtonClassName}>
-        Ajouter un autre node
-      </button>
+      {prebuiltNodesList.map((nodeType) => (
+        <button
+          key={nodeType.type}
+          className={contextMenuButtonClassName}
+          onClick={() => {
+            addNode({
+              id: `node-${Date.now()}`,
+              ...nodeType.initialValues,
+              type: nodeType.type,
+              position: newNodePosition,
+              color: nodeType.initialValues.color as NodeColors,
+            });
+            closeMenu();
+          }}
+        >
+          {nodeType.addButtonIcon} {nodeType.addButtonLabel}
+        </button>
+      ))}
     </div>
   );
 }

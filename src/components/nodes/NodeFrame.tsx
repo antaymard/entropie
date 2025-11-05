@@ -1,4 +1,4 @@
-import { NodeResizer, type NodeProps } from "@xyflow/react";
+import { NodeResizer, type Node } from "@xyflow/react";
 import { memo } from "react";
 import type { CanvasNode, NodeColors } from "../../types/node.types";
 import { useNode } from "../../stores/canvasStore";
@@ -34,8 +34,11 @@ function getNodeColorClasses(color: NodeColors) {
   return nodeColorClassNames[color] || nodeColorClassNames["default"];
 }
 
-function NodeFrame(node: CanvasNode) {
-  const canvasNode = useNode(node.id);
+function NodeFrame(
+  { xyNode, frameless = true, children }:
+    { xyNode: Node, frameless?: boolean, children: React.ReactNode }) {
+
+  const canvasNode = useNode(xyNode.id);
   if (!canvasNode) return null;
 
   return (
@@ -43,13 +46,13 @@ function NodeFrame(node: CanvasNode) {
       <NodeResizer
         minWidth={100}
         minHeight={100}
-        isVisible={canvasNode?.selected}
+        isVisible={xyNode?.selected}
       />
-      <div
-        className={`border rounded-sm ${getNodeColorClasses(canvasNode.color).border}`}
+      {frameless ? children : <div
+        className={`border rounded h-full ${getNodeColorClasses(canvasNode.color).border}`}
       >
-        {canvasNode.color}
-      </div>
+        {children}
+      </div>}
     </>
   );
 }

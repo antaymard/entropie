@@ -1,8 +1,10 @@
-import NodeFrame from "./NodeFrame";
+import prebuiltNodesList from "./prebuilt-nodes/prebuiltNodesList";
 
 const nodeTypes = {
-  default: NodeFrame,
-  test: NodeFrame,
+  ...prebuiltNodesList.reduce<Record<string, React.ComponentType<any>>>((acc, node) => {
+    acc[node.type] = node.component;
+    return acc;
+  }, {})
 };
 
 export default nodeTypes;

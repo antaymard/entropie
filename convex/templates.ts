@@ -46,19 +46,25 @@ export const createOrUpdateTemplate = mutation({
 
     if (!templateId) return;
 
+    const now = Date.now();
+
     if (templateId !== "new") {
       // Update existing template
+      const existing = await ctx.db.get(templateId);
+      if (!existing) throw new Error("Template not found");
+      if (existing.creatorId !== authUserId) throw new Error("Unauthorized");
+
       await ctx.db.patch(templateId, {
         ...data,
-        updatedAt: Date.now(),
+        updatedAt: now,
       });
     } else {
       // Create new template
       await ctx.db.insert("nodeTemplates", {
         ...data,
         creatorId: authUserId,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+        isSystem: false,
+        updatedAt: now,
       });
     }
   },

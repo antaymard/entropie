@@ -5,7 +5,7 @@ import { devtools } from "zustand/middleware";
 import type { CanvasNode } from "../types/node.types";
 
 interface CanvasStore {
-  nodes: CanvasNodeNode[];
+  nodes: CanvasNode[];
   edges: Edge[];
 
   onNodesChange: (changes: NodeChange[]) => void;

@@ -44,11 +44,11 @@ export const getCanvas = query({
     const canvas = await ctx.db.get(canvasId);
 
     if (!canvas) {
-      throw new Error("Canvas non trouvé");
+      return null;
     }
 
     if (canvas.creatorId !== authUserId) {
-      throw new Error("Vous n'avez pas accès à ce canvas");
+      return null;
     }
 
     return canvas;
@@ -68,7 +68,6 @@ export const createCanvas = mutation({
       name,
       nodes: [],
       edges: [],
-      createdAt: 0,
       updatedAt: 0,
     });
 

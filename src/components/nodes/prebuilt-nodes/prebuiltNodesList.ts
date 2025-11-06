@@ -13,15 +13,15 @@ const defaultValues = {
 };
 
 const prebuiltNodesList = [
-  {
-    addButtonLabel: "Node par défaut",
-    addButtonIcon: "📦",
-    type: "default",
-    component: FloatingTextNode,
-    initialValues: defaultValues,
-    minWidth: 150,
-    minHeight: 100,
-  },
+  // {
+  //   addButtonLabel: "Node par défaut",
+  //   addButtonIcon: "📦",
+  //   type: "default",
+  //   component: FloatingTextNode,
+  //   initialValues: defaultValues,
+  //   minWidth: 150,
+  //   minHeight: 100,
+  // },
   {
     addButtonLabel: "Texte flottant",
     addButtonIcon: "📝",

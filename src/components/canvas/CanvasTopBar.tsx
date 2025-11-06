@@ -10,6 +10,7 @@ import { Link } from "@tanstack/react-router";
 import { HiOutlineCog } from "react-icons/hi";
 import { TbLayoutSidebarLeftExpand } from "react-icons/tb";
 import CanvasCreationModal from "./CanvasCreationModal";
+import { Button } from "../ui/button";
 
 export default function CanvasTopBar({
   canvasId,
@@ -127,13 +128,13 @@ export default function CanvasTopBar({
           </h1>
         )}
         <div>
-          <button
+          <Button
             type="button"
-            className="rounded-sm bg-green-500 text-white px-3 py-1 hover:bg-green-600 font-semibold"
             onClick={handleUpdateCanvasContent}
+            className="hover:bg-green-900"
           >
             Sauvegarder
-          </button>
+          </Button>
         </div>
       </div>
     </>

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import CanvasTopBar from "../../components/canvas/CanvasTopBar";
 import {
   Background,
@@ -17,6 +17,15 @@ import { useCallback, useEffect, useState } from "react";
 import ContextMenu from "../../components/canvas/context-menus";
 import type { CanvasNode } from "../../types/node.types";
 import { toReactFlowNode } from "../../components/utils/nodeUtils";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -48,15 +57,7 @@ function RouteComponent() {
   const setNodes = useCanvasStore((state) => state.setNodes);
   const setEdges = useCanvasStore((state) => state.setEdges);
 
-  // Load data from database into store
-  useEffect(() => {
-    if (canvas?.nodes) {
-      const reactFlowNodes = canvas.nodes.map(toReactFlowNode);
-      setNodes(reactFlowNodes as CanvasNode[]);
-    }
-    if (canvas?.edges) setEdges(canvas.edges as Edge[]);
-  }, [canvas, setNodes, setEdges]);
-
+  // Define handleRightClick before any early returns
   const handleRightClick = useCallback(
     function (
       e: React.MouseEvent | MouseEvent,
@@ -72,6 +73,44 @@ function RouteComponent() {
     },
     [setContextMenu]
   );
+
+  // Load data from database into store
+  useEffect(() => {
+    if (canvas?.nodes) {
+      const reactFlowNodes = canvas.nodes.map(toReactFlowNode);
+      setNodes(reactFlowNodes as CanvasNode[]);
+    }
+    if (canvas?.edges) setEdges(canvas.edges as Edge[]);
+  }, [canvas, setNodes, setEdges]);
+
+  // Handle loading and error states
+  if (canvas === undefined) {
+    return (
+      <div className="h-full w-full flex items-center justify-center bg-gray-50">
+        <div className="text-gray-500">Chargement...</div>
+      </div>
+    );
+  }
+
+  if (canvas === null) {
+    return (
+      <div className="h-full w-full flex items-center justify-center">
+        <Card>
+          <CardHeader>
+            <CardTitle>Espace non trouvé</CardTitle>
+          </CardHeader>
+          <CardContent>
+            Vous n'avez pas accès à cet espace ou il n'existe pas.
+          </CardContent>
+          <CardFooter>
+            <Button asChild>
+              <Link to="/">Retourner à l'accueil</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full w-full bg-gray-50">

@@ -3,6 +3,8 @@
 // ===========================================================================
 
 export interface NodeTemplate {
+  _id: string;
+  _creationTime: number;
   name: string;
   description: string;
   icon: string;
@@ -23,6 +25,8 @@ export interface NodeTemplate {
     node: string; // variant_id
     window: string; // variant_id
   };
+
+  updatedAt: number;
 }
 
 export type FieldType =
@@ -65,7 +69,7 @@ export interface LayoutElement {
 
 // Made for react flow
 export interface CanvasNode {
-  id: string;
+  _id: string;
   name?: string;
   type: string;
   templateId?: string;

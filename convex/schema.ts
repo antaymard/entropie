@@ -64,7 +64,6 @@ const schema = defineSchema({
     ), // ReactFlow edges (source, target, style, etc.)
 
     // Metadata
-    createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_creator", ["creatorId"])
@@ -117,7 +116,6 @@ const schema = defineSchema({
     }),
 
     // Metadata
-    createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_creator", ["creatorId"])

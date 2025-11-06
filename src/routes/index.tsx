@@ -1,6 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { api } from "../../convex/_generated/api";
-import CanvasTopBar from "../components/canvas/CanvasTopBar";
 import type { RouterContext } from "./__root";
 import { VscGithubProject } from "react-icons/vsc";
 import { useState } from "react";
@@ -32,7 +31,6 @@ function RouteComponent() {
 
   return (
     <div className="h-screen w-screen bg-gray-100">
-      <CanvasTopBar />
       <div className="flex flex-col items-center justify-center h-full gap-5">
         <p className="text-gray-500">
           Aucun espace trouvé. Créez-en un nouveau !

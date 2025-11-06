@@ -9,8 +9,8 @@ import { toastError } from "../utils/errorUtils";
 import { Link } from "@tanstack/react-router";
 import { HiOutlineCog } from "react-icons/hi";
 import { TbLayoutSidebarLeftExpand } from "react-icons/tb";
-import CanvasCreationModal from "./CanvasCreationModal";
-import { Button } from "../ui/button";
+import { Button } from "../shadcn/button";
+import { useSidebar } from "../shadcn/sidebar";
 
 export default function CanvasTopBar({
   canvasId,
@@ -21,8 +21,8 @@ export default function CanvasTopBar({
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(canvasName || "Sans nom");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { setOpen } = useSidebar();
 
   const updateCanvasDetails = useMutation(api.canvases.updateCanvasDetails);
   const updateCanvasContent = useMutation(api.canvases.updateCanvasContent);
@@ -86,18 +86,13 @@ export default function CanvasTopBar({
 
   return (
     <>
-      <Sidebar
-        isSidebarOpen={isSidebarOpen}
-        close={() => setIsSidebarOpen(false)}
-        currentCanvasId={canvasId}
-      />
       <div className="h-15 flex items-center justify-between px-4 border-b border-gray-300 bg-white ">
         <div className="rounded-sm border border-gray-300 flex divide-x divide-gray-300">
           <button
             className="hover:bg-gray-200 p-2 flex items-center rounded-xs"
             title="Espaces"
             type="button"
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            onClick={() => setOpen(true)}
           >
             <TbLayoutSidebarLeftExpand size={18} />
           </button>
@@ -137,70 +132,6 @@ export default function CanvasTopBar({
           </Button>
         </div>
       </div>
-    </>
-  );
-}
-
-function Sidebar({
-  isSidebarOpen,
-  close,
-  currentCanvasId,
-}: {
-  isSidebarOpen: boolean;
-  close: () => void;
-  currentCanvasId: Id<"canvases">;
-}) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const userCanvases = useQuery(api.canvases.getUserCanvases);
-
-  return (
-    <>
-      <div
-        className="fixed left-0 bottom-0 top-0 w-72 z-50 bg-white/50 border-r border-gray-300 shadow-xl backdrop-blur-sm p-4 space-y-4"
-        onMouseLeave={close}
-        style={{
-          transform: isSidebarOpen ? "translateX(0%)" : "translateX(-100%)",
-          transition: "transform 0.3s ease-in-out",
-        }}
-      >
-        <div className="flex flex-row justify-between items-center">
-          <h2 className="text-lg font-semibold">Espaces</h2>
-          <button
-            className="rounded-md text-sm bg-gray-100 p-1 px-2 hover:bg-gray-200"
-            onClick={() => setIsModalOpen(true)}
-          >
-            + Nouvel Espace
-          </button>
-        </div>
-        {userCanvases ? (
-          <>
-            <div className="flex flex-col gap-2">
-              {userCanvases.map((canvas, i) => (
-                <Link
-                  to={`/canvas/${canvas._id}`}
-                  key={i}
-                  className={`rounded-sm p-2  ${
-                    canvas._id === currentCanvasId
-                      ? "font-bold bg-blue-200 text-blue-500"
-                      : "bg-gray-100 hover:bg-gray-200"
-                  }`}
-                >
-                  {canvas.name}
-                  {canvas._id === currentCanvasId && (
-                    <span className="text-xs ml-2 italic">Actuel</span>
-                  )}
-                </Link>
-              ))}
-            </div>
-          </>
-        ) : (
-          <p>Vous n'avez pas de canvases.</p>
-        )}
-      </div>
-      <CanvasCreationModal
-        isModalOpen={isModalOpen}
-        setIsModalOpen={setIsModalOpen}
-      />
     </>
   );
 }

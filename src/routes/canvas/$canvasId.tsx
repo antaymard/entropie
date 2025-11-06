@@ -24,8 +24,10 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+} from "@/components/shadcn/card";
+import { Button } from "@/components/shadcn/button";
+import { SidebarProvider } from "@/components/shadcn/sidebar";
+import CanvasSidebar from "@/components/canvas/CanvasSidebar";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -113,33 +115,36 @@ function RouteComponent() {
   }
 
   return (
-    <div className="h-full w-full bg-gray-50">
-      <ReactFlowProvider>
-        <CanvasTopBar canvasName={canvas?.name} canvasId={canvasId} />
-        <div style={{ height: "calc(100% - 64px)", width: "100%" }}>
-          <ReactFlow
-            panOnScroll
-            selectionOnDrag
-            panOnDrag={[1]}
-            nodeTypes={nodeTypes}
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onPaneContextMenu={(e) => handleRightClick(e, "canvas", null)}
-          >
-            <Background bgColor="#f9fafb" />
-            <Controls />
-            {/* <Panel position="bottom-center">TODO</Panel> */}
-          </ReactFlow>
-        </div>
-        {contextMenu.type && (
-          <ContextMenu
-            contextMenu={contextMenu}
-            setContextMenu={setContextMenu}
-          />
-        )}
-      </ReactFlowProvider>
-    </div>
+    <SidebarProvider defaultOpen={false}>
+      <div className="h-screen w-screen bg-gray-50 flex flex-col">
+        <CanvasSidebar currentCanvasId={canvasId} />
+        <ReactFlowProvider>
+          <CanvasTopBar canvasName={canvas?.name} canvasId={canvasId} />
+          <div className="flex-1 w-full">
+            <ReactFlow
+              panOnScroll
+              selectionOnDrag
+              panOnDrag={[1]}
+              nodeTypes={nodeTypes}
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onPaneContextMenu={(e) => handleRightClick(e, "canvas", null)}
+            >
+              <Background bgColor="#f9fafb" />
+              <Controls />
+              {/* <Panel position="bottom-center">TODO</Panel> */}
+            </ReactFlow>
+          </div>
+          {contextMenu.type && (
+            <ContextMenu
+              contextMenu={contextMenu}
+              setContextMenu={setContextMenu}
+            />
+          )}
+        </ReactFlowProvider>
+      </div>
+    </SidebarProvider>
   );
 }

@@ -4,14 +4,10 @@ import { type Node } from "@xyflow/react";
 import NodeFrame from "../NodeFrame";
 
 function FloatingTextNode(xyNode: Node) {
-    const canvasNode = useNode(xyNode.id);
-    if (!canvasNode) return null;
+  const canvasNode = useNode(xyNode.id);
+  if (!canvasNode) return null;
 
-    return (
-        <NodeFrame xyNode={xyNode} frameless>
-            <div className="">{canvasNode?.data?.text}</div>
-        </NodeFrame>
-    );
+  return <NodeFrame xyNode={xyNode}>{canvasNode?.data?.text}</NodeFrame>;
 }
 
 export default memo(FloatingTextNode);

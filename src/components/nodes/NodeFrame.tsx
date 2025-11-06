@@ -3,6 +3,7 @@ import { memo } from "react";
 import type { CanvasNode, NodeColors } from "../../types/node.types";
 import { useNode } from "../../stores/canvasStore";
 import prebuiltNodesList from "./prebuilt-nodes/prebuiltNodesList";
+import { BaseNode, BaseNodeContent } from "./base-node";
 
 const nodeColorClassNames = {
   blue: {
@@ -56,15 +57,14 @@ function NodeFrame({
         minHeight={nodeConfig?.minHeight || 100}
         isVisible={xyNode?.selected}
       />
-      {frameless ? (
-        children
-      ) : (
-        <div
-          className={`border rounded h-full ${getNodeColorClasses(canvasNode.color).border}`}
-        >
+
+      <BaseNode
+        className={`h-full ${xyNode.selected ? "hover:ring-0" : "hover:ring-blue-300"} ${frameless ? "border-none bg-transparent" : ""}`}
+      >
+        <BaseNodeContent className={`${frameless ? "p-0" : ""}`}>
           {children}
-        </div>
-      )}
+        </BaseNodeContent>
+      </BaseNode>
     </>
   );
 }

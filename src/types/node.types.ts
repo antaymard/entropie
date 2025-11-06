@@ -103,3 +103,13 @@ export type NodeColors =
   | "yellow"
   | "purple"
   | "default";
+
+export interface NodeConfig {
+  addButtonLabel: string;
+  addButtonIcon: string;
+  type: string;
+  component: React.ComponentType<any>;
+  initialValues: any;
+  minWidth: number;
+  minHeight: number;
+}

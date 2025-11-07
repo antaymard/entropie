@@ -30,6 +30,7 @@ const prebuiltNodesList = [
 
     initialValues: {
       ...defaultValues,
+      color: "transparent",
       name: "Bloc de texte",
       data: { text: "Texte flottant", level: "p" },
       height: 20,

@@ -4,4 +4,6 @@ export type {
   NodeField,
   LayoutElement,
   NodeVisual,
+  CanvasNode,
+  NodeColors,
 } from "./node.types";

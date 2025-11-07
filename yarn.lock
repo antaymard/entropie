@@ -1753,6 +1753,52 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@radix-ui/react-toggle-group@npm:^1.1.11":
+  version: 1.1.11
+  resolution: "@radix-ui/react-toggle-group@npm:1.1.11"
+  dependencies:
+    "@radix-ui/primitive": "npm:1.1.3"
+    "@radix-ui/react-context": "npm:1.1.2"
+    "@radix-ui/react-direction": "npm:1.1.1"
+    "@radix-ui/react-primitive": "npm:2.1.3"
+    "@radix-ui/react-roving-focus": "npm:1.1.11"
+    "@radix-ui/react-toggle": "npm:1.1.10"
+    "@radix-ui/react-use-controllable-state": "npm:1.2.2"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/c8cbccda3e25754ed9f3145c67792df2d5d0ee1a910bde6dc07c4577ab508d4b939f145569d4e2af5b17dc4a5c701473380d8695248f8620cf0a372c05b8e958
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-toggle@npm:1.1.10, @radix-ui/react-toggle@npm:^1.1.10":
+  version: 1.1.10
+  resolution: "@radix-ui/react-toggle@npm:1.1.10"
+  dependencies:
+    "@radix-ui/primitive": "npm:1.1.3"
+    "@radix-ui/react-primitive": "npm:2.1.3"
+    "@radix-ui/react-use-controllable-state": "npm:1.2.2"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/5406cdf5dd7299ae6cfdb4865dc5fd43ca3c475ebcd4e86830bd296d734255b61f749c9bde452ebfaad126033f92dd1112ee9d95982344ffad34491238dcc9b1
+  languageName: node
+  linkType: hard
+
 "@radix-ui/react-tooltip@npm:^1.2.8":
   version: 1.2.8
   resolution: "@radix-ui/react-tooltip@npm:1.2.8"
@@ -2948,6 +2994,8 @@ __metadata:
     "@radix-ui/react-dropdown-menu": "npm:^2.1.16"
     "@radix-ui/react-separator": "npm:^1.1.8"
     "@radix-ui/react-slot": "npm:^1.2.4"
+    "@radix-ui/react-toggle": "npm:^1.1.10"
+    "@radix-ui/react-toggle-group": "npm:^1.1.11"
     "@radix-ui/react-tooltip": "npm:^1.2.8"
     "@tailwindcss/vite": "npm:^4.1.15"
     "@tanstack/react-router": "npm:^1.134.9"
@@ -2961,7 +3009,7 @@ __metadata:
     "@xyflow/react": "npm:^12.9.2"
     class-variance-authority: "npm:^0.7.1"
     clsx: "npm:^2.1.1"
-    convex: "npm:^1.28.0"
+    convex: "npm:^1.28.2"
     eslint: "npm:^9.36.0"
     eslint-plugin-react-hooks: "npm:^5.2.0"
     eslint-plugin-react-refresh: "npm:^0.4.22"
@@ -3209,9 +3257,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"convex@npm:^1.28.0":
-  version: 1.28.0
-  resolution: "convex@npm:1.28.0"
+"convex@npm:^1.28.2":
+  version: 1.28.2
+  resolution: "convex@npm:1.28.2"
   dependencies:
     esbuild: "npm:0.25.4"
     prettier: "npm:^3.0.0"
@@ -3228,7 +3276,7 @@ __metadata:
       optional: true
   bin:
     convex: bin/main.js
-  checksum: 10c0/2c63a7c6f65b46f093c804f162a166834f0389719b4c30383a993cfb483ec0e30486b02e6f5f9ec302890f5dd8f0cf826952b554d0e6cb45bab17996ee208e45
+  checksum: 10c0/65f195c41735983492593b2130ce13b706f02df003f117e626df74eb85c1ba66ebfc8b1e6b3c1f4e81c41d9cf17a03a9d12f52d5ac971644eb94b5ee4b9b426d
   languageName: node
   linkType: hard
 

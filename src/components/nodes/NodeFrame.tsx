@@ -38,7 +38,7 @@ function getNodeColorClasses(color: NodeColors) {
 
 function NodeFrame({
   xyNode,
-  frameless = true,
+  frameless = false,
   children,
 }: {
   xyNode: Node;

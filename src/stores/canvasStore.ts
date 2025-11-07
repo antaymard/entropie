@@ -15,6 +15,7 @@ interface CanvasStore {
   setEdges: (edges: Edge[]) => void;
 
   updateNodeData: (id: string, data: Record<string, unknown>) => void;
+  updateNode: (id: string, updates: Partial<CanvasNode>) => void;
   addNode: (node: CanvasNode) => void;
   deleteNode: (id: string) => void;
 }
@@ -40,6 +41,13 @@ export const useCanvasStore = create<CanvasStore>()(
         set({
           nodes: get().nodes.map((n) =>
             n.id === id ? { ...n, data: { ...n.data, ...data } } : n
+          ),
+        }),
+
+      updateNode: (id, updates) =>
+        set({
+          nodes: get().nodes.map((n) =>
+            n.id === id ? { ...n, ...updates } : n
           ),
         }),
 

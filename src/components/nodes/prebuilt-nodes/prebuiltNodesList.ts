@@ -31,7 +31,7 @@ const prebuiltNodesList = [
     initialValues: {
       ...defaultValues,
       name: "Bloc de texte",
-      data: { text: "Texte flottant" },
+      data: { text: "Texte flottant", level: "p" },
       height: 20,
     },
     minWidth: 100,

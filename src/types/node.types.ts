@@ -69,7 +69,7 @@ export interface LayoutElement {
 
 // Made for react flow
 export interface CanvasNode {
-  _id: string;
+  id: string; // not a database ID, because inside canvas db object (which has its own _id)
   name?: string;
   type: string;
   templateId?: string;

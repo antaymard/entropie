@@ -16,11 +16,11 @@ import {
   SidebarTrigger,
 } from "../shadcn/sidebar";
 import CanvasCreationModal from "./CanvasCreationModal";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { api } from "@/../convex/_generated/api";
 import { Link } from "@tanstack/react-router";
-import { HiMiniPlus } from "react-icons/hi2";
+import { HiMiniPlus, HiMiniEllipsisVertical } from "react-icons/hi2";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -73,7 +73,7 @@ export default function CanvasSidebar({
               <SidebarMenu>
                 {userCanvases ? (
                   userCanvases.map((canvas) => (
-                    <SidebarMenuItem key={canvas._id}>
+                    <SidebarMenuItem key={canvas._id} className="group/item">
                       <SidebarMenuButton
                         asChild
                         isActive={canvas._id === currentCanvasId}
@@ -89,9 +89,9 @@ export default function CanvasSidebar({
                           )}
                         </Link>
                       </SidebarMenuButton>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <SidebarMenuAction>⋮</SidebarMenuAction>
+                      <DropdownMenu >
+                        <DropdownMenuTrigger asChild className="group-hover/item:opacity-100 opacity-0 transition-opacity">
+                          <SidebarMenuAction><HiMiniEllipsisVertical /></SidebarMenuAction>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent side="right" align="start">
                           <DropdownMenuItem

@@ -73,7 +73,10 @@ function FloatingTextNode(xyNode: Node) {
 
   return (
     <>
-      <NodeToolbar isVisible={xyNode.selected} className="flex gap-2">
+      <NodeToolbar
+        isVisible={xyNode.selected && !xyNode.dragging}
+        className="flex gap-2"
+      >
         <ButtonGroup className="bg-card">
           {isEditing && (
             <>
@@ -129,7 +132,11 @@ function FloatingTextNode(xyNode: Node) {
             }}
           />
         ) : (
-          <div ref={textRef} className={textClassName}>
+          <div
+            ref={textRef}
+            className={textClassName}
+            onDoubleClick={handleStartEdit}
+          >
             {currentText}
           </div>
         )}

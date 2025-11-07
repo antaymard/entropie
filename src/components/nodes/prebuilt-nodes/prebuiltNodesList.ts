@@ -28,15 +28,17 @@ const prebuiltNodesList = [
     type: "floatingText",
     component: FloatingTextNode,
 
+    nodeClassName: "w-fit", // TODO
+
     initialValues: {
       ...defaultValues,
       color: "transparent",
       name: "Bloc de texte",
       data: { text: "Texte flottant", level: "p" },
-      height: 20,
+      height: 28,
     },
     minWidth: 100,
-    minHeight: 20,
+    minHeight: 28,
   },
 ] as NodeConfig[];
 

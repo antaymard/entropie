@@ -29,7 +29,7 @@ function NodeFrame({
       baseNodeContent = "";
 
     if (frameless) {
-      baseNodeContent = "p-0 ";
+      baseNodeContent = "p-1 px-2 ";
       baseNode = "border-0 ";
     }
 

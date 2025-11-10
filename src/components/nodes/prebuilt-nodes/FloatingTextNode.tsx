@@ -1,4 +1,4 @@
-import { memo, useState, useRef, useEffect } from "react";
+import { memo, useState, useRef, useEffect, useCallback } from "react";
 import { useNode, useCanvasStore } from "../../../stores/canvasStore";
 import { type Node, NodeToolbar } from "@xyflow/react";
 import NodeFrame from "../NodeFrame";
@@ -31,35 +31,41 @@ function FloatingTextNode(xyNode: Node) {
 
   if (!canvasNode) return null;
 
-  const handleStartEdit = () => {
+  // OPTIMISATION: useCallback empêche la recréation des handlers à chaque render
+  // - Stabilise les références des fonctions passées en props
+  // - Évite les rerenders inutiles des composants enfants qui dépendent de ces fonctions
+  const handleStartEdit = useCallback(() => {
     setEditValue(currentText);
     setIsEditing(true);
-  };
+  }, [currentText]);
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     if (editValue !== currentText) {
       updateNodeData(xyNode.id, { text: editValue });
     }
     setIsEditing(false);
-  };
+  }, [editValue, currentText, updateNodeData, xyNode.id]);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setIsEditing(false);
-  };
+  }, []);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleSave();
-    } else if (e.key === "Escape") {
-      e.preventDefault();
-      handleCancel();
-    }
-  };
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleSave();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        handleCancel();
+      }
+    },
+    [handleSave, handleCancel]
+  );
 
-  const handleBlur = () => {
+  const handleBlur = useCallback(() => {
     handleSave();
-  };
+  }, [handleSave]);
 
   const levels = [
     { value: "h1", icon: <LuHeading1 />, className: "text-2xl font-semibold" },
@@ -70,6 +76,14 @@ function FloatingTextNode(xyNode: Node) {
   const textClassName =
     levels.find((l) => l.value === (canvasNode.data.level as string))
       ?.className || "";
+
+  // OPTIMISATION: useCallback pour le changement de niveau de texte
+  const handleLevelChange = useCallback(
+    (value: string) => {
+      updateNodeData(xyNode.id, { level: value });
+    },
+    [updateNodeData, xyNode.id]
+  );
 
   return (
     <>
@@ -103,9 +117,7 @@ function FloatingTextNode(xyNode: Node) {
           variant="outline"
           className="bg-card"
           value={(canvasNode.data.level as string) || "h1"}
-          onValueChange={(value) => {
-            updateNodeData(xyNode.id, { level: value as string });
-          }}
+          onValueChange={handleLevelChange}
         >
           {levels.map((level) => (
             <ToggleGroupItem key={level.value} value={level.value}>

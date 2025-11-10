@@ -1,7 +1,7 @@
 import { memo, useState, useRef, useEffect, useCallback } from "react";
-import { useFormikContext } from "formik";
 import { cn } from "@/lib/utils";
 import { get, set } from "lodash";
+import { useFormikContextSafe } from "@/hooks/useFormikContextSafe";
 
 interface InlineEditableTextProps {
   /**
@@ -82,13 +82,9 @@ function InlineEditableText({
   const [editValue, setEditValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Tenter de récupérer le contexte Formik (sera undefined si pas dans un contexte Formik)
-  let formikContext;
-  try {
-    formikContext = useFormikContext<any>();
-  } catch {
-    formikContext = undefined;
-  }
+  // Récupérer le contexte Formik de manière sûre (undefined si pas dans un contexte Formik)
+  // NOTE: On appelle toujours le hook, respectant ainsi la règle des hooks React
+  const formikContext = useFormikContextSafe<any>();
 
   // Déterminer la valeur actuelle (Formik ou externe)
   const currentValue = name && formikContext

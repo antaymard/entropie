@@ -1,10 +1,11 @@
 import { NodeResizer, type Node } from "@xyflow/react";
 import { memo } from "react";
 import type { CanvasNode, NodeColors } from "../../types/node.types";
-import { useNode } from "../../stores/canvasStore";
+import { useNode, useCanvasStore } from "../../stores/canvasStore";
 import prebuiltNodesList from "./prebuilt-nodes/prebuiltNodesList";
-import { BaseNode, BaseNodeContent } from "./base-node";
+import { BaseNode, BaseNodeContent, BaseNodeHeader, BaseNodeHeaderTitle } from "./base-node";
 import { colors } from "./nodeConfigs";
+import InlineEditableText from "../common/InlineEditableText";
 
 function getNodeColorClasses(color: NodeColors) {
   return colors[color] || colors["default"];
@@ -13,16 +14,23 @@ function getNodeColorClasses(color: NodeColors) {
 function NodeFrame({
   xyNode,
   frameless = false,
+  showName = false,
   children,
 }: {
   xyNode: Node;
   frameless?: boolean;
+  showName?: boolean;
   children: React.ReactNode;
 }) {
   const canvasNode = useNode(xyNode.id);
+  const updateNodeData = useCanvasStore((state) => state.updateNodeData);
   const nodeConfig = prebuiltNodesList.find((n) => n.type === xyNode.type);
 
   if (!canvasNode) return null;
+
+  const handleNameSave = (newName: string) => {
+    updateNodeData(xyNode.id, { name: newName });
+  };
 
   function getClassNames() {
     let baseNode = "",
@@ -53,6 +61,18 @@ function NodeFrame({
       <BaseNode
         className={`h-full ${xyNode.selected ? "hover:ring-0" : "hover:ring-blue-300"} ${getClassNames().baseNode}`}
       >
+        {showName && (
+          <BaseNodeHeader>
+            <BaseNodeHeaderTitle>
+              <InlineEditableText
+                value={(canvasNode?.data?.name as string) || "Sans nom"}
+                onSave={handleNameSave}
+                textClassName="text-sm font-semibold"
+                placeholder="Sans nom"
+              />
+            </BaseNodeHeaderTitle>
+          </BaseNodeHeader>
+        )}
         <BaseNodeContent className={getClassNames().baseNodeContent}>
           {children}
         </BaseNodeContent>

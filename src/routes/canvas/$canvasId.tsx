@@ -131,6 +131,7 @@ function RouteComponent() {
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
               onPaneContextMenu={(e) => handleRightClick(e, "canvas", null)}
+              onNodeContextMenu={(e, node) => handleRightClick(e, "node", node)}
             >
               <Background bgColor="#f9fafb" />
               <Controls />

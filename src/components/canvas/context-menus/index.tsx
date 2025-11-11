@@ -1,12 +1,11 @@
+import type { Node } from "@xyflow/react";
 import CanvasContextMenu from "./CanvasContextMenu";
 import EdgeContextMenu from "./EdgeContextMenu";
 import NodeContextMenu from "./NodeContextMenu";
+import { DropdownMenu, DropdownMenuContent, } from "@/components/shadcn/dropdown-menu";
 
-export const contextMenuContainerClassName = "flex flex-col p-1 gap-1 ";
-export const contextMenuButtonClassName =
-  "hover:bg-gray-200 p-2 rounded-sm flex items-center gap-2";
 
-export default function ContextMenu({
+export default function ContextMenuWrapper({
   contextMenu,
   setContextMenu,
 }: {
@@ -18,7 +17,7 @@ export default function ContextMenu({
   setContextMenu: (contextMenu: {
     type: "node" | "edge" | "canvas" | null;
     position: { x: number; y: number };
-    element: object | null;
+    element: object | null | Node;
   }) => void;
 }) {
   const { type, position, element } = contextMenu;
@@ -35,7 +34,7 @@ export default function ContextMenu({
           <CanvasContextMenu closeMenu={handleClose} position={position} />
         );
       case "node":
-        return <NodeContextMenu />;
+        return <NodeContextMenu closeMenu={handleClose} position={position} xyNode={element as Node} />;
       case "edge":
         return <EdgeContextMenu />;
       default:
@@ -43,28 +42,19 @@ export default function ContextMenu({
     }
   }
 
-  return (
-    <>
-      <div
-        className="fixed inset-0"
-        onClick={(e) => {
-          e.stopPropagation();
-          setContextMenu({
-            type: null,
-            position: { x: 0, y: 0 },
-            element: null,
-          });
-        }}
-      />
-      <div
-        className="bg-white rounded-md border border-gray-300 absolute shadow-lg"
-        style={{
-          top: position.y + contextMenuOffset,
-          left: position.x + contextMenuOffset,
-        }}
-      >
-        {renderContextMenu()}
-      </div>
-    </>
-  );
+  return <DropdownMenu open={contextMenu.type !== null} onOpenChange={open => { if (!open) handleClose() }}>
+    <DropdownMenuContent
+      style={{
+        position: 'fixed',
+        top: position.y + contextMenuOffset,
+        left: position.x + contextMenuOffset,
+      }}
+      onContextMenu={e => e.preventDefault()}
+    >
+
+      {renderContextMenu()}
+    </DropdownMenuContent>
+  </DropdownMenu>
+
+
 }

@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { applyNodeChanges, applyEdgeChanges } from "@xyflow/react";
 import type { Node, Edge, NodeChange, EdgeChange } from "@xyflow/react";
 import { devtools } from "zustand/middleware";
+import { shallow } from "zustand/shallow";
 import type { CanvasNode } from "../types/node.types";
 
 interface CanvasStore {
@@ -67,6 +68,13 @@ export const useCanvasStore = create<CanvasStore>()(
 );
 
 // Hook helper pour récupérer un node spécifique (optimisé)
+// OPTIMISATION: Utilise shallow pour éviter les rerenders inutiles
+// - Sans shallow: rerender à CHAQUE changement du store (même si ce node n'a pas changé)
+// - Avec shallow: rerender uniquement si les propriétés du node ont changé
+// - Impact: Réduit les rerenders de O(n²) à O(1) lors des déplacements
 export const useNode = (nodeId: string): CanvasNode | undefined => {
-  return useCanvasStore((state) => state.nodes.find((n) => n.id === nodeId));
+  return useCanvasStore(
+    (state) => state.nodes.find((n) => n.id === nodeId),
+    shallow // Compare le node retourné par shallow equality (compare chaque propriété)
+  );
 };

@@ -29,6 +29,11 @@ import {
 } from "../shadcn/dropdown-menu";
 import { toastError } from "../utils/errorUtils";
 import toast from "react-hot-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/shadcn/dialog";
 
 export default function CanvasSidebar({
   currentCanvasId,
@@ -63,12 +68,14 @@ export default function CanvasSidebar({
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupLabel>Espaces</SidebarGroupLabel>
-            <SidebarGroupAction
-              title="Créer un nouvel espace"
-              onClick={() => setIsCanvasCreationModalOpen(true)}
-            >
-              <HiMiniPlus />
-            </SidebarGroupAction>
+            <Dialog>
+              <SidebarGroupAction title="Créer un nouvel espace" asChild>
+                <DialogTrigger>
+                  <HiMiniPlus />
+                </DialogTrigger>
+              </SidebarGroupAction>
+              <CanvasCreationModal />
+            </Dialog>
             <SidebarGroupContent>
               <SidebarMenu>
                 {userCanvases ? (
@@ -89,9 +96,14 @@ export default function CanvasSidebar({
                           )}
                         </Link>
                       </SidebarMenuButton>
-                      <DropdownMenu >
-                        <DropdownMenuTrigger asChild className="group-hover/item:opacity-100 opacity-0 transition-opacity">
-                          <SidebarMenuAction><HiMiniEllipsisVertical /></SidebarMenuAction>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          asChild
+                          className="group-hover/item:opacity-100 opacity-0 transition-opacity"
+                        >
+                          <SidebarMenuAction>
+                            <HiMiniEllipsisVertical />
+                          </SidebarMenuAction>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent side="right" align="start">
                           <DropdownMenuItem
@@ -146,10 +158,6 @@ export default function CanvasSidebar({
       ) : (
         <p>Vous n'avez pas de canvases.</p>
       )} */}
-      <CanvasCreationModal
-        isModalOpen={isCanvasCreationModalOpen}
-        setIsModalOpen={setIsCanvasCreationModalOpen}
-      />
     </>
   );
 }

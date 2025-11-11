@@ -1,55 +1,55 @@
 import { NodeResizer, type Node } from "@xyflow/react";
 import { memo } from "react";
 import type { CanvasNode, NodeColors } from "../../types/node.types";
-import { useNode } from "../../stores/canvasStore";
+import { useNode, useCanvasStore } from "../../stores/canvasStore";
 import prebuiltNodesList from "./prebuilt-nodes/prebuiltNodesList";
-import { BaseNode, BaseNodeContent } from "./base-node";
-
-const nodeColorClassNames = {
-  blue: {
-    border: "border-blue-500",
-    background: "bg-blue-100",
-  },
-  green: {
-    border: "border-green-500",
-    background: "bg-green-100",
-  },
-  red: {
-    border: "border-red-500",
-    background: "bg-red-100",
-  },
-  yellow: {
-    border: "border-yellow-500",
-    background: "bg-yellow-100",
-  },
-  purple: {
-    border: "border-purple-500",
-    background: "bg-purple-100",
-  },
-  default: {
-    border: "border-gray-500",
-    background: "bg-gray-100",
-  },
-};
+import { BaseNode, BaseNodeContent, BaseNodeHeader, BaseNodeHeaderTitle } from "./base-node";
+import { colors } from "./nodeConfigs";
+import InlineEditableText from "../common/InlineEditableText";
 
 function getNodeColorClasses(color: NodeColors) {
-  return nodeColorClassNames[color] || nodeColorClassNames["default"];
+  return colors[color] || colors["default"];
 }
 
 function NodeFrame({
   xyNode,
   frameless = false,
+  showName = false,
   children,
 }: {
   xyNode: Node;
   frameless?: boolean;
+  showName?: boolean;
   children: React.ReactNode;
 }) {
   const canvasNode = useNode(xyNode.id);
+  const updateNodeData = useCanvasStore((state) => state.updateNodeData);
   const nodeConfig = prebuiltNodesList.find((n) => n.type === xyNode.type);
 
   if (!canvasNode) return null;
 
+  const handleNameSave = (newName: string) => {
+    updateNodeData(xyNode.id, { name: newName });
+  };
+
+  function getClassNames() {
+    let baseNode = "",
+      baseNodeContent = "";
+
+    if (frameless) {
+      baseNodeContent = "p-1 px-2 ";
+      baseNode = "border-0 ";
+    }
+
+    const nodeColor = getNodeColorClasses(canvasNode?.color as NodeColors);
+
+    baseNode += `${nodeColor.border} ${nodeColor.bg} ${nodeColor.text}`;
+
+    return {
+      baseNode,
+      baseNodeContent,
+    };
+  }
   return (
     <>
       <NodeResizer
@@ -59,9 +59,21 @@ function NodeFrame({
       />
 
       <BaseNode
-        className={`h-full ${xyNode.selected ? "hover:ring-0" : "hover:ring-blue-300"} ${frameless ? "border-none bg-transparent" : ""}`}
+        className={`h-full ${xyNode.selected ? "hover:ring-0" : "hover:ring-blue-300"} ${getClassNames().baseNode}`}
       >
-        <BaseNodeContent className={`${frameless ? "p-0" : ""}`}>
+        {showName && (
+          <BaseNodeHeader>
+            <BaseNodeHeaderTitle>
+              <InlineEditableText
+                value={(canvasNode?.data?.name as string) || "Sans nom"}
+                onSave={handleNameSave}
+                textClassName="text-sm font-semibold"
+                placeholder="Sans nom"
+              />
+            </BaseNodeHeaderTitle>
+          </BaseNodeHeader>
+        )}
+        <BaseNodeContent className={getClassNames().baseNodeContent}>
           {children}
         </BaseNodeContent>
       </BaseNode>

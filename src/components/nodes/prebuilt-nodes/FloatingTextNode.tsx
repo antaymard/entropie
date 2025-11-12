@@ -1,6 +1,5 @@
 import { memo, useCallback } from "react";
-import { useNode, useCanvasStore } from "../../../stores/canvasStore";
-import { type Node, NodeToolbar } from "@xyflow/react";
+import { type Node, NodeToolbar, useReactFlow } from "@xyflow/react";
 import NodeFrame from "../NodeFrame";
 import { ToggleGroup, ToggleGroupItem } from "@/components/shadcn/toggle-group";
 import { LuHeading1, LuHeading2, LuHeading3 } from "react-icons/lu";
@@ -9,9 +8,7 @@ import ColorSelector from "../toolbar/ColorSelector";
 import InlineEditableText from "../../common/InlineEditableText";
 
 function FloatingTextNode(xyNode: Node) {
-  const canvasNode = useNode(xyNode.id);
-  const updateNodeData = useCanvasStore((state) => state.updateNodeData);
-
+  const { updateNodeData } = useReactFlow();
 
   // OPTIMISATION: useCallback empêche la recréation des handlers à chaque render
   // - Stabilise les références des fonctions passées en props
@@ -30,7 +27,7 @@ function FloatingTextNode(xyNode: Node) {
     { value: "p", icon: <BiParagraph />, className: "text-base font-normal" },
   ];
   const textClassName =
-    levels.find((l) => l.value === (canvasNode?.data.level as string))
+    levels.find((l) => l.value === (xyNode.data.level as string))
       ?.className || "";
 
   // OPTIMISATION: useCallback pour le changement de niveau de texte
@@ -41,7 +38,7 @@ function FloatingTextNode(xyNode: Node) {
     [updateNodeData, xyNode.id]
   );
 
-  if (!canvasNode) return null;
+  if (!xyNode) return null;
 
   return (
     <>
@@ -49,14 +46,14 @@ function FloatingTextNode(xyNode: Node) {
         isVisible={xyNode.selected && !xyNode.dragging}
         className="flex gap-2"
       >
-        <ColorSelector canvasNode={canvasNode} />
+        <ColorSelector xyNode={xyNode} />
 
         {/* Change heading */}
         <ToggleGroup
           type="single"
           variant="outline"
           className="bg-card"
-          value={(canvasNode.data.level as string) || "h1"}
+          value={(xyNode.data.level as string) || "h1"}
           onValueChange={handleLevelChange}
         >
           {levels.map((level) => (
@@ -69,7 +66,7 @@ function FloatingTextNode(xyNode: Node) {
 
       <NodeFrame xyNode={xyNode} frameless>
         <InlineEditableText
-          value={(canvasNode?.data?.text as string) || ""}
+          value={(xyNode.data?.text as string) || ""}
           onSave={handleTextSave}
           textClassName={textClassName}
           placeholder="Double-cliquez pour éditer..."

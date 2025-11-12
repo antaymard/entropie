@@ -28,37 +28,36 @@ const prebuiltNodesList = [
     addButtonIcon: "📝",
     type: "floatingText",
     component: FloatingTextNode,
-
-    // nodeClassName: "w-fit", // TODO
-
     initialValues: {
       ...defaultValues,
-      color: "transparent",
-      name: "Bloc de texte",
-      data: { text: "Texte flottant", level: "p" },
+      data: {
+        name: "Bloc de texte",
+        color: "transparent",
+        text: "Texte flottant", level: "p",
+      },
       height: 28,
     },
     minWidth: 100,
     minHeight: 28,
   },
-  {
-    addButtonLabel: "Image",
-    addButtonIcon: "🖼️",
-    type: "imageUrl",
-    component: ImageUrlNode,
+  // {
+  //   addButtonLabel: "Image",
+  //   addButtonIcon: "🖼️",
+  //   type: "imageUrl",
+  //   component: ImageUrlNode,
 
-    // nodeClassName: "w-fit", // TODO
+  //   // nodeClassName: "w-fit", // TODO
 
-    initialValues: {
-      ...defaultValues,
-      color: "default",
-      name: "Bloc d'image",
-      data: { url: "https://example.com/image.png" },
-      height: 100,
-    },
-    minWidth: 100,
-    minHeight: 100,
-  },
+  //   initialValues: {
+  //     ...defaultValues,
+  //     color: "default",
+  //     name: "Bloc d'image",
+  //     data: { url: "https://example.com/image.png" },
+  //     height: 100,
+  //   },
+  //   minWidth: 100,
+  //   minHeight: 100,
+  // },
 ] as NodeConfig[];
 
 export default prebuiltNodesList;

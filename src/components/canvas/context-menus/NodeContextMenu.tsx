@@ -4,21 +4,18 @@ import { useReactFlow } from "@xyflow/react";
 
 // Icons
 import { BiSolidDuplicate } from "react-icons/bi";
-import { useCanvasStore, useNode } from "@/stores/canvasStore";
 
 
 export default function NodeContextMenu({ closeMenu, position, xyNode }: { closeMenu: () => void; position: { x: number; y: number }; xyNode: Node }) {
 
-  const addNode = useCanvasStore((state) => state.addNode);
-  const canvasNode = useNode(xyNode.id);
-  const { setNodes } = useReactFlow();
+  const { setNodes, addNodes } = useReactFlow();
 
   const nodeOptions = [
     {
       label: "Dupliquer",
       icon: BiSolidDuplicate,
       onClick: () => {
-        const nodeToDuplicate = canvasNode;
+        const nodeToDuplicate = xyNode;
         if (nodeToDuplicate) {
           // Déselectionner le node original dans le state React Flow
           setNodes((nodes) =>
@@ -28,7 +25,7 @@ export default function NodeContextMenu({ closeMenu, position, xyNode }: { close
           );
 
           // Ajouter le nouveau node dans le state Zustand (DB)
-          addNode({
+          addNodes({
             ...nodeToDuplicate,
             id: `node-${Date.now()}`,
             position: {

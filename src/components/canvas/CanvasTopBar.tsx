@@ -1,9 +1,9 @@
-import { useMutation, useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 import { useState, useRef, useEffect } from "react";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { api } from "../../../convex/_generated/api";
 import { useCanvasStore } from "../../stores/canvasStore";
-import { toDbNode } from "../utils/nodeUtils";
+import { toCanvasNodes } from "../utils/nodeUtils";
 import toast from "react-hot-toast";
 import { toastError } from "../utils/errorUtils";
 import { Link } from "@tanstack/react-router";
@@ -11,32 +11,33 @@ import { HiOutlineCog } from "react-icons/hi";
 import { TbLayoutSidebarLeftExpand } from "react-icons/tb";
 import { Button } from "../shadcn/button";
 import { useSidebar } from "../shadcn/sidebar";
+import { useReactFlow } from '@xyflow/react';
 
-export default function CanvasTopBar({
-  canvasId,
-  canvasName,
-}: {
-  canvasId: Id<"canvases">;
-  canvasName?: string;
-}) {
+export default function CanvasTopBar() {
+  const canvas = useCanvasStore((state) => state.canvas);
   const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(canvasName || "Sans nom");
+  const [editValue, setEditValue] = useState(canvas?.name || "Sans nom");
   const inputRef = useRef<HTMLInputElement>(null);
   const { setOpen } = useSidebar();
 
   const updateCanvasDetails = useMutation(api.canvases.updateCanvasDetails);
   const updateCanvasContent = useMutation(api.canvases.updateCanvasContent);
 
-  const nodes = useCanvasStore((state) => state.nodes);
-  const edges = useCanvasStore((state) => state.edges);
+
+  // Récuperer les nodes de reactflow provider
+  const { getNodes, getEdges } = useReactFlow();
+
 
   const handleUpdateCanvasContent = async () => {
     try {
-      const nodesToSave = nodes.map(toDbNode);
+      const _nodes = getNodes();
+      const _edges = getEdges();
+      const nodesInConvexFormat = toCanvasNodes(_nodes);
+
       await updateCanvasContent({
-        canvasId: canvasId as Id<"canvases">,
-        nodes: nodesToSave,
-        edges,
+        canvasId: canvas?._id as Id<"canvases">,
+        nodes: nodesInConvexFormat,
+        edges: _edges,
       });
       toast.success("Sauvegardé", { position: "top-right" });
     } catch (error) {
@@ -46,14 +47,14 @@ export default function CanvasTopBar({
 
   const handleUpdateCanvasDetails = async (newName: string) => {
     await updateCanvasDetails({
-      canvasId: canvasId as Id<"canvases">,
+      canvasId: canvas?._id as Id<"canvases">,
       name: newName,
     });
   };
 
   useEffect(() => {
-    setEditValue(canvasName || "Sans nom");
-  }, [canvasName]);
+    setEditValue(canvas?.name || "Sans nom");
+  }, [canvas?.name]);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -68,10 +69,10 @@ export default function CanvasTopBar({
 
   const handleBlur = () => {
     setIsEditing(false);
-    if (editValue.trim() && editValue !== canvasName) {
+    if (editValue.trim() && editValue !== canvas?.name) {
       handleUpdateCanvasDetails(editValue.trim());
     } else {
-      setEditValue(canvasName || "Sans nom");
+      setEditValue(canvas?.name || "Sans nom");
     }
   };
 
@@ -79,7 +80,7 @@ export default function CanvasTopBar({
     if (e.key === "Enter") {
       inputRef.current?.blur();
     } else if (e.key === "Escape") {
-      setEditValue(canvasName || "Sans nom");
+      setEditValue(canvas?.name || "Sans nom");
       setIsEditing(false);
     }
   };
@@ -119,7 +120,7 @@ export default function CanvasTopBar({
             className="font-semibold cursor-pointer hover:text-black text-lg"
             onDoubleClick={handleDoubleClick}
           >
-            {canvasName || "Sans nom"}
+            {canvas?.name || "Sans nom"}
           </h1>
         )}
         <div>

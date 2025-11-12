@@ -11,8 +11,7 @@ export default function ContextMenu({
   closeMenu: () => void;
   position: { x: number; y: number };
 }) {
-  const addNode = useCanvasStore((state) => state.addNode);
-  const { setNodes } = useReactFlow();
+  const { setNodes, addNodes } = useReactFlow();
   const { x: canvasX, y: canvasY, zoom: canvasZoom } = useViewport();
 
   const newNodePosition = {
@@ -34,12 +33,11 @@ export default function ContextMenu({
             const newNodeId = `node-${Date.now()}`;
 
             // Ajouter le nouveau node dans le state Zustand (DB)
-            addNode({
+            addNodes({
               id: newNodeId,
               ...nodeType.initialValues,
               type: nodeType.type,
               position: newNodePosition,
-              color: nodeType.initialValues.color as NodeColors,
             });
 
             // Sélectionner uniquement le nouveau node dans le state React Flow

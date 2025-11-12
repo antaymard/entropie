@@ -1,7 +1,7 @@
-import { NodeResizer, type Node } from "@xyflow/react";
+import { NodeResizer, useReactFlow, type Node } from "@xyflow/react";
 import { memo } from "react";
 import type { CanvasNode, NodeColors } from "../../types/node.types";
-import { useNode, useCanvasStore } from "../../stores/canvasStore";
+import { useCanvasStore } from "../../stores/canvasStore";
 import prebuiltNodesList from "./prebuilt-nodes/prebuiltNodesList";
 import { BaseNode, BaseNodeContent, BaseNodeHeader, BaseNodeHeaderTitle } from "./base-node";
 import { colors } from "./nodeConfigs";
@@ -22,11 +22,10 @@ function NodeFrame({
   showName?: boolean;
   children: React.ReactNode;
 }) {
-  const canvasNode = useNode(xyNode.id);
-  const updateNodeData = useCanvasStore((state) => state.updateNodeData);
+  const { updateNodeData } = useReactFlow();
   const nodeConfig = prebuiltNodesList.find((n) => n.type === xyNode.type);
 
-  if (!canvasNode) return null;
+  if (!xyNode) return null;
 
   const handleNameSave = (newName: string) => {
     updateNodeData(xyNode.id, { name: newName });
@@ -41,7 +40,7 @@ function NodeFrame({
       baseNode = "border-0 ";
     }
 
-    const nodeColor = getNodeColorClasses(canvasNode?.color as NodeColors);
+    const nodeColor = getNodeColorClasses(xyNode.data?.color as NodeColors);
 
     baseNode += `${nodeColor.border} ${nodeColor.bg} ${nodeColor.text}`;
 
@@ -65,7 +64,7 @@ function NodeFrame({
           <BaseNodeHeader>
             <BaseNodeHeaderTitle>
               <InlineEditableText
-                value={(canvasNode?.data?.name as string) || "Sans nom"}
+                value={(xyNode?.data?.name as string) || "Sans nom"}
                 onSave={handleNameSave}
                 textClassName="text-sm font-semibold"
                 placeholder="Sans nom"

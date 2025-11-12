@@ -7,8 +7,12 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import type { RouterContext } from "./routes/__root";
 import { Toaster } from "react-hot-toast";
+import { initializeCanvasApi } from "./api/canvas.api";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+
+// Initialiser l'API Canvas
+initializeCanvasApi(convex);
 
 const router = createRouter({
   routeTree,

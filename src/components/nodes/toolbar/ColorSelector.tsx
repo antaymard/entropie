@@ -8,30 +8,28 @@ import {
 } from "@/components/shadcn/dropdown-menu";
 import { ButtonGroup } from "@/components/shadcn/button-group";
 import { Button } from "@/components/shadcn/button";
-import { useCanvasStore } from "@/stores/canvasStore";
-import type { CanvasNode, NodeColors } from "@/types";
+import type { NodeColors } from "@/types";
 import { TbPalette } from "react-icons/tb";
 import { colors } from "../nodeConfigs";
 import { memo, useCallback } from "react";
 
-// OPTIMISATION: memo() empêche le rerender du ColorSelector quand d'autres nodes changent
-// - Sans memo: rerender à chaque changement de n'importe quel node sur le canvas
-// - Avec memo: rerender uniquement si canvasNode change (référence ou propriétés)
+import { type Node, useReactFlow } from '@xyflow/react';
+
 const ColorSelector = memo(function ColorSelector({
-  canvasNode,
+  xyNode,
 }: {
-  canvasNode: CanvasNode;
+  xyNode: Node;
 }) {
-  const updateNode = useCanvasStore((state) => state.updateNode);
+  const { updateNode } = useReactFlow();
 
   // OPTIMISATION: useCallback empêche la recréation de la fonction à chaque render
   // - Stable la référence de la fonction passée en prop au DropdownMenu
   // - Évite les rerenders des enfants qui dépendent de cette fonction
   const handleColorChange = useCallback(
     (value: string) => {
-      updateNode(canvasNode.id, { color: value as NodeColors });
+      updateNode(xyNode.id, { data: { ...xyNode.data, color: value as NodeColors } });
     },
-    [canvasNode.id, updateNode]
+    [xyNode.id, updateNode]
   );
 
   return (
@@ -45,7 +43,7 @@ const ColorSelector = memo(function ColorSelector({
         <DropdownMenuContent align="start">
           <DropdownMenuLabel>Couleur du bloc</DropdownMenuLabel>
           <DropdownMenuRadioGroup
-            value={canvasNode.color}
+            value={xyNode.data.color || "default"}
             onValueChange={handleColorChange}
           >
             {Object.entries(colors).map(([key, value]) => (

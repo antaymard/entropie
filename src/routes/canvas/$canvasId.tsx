@@ -6,6 +6,9 @@ import {
   Controls,
   type Edge,
   ReactFlowProvider,
+  type Node,
+  useNodesState,
+  useEdgesState,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { api } from "../../../convex/_generated/api";
@@ -13,13 +16,11 @@ import type { Id } from "../../../convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import nodeTypes from "../../components/nodes/nodeTypes";
 import { useCanvasStore } from "../../stores/canvasStore";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ContextMenu from "../../components/canvas/context-menus";
-import type { CanvasNode } from "../../types/node.types";
-import { toReactFlowNode } from "../../components/utils/nodeUtils";
+import { toXyNode, toXyNodes } from "../../components/utils/nodeUtils";
 import {
   Card,
-  CardAction,
   CardContent,
   CardFooter,
   CardHeader,
@@ -28,6 +29,7 @@ import {
 import { Button } from "@/components/shadcn/button";
 import { SidebarProvider } from "@/components/shadcn/sidebar";
 import CanvasSidebar from "@/components/canvas/CanvasSidebar";
+import type { Canvas } from "@/types";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -39,8 +41,9 @@ function RouteComponent() {
   // Fetch canvas data
   const canvas = useQuery(api.canvases.getCanvas, {
     canvasId: canvasId,
-  });
+  }) as Canvas | null | undefined;
 
+  // Context menu state
   const [contextMenu, setContextMenu] = useState<{
     type: "node" | "edge" | "canvas" | null;
     position: { x: number; y: number };
@@ -52,14 +55,21 @@ function RouteComponent() {
   });
 
   // Zustand store
-  const nodes = useCanvasStore((state) => state.nodes);
-  const edges = useCanvasStore((state) => state.edges);
-  const onNodesChange = useCanvasStore((state) => state.onNodesChange);
-  const onEdgesChange = useCanvasStore((state) => state.onEdgesChange);
-  const setNodes = useCanvasStore((state) => state.setNodes);
-  const setEdges = useCanvasStore((state) => state.setEdges);
+  const setCanvas = useCanvasStore((state) => state.setCanvas);
 
-  // Define handleRightClick before any early returns
+
+  // const xyNodes = useMemo(
+  //   () => canvasNodes.map((node) => toXyNode(node)),
+  //   [canvasNodes]
+  // ) as Node[];
+  // const xyEdges = useMemo(() => canvasEdges, [canvasEdges]) as Edge[];
+
+  // xyFlow states
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  const hasInitialized = useRef(false);
+
+
   const handleRightClick = useCallback(
     function (
       e: React.MouseEvent | MouseEvent,
@@ -78,14 +88,22 @@ function RouteComponent() {
 
   // Load data from database into store
   useEffect(() => {
-    if (canvas?.nodes) {
-      const reactFlowNodes = canvas.nodes.map(toReactFlowNode);
-      setNodes(reactFlowNodes as CanvasNode[]);
+    if (canvas && !hasInitialized.current) {
+      setCanvas(canvas)
+      setNodes(toXyNodes(canvas.nodes));
+      setEdges(canvas.edges || []);
+      hasInitialized.current = true;
     }
-    if (canvas?.edges) setEdges(canvas.edges as Edge[]);
-  }, [canvas, setNodes, setEdges]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canvas]);
+  useEffect(() => {
+    hasInitialized.current = false;
+  }, [canvasId])
 
-  // Handle loading and error states
+
+
+  // ======= Render =======
+
   if (canvas === undefined) {
     return (
       <div className="h-full w-full flex items-center justify-center bg-gray-50">
@@ -119,12 +137,13 @@ function RouteComponent() {
       <div className="h-screen w-screen bg-gray-50 flex flex-col">
         <CanvasSidebar currentCanvasId={canvasId} />
         <ReactFlowProvider>
-          <CanvasTopBar canvasName={canvas?.name} canvasId={canvasId} />
+          <CanvasTopBar />
           <div className="flex-1 w-full">
             <ReactFlow
               panOnScroll
-              selectionOnDrag
               panOnDrag={[1]}
+              selectNodesOnDrag={false}
+              selectionOnDrag
               nodeTypes={nodeTypes}
               nodes={nodes}
               edges={edges}

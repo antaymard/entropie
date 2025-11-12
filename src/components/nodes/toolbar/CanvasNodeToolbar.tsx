@@ -1,13 +1,12 @@
 import { NodeToolbar, type Node } from "@xyflow/react";
 import { memo } from "react";
 import ColorSelector from "./ColorSelector";
-import type { CanvasNode } from "@/types";
 
-function CanvasNodeToolbar({ children, xyNode, canvasNode }: { children?: React.ReactNode; xyNode: Node; canvasNode: CanvasNode }) {
+function CanvasNodeToolbar({ children, xyNode }: { children?: React.ReactNode; xyNode: Node; }) {
 
     return <NodeToolbar isVisible={xyNode.selected && !xyNode.dragging}>
         {children}
-        <ColorSelector canvasNode={canvasNode} />
+        <ColorSelector xyNode={xyNode} />
     </NodeToolbar>;
 
 }

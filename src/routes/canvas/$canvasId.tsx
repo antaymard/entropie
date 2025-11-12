@@ -83,7 +83,17 @@ function RouteComponent() {
         element,
       });
     },
-    [setContextMenu]
+    []
+  );
+
+  const handlePaneContextMenu = useCallback(
+    (e: React.MouseEvent) => handleRightClick(e, "canvas", null),
+    [handleRightClick]
+  );
+
+  const handleNodeContextMenu = useCallback(
+    (e: React.MouseEvent, node: Node) => handleRightClick(e, "node", node),
+    [handleRightClick]
   );
 
   // Load data from database into store
@@ -149,8 +159,8 @@ function RouteComponent() {
               edges={edges}
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
-              onPaneContextMenu={(e) => handleRightClick(e, "canvas", null)}
-              onNodeContextMenu={(e, node) => handleRightClick(e, "node", node)}
+              onPaneContextMenu={handlePaneContextMenu}
+              onNodeContextMenu={handleNodeContextMenu}
             >
               <Background bgColor="#f9fafb" />
               <Controls />

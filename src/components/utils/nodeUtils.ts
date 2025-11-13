@@ -44,7 +44,7 @@ export function toXyNode(canvasNode: Partial<CanvasNode>): Node {
  * - Converts native props back to custom props (draggable/connectable -> locked)
  * - Retrieves color from data.color
  */
-export function toCanvasNode(xyNode: Node): CanvasNode {
+export function toConvexNode(xyNode: Node): CanvasNode {
   // Récupération de la color depuis data
   const { color, ...otherData } = (xyNode.data ?? {}) as {
     color?: NodeColors;
@@ -82,6 +82,6 @@ export function toXyNodes(canvasNodes: Partial<CanvasNode>[]): Node[] {
 /**
  * Converts an array of ReactFlow Nodes back to CanvasNode format
  */
-export function toCanvasNodes(xyNodes: Node[]): CanvasNode[] {
-  return xyNodes.map(toCanvasNode);
+export function toConvexNodes(xyNodes: Node[]): CanvasNode[] {
+  return xyNodes.map(toConvexNode);
 }

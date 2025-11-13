@@ -9,16 +9,18 @@ import {
   type Node,
   useNodesState,
   useEdgesState,
+  type NodeChange,
+  type EdgeChange,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import nodeTypes from "../../components/nodes/nodeTypes";
 import { useCanvasStore } from "../../stores/canvasStore";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ContextMenu from "../../components/canvas/context-menus";
-import { toXyNode, toXyNodes } from "../../components/utils/nodeUtils";
+import { toConvexNodes, toXyNodes } from "../../components/utils/nodeUtils";
 import {
   Card,
   CardContent,
@@ -30,6 +32,9 @@ import { Button } from "@/components/shadcn/button";
 import { SidebarProvider } from "@/components/shadcn/sidebar";
 import CanvasSidebar from "@/components/canvas/CanvasSidebar";
 import type { Canvas } from "@/types";
+import { debounce } from "lodash";
+import { toastError } from "@/components/utils/errorUtils";
+import toast from "react-hot-toast";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -42,6 +47,8 @@ function RouteComponent() {
   const canvas = useQuery(api.canvases.getCanvas, {
     canvasId: canvasId,
   }) as Canvas | null | undefined;
+
+  const saveCanvasInConvex = useMutation(api.canvases.updateCanvasContent)
 
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{
@@ -56,13 +63,6 @@ function RouteComponent() {
 
   // Zustand store
   const setCanvas = useCanvasStore((state) => state.setCanvas);
-
-
-  // const xyNodes = useMemo(
-  //   () => canvasNodes.map((node) => toXyNode(node)),
-  //   [canvasNodes]
-  // ) as Node[];
-  // const xyEdges = useMemo(() => canvasEdges, [canvasEdges]) as Edge[];
 
   // xyFlow states
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
@@ -87,14 +87,45 @@ function RouteComponent() {
   );
 
   const handlePaneContextMenu = useCallback(
-    (e: React.MouseEvent) => handleRightClick(e, "canvas", null),
+    (e: React.MouseEvent | MouseEvent) => handleRightClick(e, "canvas", null),
     [handleRightClick]
   );
 
   const handleNodeContextMenu = useCallback(
-    (e: React.MouseEvent, node: Node) => handleRightClick(e, "node", node),
+    (e: React.MouseEvent | MouseEvent, node: Node) => handleRightClick(e, "node", node),
     [handleRightClick]
   );
+
+  const debouncedSave = useMemo(
+    () => debounce((currentNodes: Node[], currentEdges: Edge[]) => {
+      try {
+        saveCanvasInConvex({
+          canvasId,
+          nodes: toConvexNodes(currentNodes), // Retransform en format base
+          edges: currentEdges
+        });
+        toast.success("Espace sauvegardé");
+      } catch (error) {
+        toastError(error, "Erreur lors de la sauvegarde de l'espace");
+      }
+    }, 1000),
+    [canvasId, saveCanvasInConvex]
+  );
+
+  function handleNodesChange(changes: NodeChange<Node>[]) {
+    onNodesChange(changes);
+  }
+
+  function handleEdgesChange(changes: EdgeChange<Edge>[]) {
+    onEdgesChange(changes);
+  }
+
+  // Auto-save when nodes or edges change
+  useEffect(() => {
+    if (!hasInitialized.current) return;
+
+    debouncedSave(nodes, edges);
+  }, [nodes, edges, debouncedSave]);
 
   // Load data from database into store
   useEffect(() => {
@@ -157,8 +188,8 @@ function RouteComponent() {
               nodeTypes={nodeTypes}
               nodes={nodes}
               edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
+              onNodesChange={handleNodesChange}
+              onEdgesChange={handleEdgesChange}
               onPaneContextMenu={handlePaneContextMenu}
               onNodeContextMenu={handleNodeContextMenu}
             >

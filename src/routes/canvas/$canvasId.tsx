@@ -35,6 +35,9 @@ import type { Canvas } from "@/types";
 import { debounce } from "lodash";
 import { toastError } from "@/components/utils/errorUtils";
 import toast from "react-hot-toast";
+import WindowsContainer from "@/components/windows/WindowsContainer";
+import { useWindowsStore } from "@/stores/windowsStore";
+import type { NodeType } from "@/types/node.types";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -48,7 +51,7 @@ function RouteComponent() {
     canvasId: canvasId,
   }) as Canvas | null | undefined;
 
-  const saveCanvasInConvex = useMutation(api.canvases.updateCanvasContent)
+  const saveCanvasInConvex = useMutation(api.canvases.updateCanvasContent);
 
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{
@@ -63,28 +66,25 @@ function RouteComponent() {
 
   // Zustand store
   const setCanvas = useCanvasStore((state) => state.setCanvas);
+  const openWindow = useWindowsStore((state) => state.openWindow);
 
   // xyFlow states
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const hasInitialized = useRef(false);
 
-
-  const handleRightClick = useCallback(
-    function (
-      e: React.MouseEvent | MouseEvent,
-      type: "node" | "edge" | "canvas",
-      element: object | null
-    ) {
-      e.preventDefault();
-      setContextMenu({
-        type,
-        position: { x: e.clientX, y: e.clientY },
-        element,
-      });
-    },
-    []
-  );
+  const handleRightClick = useCallback(function (
+    e: React.MouseEvent | MouseEvent,
+    type: "node" | "edge" | "canvas",
+    element: object | null
+  ) {
+    e.preventDefault();
+    setContextMenu({
+      type,
+      position: { x: e.clientX, y: e.clientY },
+      element,
+    });
+  }, []);
 
   const handlePaneContextMenu = useCallback(
     (e: React.MouseEvent | MouseEvent) => handleRightClick(e, "canvas", null),
@@ -92,23 +92,39 @@ function RouteComponent() {
   );
 
   const handleNodeContextMenu = useCallback(
-    (e: React.MouseEvent | MouseEvent, node: Node) => handleRightClick(e, "node", node),
+    (e: React.MouseEvent | MouseEvent, node: Node) =>
+      handleRightClick(e, "node", node),
     [handleRightClick]
   );
 
+  const handleNodeDoubleClick = useCallback(
+    (e: React.MouseEvent | MouseEvent, node: Node) => {
+      openWindow({
+        id: node.id,
+        type: node.type as NodeType,
+        position: { x: 100, y: 100 },
+        width: 400,
+        height: 300,
+        isMinimized: false,
+      });
+    },
+    [openWindow]
+  );
+
   const debouncedSave = useMemo(
-    () => debounce((currentNodes: Node[], currentEdges: Edge[]) => {
-      try {
-        saveCanvasInConvex({
-          canvasId,
-          nodes: toConvexNodes(currentNodes), // Retransform en format base
-          edges: currentEdges
-        });
-        toast.success("Espace sauvegardé");
-      } catch (error) {
-        toastError(error, "Erreur lors de la sauvegarde de l'espace");
-      }
-    }, 1000),
+    () =>
+      debounce((currentNodes: Node[], currentEdges: Edge[]) => {
+        try {
+          saveCanvasInConvex({
+            canvasId,
+            nodes: toConvexNodes(currentNodes), // Retransform en format base
+            edges: currentEdges,
+          });
+          toast.success("Espace sauvegardé");
+        } catch (error) {
+          toastError(error, "Erreur lors de la sauvegarde de l'espace");
+        }
+      }, 1000),
     [canvasId, saveCanvasInConvex]
   );
 
@@ -130,7 +146,7 @@ function RouteComponent() {
   // Load data from database into store
   useEffect(() => {
     if (canvas && !hasInitialized.current) {
-      setCanvas(canvas)
+      setCanvas(canvas);
       setNodes(toXyNodes(canvas.nodes));
       setEdges(canvas.edges || []);
       hasInitialized.current = true;
@@ -139,9 +155,7 @@ function RouteComponent() {
   }, [canvas]);
   useEffect(() => {
     hasInitialized.current = false;
-  }, [canvasId])
-
-
+  }, [canvasId]);
 
   // ======= Render =======
 
@@ -192,6 +206,7 @@ function RouteComponent() {
               onEdgesChange={handleEdgesChange}
               onPaneContextMenu={handlePaneContextMenu}
               onNodeContextMenu={handleNodeContextMenu}
+              onNodeDoubleClick={handleNodeDoubleClick}
             >
               <Background bgColor="#f9fafb" />
               <Controls />
@@ -204,6 +219,7 @@ function RouteComponent() {
               setContextMenu={setContextMenu}
             />
           )}
+          <WindowsContainer />
         </ReactFlowProvider>
       </div>
     </SidebarProvider>

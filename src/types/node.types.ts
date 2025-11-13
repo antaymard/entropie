@@ -67,6 +67,9 @@ export interface LayoutElement {
 // Nodes on the canvas
 // ===========================================================================
 
+
+export type NodeType = 'default' | "floatingText"
+
 // Made for react flow
 export interface CanvasNode {
   id: string; // Pas _id car sous objet de canvas, qui lui un _id
@@ -113,7 +116,7 @@ export type NodeColors =
 export interface NodeConfig {
   addButtonLabel: string;
   addButtonIcon: string;
-  type: string;
+  type: NodeType;
   component: React.ComponentType<any>;
   initialValues: any;
   minWidth: number;

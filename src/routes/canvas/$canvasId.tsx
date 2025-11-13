@@ -34,7 +34,6 @@ import CanvasSidebar from "@/components/canvas/CanvasSidebar";
 import type { Canvas } from "@/types";
 import { debounce } from "lodash";
 import { toastError } from "@/components/utils/errorUtils";
-import toast from "react-hot-toast";
 import WindowsContainer from "@/components/windows/WindowsContainer";
 import { useWindowsStore } from "@/stores/windowsStore";
 import type { NodeType } from "@/types/node.types";
@@ -74,6 +73,9 @@ function RouteComponent() {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const hasInitialized = useRef(false);
+  const [saveIncrement, setSaveIncrement] = useState(0); // To trigger save effect
+
+  // ======= Handlers =======
 
   const handleRightClick = useCallback(function (
     e: React.MouseEvent | MouseEvent,
@@ -128,12 +130,16 @@ function RouteComponent() {
           toastError(error, "Erreur lors de la sauvegarde de l'espace");
           setCanvasStatus("error");
         }
-      }, 1000),
+      }, 3000),
     [canvasId, saveCanvasInConvex]
   );
 
   function handleNodesChange(changes: NodeChange<Node>[]) {
     onNodesChange(changes);
+    // Si tous les changes ne sont pas de type select, on incrémente le saveIncrement
+    if (!changes.every((change) => change.type === "select")) {
+      setSaveIncrement((prev) => prev + 1);
+    }
   }
 
   function handleEdgesChange(changes: EdgeChange<Edge>[]) {
@@ -147,7 +153,8 @@ function RouteComponent() {
     if (canvasStatus !== "unsynced") setCanvasStatus("unsynced");
 
     debouncedSave(nodes, edges);
-  }, [nodes, edges, debouncedSave]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [saveIncrement, debouncedSave]);
 
   // Load data from database into store
   useEffect(() => {
@@ -159,6 +166,7 @@ function RouteComponent() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvas]);
+
   useEffect(() => {
     hasInitialized.current = false;
   }, [canvasId]);

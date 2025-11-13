@@ -29,7 +29,11 @@ export const getUserCanvases = query({
       .withIndex("by_creator", (q) => q.eq("creatorId", authUserId))
       .collect();
 
-    return canvases;
+    // Retourner seulement l'id et le nom
+    return canvases.map((canvas) => ({
+      _id: canvas._id,
+      name: canvas.name,
+    }));
   },
 });
 

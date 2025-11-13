@@ -7,6 +7,7 @@ import { HiOutlineCog } from "react-icons/hi";
 import { TbLayoutSidebarLeftExpand } from "react-icons/tb";
 import { useSidebar } from "../shadcn/sidebar";
 import InlineEditableText from "../common/InlineEditableText";
+import { TbCloudCheck, TbCloudDown, TbCloudUp, TbCloudX } from "react-icons/tb";
 
 export default function CanvasTopBar() {
   const canvas = useCanvasStore((state) => state.canvas);
@@ -49,9 +50,49 @@ export default function CanvasTopBar() {
           placeholder="Sans nom"
         />
         <div>
-
+          <CanvasStatus />
         </div>
       </div>
     </>
   );
+}
+
+function CanvasStatus() {
+  const status = useCanvasStore((state) => state.status);
+  const size = 22;
+
+  switch (status) {
+    case "idle":
+      return (
+        <span className="text-sm text-gray-500">
+          <TbCloudCheck size={size} />
+        </span>
+      );
+    case "unsynced":
+      return (
+        <span className="text-sm text-yellow-500">
+          <TbCloudUp size={size} />
+        </span>
+      );
+    case "saving":
+      return (
+        <span className="text-sm text-blue-500">
+          <TbCloudUp size={size} />
+        </span>
+      );
+    case "saved":
+      return (
+        <span className="text-sm text-green-500">
+          <TbCloudCheck size={size} />
+        </span>
+      );
+    case "error":
+      return (
+        <span className="text-sm text-red-500">
+          <TbCloudX size={size} />
+        </span>
+      );
+    default:
+      return null;
+  }
 }

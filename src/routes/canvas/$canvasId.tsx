@@ -66,6 +66,8 @@ function RouteComponent() {
 
   // Zustand store
   const setCanvas = useCanvasStore((state) => state.setCanvas);
+  const canvasStatus = useCanvasStore((state) => state.status);
+  const setCanvasStatus = useCanvasStore((state) => state.setStatus);
   const openWindow = useWindowsStore((state) => state.openWindow);
 
   // xyFlow states
@@ -115,14 +117,16 @@ function RouteComponent() {
     () =>
       debounce((currentNodes: Node[], currentEdges: Edge[]) => {
         try {
+          setCanvasStatus("saving");
           saveCanvasInConvex({
             canvasId,
             nodes: toConvexNodes(currentNodes), // Retransform en format base
             edges: currentEdges,
           });
-          toast.success("Espace sauvegardé");
+          setCanvasStatus("saved");
         } catch (error) {
           toastError(error, "Erreur lors de la sauvegarde de l'espace");
+          setCanvasStatus("error");
         }
       }, 1000),
     [canvasId, saveCanvasInConvex]
@@ -139,6 +143,8 @@ function RouteComponent() {
   // Auto-save when nodes or edges change
   useEffect(() => {
     if (!hasInitialized.current) return;
+    if (canvasStatus === "saving") return; // Prevent multiple saves
+    if (canvasStatus !== "unsynced") setCanvasStatus("unsynced");
 
     debouncedSave(nodes, edges);
   }, [nodes, edges, debouncedSave]);

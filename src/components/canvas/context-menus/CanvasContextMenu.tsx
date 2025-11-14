@@ -32,7 +32,7 @@ export default function ContextMenu({
       {prebuiltNodesConfig.map((nodeType) => (
         <DropdownMenuItem
           key={nodeType.type}
-          className="whitespace-nowrap"
+          className="w-48"
           onClick={() => {
             const newNodeId = `node-${Date.now()}`;
 

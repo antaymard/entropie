@@ -1,9 +1,12 @@
 import type { Node } from "@xyflow/react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import CanvasContextMenu from "./CanvasContextMenu";
 import EdgeContextMenu from "./EdgeContextMenu";
 import NodeContextMenu from "./NodeContextMenu";
-import { DropdownMenu, DropdownMenuContent, } from "@/components/shadcn/dropdown-menu";
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+} from "@/components/shadcn/dropdown-menu";
 
 export default function ContextMenuWrapper({
   contextMenu,
@@ -21,11 +24,54 @@ export default function ContextMenuWrapper({
   }) => void;
 }) {
   const { type, position, element } = contextMenu;
-  const contextMenuOffset = 10; // Pour décaler un peu le menu du curseur
+  const [adjustedPosition, setAdjustedPosition] = useState(position);
+  const hasAdjustedRef = useRef(false);
 
   const handleClose = () => {
     setContextMenu({ type: null, position: { x: 0, y: 0 }, element: null });
   };
+
+  useEffect(() => {
+    setAdjustedPosition(position);
+    hasAdjustedRef.current = false;
+  }, [position]);
+
+  const handleMenuRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (node && type !== null && !hasAdjustedRef.current) {
+        const menuRect = node.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const margin = 10;
+
+        let adjustedX = position.x;
+        let adjustedY = position.y;
+
+        if (adjustedX + menuRect.width > viewportWidth) {
+          adjustedX = viewportWidth - menuRect.width - margin;
+        }
+
+        if (adjustedY + menuRect.height > viewportHeight) {
+          adjustedY = viewportHeight - menuRect.height - margin;
+        }
+
+        if (adjustedX < margin) {
+          adjustedX = margin;
+        }
+
+        if (adjustedY < margin) {
+          adjustedY = margin;
+        }
+
+        if (adjustedX !== position.x || adjustedY !== position.y) {
+          setAdjustedPosition({ x: adjustedX, y: adjustedY });
+        }
+
+        hasAdjustedRef.current = true;
+      }
+    },
+    [position, type]
+  );
 
   function renderContextMenu() {
     switch (type) {
@@ -34,7 +80,13 @@ export default function ContextMenuWrapper({
           <CanvasContextMenu closeMenu={handleClose} position={position} />
         );
       case "node":
-        return <NodeContextMenu closeMenu={handleClose} position={position} xyNode={element as Node} />;
+        return (
+          <NodeContextMenu
+            closeMenu={handleClose}
+            position={position}
+            xyNode={element as Node}
+          />
+        );
       case "edge":
         return <EdgeContextMenu />;
       default:
@@ -42,19 +94,24 @@ export default function ContextMenuWrapper({
     }
   }
 
-  return <DropdownMenu open={contextMenu.type !== null} onOpenChange={open => { if (!open) handleClose() }}>
-    <DropdownMenuContent
-      style={{
-        position: 'fixed',
-        top: position.y + contextMenuOffset,
-        left: position.x + contextMenuOffset,
+  return (
+    <DropdownMenu
+      open={contextMenu.type !== null}
+      onOpenChange={(open) => {
+        if (!open) handleClose();
       }}
-      onContextMenu={e => e.preventDefault()}
     >
-
-      {renderContextMenu()}
-    </DropdownMenuContent>
-  </DropdownMenu>
-
-
+      <DropdownMenuContent
+        ref={handleMenuRef}
+        style={{
+          position: "fixed",
+          top: adjustedPosition.y,
+          left: adjustedPosition.x,
+        }}
+        onContextMenu={(e) => e.preventDefault()}
+      >
+        {renderContextMenu()}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 }

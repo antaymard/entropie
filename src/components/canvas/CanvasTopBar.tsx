@@ -7,9 +7,10 @@ import { HiOutlineCog } from "react-icons/hi";
 import { TbLayoutSidebarLeftExpand } from "react-icons/tb";
 import { useSidebar } from "../shadcn/sidebar";
 import InlineEditableText from "../common/InlineEditableText";
-import { TbCloudCheck, TbCloudDown, TbCloudUp, TbCloudX } from "react-icons/tb";
+import { TbCloudCheck, TbCloudUp, TbCloudX } from "react-icons/tb";
+import { memo } from "react";
 
-export default function CanvasTopBar() {
+function CanvasTopBar() {
   const canvas = useCanvasStore((state) => state.canvas);
   const { setOpen } = useSidebar();
 
@@ -96,3 +97,5 @@ function CanvasStatus() {
       return null;
   }
 }
+
+export default memo(CanvasTopBar);

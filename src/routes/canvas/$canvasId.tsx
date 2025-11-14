@@ -85,6 +85,7 @@ function RouteComponent() {
     element: object | null
   ) {
     e.preventDefault();
+
     setContextMenu({
       type,
       position: { x: e.clientX, y: e.clientY },

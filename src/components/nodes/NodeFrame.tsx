@@ -1,20 +1,19 @@
 import { NodeResizer, useReactFlow, type Node } from "@xyflow/react";
 import { memo } from "react";
-import type { CanvasNode, NodeColors } from "../../types/node.types";
-import { useCanvasStore } from "../../stores/canvasStore";
-import prebuiltNodesList from "./prebuilt-nodes/prebuiltNodesList";
-import { BaseNode, BaseNodeContent, BaseNodeHeader, BaseNodeHeaderTitle } from "./base-node";
-import { colors } from "./nodeConfigs";
+import type { NodeColors } from "../../types/node.types";
+import prebuiltNodesConfig from "./prebuilt-nodes/prebuiltNodesConfig";
+import { BaseNode, BaseNodeContent } from "./base-node";
+import nodeColors from "./nodeColors";
 import InlineEditableText from "../common/InlineEditableText";
 
 function getNodeColorClasses(color: NodeColors) {
-  return colors[color] || colors["default"];
+  return nodeColors[color] || nodeColors["default"];
 }
 
 function NodeFrame({
   xyNode,
   frameless = false,
-  showName = false,
+  showName = true,
   children,
 }: {
   xyNode: Node;
@@ -23,7 +22,7 @@ function NodeFrame({
   children: React.ReactNode;
 }) {
   const { updateNodeData } = useReactFlow();
-  const nodeConfig = prebuiltNodesList.find((n) => n.type === xyNode.type);
+  const nodeConfig = prebuiltNodesConfig.find((n) => n.type === xyNode.type);
 
   if (!xyNode) return null;
 
@@ -33,7 +32,8 @@ function NodeFrame({
 
   function getClassNames() {
     let baseNode = "",
-      baseNodeContent = "";
+      baseNodeContent = "",
+      nameContainer = "";
 
     if (frameless) {
       baseNodeContent = "p-1 px-2 ";
@@ -43,10 +43,12 @@ function NodeFrame({
     const nodeColor = getNodeColorClasses(xyNode.data?.color as NodeColors);
 
     baseNode += `${nodeColor.border} ${nodeColor.bg} ${nodeColor.text}`;
+    nameContainer += `${nodeColor.darkBg} ${nodeColor.text} ${nodeColor.border}`;
 
     return {
       baseNode,
       baseNodeContent,
+      nameContainer,
     };
   }
   return (
@@ -61,16 +63,16 @@ function NodeFrame({
         className={`h-full ${xyNode.selected ? "hover:ring-0" : "hover:ring-blue-300"} ${getClassNames().baseNode}`}
       >
         {showName && (
-          <BaseNodeHeader>
-            <BaseNodeHeaderTitle>
-              <InlineEditableText
-                value={(xyNode?.data?.name as string) || "Sans nom"}
-                onSave={handleNameSave}
-                textClassName="text-sm font-semibold"
-                placeholder="Sans nom"
-              />
-            </BaseNodeHeaderTitle>
-          </BaseNodeHeader>
+          <div
+            className={`${getClassNames().nameContainer} px-2 py-1 border-b rounded-t-md`}
+          >
+            <InlineEditableText
+              value={(xyNode?.data?.name as string) || "Sans nom"}
+              onSave={handleNameSave}
+              className=" font-semibold"
+              placeholder="Sans nom"
+            />
+          </div>
         )}
         <BaseNodeContent className={getClassNames().baseNodeContent}>
           {children}

@@ -1,11 +1,11 @@
 import { memo, useCallback } from "react";
-import { type Node, NodeToolbar, useReactFlow } from "@xyflow/react";
+import { type Node, useReactFlow } from "@xyflow/react";
 import NodeFrame from "../NodeFrame";
 import { ToggleGroup, ToggleGroupItem } from "@/components/shadcn/toggle-group";
 import { LuHeading1, LuHeading2, LuHeading3 } from "react-icons/lu";
 import { BiParagraph } from "react-icons/bi";
-import ColorSelector from "../toolbar/ColorSelector";
 import InlineEditableText from "../../common/InlineEditableText";
+import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
 
 function FloatingTextNode(xyNode: Node) {
   const { updateNodeData } = useReactFlow();
@@ -27,8 +27,8 @@ function FloatingTextNode(xyNode: Node) {
     { value: "p", icon: <BiParagraph />, className: "text-base font-normal" },
   ];
   const textClassName =
-    levels.find((l) => l.value === (xyNode.data.level as string))
-      ?.className || "";
+    levels.find((l) => l.value === (xyNode.data.level as string))?.className ||
+    "";
 
   // OPTIMISATION: useCallback pour le changement de niveau de texte
   const handleLevelChange = useCallback(
@@ -42,12 +42,7 @@ function FloatingTextNode(xyNode: Node) {
 
   return (
     <>
-      <NodeToolbar
-        isVisible={xyNode.selected && !xyNode.dragging}
-        className="flex gap-2"
-      >
-        <ColorSelector xyNode={xyNode} />
-
+      <CanvasNodeToolbar xyNode={xyNode}>
         {/* Change heading */}
         <ToggleGroup
           type="single"
@@ -62,13 +57,13 @@ function FloatingTextNode(xyNode: Node) {
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
-      </NodeToolbar>
+      </CanvasNodeToolbar>
 
-      <NodeFrame xyNode={xyNode} frameless>
+      <NodeFrame xyNode={xyNode} frameless showName={false}>
         <InlineEditableText
           value={(xyNode.data?.text as string) || ""}
           onSave={handleTextSave}
-          textClassName={textClassName}
+          className={textClassName}
           placeholder="Double-cliquez pour éditer..."
         />
       </NodeFrame>

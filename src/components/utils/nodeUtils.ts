@@ -10,7 +10,7 @@ import type { CanvasNode, NodeColors } from "../../types/node.types";
 export function toXyNode(canvasNode: Partial<CanvasNode>): Node {
   // const locked = canvasNode.locked ?? false;
   const locked = false;
-  const color = canvasNode.color ?? "default" as NodeColors;
+  const color = canvasNode.color ?? ("default" as NodeColors);
 
   return {
     id: canvasNode.id ?? "",
@@ -59,6 +59,8 @@ export function toConvexNode(xyNode: Node): CanvasNode {
     id: xyNode.id,
     type: xyNode.type ?? "default",
     position: xyNode.position,
+    name: xyNode.data?.name as string,
+    templateId: xyNode.data?.templateId as string | undefined,
     width: xyNode.width ?? 200,
     height: xyNode.height ?? 100,
     zIndex: xyNode.zIndex ?? 0,

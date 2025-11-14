@@ -10,10 +10,10 @@ import { ButtonGroup } from "@/components/shadcn/button-group";
 import { Button } from "@/components/shadcn/button";
 import type { NodeColors } from "@/types";
 import { TbPalette } from "react-icons/tb";
-import { colors } from "../nodeConfigs";
+import nodeColors from "../nodeColors";
 import { memo, useCallback } from "react";
 
-import { type Node, useReactFlow } from '@xyflow/react';
+import { type Node, useReactFlow } from "@xyflow/react";
 
 const ColorSelector = memo(function ColorSelector({
   xyNode,
@@ -27,7 +27,9 @@ const ColorSelector = memo(function ColorSelector({
   // - Évite les rerenders des enfants qui dépendent de cette fonction
   const handleColorChange = useCallback(
     (value: string) => {
-      updateNode(xyNode.id, { data: { ...xyNode.data, color: value as NodeColors } });
+      updateNode(xyNode.id, {
+        data: { ...xyNode.data, color: value as NodeColors },
+      });
     },
     [xyNode.id, updateNode]
   );
@@ -46,7 +48,7 @@ const ColorSelector = memo(function ColorSelector({
             value={xyNode.data.color || "default"}
             onValueChange={handleColorChange}
           >
-            {Object.entries(colors).map(([key, value]) => (
+            {Object.entries(nodeColors).map(([key, value]) => (
               <DropdownMenuRadioItem
                 value={key}
                 key={key}

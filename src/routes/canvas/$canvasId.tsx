@@ -11,6 +11,7 @@ import {
   useEdgesState,
   type NodeChange,
   type EdgeChange,
+  Panel,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { api } from "../../../convex/_generated/api";
@@ -37,6 +38,7 @@ import { toastError } from "@/components/utils/errorUtils";
 import WindowsContainer from "@/components/windows/WindowsContainer";
 import { useWindowsStore } from "@/stores/windowsStore";
 import type { NodeType } from "@/types/node.types";
+import WindowsBottomBar from "@/components/windows/bottom-bar/WindowsBottomBar";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -243,7 +245,9 @@ function RouteComponent() {
             >
               <Background bgColor="#f9fafb" />
               <Controls />
-              {/* <Panel position="bottom-center">TODO</Panel> */}
+              <Panel position="bottom-right">
+                <WindowsBottomBar />
+              </Panel>
             </ReactFlow>
           </div>
           {contextMenu.type && (

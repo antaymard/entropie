@@ -13,7 +13,7 @@ const defaultValues = {
   color: "default",
 };
 
-const prebuiltNodesList = [
+const prebuiltNodesConfig = [
   // {
   //   addButtonLabel: "Node par défaut",
   //   addButtonIcon: "📦",
@@ -25,7 +25,7 @@ const prebuiltNodesList = [
   // },
   {
     addButtonLabel: "Texte flottant",
-    addButtonIcon: "📝",
+    nodeIcon: "📝",
     type: "floatingText",
     component: FloatingTextNode,
     initialValues: {
@@ -47,8 +47,7 @@ const prebuiltNodesList = [
   //   addButtonIcon: "🖼️",
   //   type: "imageUrl",
   //   component: ImageUrlNode,
-
-  //   // nodeClassName: "w-fit", // TODO
+  // nodeClassName: "w-fit", // TODO
 
   //   initialValues: {
   //     ...defaultValues,
@@ -62,4 +61,4 @@ const prebuiltNodesList = [
   // },
 ] as NodeConfig[];
 
-export default prebuiltNodesList;
+export default prebuiltNodesConfig;

@@ -114,7 +114,7 @@ export type NodeColors =
 
 export interface NodeConfig {
   addButtonLabel: string;
-  addButtonIcon: string;
+  nodeIcon: string;
   type: NodeType;
   component: React.ComponentType<any>;
   initialValues: any;

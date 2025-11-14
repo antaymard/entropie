@@ -6,6 +6,7 @@ interface WindowsStore {
   openWindows: Window[];
   openWindow: (window: Window) => void;
   closeWindow: (windowId: string) => void;
+  closeAllWindows: () => void;
   updateWindowPosition: (
     windowId: string,
     position: { x: number; y: number }
@@ -38,6 +39,11 @@ export const useWindowsStore = create<WindowsStore>()(
           openWindows: state.openWindows.filter(
             (window) => window.id !== windowId
           ),
+        }));
+      },
+      closeAllWindows: () => {
+        set(() => ({
+          openWindows: [],
         }));
       },
       updateWindowPosition: (

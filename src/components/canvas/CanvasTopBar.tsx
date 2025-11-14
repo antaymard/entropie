@@ -46,7 +46,7 @@ export default function CanvasTopBar() {
           value={canvas?.name || "Sans nom"}
           onSave={handleUpdateCanvasDetails}
           as="h1"
-          textClassName="font-semibold hover:text-black text-lg"
+          className="font-semibold hover:text-black text-lg"
           placeholder="Sans nom"
         />
         <div>

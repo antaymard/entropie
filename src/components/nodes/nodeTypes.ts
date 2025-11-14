@@ -1,7 +1,7 @@
-import prebuiltNodesList from "./prebuilt-nodes/prebuiltNodesList";
+import prebuiltNodesConfig from "./prebuilt-nodes/prebuiltNodesConfig";
 
 const nodeTypes = {
-  ...prebuiltNodesList.reduce<Record<string, React.ComponentType<any>>>(
+  ...prebuiltNodesConfig.reduce<Record<string, React.ComponentType<any>>>(
     (acc, node) => {
       acc[node.type] = node.component;
       return acc;
@@ -11,7 +11,7 @@ const nodeTypes = {
 };
 
 const nodeList = [
-  ...prebuiltNodesList.map((node) => {
+  ...prebuiltNodesConfig.map((node) => {
     const { initialValues, ...rest } = node;
     return { ...rest };
   }),

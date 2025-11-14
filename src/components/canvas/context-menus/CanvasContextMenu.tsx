@@ -1,8 +1,12 @@
 import { useViewport, useReactFlow } from "@xyflow/react";
 import { useCanvasStore } from "../../../stores/canvasStore";
-import prebuiltNodesList from "../../nodes/prebuilt-nodes/prebuiltNodesList";
+import prebuiltNodesConfig from "../../nodes/prebuilt-nodes/prebuiltNodesConfig";
 import type { NodeColors } from "../../../types/node.types";
-import { DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/shadcn/dropdown-menu";
+import {
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/shadcn/dropdown-menu";
 
 export default function ContextMenu({
   closeMenu,
@@ -25,7 +29,7 @@ export default function ContextMenu({
     <>
       <DropdownMenuLabel>Ajouter un bloc</DropdownMenuLabel>
       <DropdownMenuSeparator />
-      {prebuiltNodesList.map((nodeType) => (
+      {prebuiltNodesConfig.map((nodeType) => (
         <DropdownMenuItem
           key={nodeType.type}
           className="whitespace-nowrap"
@@ -54,10 +58,9 @@ export default function ContextMenu({
             closeMenu();
           }}
         >
-          {nodeType.addButtonIcon} {nodeType.addButtonLabel}
+          {nodeType.nodeIcon} {nodeType.addButtonLabel}
         </DropdownMenuItem>
       ))}
     </>
-  )
-
+  );
 }

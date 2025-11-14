@@ -33,12 +33,14 @@ const prebuiltNodesList = [
       data: {
         name: "Bloc de texte",
         color: "transparent",
-        text: "Texte flottant", level: "p",
+        text: "Texte flottant",
+        level: "p",
       },
       height: 28,
     },
     minWidth: 100,
     minHeight: 28,
+    disableDoubleClickToOpenWindow: true,
   },
   // {
   //   addButtonLabel: "Image",

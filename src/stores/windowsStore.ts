@@ -21,9 +21,17 @@ export const useWindowsStore = create<WindowsStore>()(
     (set) => ({
       openWindows: [],
       openWindow: (window: Window) => {
-        set((state) => ({
-          openWindows: [...state.openWindows, window],
-        }));
+        set((state) => {
+          const existingWindow = state.openWindows.find(
+            (w) => w.id === window.id
+          );
+          if (existingWindow) {
+            return state;
+          }
+          return {
+            openWindows: [...state.openWindows, window],
+          };
+        });
       },
       closeWindow: (windowId: string) => {
         set((state) => ({

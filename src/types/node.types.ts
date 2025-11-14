@@ -67,8 +67,7 @@ export interface LayoutElement {
 // Nodes on the canvas
 // ===========================================================================
 
-
-export type NodeType = 'default' | "floatingText"
+export type NodeType = "default" | "floatingText";
 
 // Made for react flow
 export interface CanvasNode {
@@ -121,4 +120,5 @@ export interface NodeConfig {
   initialValues: any;
   minWidth: number;
   minHeight: number;
+  disableDoubleClickToOpenWindow?: boolean;
 }

@@ -16,7 +16,7 @@ import "@xyflow/react/dist/style.css";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import nodeTypes from "../../components/nodes/nodeTypes";
+import { nodeTypes, nodeList } from "../../components/nodes/nodeTypes";
 import { useCanvasStore } from "../../stores/canvasStore";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ContextMenu from "../../components/canvas/context-menus";
@@ -103,6 +103,12 @@ function RouteComponent() {
 
   const handleNodeDoubleClick = useCallback(
     (e: React.MouseEvent | MouseEvent, node: Node) => {
+      e.preventDefault();
+      // Checker dans nodeList si le node a la propriété doubleClickToOpenWindow à true
+      const nodeInfo = nodeList.find((n) => n.type === node.type);
+      if (nodeInfo?.disableDoubleClickToOpenWindow) return;
+
+      // Open a window for this node
       openWindow({
         id: node.id,
         type: node.type as NodeType,
@@ -130,7 +136,7 @@ function RouteComponent() {
           toastError(error, "Erreur lors de la sauvegarde de l'espace");
           setCanvasStatus("error");
         }
-      }, 3000),
+      }, 5000),
     [canvasId, saveCanvasInConvex]
   );
 
@@ -170,6 +176,19 @@ function RouteComponent() {
   useEffect(() => {
     hasInitialized.current = false;
   }, [canvasId]);
+
+  // Warn before leaving if unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (canvasStatus !== "saved") {
+        e.preventDefault();
+        e.returnValue = ""; // Modern browsers ignore custom messages
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [canvasStatus]);
 
   // ======= Render =======
 

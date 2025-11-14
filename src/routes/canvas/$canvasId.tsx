@@ -81,7 +81,7 @@ function RouteComponent() {
 
   const handleRightClick = useCallback(function (
     e: React.MouseEvent | MouseEvent,
-    type: "node" | "edge" | "canvas",
+    type: "node" | "edge" | "canvas" | "selection",
     element: object | null
   ) {
     e.preventDefault();
@@ -101,6 +101,12 @@ function RouteComponent() {
   const handleNodeContextMenu = useCallback(
     (e: React.MouseEvent | MouseEvent, node: Node) =>
       handleRightClick(e, "node", node),
+    [handleRightClick]
+  );
+
+  const handleSelectionContextMenu = useCallback(
+    (e: React.MouseEvent | MouseEvent, nodes: Node[]) =>
+      handleRightClick(e, "selection", nodes),
     [handleRightClick]
   );
 
@@ -242,6 +248,7 @@ function RouteComponent() {
               onEdgesChange={handleEdgesChange}
               onPaneContextMenu={handlePaneContextMenu}
               onNodeContextMenu={handleNodeContextMenu}
+              onSelectionContextMenu={handleSelectionContextMenu}
               onNodeDoubleClick={handleNodeDoubleClick}
             >
               <Background bgColor="#f9fafb" />

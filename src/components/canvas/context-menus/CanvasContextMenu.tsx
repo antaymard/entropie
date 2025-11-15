@@ -1,7 +1,5 @@
 import { useViewport, useReactFlow } from "@xyflow/react";
-import { useCanvasStore } from "../../../stores/canvasStore";
 import prebuiltNodesConfig from "../../nodes/prebuilt-nodes/prebuiltNodesConfig";
-import type { NodeColors } from "../../../types/node.types";
 import {
   DropdownMenuItem,
   DropdownMenuLabel,

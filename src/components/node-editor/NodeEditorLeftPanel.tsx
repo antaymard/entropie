@@ -9,7 +9,7 @@ import { RxDragHandleDots2 } from "react-icons/rx";
 import {
   fieldDefinitions,
   type FieldDefinition,
-} from "../fields/fieldDefinitions";
+} from "../_fields/fieldDefinitions";
 import FieldSelectionDropdown from "./FieldSelectionDropdown";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";

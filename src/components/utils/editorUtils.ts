@@ -3,7 +3,7 @@ import type { LayoutElement, NodeField, NodeTemplate } from "../../types";
 import {
   fieldDefinitions,
   type FieldDefinition,
-} from "../fields/fieldDefinitions";
+} from "../_fields/fieldDefinitions";
 
 export function addElementToLayout(
   elementToAdd: LayoutElement,

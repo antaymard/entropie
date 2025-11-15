@@ -1,16 +1,16 @@
 import type { NodeConfig } from "../../../types/node.types";
+import FileUploadNode from "./FileUploadNode";
 import FloatingTextNode from "./FloatingTextNode";
 import ImageUrlNode from "./ImageUrlNode";
 
 const defaultValues = {
   name: "default node",
-  data: { text: "default text" },
+  data: {},
   width: 150,
   height: 100,
   locked: false,
   hidden: false,
   zIndex: 0,
-  color: "default",
 };
 
 const prebuiltNodesConfig = [
@@ -35,6 +35,23 @@ const prebuiltNodesConfig = [
         color: "transparent",
         text: "Texte flottant",
         level: "p",
+      },
+      height: 28,
+    },
+    minWidth: 100,
+    minHeight: 28,
+    disableDoubleClickToOpenWindow: true,
+  },
+  {
+    addButtonLabel: "Fichier",
+    nodeIcon: "📝",
+    type: "fileUpload",
+    component: FileUploadNode,
+    initialValues: {
+      ...defaultValues,
+      data: {
+        name: "Bloc de texte",
+        color: "transparent",
       },
       height: 28,
     },

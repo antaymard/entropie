@@ -1,4 +1,4 @@
-import { NodeResizer, useReactFlow, type Node } from "@xyflow/react";
+import { NodeResizer, useReactFlow, type Node, useStore } from "@xyflow/react";
 import { memo } from "react";
 import type { NodeColors } from "../../types/node.types";
 import prebuiltNodesConfig from "./prebuilt-nodes/prebuiltNodesConfig";
@@ -9,6 +9,9 @@ import InlineEditableText from "../common/InlineEditableText";
 function getNodeColorClasses(color: NodeColors) {
   return nodeColors[color] || nodeColors["default"];
 }
+
+const selectedNodesCountSelector = (state: { nodes: Node[] }) =>
+  state.nodes.filter((node) => node.selected).length;
 
 function NodeFrame({
   xyNode,
@@ -25,6 +28,7 @@ function NodeFrame({
 }) {
   const { updateNodeData } = useReactFlow();
   const nodeConfig = prebuiltNodesConfig.find((n) => n.type === xyNode.type);
+  const selectedNodesCount = useStore(selectedNodesCountSelector);
 
   if (!xyNode) return null;
 
@@ -39,7 +43,7 @@ function NodeFrame({
 
     if (frameless) {
       baseNodeContent = "p-1 px-2 ";
-      baseNode = "border-0 ";
+      // baseNode = "border-0 ";
     }
 
     const nodeColor = getNodeColorClasses(xyNode.data?.color as NodeColors);
@@ -47,20 +51,32 @@ function NodeFrame({
     baseNode += `${nodeColor.border} ${nodeColor.bg} ${nodeColor.text}`;
     nameContainer += `${nodeColor.darkBg} ${nodeColor.text} ${nodeColor.border}`;
 
-    console.log(baseNode);
-
     return {
       baseNode,
       baseNodeContent,
       nameContainer,
     };
   }
+
+  const isVisible =
+    xyNode.selected && !xyNode?.dragging && selectedNodesCount === 1;
+
   return (
     <>
       <NodeResizer
         minWidth={nodeConfig?.minWidth || 150}
         minHeight={nodeConfig?.minHeight || 100}
-        isVisible={xyNode?.selected}
+        isVisible={isVisible}
+        lineStyle={{
+          // padding: 1,
+          borderWidth: 2,
+        }}
+        handleStyle={{
+          height: 8,
+          width: 8,
+          borderRadius: 2,
+          zIndex: 10,
+        }}
       />
 
       <BaseNode

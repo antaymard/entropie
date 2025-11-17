@@ -56,7 +56,7 @@ function RouteComponent() {
 
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{
-    type: "node" | "edge" | "canvas" | null;
+    type: "node" | "edge" | "canvas" | "selection" | null;
     position: { x: number; y: number };
     element: object | null;
   }>({
@@ -250,6 +250,8 @@ function RouteComponent() {
               onNodeContextMenu={handleNodeContextMenu}
               onSelectionContextMenu={handleSelectionContextMenu}
               onNodeDoubleClick={handleNodeDoubleClick}
+              snapToGrid
+              snapGrid={[5, 5]}
             >
               <Background bgColor="#f9fafb" />
               <Controls />

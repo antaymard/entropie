@@ -121,9 +121,9 @@ export default function SelectionContextMenu({
 
   const alignements = [
     {
-      label: "A gauche",
-      icon: RiAlignItemLeftLine,
-      onClick: () => alignSelectedNodes("left"),
+      label: "En haut",
+      icon: RiAlignItemTopLine,
+      onClick: () => alignSelectedNodes("top"),
     },
     {
       label: "A droite",
@@ -131,14 +131,14 @@ export default function SelectionContextMenu({
       onClick: () => alignSelectedNodes("right"),
     },
     {
-      label: "En haut",
-      icon: RiAlignItemTopLine,
-      onClick: () => alignSelectedNodes("top"),
-    },
-    {
       label: "En bas",
       icon: RiAlignItemBottomLine,
       onClick: () => alignSelectedNodes("bottom"),
+    },
+    {
+      label: "A gauche",
+      icon: RiAlignItemLeftLine,
+      onClick: () => alignSelectedNodes("left"),
     },
   ];
 

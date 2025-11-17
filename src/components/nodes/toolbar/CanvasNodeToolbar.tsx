@@ -1,37 +1,23 @@
-import { useNode } from "@/stores/canvasStore";
-import { NodeToolbar, type Node, useStore } from "@xyflow/react";
+import { NodeToolbar, type Node } from "@xyflow/react";
+import { memo } from "react";
 import ColorSelector from "./ColorSelector";
+import type { CanvasNode } from "@/types";
 
-export default function CanvasNodeToolbar({
-  xyNode,
+function CanvasNodeToolbar({
   children,
-  ...props
+  xyNode,
+  canvasNode,
 }: {
-  xyNode: Node;
   children?: React.ReactNode;
-  className?: string;
+  xyNode: Node;
+  canvasNode: CanvasNode;
 }) {
-  const canvasNode = useNode(xyNode.id);
-
-  // Super optimized: only count selections when THIS node is selected
-  const selectedCount = useStore((state) => {
-    // Early exit if this node is not selected - don't track selection count
-    if (!xyNode.selected) return 0;
-
-    // Only count when this node is selected
-    return state.nodes.filter((n) => n.selected).length;
-  });
-
-  const hasMultipleSelected = selectedCount > 1;
-
-  if (!canvasNode) return null;
   return (
-    <NodeToolbar
-      isVisible={xyNode.selected && !xyNode.dragging && !hasMultipleSelected}
-      {...props}
-    >
+    <NodeToolbar isVisible={xyNode.selected && !xyNode.dragging}>
       {children}
       <ColorSelector canvasNode={canvasNode} />
     </NodeToolbar>
   );
 }
+
+export default memo(CanvasNodeToolbar);

@@ -1,6 +1,10 @@
 import type { NodeConfig } from "../../../types/node.types";
 import FloatingTextNode from "./FloatingTextNode";
+<<<<<<< HEAD
 import UrlNode from "./UrlNode";
+=======
+import ImageUrlNode from "./ImageUrlNode";
+>>>>>>> 96145750d3d5d73559d8fed7f26a1292e5525856
 
 const defaultValues = {
   name: "default node",
@@ -42,15 +46,18 @@ const prebuiltNodesList = [
     minHeight: 28,
   },
   {
-    addButtonLabel: "URL",
-    addButtonIcon: "🔗",
-    type: "url",
-    component: UrlNode,
+    addButtonLabel: "Image",
+    addButtonIcon: "🖼️",
+    type: "imageUrl",
+    component: ImageUrlNode,
+
+    // nodeClassName: "w-fit", // TODO
+
     initialValues: {
       ...defaultValues,
       color: "default",
-      name: "Bloc d'URL",
-      data: { url: "https://example.com" },
+      name: "Bloc d'image",
+      data: { url: "https://example.com/image.png" },
       height: 100,
     },
     minWidth: 100,

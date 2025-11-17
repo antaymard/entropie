@@ -1,29 +1,39 @@
 import { NodeResizer, type Node } from "@xyflow/react";
 import { memo } from "react";
-import type { NodeColors } from "../../types/node.types";
-import { useNode } from "../../stores/canvasStore";
+import type { CanvasNode, NodeColors } from "../../types/node.types";
+import { useNode, useCanvasStore } from "../../stores/canvasStore";
 import prebuiltNodesList from "./prebuilt-nodes/prebuiltNodesList";
-import { BaseNode, BaseNodeContent } from "./base-node";
+import {
+  BaseNode,
+  BaseNodeContent,
+  BaseNodeHeader,
+  BaseNodeHeaderTitle,
+} from "./base-node";
+import { colors } from "./nodeConfigs";
+import InlineEditableText from "../common/InlineEditableText";
 
 import { getNodeColorClasses } from "../nodes/nodeConfigs";
 
 function NodeFrame({
   xyNode,
-  borderless = false,
-  showNodeName = false,
+  frameless = false,
+  showName = false,
   children,
 }: {
   xyNode: Node;
-  borderless?: boolean;
-  showNodeName?: boolean;
+  frameless?: boolean;
+  showName?: boolean;
   children: React.ReactNode;
 }) {
   const canvasNode = useNode(xyNode.id);
+  const updateNodeData = useCanvasStore((state) => state.updateNodeData);
   const nodeConfig = prebuiltNodesList.find((n) => n.type === xyNode.type);
 
   if (!canvasNode) return null;
 
-  const nodeColor = getNodeColorClasses(canvasNode?.color as NodeColors);
+  const handleNameSave = (newName: string) => {
+    updateNodeData(xyNode.id, { name: newName });
+  };
 
   function getClassNames() {
     let baseNode = "",
@@ -55,12 +65,19 @@ function NodeFrame({
       <BaseNode
         className={`h-full ${xyNode.selected ? "hover:ring-0" : "hover:ring-blue-300"} ${getClassNames().baseNode} `}
       >
-        {showNodeName && (
-          <div className={`${getClassNames().nodeName} rounded-t-md`}>
-            {canvasNode.name}
-          </div>
+        {showName && (
+          <BaseNodeHeader>
+            <BaseNodeHeaderTitle>
+              <InlineEditableText
+                value={(canvasNode?.data?.name as string) || "Sans nom"}
+                onSave={handleNameSave}
+                textClassName="text-sm font-semibold"
+                placeholder="Sans nom"
+              />
+            </BaseNodeHeaderTitle>
+          </BaseNodeHeader>
         )}
-        <BaseNodeContent className={`${getClassNames().baseNodeContent}`}>
+        <BaseNodeContent className={getClassNames().baseNodeContent}>
           {children}
         </BaseNodeContent>
       </BaseNode>

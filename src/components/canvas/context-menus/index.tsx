@@ -93,7 +93,9 @@ export default function ContextMenuWrapper({
       case "edge":
         return <EdgeContextMenu />;
       case "selection":
-        return <SelectionContextMenu />;
+        return (
+          <SelectionContextMenu closeMenu={handleClose} elements={element} />
+        );
       default:
         return null;
     }

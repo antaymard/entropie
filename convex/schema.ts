@@ -67,6 +67,7 @@ const schema = defineSchema({
     updatedAt: v.number(),
   })
     .index("by_creator", ["creatorId"])
+    .index("by_creator_and_updatedAt", ["creatorId", "updatedAt"])
     .searchIndex("search_name", {
       searchField: "name",
       filterFields: ["creatorId"],

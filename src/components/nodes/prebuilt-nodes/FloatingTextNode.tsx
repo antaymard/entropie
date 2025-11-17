@@ -1,6 +1,6 @@
 import { memo, useState, useRef, useEffect } from "react";
 import { useNode, useCanvasStore } from "../../../stores/canvasStore";
-import { type Node, NodeToolbar } from "@xyflow/react";
+import { type Node } from "@xyflow/react";
 import NodeFrame from "../NodeFrame";
 import { ToggleGroup, ToggleGroupItem } from "@/components/shadcn/toggle-group";
 import { ButtonGroup } from "@/components/shadcn/button-group";
@@ -9,8 +9,9 @@ import { MdOutlineModeEditOutline } from "react-icons/md";
 import { HiMiniXMark, HiMiniCheck } from "react-icons/hi2";
 import { LuHeading1, LuHeading2, LuHeading3 } from "react-icons/lu";
 import { BiParagraph } from "react-icons/bi";
-
-import ColorSelector from "../toolbar/ColorSelector";
+import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
+import { getNodeColorClasses } from "../nodeConfigs";
+import type { NodeColors } from "@/types/node.types";
 
 function FloatingTextNode(xyNode: Node) {
   const canvasNode = useNode(xyNode.id);
@@ -67,17 +68,14 @@ function FloatingTextNode(xyNode: Node) {
     { value: "h3", icon: <LuHeading3 />, className: "text-lg font-semibold" },
     { value: "p", icon: <BiParagraph />, className: "text-base font-normal" },
   ];
-  const textClassName =
+  const textLevelClassName =
     levels.find((l) => l.value === (canvasNode.data.level as string))
       ?.className || "";
 
   return (
     <>
-      <NodeToolbar
-        isVisible={xyNode.selected && !xyNode.dragging}
-        className="flex gap-2"
-      >
-        <ButtonGroup className="bg-card">
+      <CanvasNodeToolbar xyNode={xyNode} className="flex gap-2">
+        <ButtonGroup>
           {isEditing && (
             <>
               <Button variant="outline" onClick={handleSave}>
@@ -95,8 +93,6 @@ function FloatingTextNode(xyNode: Node) {
           )}
         </ButtonGroup>
 
-        <ColorSelector canvasNode={canvasNode} />
-
         {/* Change heading */}
         <ToggleGroup
           type="single"
@@ -104,7 +100,9 @@ function FloatingTextNode(xyNode: Node) {
           className="bg-card"
           value={(canvasNode.data.level as string) || "h1"}
           onValueChange={(value) => {
-            updateNodeData(xyNode.id, { level: value as string });
+            if (value) {
+              updateNodeData(xyNode.id, { level: value as string });
+            }
           }}
         >
           {levels.map((level) => (
@@ -113,33 +111,37 @@ function FloatingTextNode(xyNode: Node) {
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
-      </NodeToolbar>
+      </CanvasNodeToolbar>
 
-      <NodeFrame xyNode={xyNode} frameless>
-        {isEditing ? (
-          <input
-            ref={inputRef}
-            type="text"
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onBlur={handleBlur}
-            className={`w-full bg-transparent border-none outline-none ${textClassName}`}
-            style={{
-              font: "inherit",
-              padding: 0,
-              margin: 0,
-            }}
-          />
-        ) : (
-          <div
-            ref={textRef}
-            className={textClassName}
-            onDoubleClick={handleStartEdit}
-          >
-            {currentText}
-          </div>
-        )}
+      <NodeFrame xyNode={xyNode} borderless showNodeName={false}>
+        <div
+          ref={textRef}
+          className={
+            textLevelClassName +
+            " " +
+            getNodeColorClasses(canvasNode.color as NodeColors).text
+          }
+          onDoubleClick={handleStartEdit}
+        >
+          {isEditing ? (
+            <input
+              ref={inputRef}
+              type="text"
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onBlur={handleBlur}
+              className={`w-full bg-transparent border-none outline-none ${textLevelClassName}`}
+              style={{
+                font: "inherit",
+                padding: 0,
+                margin: 0,
+              }}
+            />
+          ) : (
+            currentText
+          )}
+        </div>
       </NodeFrame>
     </>
   );

@@ -7,14 +7,16 @@ export const getLastModifiedCanvas = query({
   handler: async (ctx) => {
     const authUserId = await requireAuth(ctx);
 
-    // Récupérer tous les canvas de l'utilisateur, triés par _creationTime décroissant
-    const canvases = await ctx.db
+    // Récupérer le dernier canvas modifié de l'utilisateur
+    const canvas = await ctx.db
       .query("canvases")
-      .withIndex("by_creator", (q) => q.eq("creatorId", authUserId))
+      .withIndex("by_creator_and_updatedAt", (q) =>
+        q.eq("creatorId", authUserId)
+      )
       .order("desc")
       .first();
 
-    return canvases;
+    return canvas;
   },
 });
 

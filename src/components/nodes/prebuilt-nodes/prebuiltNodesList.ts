@@ -1,5 +1,6 @@
 import type { NodeConfig } from "../../../types/node.types";
 import FloatingTextNode from "./FloatingTextNode";
+import UrlNode from "./UrlNode";
 
 const defaultValues = {
   name: "default node",
@@ -28,7 +29,7 @@ const prebuiltNodesList = [
     type: "floatingText",
     component: FloatingTextNode,
 
-    nodeClassName: "w-fit", // TODO
+    // nodeClassName: "w-fit", // TODO
 
     initialValues: {
       ...defaultValues,
@@ -39,6 +40,21 @@ const prebuiltNodesList = [
     },
     minWidth: 100,
     minHeight: 28,
+  },
+  {
+    addButtonLabel: "URL",
+    addButtonIcon: "🔗",
+    type: "url",
+    component: UrlNode,
+    initialValues: {
+      ...defaultValues,
+      color: "default",
+      name: "Bloc d'URL",
+      data: { url: "https://example.com" },
+      height: 100,
+    },
+    minWidth: 100,
+    minHeight: 100,
   },
 ] as NodeConfig[];
 

@@ -15,11 +15,13 @@ function NodeFrame({
   frameless = false,
   showName = true,
   children,
+  nodeContentClassName = "",
 }: {
   xyNode: Node;
   frameless?: boolean;
   showName?: boolean;
   children: React.ReactNode;
+  nodeContentClassName?: string;
 }) {
   const { updateNodeData } = useReactFlow();
   const nodeConfig = prebuiltNodesConfig.find((n) => n.type === xyNode.type);
@@ -45,6 +47,8 @@ function NodeFrame({
     baseNode += `${nodeColor.border} ${nodeColor.bg} ${nodeColor.text}`;
     nameContainer += `${nodeColor.darkBg} ${nodeColor.text} ${nodeColor.border}`;
 
+    console.log(baseNode);
+
     return {
       baseNode,
       baseNodeContent,
@@ -60,21 +64,27 @@ function NodeFrame({
       />
 
       <BaseNode
-        className={`h-full ${xyNode.selected ? "hover:ring-0" : "hover:ring-blue-300"} ${getClassNames().baseNode}`}
+        className={`h-full flex flex-col overflow-hidden ${xyNode.selected ? "hover:ring-0" : "hover:ring-blue-300"} ${getClassNames().baseNode}`}
       >
         {showName && (
           <div
-            className={`${getClassNames().nameContainer} px-2 py-1 border-b rounded-t-md`}
+            className={`${getClassNames().nameContainer} px-2 border-b rounded-t-md`}
           >
             <InlineEditableText
               value={(xyNode?.data?.name as string) || "Sans nom"}
               onSave={handleNameSave}
-              className=" font-semibold"
+              className=" font-semibold text-sm"
               placeholder="Sans nom"
             />
           </div>
         )}
-        <BaseNodeContent className={getClassNames().baseNodeContent}>
+        <BaseNodeContent
+          className={
+            getClassNames().baseNodeContent +
+            " flex-1 overflow-hidden " +
+            nodeContentClassName
+          }
+        >
           {children}
         </BaseNodeContent>
       </BaseNode>

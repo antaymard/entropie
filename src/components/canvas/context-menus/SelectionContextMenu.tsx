@@ -16,7 +16,12 @@ import {
   RiAlignItemBottomLine,
 } from "react-icons/ri";
 import { HiOutlineTrash } from "react-icons/hi";
-import { TbKeyframeAlignCenter } from "react-icons/tb";
+import {
+  TbKeyframeAlignCenter,
+  TbArrowAutofitWidth,
+  TbArrowAutofitHeight,
+} from "react-icons/tb";
+import { MdOutlineFitScreen } from "react-icons/md";
 
 export default function SelectionContextMenu({
   closeMenu,
@@ -27,7 +32,6 @@ export default function SelectionContextMenu({
 }) {
   const { deleteElements, updateNode } = useReactFlow();
 
-  // Doc pour updateNode (id: string, dataUpdate: Partial<Record<string, unknown>> | ((node: Node) => Partial<Record<string, unknown>>), options?: { replace: boolean; } | undefined) => void
   async function alignSelectedNodes(
     alignment: "left" | "right" | "top" | "bottom"
   ) {
@@ -90,6 +94,31 @@ export default function SelectionContextMenu({
     }
   }
 
+  async function uniformizeSelectedNodes(axis: "width" | "height") {
+    // Récupère la plus grande largeur ou hauteur et la donne à tous les noeuds
+    if (!Array.isArray(elements)) return;
+
+    let targetValue: number;
+    switch (axis) {
+      case "width":
+        targetValue = Math.max(
+          ...elements.map((node) => node.measured?.width || node.width || 0)
+        );
+        break;
+      case "height":
+        targetValue = Math.max(
+          ...elements.map((node) => node.measured?.height || node.height || 0)
+        );
+        break;
+    }
+    elements.forEach((node) => {
+      updateNode(
+        node.id,
+        axis === "width" ? { width: targetValue } : { height: targetValue }
+      );
+    });
+  }
+
   const alignements = [
     {
       label: "A gauche",
@@ -113,6 +142,19 @@ export default function SelectionContextMenu({
     },
   ];
 
+  const uniformizations = [
+    {
+      label: "Même largeur",
+      icon: TbArrowAutofitWidth,
+      onClick: () => uniformizeSelectedNodes("width"),
+    },
+    {
+      label: "Même hauteur",
+      icon: TbArrowAutofitHeight,
+      onClick: () => uniformizeSelectedNodes("height"),
+    },
+  ];
+
   return (
     <>
       <DropdownMenuLabel className="whitespace-nowrap">
@@ -128,6 +170,28 @@ export default function SelectionContextMenu({
         <DropdownMenuPortal>
           <DropdownMenuSubContent>
             {alignements.map(({ label, icon: Icon, onClick }, i) => (
+              <DropdownMenuItem
+                key={i}
+                onClick={() => {
+                  onClick();
+                  closeMenu();
+                }}
+              >
+                <Icon className="mr-2" />
+                {label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuSubContent>
+        </DropdownMenuPortal>
+      </DropdownMenuSub>
+
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger>
+          <MdOutlineFitScreen /> Uniformiser
+        </DropdownMenuSubTrigger>
+        <DropdownMenuPortal>
+          <DropdownMenuSubContent>
+            {uniformizations.map(({ label, icon: Icon, onClick }, i) => (
               <DropdownMenuItem
                 key={i}
                 onClick={() => {

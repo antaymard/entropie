@@ -85,6 +85,8 @@ export interface CanvasNode {
   color: NodeColors;
   locked: boolean;
   hidden: boolean;
+  frameless?: boolean;
+
   data: Record<string, unknown>;
 
   parentId?: string;
@@ -121,4 +123,5 @@ export interface NodeConfig {
   minWidth: number;
   minHeight: number;
   disableDoubleClickToOpenWindow?: boolean;
+  canSwitchFrameless?: boolean;
 }

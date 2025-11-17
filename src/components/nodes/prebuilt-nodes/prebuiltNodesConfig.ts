@@ -1,7 +1,7 @@
 import type { NodeConfig } from "../../../types/node.types";
 import FileUploadNode from "./FileUploadNode";
 import FloatingTextNode from "./FloatingTextNode";
-import ImageUrlNode from "./ImageUrlNode";
+import ImageNode from "./ImageNode";
 
 const defaultValues = {
   name: "default node",
@@ -43,21 +43,26 @@ const prebuiltNodesConfig = [
     disableDoubleClickToOpenWindow: true,
   },
   {
-    addButtonLabel: "Fichier",
-    nodeIcon: "📝",
-    type: "fileUpload",
-    component: FileUploadNode,
+    addButtonLabel: "Image",
+    nodeIcon: "🖼️",
+    type: "image",
+    component: ImageNode,
     initialValues: {
       ...defaultValues,
       data: {
-        name: "Bloc de texte",
-        color: "transparent",
+        name: "Bloc d'image",
+        color: "default",
+        frameless: false,
+        // Actual data
+        url: "",
       },
-      height: 28,
+      height: 200,
+      width: 250,
     },
     minWidth: 100,
-    minHeight: 28,
+    minHeight: 100,
     disableDoubleClickToOpenWindow: true,
+    canSwitchFrameless: true,
   },
   // {
   //   addButtonLabel: "Image",

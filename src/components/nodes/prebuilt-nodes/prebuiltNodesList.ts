@@ -1,10 +1,6 @@
 import type { NodeConfig } from "../../../types/node.types";
 import FloatingTextNode from "./FloatingTextNode";
-<<<<<<< HEAD
-import UrlNode from "./UrlNode";
-=======
 import ImageUrlNode from "./ImageUrlNode";
->>>>>>> 96145750d3d5d73559d8fed7f26a1292e5525856
 
 const defaultValues = {
   name: "default node",

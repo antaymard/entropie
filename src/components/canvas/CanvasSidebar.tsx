@@ -16,7 +16,7 @@ import {
   SidebarTrigger,
 } from "../shadcn/sidebar";
 import CanvasCreationModal from "./CanvasCreationModal";
-import { useState } from "react";
+import { useState, memo } from "react";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { api } from "@/../convex/_generated/api";
 import { Link } from "@tanstack/react-router";
@@ -35,7 +35,7 @@ import {
   DialogTrigger,
 } from "@/components/shadcn/dialog";
 
-export default function CanvasSidebar({
+function CanvasSidebar({
   currentCanvasId,
 }: {
   currentCanvasId: Id<"canvases">;
@@ -161,3 +161,5 @@ export default function CanvasSidebar({
     </>
   );
 }
+
+export default memo(CanvasSidebar);

@@ -3,7 +3,7 @@ import type { NodeField, NodeTemplate } from "../../types";
 import {
   fieldDefinitions,
   type FieldDefinition,
-} from "../fields/fieldDefinitions";
+} from "../_fields/fieldDefinitions";
 
 interface FieldSelectionDropdownProps {
   setFieldDropdownOpen?: (open: boolean) => void;

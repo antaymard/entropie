@@ -1,4 +1,11 @@
-import { memo, useState, useRef, useEffect, useCallback, type JSX } from "react";
+import {
+  memo,
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  type JSX,
+} from "react";
 import { cn } from "@/lib/utils";
 import { get, set } from "lodash";
 import { useFormikContextSafe } from "@/hooks/useFormikContextSafe";
@@ -23,11 +30,6 @@ interface InlineEditableTextProps {
    * Classes CSS pour le wrapper
    */
   className?: string;
-
-  /**
-   * Classes CSS pour le texte/input
-   */
-  textClassName?: string;
 
   /**
    * Placeholder quand le texte est vide
@@ -73,7 +75,6 @@ function InlineEditableText({
   onSave,
   name,
   className,
-  textClassName,
   placeholder = "Cliquez pour éditer...",
   saveOnBlur = true,
   as: Element = "span",
@@ -87,9 +88,10 @@ function InlineEditableText({
   const formikContext = useFormikContextSafe<any>();
 
   // Déterminer la valeur actuelle (Formik ou externe)
-  const currentValue = name && formikContext
-    ? (get(formikContext.values, name) as string) || ""
-    : externalValue || "";
+  const currentValue =
+    name && formikContext
+      ? (get(formikContext.values, name) as string) || ""
+      : externalValue || "";
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -155,10 +157,7 @@ function InlineEditableText({
           onKeyDown={handleKeyDown}
           onBlur={handleBlur}
           placeholder={placeholder}
-          className={cn(
-            "w-full bg-transparent border-none outline-none",
-            textClassName
-          )}
+          className={cn("w-full bg-transparent border-none outline-none")}
           style={{
             font: "inherit",
             padding: 0,
@@ -166,10 +165,7 @@ function InlineEditableText({
           }}
         />
       ) : (
-        <Element
-          className={cn("cursor-text", textClassName)}
-          onDoubleClick={handleStartEdit}
-        >
+        <Element className={cn("cursor-text")} onDoubleClick={handleStartEdit}>
           {currentValue || placeholder}
         </Element>
       )}

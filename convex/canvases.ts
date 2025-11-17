@@ -31,7 +31,11 @@ export const getUserCanvases = query({
       .withIndex("by_creator", (q) => q.eq("creatorId", authUserId))
       .collect();
 
-    return canvases;
+    // Retourner seulement l'id et le nom
+    return canvases.map((canvas) => ({
+      _id: canvas._id,
+      name: canvas.name,
+    }));
   },
 });
 
@@ -121,8 +125,6 @@ export const updateCanvasContent = mutation({
   },
   handler: async (ctx, { canvasId, nodes, edges }) => {
     const authUserId = await requireAuth(ctx);
-
-    console.log(nodes);
 
     // Vérifier si l'utilisateur est le créateur du canvas
     const canvas = await ctx.db.get(canvasId);

@@ -1,21 +1,35 @@
-import { NodeToolbar, type Node } from "@xyflow/react";
+import { NodeToolbar, type Node, useStore } from "@xyflow/react";
 import { memo } from "react";
 import ColorSelector from "./ColorSelector";
-import type { CanvasNode } from "@/types";
+
+const selectedNodesCountSelector = (state: { nodes: Node[] }) =>
+  state.nodes.filter((node) => node.selected).length;
 
 function CanvasNodeToolbar({
   children,
   xyNode,
-  canvasNode,
+  className,
 }: {
   children?: React.ReactNode;
   xyNode: Node;
-  canvasNode: CanvasNode;
+  className?: string;
 }) {
+  const selectedNodesCount = useStore(selectedNodesCountSelector);
+
+  // Early return si le node n'est pas sélectionné
+  if (!xyNode.selected) {
+    return null;
+  }
+
+  const isVisible = !xyNode.dragging && selectedNodesCount === 1;
+
   return (
-    <NodeToolbar isVisible={xyNode.selected && !xyNode.dragging}>
+    <NodeToolbar
+      isVisible={isVisible}
+      className={`flex gap-2 ${className || ""}`}
+    >
       {children}
-      <ColorSelector canvasNode={canvasNode} />
+      <ColorSelector xyNode={xyNode} />
     </NodeToolbar>
   );
 }

@@ -6,20 +6,24 @@ import {
   Controls,
   type Edge,
   ReactFlowProvider,
+  type Node,
+  useNodesState,
+  useEdgesState,
+  type NodeChange,
+  type EdgeChange,
+  Panel,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
-import { useQuery } from "convex/react";
-import nodeTypes from "../../components/nodes/nodeTypes";
+import { useMutation, useQuery } from "convex/react";
+import { nodeTypes, nodeList } from "../../components/nodes/nodeTypes";
 import { useCanvasStore } from "../../stores/canvasStore";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ContextMenu from "../../components/canvas/context-menus";
-import type { CanvasNode } from "../../types/node.types";
-import { toReactFlowNode } from "../../components/utils/nodeUtils";
+import { toConvexNodes, toXyNodes } from "../../components/utils/nodeUtils";
 import {
   Card,
-  CardAction,
   CardContent,
   CardFooter,
   CardHeader,
@@ -28,6 +32,13 @@ import {
 import { Button } from "@/components/shadcn/button";
 import { SidebarProvider } from "@/components/shadcn/sidebar";
 import CanvasSidebar from "@/components/canvas/CanvasSidebar";
+import type { Canvas } from "@/types";
+import { debounce } from "lodash";
+import { toastError } from "@/components/utils/errorUtils";
+import WindowsContainer from "@/components/windows/WindowsContainer";
+import { useWindowsStore } from "@/stores/windowsStore";
+import type { NodeType } from "@/types/node.types";
+import WindowsBottomBar from "@/components/windows/bottom-bar/WindowsBottomBar";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -39,8 +50,11 @@ function RouteComponent() {
   // Fetch canvas data
   const canvas = useQuery(api.canvases.getCanvas, {
     canvasId: canvasId,
-  });
+  }) as Canvas | null | undefined;
 
+  const saveCanvasInConvex = useMutation(api.canvases.updateCanvasContent);
+
+  // Context menu state
   const [contextMenu, setContextMenu] = useState<{
     type: "node" | "edge" | "canvas" | null;
     position: { x: number; y: number };
@@ -52,40 +66,141 @@ function RouteComponent() {
   });
 
   // Zustand store
-  const nodes = useCanvasStore((state) => state.nodes);
-  const edges = useCanvasStore((state) => state.edges);
-  const onNodesChange = useCanvasStore((state) => state.onNodesChange);
-  const onEdgesChange = useCanvasStore((state) => state.onEdgesChange);
-  const setNodes = useCanvasStore((state) => state.setNodes);
-  const setEdges = useCanvasStore((state) => state.setEdges);
+  const setCanvas = useCanvasStore((state) => state.setCanvas);
+  const canvasStatus = useCanvasStore((state) => state.status);
+  const setCanvasStatus = useCanvasStore((state) => state.setStatus);
+  const openWindow = useWindowsStore((state) => state.openWindow);
 
-  // Define handleRightClick before any early returns
-  const handleRightClick = useCallback(
-    function (
-      e: React.MouseEvent | MouseEvent,
-      type: "node" | "edge" | "canvas",
-      element: object | null
-    ) {
+  // xyFlow states
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  const hasInitialized = useRef(false);
+  const [saveIncrement, setSaveIncrement] = useState(0); // To trigger save effect
+
+  // ======= Handlers =======
+
+  const handleRightClick = useCallback(function (
+    e: React.MouseEvent | MouseEvent,
+    type: "node" | "edge" | "canvas" | "selection",
+    element: object | null
+  ) {
+    e.preventDefault();
+
+    setContextMenu({
+      type,
+      position: { x: e.clientX, y: e.clientY },
+      element,
+    });
+  }, []);
+
+  const handlePaneContextMenu = useCallback(
+    (e: React.MouseEvent | MouseEvent) => handleRightClick(e, "canvas", null),
+    [handleRightClick]
+  );
+
+  const handleNodeContextMenu = useCallback(
+    (e: React.MouseEvent | MouseEvent, node: Node) =>
+      handleRightClick(e, "node", node),
+    [handleRightClick]
+  );
+
+  const handleSelectionContextMenu = useCallback(
+    (e: React.MouseEvent | MouseEvent, nodes: Node[]) =>
+      handleRightClick(e, "selection", nodes),
+    [handleRightClick]
+  );
+
+  const handleNodeDoubleClick = useCallback(
+    (e: React.MouseEvent | MouseEvent, node: Node) => {
       e.preventDefault();
-      setContextMenu({
-        type,
-        position: { x: e.clientX, y: e.clientY },
-        element,
+      // Checker dans nodeList si le node a la propriété doubleClickToOpenWindow à true
+      const nodeInfo = nodeList.find((n) => n.type === node.type);
+      if (nodeInfo?.disableDoubleClickToOpenWindow) return;
+
+      // Open a window for this node
+      openWindow({
+        id: node.id,
+        type: node.type as NodeType,
+        position: { x: 100, y: 100 },
+        width: 400,
+        height: 300,
+        isMinimized: false,
       });
     },
-    [setContextMenu]
+    [openWindow]
   );
+
+  const debouncedSave = useMemo(
+    () =>
+      debounce((currentNodes: Node[], currentEdges: Edge[]) => {
+        try {
+          setCanvasStatus("saving");
+          saveCanvasInConvex({
+            canvasId,
+            nodes: toConvexNodes(currentNodes), // Retransform en format base
+            edges: currentEdges,
+          });
+          setCanvasStatus("saved");
+        } catch (error) {
+          toastError(error, "Erreur lors de la sauvegarde de l'espace");
+          setCanvasStatus("error");
+        }
+      }, 5000),
+    [canvasId, saveCanvasInConvex]
+  );
+
+  function handleNodesChange(changes: NodeChange<Node>[]) {
+    onNodesChange(changes);
+    // Si tous les changes ne sont pas de type select, on incrémente le saveIncrement
+    if (!changes.every((change) => change.type === "select")) {
+      setSaveIncrement((prev) => prev + 1);
+    }
+  }
+
+  function handleEdgesChange(changes: EdgeChange<Edge>[]) {
+    onEdgesChange(changes);
+  }
+
+  // Auto-save when nodes or edges change
+  useEffect(() => {
+    if (!hasInitialized.current) return;
+    if (canvasStatus === "saving") return; // Prevent multiple saves
+    if (canvasStatus !== "unsynced") setCanvasStatus("unsynced");
+
+    debouncedSave(nodes, edges);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [saveIncrement, debouncedSave]);
 
   // Load data from database into store
   useEffect(() => {
-    if (canvas?.nodes) {
-      const reactFlowNodes = canvas.nodes.map(toReactFlowNode);
-      setNodes(reactFlowNodes as CanvasNode[]);
+    if (canvas && !hasInitialized.current) {
+      setCanvas(canvas);
+      setNodes(toXyNodes(canvas.nodes));
+      setEdges(canvas.edges || []);
+      hasInitialized.current = true;
     }
-    if (canvas?.edges) setEdges(canvas.edges as Edge[]);
-  }, [canvas, setNodes, setEdges]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canvas]);
 
-  // Handle loading and error states
+  useEffect(() => {
+    hasInitialized.current = false;
+  }, [canvasId]);
+
+  // Warn before leaving if unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (canvasStatus !== "saved") {
+        e.preventDefault();
+        e.returnValue = ""; // Modern browsers ignore custom messages
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [canvasStatus]);
+
+  // ======= Render =======
+
   if (canvas === undefined) {
     return (
       <div className="h-full w-full flex items-center justify-center bg-gray-50">
@@ -119,22 +234,28 @@ function RouteComponent() {
       <div className="h-screen w-screen bg-gray-50 flex flex-col">
         <CanvasSidebar currentCanvasId={canvasId} />
         <ReactFlowProvider>
-          <CanvasTopBar canvasName={canvas?.name} canvasId={canvasId} />
+          <CanvasTopBar />
           <div className="flex-1 w-full">
             <ReactFlow
               panOnScroll
-              selectionOnDrag
               panOnDrag={[1]}
+              selectNodesOnDrag={false}
+              selectionOnDrag
               nodeTypes={nodeTypes}
               nodes={nodes}
               edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onPaneContextMenu={(e) => handleRightClick(e, "canvas", null)}
+              onNodesChange={handleNodesChange}
+              onEdgesChange={handleEdgesChange}
+              onPaneContextMenu={handlePaneContextMenu}
+              onNodeContextMenu={handleNodeContextMenu}
+              onSelectionContextMenu={handleSelectionContextMenu}
+              onNodeDoubleClick={handleNodeDoubleClick}
             >
               <Background bgColor="#f9fafb" />
               <Controls />
-              {/* <Panel position="bottom-center">TODO</Panel> */}
+              <Panel position="bottom-right">
+                <WindowsBottomBar />
+              </Panel>
             </ReactFlow>
           </div>
           {contextMenu.type && (
@@ -143,6 +264,7 @@ function RouteComponent() {
               setContextMenu={setContextMenu}
             />
           )}
+          <WindowsContainer />
         </ReactFlowProvider>
       </div>
     </SidebarProvider>

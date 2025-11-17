@@ -7,9 +7,9 @@ import type {
 import { useNodeEditorContext } from "../../hooks/useNodeEditorContext";
 import { get } from "lodash";
 import { useContext, type CSSProperties } from "react";
-import ShortTextField from "../fields/ShortTextField";
-import UrlField from "../fields/UrlField";
-import ImageUrlField from "../fields/ImageUrlField";
+import ShortTextField from "../_fields/ShortTextField";
+import UrlField from "../_fields/UrlField";
+import ImageUrlField from "../_fields/ImageUrlField";
 import { NodeEditorContext } from "../../stores/node-editor-stores/NodeEditorContext";
 
 export default function NodeTemplateRenderer() {

@@ -1,4 +1,4 @@
-import { NodeResizer, useReactFlow, type Node, useStore } from "@xyflow/react";
+import { NodeResizer, useReactFlow, type Node } from "@xyflow/react";
 import { memo } from "react";
 import type { NodeColors } from "../../types/node.types";
 import prebuiltNodesConfig from "./prebuilt-nodes/prebuiltNodesConfig";
@@ -9,9 +9,6 @@ import InlineEditableText from "../common/InlineEditableText";
 function getNodeColorClasses(color: NodeColors) {
   return nodeColors[color] || nodeColors["default"];
 }
-
-const selectedNodesCountSelector = (state: { nodes: Node[] }) =>
-  state.nodes.filter((node) => node.selected).length;
 
 function NodeFrame({
   xyNode,
@@ -28,7 +25,6 @@ function NodeFrame({
 }) {
   const { updateNodeData } = useReactFlow();
   const nodeConfig = prebuiltNodesConfig.find((n) => n.type === xyNode.type);
-  const selectedNodesCount = useStore(selectedNodesCountSelector);
 
   if (!xyNode) return null;
 
@@ -57,16 +53,12 @@ function NodeFrame({
       nameContainer,
     };
   }
-
-  const isVisible =
-    xyNode.selected && !xyNode?.dragging && selectedNodesCount === 1;
-
   return (
     <>
       <NodeResizer
         minWidth={nodeConfig?.minWidth || 150}
         minHeight={nodeConfig?.minHeight || 100}
-        isVisible={isVisible}
+        isVisible={xyNode?.selected}
         lineStyle={{
           // padding: 1,
           borderWidth: 2,

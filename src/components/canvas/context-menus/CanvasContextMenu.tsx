@@ -35,7 +35,7 @@ export default function ContextMenu({
           key={nodeType.type}
           className="w-48"
           onClick={() => {
-            const newNodeId = `node-${Date.now()}`;
+            const newNodeId = `node-${crypto.randomUUID()}`;
 
             // Ajouter le nouveau node dans le state Zustand (DB)
             addNodes({

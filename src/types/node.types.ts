@@ -2,6 +2,8 @@
 // Node Template Types
 // ===========================================================================
 
+import type { FieldType } from "./field.types";
+
 export interface NodeTemplate {
   _id: string;
   _creationTime: number;
@@ -28,17 +30,6 @@ export interface NodeTemplate {
 
   updatedAt: number;
 }
-
-export type FieldType =
-  | "short_text"
-  | "url"
-  | "select"
-  | "image"
-  | "image_url"
-  | "number"
-  | "date"
-  | "rich_text"
-  | "boolean";
 
 export interface NodeField {
   id: string;

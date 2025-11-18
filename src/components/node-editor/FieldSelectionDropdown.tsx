@@ -1,9 +1,7 @@
 import { useFormikContext } from "formik";
 import type { NodeField, NodeTemplate } from "../../types";
-import {
-  fieldDefinitions,
-  type FieldDefinition,
-} from "../_fields/fieldDefinitions";
+import fieldsDefinition from "../fields/fieldsDefinition";
+import type { FieldDefinition } from "@/types/field.types";
 
 interface FieldSelectionDropdownProps {
   setFieldDropdownOpen?: (open: boolean) => void;
@@ -19,14 +17,13 @@ export default function FieldSelectionDropdown({
     setFieldValue("fields", [...values.fields, newField]);
   }
 
-  const fieldsOptions = fieldDefinitions.map((field: FieldDefinition) => ({
+  const fieldsOptions = fieldsDefinition.map((field: FieldDefinition) => ({
     ...field,
     onclick: () =>
       addField({
         id: crypto.randomUUID(),
         name: field.label,
         type: field.type,
-        options: field.options,
       }),
   }));
 

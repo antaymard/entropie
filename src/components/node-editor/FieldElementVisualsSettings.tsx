@@ -2,7 +2,7 @@ import { useFormikContext } from "formik";
 import { getFieldFromId } from "../utils/editorUtils";
 
 // Where the field element settings will be defined
-export default function FieldElementSettings({
+export default function FieldElementVisualSettings({
   elementPath,
   elementId,
 }: {

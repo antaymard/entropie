@@ -3,7 +3,7 @@ import { useNodeEditorContext } from "../../hooks/useNodeEditorContext";
 import { returnElementPathInLayout } from "../utils/editorUtils";
 import type { LayoutElement } from "../../types";
 import { get } from "lodash";
-import FieldElementSettings from "./FieldElementSettings";
+import FieldElementVisualsSettings from "./FieldElementVisualsSettings";
 import { DivElementSettings } from "./DivElementSettings";
 
 export default function NodeEditorRightPanel() {
@@ -23,7 +23,7 @@ export default function NodeEditorRightPanel() {
       return <DivElementSettings elementPath={elementPath} />;
     } else if (selectedElementId) {
       return (
-        <FieldElementSettings
+        <FieldElementVisualsSettings
           elementPath={elementPath}
           elementId={selectedElementId}
         />

@@ -5,7 +5,7 @@ import { RxDragHandleDots2 } from "react-icons/rx";
 import { HiMiniTrash } from "react-icons/hi2";
 import type { LayoutElement, NodeField, NodeTemplate } from "../../types";
 import type { FieldDefinition } from "@/types/field.types";
-import InlineEditableText from "@/components/common/InlineEditableText";
+import InlineEditableText from "@/components/form-ui/InlineEditableText";
 import {
   Popover,
   PopoverTrigger,
@@ -13,6 +13,13 @@ import {
 } from "@/components/shadcn/popover";
 import { HiOutlineCog } from "react-icons/hi";
 import TextInput from "../form-ui/TextInput";
+import Toggle from "../form-ui/Toggle";
+import Toggles from "../form-ui/Toggles";
+import { Button } from "../shadcn/button";
+import { deleteElementFromLayout } from "../utils/editorUtils";
+import { useNodeEditorContext } from "@/hooks/useNodeEditorContext";
+import { get } from "lodash";
+import SelectBuilder from "../form-ui/SelectBuilder";
 
 export default function FieldItemWithOptionsEdition({
   field,
@@ -38,49 +45,43 @@ export default function FieldItemWithOptionsEdition({
     transform: CSS.Transform.toString(transform),
   };
 
-  function deleteNodeField(fieldId: string) {
-    const updatedFields = values.fields.filter((f) => f.id !== fieldId);
-    setFieldValue("fields", updatedFields);
-  }
-
   // Trouve l'index du champ dans le tableau pour construire le chemin Formik
   const fieldIndex = values.fields.findIndex((f) => f.id === field.id);
 
-  // Here goes the component JSX, here because used in two places (normal and drag preview)
-  const component = (
-    <div className="rounded-md bg-gray-100 px-3 py-2 hover:bg-gray-200 flex items-center gap-2 cursor-grab active:cursor-grabbing">
-      <div
-        className="flex gap-2 items-center flex-1 min-w-0"
-        ref={setNodeRef}
-        {...attributes}
-        {...listeners}
-      >
-        <RxDragHandleDots2 size={18} />
-        {IconComponent && <IconComponent size={18} />}
-        <InlineEditableText
-          name={`fields.${fieldIndex}.name`}
-          placeholder="Nom du champ..."
-          className="flex-1 truncate"
-        />
-      </div>
-      <Popover>
-        <PopoverTrigger>
-          <HiOutlineCog size={16} />
-        </PopoverTrigger>
-        <PopoverContent align="start" data-no-dnd="true">
-          <FieldOptions
-            fieldIndex={fieldIndex}
-            fieldDefinition={fieldDefinition}
-            field={field}
-          />
-        </PopoverContent>
-      </Popover>
-    </div>
-  );
-
   return (
     <div className="relative">
-      <div style={style}>{component}</div>
+      <div style={style}>
+        <div className="rounded-md bg-gray-100 px-3 py-2 hover:bg-gray-200 flex items-center gap-2 cursor-grab active:cursor-grabbing">
+          <div
+            className="flex gap-2 items-center flex-1 min-w-0"
+            ref={setNodeRef}
+            {...attributes}
+            {...listeners}
+          >
+            <RxDragHandleDots2 size={18} />
+            {IconComponent && <IconComponent size={18} />}
+            <InlineEditableText
+              name={`fields.${fieldIndex}.name`}
+              placeholder="Nom du champ..."
+              className="flex-1 truncate"
+            />
+          </div>
+          <Popover>
+            <PopoverTrigger>
+              <HiOutlineCog size={16} />
+            </PopoverTrigger>
+            <PopoverContent align="start">
+              <FieldOptions
+                fieldIndex={fieldIndex}
+                fieldDefinition={fieldDefinition}
+                field={field}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
+
+      {/* Ce qui reste en place quand on drag l'élément. Clone visuel simplifié */}
       {isDragging && (
         <div className="absolute top-0 w-full">
           <div className="rounded-md bg-gray-100 px-3 py-2 hover:bg-gray-200 flex items-center gap-2 cursor-grab active:cursor-grabbing">
@@ -110,7 +111,23 @@ function FieldOptions({
   field: NodeField;
 }) {
   const { values, setFieldValue } = useFormikContext<NodeTemplate>();
-  console.log(fieldDefinition);
+  const { currentVisualLayoutPath } = useNodeEditorContext();
+
+  function deleteNodeField(fieldId: string) {
+    const updatedFields = values.fields.filter((f) => f.id !== fieldId);
+    setFieldValue("fields", updatedFields);
+
+    // Delete from layout if present
+    const nodeVisualLayoutToEdit = get(
+      values,
+      currentVisualLayoutPath
+    ) as LayoutElement;
+    const updatedLayout = deleteElementFromLayout(
+      fieldId,
+      nodeVisualLayoutToEdit
+    );
+    setFieldValue(currentVisualLayoutPath, updatedLayout);
+  }
 
   function renderOption(option, i) {
     switch (option.type) {
@@ -123,25 +140,54 @@ function FieldOptions({
             name={`fields.${fieldIndex}.options.${option.key}`}
           />
         );
+      case "boolean":
+        return (
+          <Toggle
+            key={i}
+            name={`fields.${fieldIndex}.options.${option.key}`}
+            label={option.label}
+          />
+        );
+      case "toggleGroup":
+        return (
+          <Toggles
+            key={i}
+            name={`fields.${fieldIndex}.options.${option.key}`}
+            label={option.label}
+            {...option.props}
+          />
+        );
+      case "selectBuilder":
+        return (
+          <SelectBuilder
+            key={i}
+            name={`fields.${fieldIndex}.options.${option.key}`}
+            label={option.label}
+            {...option.props}
+          />
+        );
       default:
         return "NOMATCH";
     }
   }
 
   return (
-    <div>
+    <div className="flex flex-col gap-6">
+      <h2 className="font-semibold">Options du champ</h2>
       {fieldDefinition.optionsList?.length &&
         fieldDefinition.optionsList?.map(renderOption)}
+
+      <div>
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          onClick={() => deleteNodeField(field.id)}
+        >
+          <HiMiniTrash size={18} />
+          Supprimer
+        </Button>
+      </div>
     </div>
   );
-}
-
-{
-  /* <button
-  type="button"
-  className="shrink-0hover:text-pink-400 text-gray-400"
-  onClick={() => deleteNodeField(field.id)}
->
-  <HiMiniTrash size={18} />
-</button>; */
 }

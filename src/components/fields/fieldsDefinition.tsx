@@ -13,7 +13,40 @@ const fieldsDefinition: FieldDefinition[] = [
     icon: RiTextBlock,
     description: "Texte court et non formatté. Pratique pour les titres.",
     optionsList: [
-      { key: "placeholder", label: "Texte indicatif", type: "string" },
+      {
+        key: "placeholder",
+        label: "Placeholder (affiché dans le champ vide)",
+        type: "string",
+      },
+      {
+        key: "showLabel",
+        label: "Afficher le label au dessus du champ",
+        type: "boolean",
+      },
+      {
+        key: "displayAs",
+        label: "Formattage du texte",
+        type: "toggleGroup",
+        props: {
+          type: "single",
+          options: [
+            { value: "h1", label: "h1" },
+            { value: "h2", label: "h2" },
+            { value: "h3", label: "h3" },
+            { value: "p", label: "Paragraphe" },
+          ],
+        },
+      },
+      {
+        key: "isMultipleSelect",
+        label: "Autoriser les choix multiples",
+        type: "boolean",
+      },
+      {
+        key: "selectChoices",
+        label: "Choix disponibles",
+        type: "selectBuilder",
+      },
     ],
     visuals: {
       node: {

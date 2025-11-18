@@ -246,7 +246,7 @@ function FieldElement({
         {fieldDetails?.fieldDefinition?.icon && (
           <fieldDetails.fieldDefinition.icon />
         )}
-        <p className="truncate flex-1">{fieldDetails?.nodeField.name}</p>
+        <p className="truncate flex-1">{fieldDetails?.nodeField?.name}</p>
       </div>
 
       <OrganizeButtons

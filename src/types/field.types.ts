@@ -10,6 +10,7 @@ export interface FieldDefinition {
     key: string;
     label: string;
     type: string;
+    props?: any;
   }>;
   visuals?: {
     node: Record<string, unknown>;

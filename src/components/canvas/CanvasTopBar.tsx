@@ -6,7 +6,7 @@ import { Link } from "@tanstack/react-router";
 import { HiOutlineCog } from "react-icons/hi";
 import { TbLayoutSidebarLeftExpand } from "react-icons/tb";
 import { useSidebar } from "../shadcn/sidebar";
-import InlineEditableText from "../common/InlineEditableText";
+import InlineEditableText from "../form-ui/InlineEditableText";
 import { TbCloudCheck, TbCloudUp, TbCloudX } from "react-icons/tb";
 import { memo } from "react";
 

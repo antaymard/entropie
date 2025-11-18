@@ -4,7 +4,7 @@ import type { NodeColors } from "../../types/node.types";
 import prebuiltNodesConfig from "./prebuilt-nodes/prebuiltNodesConfig";
 import { BaseNode, BaseNodeContent } from "./base-node";
 import nodeColors from "./nodeColors";
-import InlineEditableText from "../common/InlineEditableText";
+import InlineEditableText from "../form-ui/InlineEditableText";
 
 function getNodeColorClasses(color: NodeColors) {
   return nodeColors[color] || nodeColors["default"];

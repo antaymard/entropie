@@ -77,6 +77,7 @@ function NodeFrame({
         {showName && (
           <div
             className={`${getClassNames().nameContainer} px-2 border-b rounded-t-md`}
+            onDoubleClick={(e) => e.stopPropagation()} // Block global node doubleclick trigger
           >
             <InlineEditableText
               value={(xyNode?.data?.name as string) || "Sans nom"}

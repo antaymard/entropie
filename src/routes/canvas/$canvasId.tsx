@@ -12,6 +12,7 @@ import {
   type NodeChange,
   type EdgeChange,
   Panel,
+  SelectionMode,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { api } from "../../../convex/_generated/api";
@@ -241,6 +242,7 @@ function RouteComponent() {
               panOnDrag={[1]}
               selectNodesOnDrag={false}
               selectionOnDrag
+              selectionMode={SelectionMode.Partial}
               nodeTypes={nodeTypes}
               nodes={nodes}
               edges={edges}

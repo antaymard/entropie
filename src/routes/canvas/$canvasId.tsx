@@ -145,7 +145,7 @@ function RouteComponent() {
           toastError(error, "Erreur lors de la sauvegarde de l'espace");
           setCanvasStatus("error");
         }
-      }, 5000),
+      }, 3500),
     [canvasId, saveCanvasInConvex]
   );
 

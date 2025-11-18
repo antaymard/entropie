@@ -12,7 +12,7 @@ const fieldsDefinition: FieldDefinition[] = [
     type: "short_text",
     icon: RiTextBlock,
     description: "Texte court et non formatté. Pratique pour les titres.",
-    optionsList: [
+    fieldOptions: [
       {
         key: "placeholder",
         label: "Placeholder (affiché dans le champ vide)",

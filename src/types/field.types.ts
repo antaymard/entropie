@@ -6,7 +6,7 @@ export interface FieldDefinition {
 
   // Par exemple pour un select : { options: [ "option1", "option2" ] }
   //   Indépendant du visual choisi
-  optionsList?: Array<{
+  fieldOptions?: Array<{
     key: string;
     label: string;
     type: string;

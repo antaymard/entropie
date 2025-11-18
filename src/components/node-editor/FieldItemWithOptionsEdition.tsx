@@ -174,8 +174,8 @@ function FieldOptions({
   return (
     <div className="flex flex-col gap-6">
       <h2 className="font-semibold">Options du champ</h2>
-      {fieldDefinition.optionsList?.length &&
-        fieldDefinition.optionsList?.map(renderOption)}
+      {fieldDefinition.fieldOptions?.length &&
+        fieldDefinition.fieldOptions?.map(renderOption)}
 
       <div>
         <Button

@@ -5,6 +5,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/shadcn/dropdown-menu";
+import { toXyNode } from "@/components/utils/nodeUtils";
 
 export default function ContextMenu({
   closeMenu,
@@ -38,8 +39,8 @@ export default function ContextMenu({
 
             // Ajouter le nouveau node dans le state Zustand (DB)
             addNodes({
+              ...toXyNode(nodeType.initialNodeValues),
               id: newNodeId,
-              ...nodeType.initialValues,
               type: nodeType.type,
               position: newNodePosition,
             });
@@ -58,7 +59,7 @@ export default function ContextMenu({
             closeMenu();
           }}
         >
-          {nodeType.nodeIcon} {nodeType.addButtonLabel}
+          {nodeType.nodeIcon} {nodeType.nodeLabel}
         </DropdownMenuItem>
       ))}
     </>

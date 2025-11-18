@@ -16,9 +16,9 @@ function RouteComponent() {
     | NodeTemplate[]
     | undefined;
 
-  const [editingTemplateId, setEditingTemplateId] = useState<Id<"nodeTemplates"> | "new" | null>(
-    null
-  );
+  const [editingTemplateId, setEditingTemplateId] = useState<
+    Id<"nodeTemplates"> | "new" | null
+  >(null);
 
   function renderUserTemplates() {
     if (userTemplates === undefined) return <i>Chargement des templates...</i>;
@@ -37,8 +37,14 @@ function RouteComponent() {
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {userTemplates.map((template, i) => (
-          <div key={i} className="border border-gray-300 p-4 rounded-md cursor-pointer" onClick={() => setEditingTemplateId(template._id)}>
+        {userTemplates.map((template: NodeTemplate, i) => (
+          <div
+            key={i}
+            className="border border-gray-300 p-4 rounded-md cursor-pointer"
+            onClick={() =>
+              setEditingTemplateId(template._id as Id<"nodeTemplates">)
+            }
+          >
             <h3 className="text-lg font-semibold">{template.name}</h3>
             <p className="text-sm text-gray-500">{template.description}</p>
           </div>
@@ -56,18 +62,20 @@ function RouteComponent() {
 
       <div>{renderUserTemplates()}</div>
 
-      {editingTemplateId && <Modal
-        isModalOpen
-        clickOutsideToClose={false}
-        close={() => setEditingTemplateId(null)}
-        modalStyle={{
-          width: "100%",
-          height: "100%",
-        }}
-        modalTitle={editingTemplateId === "new" ? "Nouveau template" : "TODO"}
-      >
-        <NodeEditor templateId={editingTemplateId} />
-      </Modal>}
+      {editingTemplateId && (
+        <Modal
+          isModalOpen
+          clickOutsideToClose={false}
+          close={() => setEditingTemplateId(null)}
+          modalStyle={{
+            width: "100%",
+            height: "100%",
+          }}
+          modalTitle={editingTemplateId === "new" ? "Nouveau template" : "TODO"}
+        >
+          <NodeEditor templateId={editingTemplateId} />
+        </Modal>
+      )}
     </>
   );
 }

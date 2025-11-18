@@ -67,12 +67,12 @@ export interface LayoutElement {
 // Nodes on the canvas
 // ===========================================================================
 
-export type NodeType = "default" | "floatingText";
+export type NodeType = "default" | "floatingText" | "custom";
 
-// Made for react flow
+// Convex format
 export interface CanvasNode {
   id: string; // Pas _id car sous objet de canvas, qui lui un _id
-  name?: string;
+  name: string;
   type: string;
   templateId?: string;
   position: {
@@ -87,22 +87,11 @@ export interface CanvasNode {
   hidden: boolean;
   frameless?: boolean;
 
-  data: Record<string, unknown>;
+  data: Record<string, unknown>; // Données du node, qu'on pourra un jour sortir sur une table dédiée
 
   parentId?: string;
   extent?: any | null; //  "parent" | [[number, number], [number, number]]
   extendParent?: boolean;
-
-  // // ====== React Flow metadata, not stored in DB
-  // resizing?: boolean;
-  // dragging?: boolean;
-  // selected?: boolean;
-  // // Adapted from locked
-  // focusable?: boolean;
-  // draggable?: boolean;
-  // selectable?: boolean;
-  // connectable?: boolean;
-  // deletable?: boolean;
 }
 
 export type NodeColors =
@@ -115,11 +104,15 @@ export type NodeColors =
   | "default";
 
 export interface NodeConfig {
-  addButtonLabel: string;
+  nodeLabel: string;
   nodeIcon: string;
   type: NodeType;
   component: React.ComponentType<any>;
-  initialValues: any;
+
+  // Proche du format CanvasNode, sans id, position, templateId
+  initialNodeValues: CanvasNode;
+
+  // Pour le resizer
   minWidth: number;
   minHeight: number;
   disableDoubleClickToOpenWindow?: boolean;

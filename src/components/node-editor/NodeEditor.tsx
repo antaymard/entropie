@@ -23,17 +23,24 @@ import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import toast from "react-hot-toast";
 
-export default function NodeEditor({ templateId }: { templateId: Id<"nodeTemplates"> | "new" }) {
+export default function NodeEditor({
+  templateId,
+}: {
+  templateId: Id<"nodeTemplates"> | "new";
+}) {
   const [currentVisualLayoutPath, setCurrentVisualLayoutPath] =
     useState<string>("visuals.node.default.layout");
   const [overElementId, setOverElementId] = useState<string | null>(null);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(
     null
   );
-  const createOrUpdateTemplate = useMutation(api.templates.createOrUpdateTemplate);
-  const template = useQuery(api.templates.getTemplateById, templateId === "new" ? "skip" : { templateId }) as
-    | NodeTemplate
-    | undefined;
+  const createOrUpdateTemplate = useMutation(
+    api.templates.createOrUpdateTemplate
+  );
+  const template = useQuery(
+    api.templates.getTemplateById,
+    templateId === "new" ? "skip" : { templateId }
+  ) as NodeTemplate | undefined;
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -148,7 +155,7 @@ export default function NodeEditor({ templateId }: { templateId: Id<"nodeTemplat
     }
   }
 
-  if (template === undefined) return null;
+  if (template === undefined && templateId !== "new") return null;
 
   return (
     <NodeEditorContext.Provider
@@ -161,9 +168,11 @@ export default function NodeEditor({ templateId }: { templateId: Id<"nodeTemplat
         setSelectedElementId,
       }}
     >
-
       {/* Form section */}
-      <Formik initialValues={template || initialValues} onSubmit={handleSaveTemplate}>
+      <Formik
+        initialValues={template || initialValues}
+        onSubmit={handleSaveTemplate}
+      >
         {({ values, setFieldValue, handleSubmit }) => {
           return (
             <div className="h-full flex flex-col gap-2">
@@ -182,7 +191,13 @@ export default function NodeEditor({ templateId }: { templateId: Id<"nodeTemplat
                 </DndContext>
               </div>
               <div className="flex justify-end">
-                <button type="button" onClick={handleSubmit} className="p-2 bg-green-500 hover:bg-green-600 text-white w-fit rounded-sm" >Sauvegarder</button>
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  className="p-2 bg-green-500 hover:bg-green-600 text-white w-fit rounded-sm"
+                >
+                  Sauvegarder
+                </button>
               </div>
             </div>
           );

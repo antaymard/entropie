@@ -61,7 +61,6 @@ const prebuiltNodesConfig = [
     },
     minWidth: 100,
     minHeight: 100,
-    disableDoubleClickToOpenWindow: true,
     canSwitchFrameless: true,
   },
   // {

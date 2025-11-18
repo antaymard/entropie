@@ -1,10 +1,12 @@
 import { type Node, useReactFlow } from "@xyflow/react";
-import { memo, useState } from "react";
+import { memo, useMemo, useState, useCallback, useEffect } from "react";
 import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
 import NodeFrame from "../NodeFrame";
 import { UploadFile } from "../../fields/UploadFile";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../shadcn/tabs";
 import { Check, X } from "lucide-react";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import { debounce } from "lodash";
 
 function ImageNode(xyNode: Node) {
   const { updateNodeData } = useReactFlow();
@@ -32,13 +34,63 @@ function ImageNode(xyNode: Node) {
     setUrlInput("");
   };
 
+  // Debounced update function - créé une seule fois et réutilisé
+  const debouncedUpdate = useMemo(
+    () =>
+      debounce((scale: number, positionX: number, positionY: number) => {
+        updateNodeData(xyNode.id, {
+          inImageNavigation: { scale, positionX, positionY },
+        });
+      }, 300),
+    [xyNode.id, updateNodeData]
+  );
+
+  // Nettoyage du debounce au démontage
+  useEffect(() => {
+    return () => {
+      debouncedUpdate.cancel();
+    };
+  }, [debouncedUpdate]);
+
+  // Handler pour les transformations
+  const handleTransform = useCallback(
+    (_e: any, { scale, positionX, positionY }: any) => {
+      debouncedUpdate(scale, positionX, positionY);
+    },
+    [debouncedUpdate]
+  );
+
+  // Récupération de l'état initial de navigation
+  const initialTransform = useMemo(
+    () =>
+      (xyNode.data.inImageNavigation as {
+        scale: number;
+        positionX: number;
+        positionY: number;
+      }) || { scale: 1, positionX: 0, positionY: 0 },
+    // Seulement au montage du composant
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+
   function renderImageOrInput() {
     if (xyNode.data.url) {
       return (
-        <img
-          src={xyNode.data.url as string}
-          className="w-full h-full object-cover"
-        />
+        <TransformWrapper
+          initialScale={initialTransform.scale}
+          initialPositionX={initialTransform.positionX}
+          initialPositionY={initialTransform.positionY}
+          panning={{ velocityDisabled: true }}
+          doubleClick={{ disabled: true }}
+          onTransformed={handleTransform}
+        >
+          <TransformComponent wrapperClass="flex-1" contentClass="flex-1">
+            <img
+              src={xyNode.data.url as string}
+              className="w-full h-full object-cover"
+            />
+          </TransformComponent>
+        </TransformWrapper>
       );
     } else {
       return (
@@ -108,7 +160,7 @@ function ImageNode(xyNode: Node) {
       <NodeFrame
         xyNode={xyNode}
         frameless={Boolean(xyNode.data.frameless)}
-        nodeContentClassName="-p-3"
+        nodeContentClassName="-p-3 nodrag"
       >
         {renderImageOrInput()}
       </NodeFrame>

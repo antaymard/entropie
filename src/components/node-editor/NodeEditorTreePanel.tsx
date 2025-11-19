@@ -11,7 +11,7 @@ export default function NodeEditorTreePanel() {
   const { values, setFieldValue } = useFormikContext<NodeTemplate>();
 
   // Get the default node visual variant ID
-  const defaultVariantId = values.default_visuals?.node || "default";
+  const defaultVariantId = values.defaultVisuals?.node || "default";
   const nodeVisual = values.visuals?.node?.[defaultVariantId];
 
   function addElementToLayout(element: LayoutElement) {
@@ -20,7 +20,10 @@ export default function NodeEditorTreePanel() {
     // For simplicity, we add the new element as a child of the root
     const updatedLayout: LayoutElement = {
       ...nodeVisual.layout,
-      children: [...(nodeVisual.layout.children || []), element],
+      children: [
+        ...(nodeVisual.layout.children || []),
+        { ...element, visual: { name: "default", settings: {} } },
+      ],
     };
     // Use setFieldValue to update the layout in Formik state
     setFieldValue(`visuals.node.${defaultVariantId}.layout`, updatedLayout);

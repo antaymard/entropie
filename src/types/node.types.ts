@@ -48,7 +48,7 @@ export interface NodeVisual {
 export interface LayoutElement {
   id: string; // Random if not field, field_id if field
   element: "root" | "div" | "field" | "separator" | "spacer" | "text" | "image";
-  data?: string; // Pour le type "text", contient le texte à afficher
+  data?: object; // Pour le type "text", contient le texte à afficher
   visual?: {
     name: string; // Ici, ça indique quel component on utilisera dans les node renderers
     settings?: Record<string, unknown>;

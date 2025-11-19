@@ -1,6 +1,7 @@
 import { memo, useCallback } from "react";
 import type { BaseFieldProps } from "@/types/field.types";
 import InlineEditableText from "../form-ui/InlineEditableText";
+import { cn } from "@/lib/utils";
 
 // TextField component pour le type "short_text"
 // Toujours éditable, avec ou sans sauvegarde selon si onChange est fourni
@@ -18,7 +19,7 @@ function TextField({ field, value, onChange, visualSettings }: BaseFieldProps) {
   const displayAs = (field.options?.displayAs as string) || "p";
   const textValue = (value as string) || "";
   const placeholder =
-    (field.options?.placeholder as string) || `Éditer ${field.name}...`;
+    (field.options?.placeholder as string) || `${field?.name}...`;
 
   return (
     <div className="space-y-1">
@@ -31,7 +32,11 @@ function TextField({ field, value, onChange, visualSettings }: BaseFieldProps) {
         value={textValue}
         onSave={handleSave}
         placeholder={placeholder}
-        className={getTextClassName(displayAs)}
+        className={cn(
+          "w-full border border-transparent hover:border-gray-300 rounded-sm py-1",
+          getTextClassName(displayAs)
+        )}
+        inputClassName="hover:ring-1 focus:ring-2 focus:ring-accent-foreground rounded-xs w-full"
       />
     </div>
   );
@@ -52,4 +57,4 @@ function getTextClassName(displayAs: string): string {
   }
 }
 
-export default memo(TextField);
+export default TextField;

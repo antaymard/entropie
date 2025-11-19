@@ -4,7 +4,8 @@ import { returnElementPathInLayout } from "../utils/editorUtils";
 import type { LayoutElement } from "../../types";
 import { get } from "lodash";
 import FieldElementVisualsSettings from "./FieldElementVisualsSettings";
-import { DivElementSettings } from "./DivElementSettings";
+import DivElementSettings from "./elements-settings/DivElementSettings";
+import RootElementSettings from "./elements-settings/RootElementSettings";
 
 export default function NodeEditorRightPanel() {
   const { selectedElementId, currentVisualLayoutPath } = useNodeEditorContext();
@@ -19,7 +20,9 @@ export default function NodeEditorRightPanel() {
   ).replace(/\.$/, "");
 
   function renderSettings() {
-    if (selectedElementId?.startsWith("div-") || selectedElementId === "root") {
+    if (selectedElementId === "root") {
+      return <RootElementSettings elementPath={elementPath} />;
+    } else if (selectedElementId?.startsWith("div-")) {
       return <DivElementSettings elementPath={elementPath} />;
     } else if (selectedElementId) {
       return (

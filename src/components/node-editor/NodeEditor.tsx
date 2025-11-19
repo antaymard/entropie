@@ -69,10 +69,15 @@ export default function NodeEditor({
             style: {
               display: "flex",
               flexDirection: "column",
+              paddingTop: "15px",
+              paddingBottom: "15px",
+              paddingRight: "15px",
+              paddingLeft: "15px",
               gap: "8px",
-              width: "300px",
-              minHeight: "100px",
+              minWidth: "300px",
+              minHeight: "300px",
             },
+            data: { resizable: true, showName: true },
           },
         },
       },
@@ -82,6 +87,9 @@ export default function NodeEditor({
       node: "default",
       window: "",
     },
+    _id: "",
+    _creationTime: 0,
+    updatedAt: 0,
   };
 
   const handleSaveTemplate = async (values: NodeTemplate) => {
@@ -120,6 +128,11 @@ export default function NodeEditor({
       currentVisualLayoutPath
     ) as LayoutElement;
 
+    // Déterminer le type de visuel (node ou window) depuis le path
+    const visualType = currentVisualLayoutPath.includes("visuals.window")
+      ? "window"
+      : "node";
+
     // Ajout depuis le panel de gauche
     if (action === "add") {
       // Check if active.data.current.id is already in the layout to avoid duplicates
@@ -135,7 +148,9 @@ export default function NodeEditor({
       const updatedLayout = addElementToLayout(
         active.data.current?.element as LayoutElement,
         String(over.id),
-        nodeVisualLayoutToEdit
+        nodeVisualLayoutToEdit,
+        visualType,
+        values
       );
       console.log({ updatedLayout });
       setFieldValue(currentVisualLayoutPath, updatedLayout);
@@ -147,7 +162,9 @@ export default function NodeEditor({
       const updatedLayout = moveElementInLayout(
         String(active.id),
         String(over.id),
-        nodeVisualLayoutToEdit
+        nodeVisualLayoutToEdit,
+        visualType,
+        values
       );
       console.log({ updatedLayout });
       setFieldValue(currentVisualLayoutPath, updatedLayout);

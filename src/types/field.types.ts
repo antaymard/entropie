@@ -17,23 +17,22 @@ export interface FieldDefinition {
   // Indépendant du visual choisi
   fieldOptions?: FieldSettingOption[];
 
-  // Définition des composants et settings visuels pour node et window
+  // Définition des composants et settings visuels
   visuals?: {
-    node: {
-      default: FieldVisualConfig;
-      commonSettingsList?: FieldSettingOption[]; // Settings communs à tous les visuals node
-    };
-    window: {
-      default?: FieldVisualConfig;
-      commonSettingsList?: FieldSettingOption[]; // Settings communs à tous les visuals window
-    };
+    commonSettingsList?: FieldSettingOption[]; // Settings communs à tous les variants
+    variants: FieldVisualVariant[];
   };
 }
 
-// Configuration d'un visual pour un field
-export interface FieldVisualConfig {
+// Un variant de visuel pour un field
+export interface FieldVisualVariant {
+  name: string; // "default", "compact", "detailed", etc.
+  label: string; // Nom affiché dans l'UI
+  description?: string; // Description du variant
+  icon?: React.ComponentType; // Icône optionnelle pour le variant
+  visualType: "node" | "window" | "both";
   component: React.ComponentType<BaseFieldProps>;
-  settingsList?: FieldSettingOption[]; // Settings spécifiques à ce visual
+  settingsList?: FieldSettingOption[]; // Settings spécifiques à ce variant
 }
 
 // Définition d'une option de configuration (utilisé pour fieldOptions et settingsList)
@@ -42,6 +41,7 @@ export interface FieldSettingOption {
   label: string;
   type: "input" | "boolean" | "toggleGroup" | "selectBuilder" | "select";
   props?: Record<string, unknown>;
+  defaultValue?: unknown; // Valeur par défaut pour ce setting
 }
 
 export type FieldType =

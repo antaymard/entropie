@@ -13,7 +13,7 @@ import { useFormikContext } from "formik";
 // Props du renderer principal
 // ===========================================================================
 
-interface NodeTemplateRendererProps {
+interface CustomTemplateRendererProps {
   template: NodeTemplate;
   visualType: "node" | "window";
   nodeData?: Record<string, unknown>;
@@ -24,13 +24,15 @@ interface NodeTemplateRendererProps {
 // Composant principal - OPTIMISÉ avec memo
 // ===========================================================================
 
-function NodeTemplateRenderer({
+function CustomTemplateRenderer({
   template,
   visualType,
   nodeData,
   onSaveNodeData,
-}: NodeTemplateRendererProps) {
-  const layout = template.visuals[visualType]?.default?.layout;
+}: CustomTemplateRendererProps) {
+  // Récupérer l'ID du variant par défaut pour ce visualType
+  const defaultVariantId = template.defaultVisuals[visualType] || "default";
+  const layout = template.visuals[visualType]?.[defaultVariantId]?.layout;
   const fields = template.fields;
 
   if (!layout) {
@@ -48,7 +50,32 @@ function NodeTemplateRenderer({
   );
 }
 
-export default memo(NodeTemplateRenderer);
+export default memo(CustomTemplateRenderer, (prevProps, nextProps) => {
+  // Comparaison optimisée pour le canvas
+  // On compare uniquement ce qui affecte vraiment le rendu
+
+  // Si le template ID a changé, on doit re-render
+  if (prevProps.template._id !== nextProps.template._id) return false;
+
+  // Si le visualType change (node <-> window), on doit re-render
+  if (prevProps.visualType !== nextProps.visualType) return false;
+
+  // Si les données du node ont changé, on doit re-render
+  // Utiliser une comparaison légère - seulement les clés et valeurs primitives
+  const prevDataKeys = Object.keys(prevProps.nodeData || {}).sort();
+  const nextDataKeys = Object.keys(nextProps.nodeData || {}).sort();
+
+  if (prevDataKeys.length !== nextDataKeys.length) return false;
+  if (prevDataKeys.join(",") !== nextDataKeys.join(",")) return false;
+
+  // Comparer les valeurs pour chaque clé
+  for (const key of prevDataKeys) {
+    if (prevProps.nodeData?.[key] !== nextProps.nodeData?.[key]) return false;
+  }
+
+  // Si rien n'a changé, on peut éviter le re-render
+  return true;
+});
 
 // ===========================================================================
 // Version pour l'éditeur de template (utilise Formik)
@@ -88,7 +115,7 @@ interface LayoutRendererProps {
   onSaveNodeData?: (fieldId: string, value: unknown) => void;
 }
 
-const LayoutRenderer = memo(function LayoutRenderer({
+function LayoutRenderer({
   element,
   fields,
   visualType,
@@ -166,7 +193,7 @@ const LayoutRenderer = memo(function LayoutRenderer({
     case "text":
       return (
         <div style={style} className="text-element">
-          {element.data || ""}
+          {typeof element.data === "string" ? element.data : ""}
         </div>
       );
 
@@ -180,7 +207,7 @@ const LayoutRenderer = memo(function LayoutRenderer({
         </div>
       );
   }
-});
+}
 
 // ===========================================================================
 // Wrapper pour le field renderer - OPTIMISÉ avec memo
@@ -197,74 +224,118 @@ interface FieldRendererWrapperProps {
   isSelected?: boolean;
 }
 
-const FieldRendererWrapper = memo(function FieldRendererWrapper({
-  elementId,
-  fields,
-  visualType,
-  visualSettings,
-  nodeData,
-  onSaveNodeData,
-  style,
-  isSelected,
-}: FieldRendererWrapperProps) {
-  const handleChange = useCallback(
-    (newValue: unknown) => {
-      if (onSaveNodeData) {
-        onSaveNodeData(elementId, newValue);
-      }
-    },
-    [onSaveNodeData, elementId]
-  );
+const FieldRendererWrapper = memo(
+  function FieldRendererWrapper({
+    elementId,
+    fields,
+    visualType,
+    visualSettings,
+    nodeData,
+    onSaveNodeData,
+    style,
+    isSelected,
+  }: FieldRendererWrapperProps) {
+    const handleChange = useCallback(
+      (newValue: unknown) => {
+        if (onSaveNodeData) {
+          onSaveNodeData(elementId, newValue);
+        }
+      },
+      [onSaveNodeData, elementId]
+    );
 
-  const field = fields.find((f) => f.id === elementId);
+    const field = fields.find((f) => f.id === elementId);
 
-  if (!field) {
+    if (!field) {
+      return (
+        <div
+          style={style}
+          className="text-red-500 text-xs border border-red-300 p-1 rounded"
+        >
+          Field non trouvé: {elementId}
+        </div>
+      );
+    }
+
+    const fieldDef = fieldsDefinition.find((def) => def.type === field.type);
+
+    if (!fieldDef || !fieldDef.visuals) {
+      return (
+        <div style={style} className="text-gray-400 text-xs">
+          {field.name} ({field.type}) - Définition non trouvée
+        </div>
+      );
+    }
+
+    // Trouver le variant qui correspond au visualType demandé
+    const visualVariant = fieldDef.visuals.variants.find(
+      (variant) =>
+        variant.visualType === visualType || variant.visualType === "both"
+    );
+
+    if (!visualVariant) {
+      return (
+        <div style={style} className="text-gray-400 text-xs">
+          {field.name} - Aucun visual défini pour {visualType}
+        </div>
+      );
+    }
+
+    const FieldComponent = visualVariant.component;
+    const value = nodeData?.[field.id];
+
     return (
       <div
         style={style}
-        className="text-red-500 text-xs border border-red-300 p-1 rounded"
+        className={
+          isSelected
+            ? "outline-2 outline-blue-400 rounded outline-offset-8"
+            : ""
+        }
       >
-        Field non trouvé: {elementId}
+        <FieldComponent
+          field={field}
+          value={value}
+          onChange={onSaveNodeData ? handleChange : undefined}
+          visualSettings={visualSettings}
+        />
       </div>
     );
-  }
-
-  const fieldDef = fieldsDefinition.find((def) => def.type === field.type);
-
-  if (!fieldDef || !fieldDef.visuals) {
-    return (
-      <div style={style} className="text-gray-400 text-xs">
-        {field.name} ({field.type}) - Définition non trouvée
-      </div>
+  },
+  // Fonction de comparaison personnalisée pour memo
+  (prevProps, nextProps) => {
+    // Trouver le field correspondant dans les deux versions
+    const prevField = prevProps.fields.find(
+      (f) => f.id === prevProps.elementId
     );
-  }
-
-  const visualConfig = fieldDef.visuals[visualType]?.default;
-
-  if (!visualConfig) {
-    return (
-      <div style={style} className="text-gray-400 text-xs">
-        {field.name} - Aucun visual défini pour {visualType}
-      </div>
+    const nextField = nextProps.fields.find(
+      (f) => f.id === nextProps.elementId
     );
+
+    // Si le field a changé (notamment son name ou ses options), on doit re-render
+    if (prevField?.name !== nextField?.name) return false;
+    if (prevField?.type !== nextField?.type) return false;
+    if (
+      JSON.stringify(prevField?.options) !== JSON.stringify(nextField?.options)
+    )
+      return false;
+
+    // Vérifier les autres props importantes
+    if (prevProps.elementId !== nextProps.elementId) return false;
+    if (prevProps.visualType !== nextProps.visualType) return false;
+    if (prevProps.isSelected !== nextProps.isSelected) return false;
+    if (
+      JSON.stringify(prevProps.visualSettings) !==
+      JSON.stringify(nextProps.visualSettings)
+    )
+      return false;
+    if (
+      JSON.stringify(prevProps.nodeData?.[prevProps.elementId]) !==
+      JSON.stringify(nextProps.nodeData?.[nextProps.elementId])
+    )
+      return false;
+
+    // Si rien n'a changé, on peut éviter le re-render
+    return true;
   }
-
-  const FieldComponent = visualConfig.component;
-  const value = nodeData?.[field.id];
-
-  return (
-    <div
-      style={style}
-      className={
-        isSelected ? "outline-2 outline-blue-400 rounded outline-offset-8" : ""
-      }
-    >
-      <FieldComponent
-        field={field}
-        value={value}
-        onChange={onSaveNodeData ? handleChange : undefined}
-        visualSettings={visualSettings}
-      />
-    </div>
-  );
-});
+);

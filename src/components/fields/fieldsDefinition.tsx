@@ -3,15 +3,12 @@ import TextField from "./TextField";
 
 import { RiTextBlock } from "react-icons/ri";
 import { GoNumber } from "react-icons/go";
-import {
-  HiOutlineStar,
-  HiOutlineCurrencyEuro,
-  HiMiniCalendarDateRange,
-  HiOutlineCheckCircle,
-} from "react-icons/hi2";
-import { RxSlider } from "react-icons/rx";
+import { HiMiniCalendarDateRange, HiOutlineCheckCircle } from "react-icons/hi2";
 import { TbSelect } from "react-icons/tb";
 import { CgImage } from "react-icons/cg";
+import { ClassicNumberField, ProgressNumberField } from "./NumberField";
+import { TbNumber123 } from "react-icons/tb";
+import { HiOutlineChartBar } from "react-icons/hi";
 
 const fieldsDefinition: FieldDefinition[] = [
   {
@@ -46,32 +43,22 @@ const fieldsDefinition: FieldDefinition[] = [
       },
     ],
     visuals: {
-      node: {
-        default: {
-          component: TextField,
-          settingsList: [
-            {
-              key: "showLabel",
-              label: "Afficher le label au dessus du champ",
-              type: "boolean",
-            },
-          ],
+      commonSettingsList: [
+        {
+          key: "showLabel",
+          label: "Afficher le label au dessus du champ",
+          type: "boolean",
         },
-        commonSettingsList: [],
-      },
-      window: {
-        default: {
+      ],
+      variants: [
+        {
+          name: "default",
+          label: "Par défaut",
+          visualType: "both",
           component: TextField,
-          settingsList: [
-            {
-              key: "showLabel",
-              label: "Afficher le label au dessus du champ",
-              type: "boolean",
-            },
-          ],
+          settingsList: [],
         },
-        commonSettingsList: [],
-      },
+      ],
     },
   },
   {
@@ -80,47 +67,6 @@ const fieldsDefinition: FieldDefinition[] = [
     icon: GoNumber,
     description: "Champ pour saisir des valeurs numériques.",
     fieldOptions: [
-      {
-        key: "displayAs",
-        label: "Formattage du nombre",
-        type: "select",
-        props: {
-          options: [
-            {
-              value: "number",
-              label: (
-                <>
-                  <GoNumber /> Nombre entier
-                </>
-              ),
-            },
-            {
-              value: "rating",
-              label: (
-                <>
-                  <HiOutlineStar /> Note
-                </>
-              ),
-            },
-            {
-              value: "currency",
-              label: (
-                <>
-                  <HiOutlineCurrencyEuro /> Monétaire
-                </>
-              ),
-            },
-            {
-              value: "slider",
-              label: (
-                <>
-                  <RxSlider /> Curseur
-                </>
-              ),
-            },
-          ],
-        },
-      },
       {
         key: "placeholder",
         label: "Placeholder (affiché dans le champ vide)",
@@ -152,26 +98,33 @@ const fieldsDefinition: FieldDefinition[] = [
       },
     ],
     visuals: {
-      node: {
-        default: {
-          component: TextField, // Temporaire, à remplacer par NumberField
-          settingsList: [
-            {
-              key: "showLabel",
-              label: "Afficher le label",
-              type: "boolean",
-            },
-          ],
+      commonSettingsList: [
+        {
+          key: "showLabel",
+          label: "Afficher le label",
+          type: "boolean",
         },
-        commonSettingsList: [],
-      },
-      window: {
-        default: {
-          component: TextField, // Temporaire
+      ],
+      variants: [
+        {
+          name: "number",
+          label: "Champ numérique",
+          description: "Affichage classique d'un champ de nombre",
+          icon: TbNumber123,
+          visualType: "both",
+          component: ClassicNumberField,
           settingsList: [],
         },
-        commonSettingsList: [],
-      },
+        {
+          name: "progress",
+          label: "Barre de progression",
+          description: "Affiche le nombre sous forme de barre de progression",
+          icon: HiOutlineChartBar,
+          visualType: "both",
+          component: ProgressNumberField,
+          settingsList: [],
+        },
+      ],
     },
   },
   {
@@ -180,20 +133,16 @@ const fieldsDefinition: FieldDefinition[] = [
     icon: HiMiniCalendarDateRange,
     description: "Sélecteur de date pour choisir une date spécifique.",
     visuals: {
-      node: {
-        default: {
+      commonSettingsList: [],
+      variants: [
+        {
+          name: "default",
+          label: "Par défaut",
+          visualType: "both",
           component: TextField, // Temporaire
           settingsList: [],
         },
-        commonSettingsList: [],
-      },
-      window: {
-        default: {
-          component: TextField, // Temporaire
-          settingsList: [],
-        },
-        commonSettingsList: [],
-      },
+      ],
     },
   },
   {
@@ -202,20 +151,16 @@ const fieldsDefinition: FieldDefinition[] = [
     icon: HiOutlineCheckCircle,
     description: "Champ booléen pour des réponses oui/non ou vrai/faux.",
     visuals: {
-      node: {
-        default: {
+      commonSettingsList: [],
+      variants: [
+        {
+          name: "default",
+          label: "Par défaut",
+          visualType: "both",
           component: TextField, // Temporaire
           settingsList: [],
         },
-        commonSettingsList: [],
-      },
-      window: {
-        default: {
-          component: TextField, // Temporaire
-          settingsList: [],
-        },
-        commonSettingsList: [],
-      },
+      ],
     },
   },
   {
@@ -237,20 +182,16 @@ const fieldsDefinition: FieldDefinition[] = [
       },
     ],
     visuals: {
-      node: {
-        default: {
+      commonSettingsList: [],
+      variants: [
+        {
+          name: "default",
+          label: "Par défaut",
+          visualType: "both",
           component: TextField, // Temporaire
           settingsList: [],
         },
-        commonSettingsList: [],
-      },
-      window: {
-        default: {
-          component: TextField, // Temporaire
-          settingsList: [],
-        },
-        commonSettingsList: [],
-      },
+      ],
     },
   },
   {
@@ -273,20 +214,16 @@ const fieldsDefinition: FieldDefinition[] = [
       },
     ],
     visuals: {
-      node: {
-        default: {
+      commonSettingsList: [],
+      variants: [
+        {
+          name: "default",
+          label: "Par défaut",
+          visualType: "both",
           component: TextField, // Temporaire
           settingsList: [],
         },
-        commonSettingsList: [],
-      },
-      window: {
-        default: {
-          component: TextField, // Temporaire
-          settingsList: [],
-        },
-        commonSettingsList: [],
-      },
+      ],
     },
   },
 ];

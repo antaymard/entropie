@@ -7,7 +7,7 @@ import {
   type JSX,
 } from "react";
 import { cn } from "@/lib/utils";
-import { get, set } from "lodash";
+import { get } from "lodash";
 import { useFormikContextSafe } from "@/hooks/useFormikContextSafe";
 
 interface InlineEditableTextProps {
@@ -30,6 +30,7 @@ interface InlineEditableTextProps {
    * Classes CSS pour le wrapper
    */
   className?: string;
+  inputClassName?: string;
 
   /**
    * Placeholder quand le texte est vide
@@ -75,6 +76,7 @@ function InlineEditableText({
   onSave,
   name,
   className,
+  inputClassName,
   placeholder = "Cliquez pour éditer...",
   saveOnBlur = true,
   as: Element = "span",
@@ -110,9 +112,8 @@ function InlineEditableText({
     if (editValue !== currentValue) {
       // Si on utilise Formik
       if (name && formikContext) {
-        const newValues = { ...formikContext.values };
-        set(newValues, name, editValue);
-        formikContext.setValues(newValues);
+        // Utiliser setFieldValue au lieu de setValues pour forcer la mise à jour
+        formikContext.setFieldValue(name, editValue);
       }
       // Sinon on appelle le callback externe
       else if (onSave) {
@@ -157,7 +158,10 @@ function InlineEditableText({
           onKeyDown={handleKeyDown}
           onBlur={handleBlur}
           placeholder={placeholder}
-          className={cn("w-full bg-transparent border-none outline-none")}
+          className={cn(
+            "w-full bg-transparent border-none outline-none",
+            inputClassName
+          )}
           style={{
             font: "inherit",
             padding: 0,
@@ -165,7 +169,13 @@ function InlineEditableText({
           }}
         />
       ) : (
-        <Element className={cn("cursor-text")} onDoubleClick={handleStartEdit}>
+        <Element
+          className={cn(
+            "cursor-text",
+            !currentValue && "text-muted-foreground/50 italic"
+          )}
+          onDoubleClick={handleStartEdit}
+        >
           {currentValue || placeholder}
         </Element>
       )}

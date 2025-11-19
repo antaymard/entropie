@@ -4,8 +4,10 @@ import { NodeEditorContext } from "./NodeEditorContext";
 
 export function NodeEditorProvider({ children }: { children: ReactNode }) {
   const [overElementId, setOverElementId] = useState<string | null>(null);
-  const [visualToEditPath, setVisualToEditPath] = useState<string>(
-    "visuals.node.default.layout"
+  const [currentVisualLayoutPath, setCurrentVisualLayoutPath] =
+    useState<string>("visuals.node.default.layout");
+  const [selectedElementId, setSelectedElementId] = useState<string | null>(
+    null
   );
 
   return (
@@ -13,8 +15,10 @@ export function NodeEditorProvider({ children }: { children: ReactNode }) {
       value={{
         overElementId,
         setOverElementId,
-        visualToEditPath,
-        setVisualToEditPath,
+        currentVisualLayoutPath,
+        setCurrentVisualLayoutPath,
+        selectedElementId,
+        setSelectedElementId,
       }}
     >
       {children}

@@ -1,10 +1,14 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../shadcn/tabs";
-import { NodeTemplateRendererEditor } from "./NodeTemplateRenderer";
+import { NodeTemplateRendererEditor } from "../renderers/CustomTemplateRenderer";
 import { useNodeEditorContext } from "@/hooks/useNodeEditorContext";
+import { useFormikContext } from "formik";
+import { get } from "lodash";
 
 export default function NodeEditorPreviewPanel() {
   const { currentVisualLayoutPath, setCurrentVisualLayoutPath } =
     useNodeEditorContext();
+
+  const { values } = useFormikContext();
 
   const activeTab = currentVisualLayoutPath.includes("visuals.window")
     ? "window"
@@ -35,6 +39,10 @@ export default function NodeEditorPreviewPanel() {
         >
           <p className="text-sm italic">Ce qui apparaît sur la toile</p>
           <NodeTemplateRendererEditor />
+
+          <pre>
+            {JSON.stringify(get(values, currentVisualLayoutPath), null, 2)}
+          </pre>
           <div />
         </TabsContent>
         <TabsContent

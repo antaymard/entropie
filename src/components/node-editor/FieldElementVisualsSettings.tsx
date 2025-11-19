@@ -6,6 +6,7 @@ import Toggle from "../form-ui/Toggle";
 import Toggles from "../form-ui/Toggles";
 import SelectBuilder from "../form-ui/SelectBuilder";
 import Selector from "../form-ui/Selector";
+import VariantSelector from "./VariantSelector";
 import type { FieldSettingOption } from "@/types/field.types";
 import type { LayoutElement, NodeTemplate } from "@/types/node.types";
 
@@ -30,13 +31,20 @@ export default function FieldElementVisualSettings({
   }
 
   const visualType = elementPath.includes("visuals.window") ? "window" : "node";
-  const visualConfig = fieldDefinition.visuals?.[visualType]?.default;
-  const settingsList = visualConfig?.settingsList || [];
-  const commonSettingsList =
-    fieldDefinition.visuals?.[visualType]?.commonSettingsList || [];
-  const allSettings = [...settingsList, ...commonSettingsList];
   const layoutElement = get(values, elementPath) as LayoutElement | undefined;
   const currentSettings = layoutElement?.visual?.settings || {};
+  const currentVisualName = layoutElement?.visual?.name || "default";
+
+  // Récupérer le variant correspondant au visualType ET au nom actuel
+  const visualVariant = fieldDefinition.visuals?.variants.find(
+    (variant) =>
+      variant.name === currentVisualName &&
+      (variant.visualType === visualType || variant.visualType === "both")
+  );
+
+  const settingsList = visualVariant?.settingsList || [];
+  const commonSettingsList = fieldDefinition.visuals?.commonSettingsList || [];
+  const allSettings = [...settingsList, ...commonSettingsList];
 
   function renderSetting(setting: FieldSettingOption, index: number) {
     const settingPath = `${elementPath}.visual.settings.${setting.key}`;
@@ -101,16 +109,32 @@ export default function FieldElementVisualSettings({
           </span>
         </h3>
 
-        {allSettings.length > 0 ? (
-          <div className="space-y-3">
-            {allSettings.map((setting, index) => renderSetting(setting, index))}
-          </div>
-        ) : (
-          <p className="text-sm text-gray-500 italic">
-            Aucun paramètre visuel configurable pour ce champ.
-          </p>
+        {/* Sélecteur de variant */}
+        {fieldDefinition.visuals && (
+          <VariantSelector
+            elementPath={elementPath}
+            variants={fieldDefinition.visuals.variants}
+            visualType={visualType}
+          />
         )}
+        {commonSettingsList.length > 0 ? (
+          <div className="space-y-3">
+            {commonSettingsList.map((setting, index) =>
+              renderSetting(setting, index)
+            )}
+          </div>
+        ) : null}
       </div>
+
+      {settingsList.length > 0 ? (
+        <div className="px-5 py-4 space-y-4">
+          <div className="space-y-3">
+            {settingsList.map((setting, index) =>
+              renderSetting(setting, index)
+            )}
+          </div>
+        </div>
+      ) : null}
 
       {import.meta.env.DEV && (
         <>

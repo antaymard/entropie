@@ -84,7 +84,6 @@ export default memo(CustomTemplateRenderer, (prevProps, nextProps) => {
 export function NodeTemplateRendererEditor() {
   const { values } = useFormikContext<NodeTemplate>();
   const { currentVisualLayoutPath } = useNodeEditorContext();
-
   const fields = values.fields;
   const layout = get(values, currentVisualLayoutPath) as LayoutElement;
 
@@ -167,6 +166,7 @@ function LayoutRenderer({
           elementId={element.id}
           fields={fields}
           visualType={visualType}
+          visualName={element.visual?.name}
           visualSettings={element.visual?.settings}
           nodeData={nodeData}
           onSaveNodeData={onSaveNodeData}
@@ -217,6 +217,7 @@ interface FieldRendererWrapperProps {
   elementId: string;
   fields: NodeField[];
   visualType: "node" | "window";
+  visualName?: string;
   visualSettings?: Record<string, unknown>;
   nodeData?: Record<string, unknown>;
   onSaveNodeData?: (fieldId: string, value: unknown) => void;
@@ -229,6 +230,7 @@ const FieldRendererWrapper = memo(
     elementId,
     fields,
     visualType,
+    visualName,
     visualSettings,
     nodeData,
     onSaveNodeData,
@@ -267,16 +269,19 @@ const FieldRendererWrapper = memo(
       );
     }
 
-    // Trouver le variant qui correspond au visualType demandé
+    // Trouver le variant qui correspond au visualType ET au visualName demandés
+    const targetVariantName = visualName || "default";
     const visualVariant = fieldDef.visuals.variants.find(
       (variant) =>
-        variant.visualType === visualType || variant.visualType === "both"
+        variant.name === targetVariantName &&
+        (variant.visualType === visualType || variant.visualType === "both")
     );
 
     if (!visualVariant) {
       return (
         <div style={style} className="text-gray-400 text-xs">
-          {field.name} - Aucun visual défini pour {visualType}
+          {field.name} - Aucun visual "{targetVariantName}" défini pour{" "}
+          {visualType}
         </div>
       );
     }

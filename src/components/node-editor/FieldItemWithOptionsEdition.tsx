@@ -20,6 +20,7 @@ import { deleteElementFromLayout } from "../utils/editorUtils";
 import { useNodeEditorContext } from "@/hooks/useNodeEditorContext";
 import { get } from "lodash";
 import SelectBuilder from "../form-ui/SelectBuilder";
+import Selector from "../form-ui/Selector";
 
 export default function FieldItemWithOptionsEdition({
   field,
@@ -131,13 +132,13 @@ function FieldOptions({
 
   function renderOption(option, i) {
     switch (option.type) {
-      case "text":
-      case "string":
+      case "input":
         return (
           <TextInput
             key={i}
             label={option.label}
             name={`fields.${fieldIndex}.options.${option.key}`}
+            {...option.props}
           />
         );
       case "boolean":
@@ -160,6 +161,15 @@ function FieldOptions({
       case "selectBuilder":
         return (
           <SelectBuilder
+            key={i}
+            name={`fields.${fieldIndex}.options.${option.key}`}
+            label={option.label}
+            {...option.props}
+          />
+        );
+      case "select":
+        return (
+          <Selector
             key={i}
             name={`fields.${fieldIndex}.options.${option.key}`}
             label={option.label}

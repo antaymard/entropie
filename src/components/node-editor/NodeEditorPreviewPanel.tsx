@@ -1,11 +1,28 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../shadcn/tabs";
-import NodeTemplateRenderer from "./NodeTemplateRenderer";
+import { NodeTemplateRendererEditor } from "./NodeTemplateRenderer";
+import { useNodeEditorContext } from "@/hooks/useNodeEditorContext";
 
 export default function NodeEditorPreviewPanel() {
+  const { currentVisualLayoutPath, setCurrentVisualLayoutPath } =
+    useNodeEditorContext();
+
+  const activeTab = currentVisualLayoutPath.includes("visuals.window")
+    ? "window"
+    : "node";
+
+  const handleTabChange = (value: string) => {
+    if (value === "node") {
+      setCurrentVisualLayoutPath("visuals.node.default.layout");
+    } else {
+      setCurrentVisualLayoutPath("visuals.window.default.layout");
+    }
+  };
+
   return (
     <div className="bg-gray-50  p-10">
       <Tabs
-        defaultValue="node"
+        value={activeTab}
+        onValueChange={handleTabChange}
         className="flex flex-col items-center justify-between flex-1 h-full"
       >
         <TabsList>
@@ -17,7 +34,7 @@ export default function NodeEditorPreviewPanel() {
           className="flex flex-col items-center justify-between"
         >
           <p className="text-sm italic">Ce qui apparaît sur la toile</p>
-          <NodeTemplateRenderer />
+          <NodeTemplateRendererEditor />
           <div />
         </TabsContent>
         <TabsContent
@@ -27,6 +44,7 @@ export default function NodeEditorPreviewPanel() {
           <p className="text-sm italic">
             Quand vous double-cliquez sur le bloc
           </p>
+          <NodeTemplateRendererEditor />
           <div />
         </TabsContent>
       </Tabs>

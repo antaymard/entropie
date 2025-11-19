@@ -1,4 +1,5 @@
 import type { FieldDefinition } from "@/types/field.types";
+import TextField from "./TextField";
 
 import { RiTextBlock } from "react-icons/ri";
 import { GoNumber } from "react-icons/go";
@@ -11,10 +12,6 @@ import {
 import { RxSlider } from "react-icons/rx";
 import { TbSelect } from "react-icons/tb";
 import { CgImage } from "react-icons/cg";
-
-// Helper pour simplifier les imports dynamiques de composants
-const lazyField = (path: string) => () =>
-  import(/* @vite-ignore */ path).then((mod) => mod.default);
 
 const fieldsDefinition: FieldDefinition[] = [
   {
@@ -34,11 +31,6 @@ const fieldsDefinition: FieldDefinition[] = [
         type: "input",
       },
       {
-        key: "showLabel",
-        label: "Afficher le label au dessus du champ",
-        type: "boolean",
-      },
-      {
         key: "displayAs",
         label: "Formattage du texte",
         type: "toggleGroup",
@@ -56,13 +48,30 @@ const fieldsDefinition: FieldDefinition[] = [
     visuals: {
       node: {
         default: {
-          component: lazyField("@/components/fields/TextField"),
-          props: {},
-          settingsList: [], // Ce qui peut être configuré dans le nodeEditorRightPanel, quand ce variant est choisi (affichage notamment)
+          component: TextField,
+          settingsList: [
+            {
+              key: "showLabel",
+              label: "Afficher le label au dessus du champ",
+              type: "boolean",
+            },
+          ],
         },
-        commonSettingsList: [], // Affiché pour tous les visuels node
+        commonSettingsList: [],
       },
-      window: {},
+      window: {
+        default: {
+          component: TextField,
+          settingsList: [
+            {
+              key: "showLabel",
+              label: "Afficher le label au dessus du champ",
+              type: "boolean",
+            },
+          ],
+        },
+        commonSettingsList: [],
+      },
     },
   },
   {
@@ -118,11 +127,6 @@ const fieldsDefinition: FieldDefinition[] = [
         type: "input",
       },
       {
-        key: "showLabel",
-        label: "Afficher le label au dessus du champ",
-        type: "boolean",
-      },
-      {
         key: "defaultValue",
         label: "Valeur par défaut",
         type: "input",
@@ -147,18 +151,72 @@ const fieldsDefinition: FieldDefinition[] = [
         },
       },
     ],
+    visuals: {
+      node: {
+        default: {
+          component: TextField, // Temporaire, à remplacer par NumberField
+          settingsList: [
+            {
+              key: "showLabel",
+              label: "Afficher le label",
+              type: "boolean",
+            },
+          ],
+        },
+        commonSettingsList: [],
+      },
+      window: {
+        default: {
+          component: TextField, // Temporaire
+          settingsList: [],
+        },
+        commonSettingsList: [],
+      },
+    },
   },
   {
     label: "Date",
     type: "date",
     icon: HiMiniCalendarDateRange,
     description: "Sélecteur de date pour choisir une date spécifique.",
+    visuals: {
+      node: {
+        default: {
+          component: TextField, // Temporaire
+          settingsList: [],
+        },
+        commonSettingsList: [],
+      },
+      window: {
+        default: {
+          component: TextField, // Temporaire
+          settingsList: [],
+        },
+        commonSettingsList: [],
+      },
+    },
   },
   {
     label: "Case à cocher",
     type: "boolean",
     icon: HiOutlineCheckCircle,
     description: "Champ booléen pour des réponses oui/non ou vrai/faux.",
+    visuals: {
+      node: {
+        default: {
+          component: TextField, // Temporaire
+          settingsList: [],
+        },
+        commonSettingsList: [],
+      },
+      window: {
+        default: {
+          component: TextField, // Temporaire
+          settingsList: [],
+        },
+        commonSettingsList: [],
+      },
+    },
   },
   {
     label: "Sélecteur",
@@ -178,6 +236,22 @@ const fieldsDefinition: FieldDefinition[] = [
         type: "selectBuilder",
       },
     ],
+    visuals: {
+      node: {
+        default: {
+          component: TextField, // Temporaire
+          settingsList: [],
+        },
+        commonSettingsList: [],
+      },
+      window: {
+        default: {
+          component: TextField, // Temporaire
+          settingsList: [],
+        },
+        commonSettingsList: [],
+      },
+    },
   },
   {
     label: "Image",
@@ -198,6 +272,22 @@ const fieldsDefinition: FieldDefinition[] = [
         },
       },
     ],
+    visuals: {
+      node: {
+        default: {
+          component: TextField, // Temporaire
+          settingsList: [],
+        },
+        commonSettingsList: [],
+      },
+      window: {
+        default: {
+          component: TextField, // Temporaire
+          settingsList: [],
+        },
+        commonSettingsList: [],
+      },
+    },
   },
 ];
 

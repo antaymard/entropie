@@ -1,41 +1,60 @@
-import { useFormikContext } from "formik";
+import { memo, useCallback, type CSSProperties } from "react";
 import type {
   LayoutElement,
   NodeTemplate,
   NodeField,
 } from "../../types/node.types";
 import { useNodeEditorContext } from "../../hooks/useNodeEditorContext";
-import { get } from "lodash";
-import { useContext, type CSSProperties } from "react";
-import ShortTextField from "../_fields/ShortTextField";
-import UrlField from "../_fields/UrlField";
-import ImageUrlField from "../_fields/ImageUrlField";
-import { NodeEditorContext } from "../../stores/node-editor-stores/NodeEditorContext";
-import type { Node } from "@xyflow/react";
 import fieldsDefinition from "../fields/fieldsDefinition";
-import type { FieldType } from "../../types/field.types";
+import { get } from "lodash";
+import { useFormikContext } from "formik";
 
-// Mapping des composants pour chaque type de field
-const FIELD_COMPONENTS_MAP: Record<
-  FieldType,
-  React.ComponentType<{
-    field: NodeField;
-    isTemplatePreview: boolean;
-    visual?: string;
-  }>
-> = {
-  short_text: ShortTextField,
-  url: UrlField,
-  image: ImageUrlField,
-  image_url: ImageUrlField,
-  rich_text: ShortTextField, // Fallback temporaire
-  select: ShortTextField, // Fallback temporaire
-  number: ShortTextField, // Fallback temporaire
-  date: ShortTextField, // Fallback temporaire
-  boolean: ShortTextField, // Fallback temporaire
-};
+// ===========================================================================
+// Props du renderer principal
+// ===========================================================================
 
-export default function NodeTemplateRenderer() {
+interface NodeTemplateRendererProps {
+  template: NodeTemplate;
+  visualType: "node" | "window";
+  nodeData?: Record<string, unknown>;
+  onSaveNodeData?: (fieldId: string, value: unknown) => void; // undefined = preview
+}
+
+// ===========================================================================
+// Composant principal - OPTIMISÉ avec memo
+// ===========================================================================
+
+function NodeTemplateRenderer({
+  template,
+  visualType,
+  nodeData,
+  onSaveNodeData,
+}: NodeTemplateRendererProps) {
+  const layout = template.visuals[visualType]?.default?.layout;
+  const fields = template.fields;
+
+  if (!layout) {
+    return <div className="text-gray-500 text-sm">Aucun layout défini</div>;
+  }
+
+  return (
+    <LayoutRenderer
+      element={layout}
+      fields={fields}
+      visualType={visualType}
+      nodeData={nodeData}
+      onSaveNodeData={onSaveNodeData}
+    />
+  );
+}
+
+export default memo(NodeTemplateRenderer);
+
+// ===========================================================================
+// Version pour l'éditeur de template (utilise Formik)
+// ===========================================================================
+
+export function NodeTemplateRendererEditor() {
   const { values } = useFormikContext<NodeTemplate>();
   const { currentVisualLayoutPath } = useNodeEditorContext();
 
@@ -46,20 +65,38 @@ export default function NodeTemplateRenderer() {
     return <div className="text-gray-500 text-sm">Rien à afficher</div>;
   }
 
-  return <LayoutRenderer element={layout} fields={fields} node={null} />;
+  return (
+    <LayoutRenderer
+      element={layout}
+      fields={fields}
+      visualType="node"
+      nodeData={undefined}
+      onSaveNodeData={undefined}
+    />
+  );
 }
 
-function LayoutRenderer({
-  element,
-  fields,
-  node,
-}: {
+// ===========================================================================
+// Renderer récursif pour les éléments de layout - OPTIMISÉ avec memo
+// ===========================================================================
+
+interface LayoutRendererProps {
   element: LayoutElement;
   fields: NodeField[];
-  node?: Node | null;
-}) {
+  visualType: "node" | "window";
+  nodeData?: Record<string, unknown>;
+  onSaveNodeData?: (fieldId: string, value: unknown) => void;
+}
+
+const LayoutRenderer = memo(function LayoutRenderer({
+  element,
+  fields,
+  visualType,
+  nodeData,
+  onSaveNodeData,
+}: LayoutRendererProps) {
   const style = element.style as CSSProperties | undefined;
-  const { selectedElementId } = useContext(NodeEditorContext);
+  const { selectedElementId } = useNodeEditorContext();
 
   switch (element.element) {
     case "root":
@@ -69,7 +106,14 @@ function LayoutRenderer({
           className="min-w-28 min-h-12 rounded border border-gray-300 bg-white overflow-clip"
         >
           {element.children?.map((child) => (
-            <LayoutRenderer key={child.id} element={child} fields={fields} />
+            <LayoutRenderer
+              key={child.id}
+              element={child}
+              fields={fields}
+              visualType={visualType}
+              nodeData={nodeData}
+              onSaveNodeData={onSaveNodeData}
+            />
           ))}
         </div>
       );
@@ -78,35 +122,30 @@ function LayoutRenderer({
       return (
         <div style={style}>
           {element.children?.map((child) => (
-            <LayoutRenderer key={child.id} element={child} fields={fields} />
+            <LayoutRenderer
+              key={child.id}
+              element={child}
+              fields={fields}
+              visualType={visualType}
+              nodeData={nodeData}
+              onSaveNodeData={onSaveNodeData}
+            />
           ))}
         </div>
       );
 
     case "field": {
-      // Trouver le champ correspondant par son id
-      const field = fields.find((f) => f.id === element.id);
-      if (!field) {
-        return (
-          <div
-            style={style}
-            className="text-red-500 text-xs border border-red-300 p-1 rounded"
-          >
-            Field not found: {element.id}
-          </div>
-        );
-      }
       return (
-        <div
+        <FieldRendererWrapper
+          elementId={element.id}
+          fields={fields}
+          visualType={visualType}
+          visualSettings={element.visual?.settings}
+          nodeData={nodeData}
+          onSaveNodeData={onSaveNodeData}
           style={style}
-          className={
-            selectedElementId === element.id
-              ? "outline-2 outline-blue-400 rounded outline-offset-8"
-              : ""
-          }
-        >
-          <FieldRenderer field={field} visual={element.visual} />
-        </div>
+          isSelected={selectedElementId === element.id}
+        />
       );
     }
 
@@ -137,35 +176,95 @@ function LayoutRenderer({
           style={style}
           className="text-gray-400 text-xs border border-dashed p-1"
         >
-          Unknown element: {element.element}
+          Élément inconnu: {element.element}
         </div>
       );
   }
+});
+
+// ===========================================================================
+// Wrapper pour le field renderer - OPTIMISÉ avec memo
+// ===========================================================================
+
+interface FieldRendererWrapperProps {
+  elementId: string;
+  fields: NodeField[];
+  visualType: "node" | "window";
+  visualSettings?: Record<string, unknown>;
+  nodeData?: Record<string, unknown>;
+  onSaveNodeData?: (fieldId: string, value: unknown) => void;
+  style?: CSSProperties;
+  isSelected?: boolean;
 }
 
-function FieldRenderer({
-  field,
-  visual,
-}: {
-  field: NodeField;
-  visual?: string;
-}) {
-  // Trouver la définition du field dans fieldsDefinition
-  const fieldDef = fieldsDefinition.find((def) => def.type === field.type);
+const FieldRendererWrapper = memo(function FieldRendererWrapper({
+  elementId,
+  fields,
+  visualType,
+  visualSettings,
+  nodeData,
+  onSaveNodeData,
+  style,
+  isSelected,
+}: FieldRendererWrapperProps) {
+  const handleChange = useCallback(
+    (newValue: unknown) => {
+      if (onSaveNodeData) {
+        onSaveNodeData(elementId, newValue);
+      }
+    },
+    [onSaveNodeData, elementId]
+  );
 
-  // Récupérer le composant correspondant depuis le mapping
-  const FieldComponent = FIELD_COMPONENTS_MAP[field.type];
+  const field = fields.find((f) => f.id === elementId);
 
-  // Si le composant existe, l'utiliser
-  if (FieldComponent) {
-    return <FieldComponent field={field} isTemplatePreview visual={visual} />;
+  if (!field) {
+    return (
+      <div
+        style={style}
+        className="text-red-500 text-xs border border-red-300 p-1 rounded"
+      >
+        Field non trouvé: {elementId}
+      </div>
+    );
   }
 
-  // Fallback si le type n'est pas reconnu
+  const fieldDef = fieldsDefinition.find((def) => def.type === field.type);
+
+  if (!fieldDef || !fieldDef.visuals) {
+    return (
+      <div style={style} className="text-gray-400 text-xs">
+        {field.name} ({field.type}) - Définition non trouvée
+      </div>
+    );
+  }
+
+  const visualConfig = fieldDef.visuals[visualType]?.default;
+
+  if (!visualConfig) {
+    return (
+      <div style={style} className="text-gray-400 text-xs">
+        {field.name} - Aucun visual défini pour {visualType}
+      </div>
+    );
+  }
+
+  const FieldComponent = visualConfig.component;
+  const value = nodeData?.[field.id];
+
   return (
-    <div className="text-gray-400 text-xs">
-      {field.name} ({field.type}) - Composant non trouvé
-      {fieldDef && ` (${fieldDef.label})`}
+    <div
+      style={style}
+      className={
+        isSelected ? "outline-2 outline-blue-400 rounded outline-offset-8" : ""
+      }
+    >
+      <FieldComponent
+        field={field}
+        value={value}
+        onChange={onSaveNodeData ? handleChange : undefined}
+        visualSettings={visualSettings}
+      />
     </div>
   );
-}
+});

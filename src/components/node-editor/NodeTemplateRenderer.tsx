@@ -11,6 +11,29 @@ import ShortTextField from "../_fields/ShortTextField";
 import UrlField from "../_fields/UrlField";
 import ImageUrlField from "../_fields/ImageUrlField";
 import { NodeEditorContext } from "../../stores/node-editor-stores/NodeEditorContext";
+import type { Node } from "@xyflow/react";
+import fieldsDefinition from "../fields/fieldsDefinition";
+import type { FieldType } from "../../types/field.types";
+
+// Mapping des composants pour chaque type de field
+const FIELD_COMPONENTS_MAP: Record<
+  FieldType,
+  React.ComponentType<{
+    field: NodeField;
+    isTemplatePreview: boolean;
+    visual?: string;
+  }>
+> = {
+  short_text: ShortTextField,
+  url: UrlField,
+  image: ImageUrlField,
+  image_url: ImageUrlField,
+  rich_text: ShortTextField, // Fallback temporaire
+  select: ShortTextField, // Fallback temporaire
+  number: ShortTextField, // Fallback temporaire
+  date: ShortTextField, // Fallback temporaire
+  boolean: ShortTextField, // Fallback temporaire
+};
 
 export default function NodeTemplateRenderer() {
   const { values } = useFormikContext<NodeTemplate>();
@@ -23,15 +46,17 @@ export default function NodeTemplateRenderer() {
     return <div className="text-gray-500 text-sm">Rien à afficher</div>;
   }
 
-  return <LayoutRenderer element={layout} fields={fields} />;
+  return <LayoutRenderer element={layout} fields={fields} node={null} />;
 }
 
 function LayoutRenderer({
   element,
   fields,
+  node,
 }: {
   element: LayoutElement;
   fields: NodeField[];
+  node?: Node | null;
 }) {
   const style = element.style as CSSProperties | undefined;
   const { selectedElementId } = useContext(NodeEditorContext);
@@ -125,78 +150,22 @@ function FieldRenderer({
   field: NodeField;
   visual?: string;
 }) {
-  const renderFieldContent = () => {
-    switch (field.type) {
-      case "short_text":
-        return (
-          <ShortTextField field={field} isTemplatePreview visual={visual} />
-        );
+  // Trouver la définition du field dans fieldsDefinition
+  const fieldDef = fieldsDefinition.find((def) => def.type === field.type);
 
-      case "rich_text":
-        return (
-          <div className="field-rich-text">
-            <div className="text-xs text-gray-500 mb-1">{field.name}</div>
-            <div className="border border-gray-300 rounded px-2 py-2 text-sm bg-white min-h-[60px]">
-              Texte enrichi...
-            </div>
-          </div>
-        );
+  // Récupérer le composant correspondant depuis le mapping
+  const FieldComponent = FIELD_COMPONENTS_MAP[field.type];
 
-      case "url":
-        return <UrlField field={field} isTemplatePreview visual={visual} />;
+  // Si le composant existe, l'utiliser
+  if (FieldComponent) {
+    return <FieldComponent field={field} isTemplatePreview visual={visual} />;
+  }
 
-      case "select":
-        return (
-          <div className="field-select">
-            <div className="text-xs text-gray-500 mb-1">{field.name}</div>
-            <div className="border border-gray-300 rounded px-2 py-1 text-sm bg-white">
-              Sélection...
-            </div>
-          </div>
-        );
-
-      case "image":
-      case "image_url":
-        return (
-          <ImageUrlField field={field} isTemplatePreview visual={visual} />
-        );
-
-      case "number":
-        return (
-          <div className="field-number">
-            <div className="text-xs text-gray-500 mb-1">{field.name}</div>
-            <div className="border border-gray-300 rounded px-2 py-1 text-sm bg-white">
-              123
-            </div>
-          </div>
-        );
-
-      case "date":
-        return (
-          <div className="field-date">
-            <div className="text-xs text-gray-500 mb-1">{field.name}</div>
-            <div className="border border-gray-300 rounded px-2 py-1 text-sm bg-white">
-              01/01/2025
-            </div>
-          </div>
-        );
-
-      case "boolean":
-        return (
-          <div className="field-boolean flex items-center gap-2">
-            <input type="checkbox" className="h-4 w-4" readOnly />
-            <span className="text-sm">{field.name}</span>
-          </div>
-        );
-
-      default:
-        return (
-          <div className="text-gray-400 text-xs">
-            {field.name} ({field.type})
-          </div>
-        );
-    }
-  };
-
-  return <div>{renderFieldContent()}</div>;
+  // Fallback si le type n'est pas reconnu
+  return (
+    <div className="text-gray-400 text-xs">
+      {field.name} ({field.type}) - Composant non trouvé
+      {fieldDef && ` (${fieldDef.label})`}
+    </div>
+  );
 }

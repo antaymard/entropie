@@ -57,7 +57,10 @@ const fieldsDefinition: FieldDefinition[] = [
       node: {
         default: {
           component: lazyField("@/components/fields/TextField"),
+          props: {},
+          settingsList: [], // Ce qui peut être configuré dans le nodeEditorRightPanel, quand ce variant est choisi (affichage notamment)
         },
+        commonSettingsList: [], // Affiché pour tous les visuels node
       },
       window: {},
     },

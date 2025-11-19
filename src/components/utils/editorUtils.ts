@@ -1,9 +1,7 @@
 import { useFormikContext } from "formik";
 import type { LayoutElement, NodeField, NodeTemplate } from "../../types";
-import {
-  fieldDefinitions,
-  type FieldDefinition,
-} from "../_fields/fieldDefinitions";
+import fieldsDefinition from "../fields/fieldsDefinition";
+import type { FieldDefinition } from "@/types/field.types";
 
 export function addElementToLayout(
   elementToAdd: LayoutElement,
@@ -148,7 +146,7 @@ export function getFieldFromId(
   for (const field of nodeTemplate.fields) {
     if (field.id === fieldId) {
       // Récupérer l'icone depuis fieldDefinitions
-      const fieldDefinition = fieldDefinitions.find(
+      const fieldDefinition = fieldsDefinition.find(
         (def) => def.type === field.type
       );
 

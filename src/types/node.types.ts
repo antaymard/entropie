@@ -2,10 +2,11 @@
 // Node Template Types
 // ===========================================================================
 
+import type { Id } from "convex/_generated/dataModel";
 import type { FieldType } from "./field.types";
 
 export interface NodeTemplate {
-  _id: string;
+  _id: Id<"nodeTemplates"> | "new";
   _creationTime: number;
   name: string;
   description: string;

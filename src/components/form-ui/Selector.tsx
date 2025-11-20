@@ -1,5 +1,5 @@
 import { memo, useCallback, useId, useMemo, useState } from "react";
-import { get, set } from "lodash";
+import { get } from "lodash";
 import { useFormikContextSafe } from "@/hooks/useFormikContextSafe";
 import { Label } from "@/components/shadcn/label";
 import { Button } from "@/components/shadcn/button";
@@ -116,9 +116,7 @@ function Selector({
     (newValue: string) => {
       // Si on utilise Formik
       if (name && formikContext) {
-        const newValues = { ...formikContext.values };
-        set(newValues, name, newValue);
-        formikContext.setValues(newValues);
+        formikContext.setFieldValue(name, newValue);
       }
       // Sinon on appelle le callback externe
       else if (onChange) {

@@ -77,7 +77,11 @@ export default function NodeEditor({
               minWidth: "300px",
               minHeight: "300px",
             },
-            data: { resizable: true, showName: true },
+            data: {
+              resizable: true,
+              showName: true,
+              disableDoubleClickToOpenWindow: false,
+            },
           },
         },
       },
@@ -87,15 +91,16 @@ export default function NodeEditor({
       node: "default",
       window: "",
     },
-    _id: "",
+    _id: templateId,
     _creationTime: 0,
     updatedAt: 0,
   };
 
   const handleSaveTemplate = async (values: NodeTemplate) => {
     // return console.log(values);
+    const { _id, ...data } = values;
 
-    await createOrUpdateTemplate({ templateId, data: values });
+    await createOrUpdateTemplate({ templateId: _id, data });
     toast.success("Template sauvegardé avec succès !");
   };
 
@@ -187,7 +192,7 @@ export default function NodeEditor({
     >
       {/* Form section */}
       <Formik
-        initialValues={template || initialValues}
+        initialValues={{ ...initialValues, ...template }}
         onSubmit={handleSaveTemplate}
       >
         {({ values, setFieldValue, handleSubmit }) => {

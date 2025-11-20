@@ -28,6 +28,10 @@ export default function DivElementSettings({
           label="Afficher le nom du bloc"
           name={`${elementPath}.data.showName`}
         />
+        <Toggle
+          label="Désactiver l'ouverture de la fenêtre au double-clic"
+          name={`${elementPath}.data.disableDoubleClickToOpenWindow`}
+        />
       </div>
       <div className="px-5 py-4 space-y-5">
         <h3 className="font-semibold">Dimensions minimales du bloc</h3>

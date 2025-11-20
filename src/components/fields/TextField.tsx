@@ -1,4 +1,4 @@
-import { memo, useCallback } from "react";
+import { useCallback } from "react";
 import type { BaseFieldProps } from "@/types/field.types";
 import InlineEditableText from "../form-ui/InlineEditableText";
 import { cn } from "@/lib/utils";
@@ -16,7 +16,7 @@ function TextField({ field, value, onChange, visualSettings }: BaseFieldProps) {
   );
 
   const showLabel = visualSettings?.showLabel as boolean | undefined;
-  const displayAs = (field.options?.displayAs as string) || "p";
+  const displayAs = (visualSettings?.displayAs as string) || "p";
   const textValue = (value as string) || "";
   const placeholder =
     (field.options?.placeholder as string) || `${field?.name}...`;

@@ -6,6 +6,8 @@ import {
   DropdownMenuSeparator,
 } from "@/components/shadcn/dropdown-menu";
 import { toXyNode } from "@/components/utils/nodeUtils";
+import { useTemplateStore } from "@/stores/templateStore";
+import type { Id } from "convex/_generated/dataModel";
 
 export default function ContextMenu({
   closeMenu,
@@ -15,6 +17,7 @@ export default function ContextMenu({
   position: { x: number; y: number };
 }) {
   const { setNodes, addNodes } = useReactFlow();
+  const templates = useTemplateStore((state) => state.templates);
   const { x: canvasX, y: canvasY, zoom: canvasZoom } = useViewport();
 
   const newNodePosition = {
@@ -29,7 +32,6 @@ export default function ContextMenu({
       <DropdownMenuLabel className="whitespace-nowrap">
         Ajouter un bloc
       </DropdownMenuLabel>
-      <DropdownMenuSeparator />
       {prebuiltNodesConfig.map((nodeType) => (
         <DropdownMenuItem
           key={nodeType.type}
@@ -60,6 +62,40 @@ export default function ContextMenu({
           }}
         >
           {nodeType.nodeIcon} {nodeType.nodeLabel}
+        </DropdownMenuItem>
+      ))}
+      <DropdownMenuSeparator />
+
+      <DropdownMenuLabel>Blocs personnalisés</DropdownMenuLabel>
+      {templates.map((template, i) => (
+        <DropdownMenuItem
+          key={i}
+          className="w-48"
+          onClick={() => {
+            const newNodeId = `node-${crypto.randomUUID()}`;
+
+            // Créer l'objet data avec les valeurs par défaut de chaque field
+            const defaultData: Record<string, unknown> = {};
+            template.fields.forEach((field) => {
+              if (field.options?.defaultValue !== undefined) {
+                defaultData[field.id] = field.options.defaultValue;
+              }
+            });
+
+            addNodes({
+              id: newNodeId,
+              type: "custom",
+              data: {
+                name: template.name,
+                templateId: template._id as Id<"nodeTemplates">,
+                color: "default",
+                data: defaultData,
+              },
+              position: newNodePosition,
+            });
+          }}
+        >
+          {template.name}
         </DropdownMenuItem>
       ))}
     </>

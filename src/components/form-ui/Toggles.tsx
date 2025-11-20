@@ -1,5 +1,5 @@
 import { memo, useCallback } from "react";
-import { get, set } from "lodash";
+import { get } from "lodash";
 import { useFormikContextSafe } from "@/hooks/useFormikContextSafe";
 import { ToggleGroup, ToggleGroupItem } from "../shadcn/toggle-group";
 import { cn } from "@/lib/utils";
@@ -140,9 +140,7 @@ function Toggles(props: TogglesProps) {
     (newValue: string | string[]) => {
       // Si on utilise Formik
       if (name && formikContext) {
-        const newValues = { ...formikContext.values };
-        set(newValues, name, newValue);
-        formikContext.setValues(newValues);
+        formikContext.setFieldValue(name, newValue);
       }
       // Sinon on appelle le callback externe
       else if (onChange) {

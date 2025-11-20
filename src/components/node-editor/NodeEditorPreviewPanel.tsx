@@ -39,10 +39,12 @@ export default function NodeEditorPreviewPanel() {
         >
           <p className="text-sm italic">Ce qui apparaît sur la toile</p>
           <NodeTemplateRendererEditor />
-
-          <pre>
-            {JSON.stringify(get(values, currentVisualLayoutPath), null, 2)}
-          </pre>
+          <details>
+            <summary>Données JSON</summary>
+            <pre>
+              {JSON.stringify(get(values, currentVisualLayoutPath), null, 2)}
+            </pre>
+          </details>
           <div />
         </TabsContent>
         <TabsContent

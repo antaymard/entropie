@@ -1,10 +1,12 @@
 import { NodeResizer, useReactFlow, type Node } from "@xyflow/react";
 import { memo } from "react";
-import type { NodeColors } from "../../types/node.types";
+import type { NodeColors, NodeType } from "../../types/node.types";
 import prebuiltNodesConfig from "./prebuilt-nodes/prebuiltNodesConfig";
 import { BaseNode, BaseNodeContent } from "./base-node";
 import nodeColors from "./nodeColors";
 import InlineEditableText from "../form-ui/InlineEditableText";
+import { AiOutlineFullscreen } from "react-icons/ai";
+import { useWindowsStore } from "@/stores/windowsStore";
 
 function getNodeColorClasses(color: NodeColors) {
   return nodeColors[color] || nodeColors["default"];
@@ -25,6 +27,7 @@ function NodeFrame({
 }) {
   const { updateNodeData } = useReactFlow();
   const nodeConfig = prebuiltNodesConfig.find((n) => n.type === xyNode.type);
+  const openWindow = useWindowsStore((state) => state.openWindow);
 
   if (!xyNode) return null;
 
@@ -37,15 +40,15 @@ function NodeFrame({
       baseNodeContent = "",
       nameContainer = "";
 
-    if (frameless) {
-      baseNodeContent = "p-1 px-2 ";
-      // baseNode = "border-0 ";
-    }
-
     const nodeColor = getNodeColorClasses(xyNode.data?.color as NodeColors);
 
-    baseNode += `${nodeColor.border} ${nodeColor.bg} ${nodeColor.text}`;
-    nameContainer += `${nodeColor.darkBg} ${nodeColor.text} ${nodeColor.border}`;
+    if (frameless) {
+      baseNodeContent = "p-1 px-2 ";
+      baseNode = nodeColor.bg;
+    }
+
+    baseNode += ` ${nodeColor.border} ${nodeColor.text}`;
+    nameContainer += ` ${nodeColor.darkBg} ${nodeColor.text} ${nodeColor.border}`;
 
     return {
       baseNode,
@@ -72,11 +75,11 @@ function NodeFrame({
       />
 
       <BaseNode
-        className={`h-full flex flex-col overflow-hidden ${xyNode.selected ? "hover:ring-0" : "hover:ring-blue-300"} ${getClassNames().baseNode}`}
+        className={`group h-full flex flex-col overflow-hidden ${xyNode.selected ? "hover:ring-0" : "hover:ring-blue-300"} ${getClassNames().baseNode}`}
       >
         {showName && (
           <div
-            className={`${getClassNames().nameContainer} px-2 border-b rounded-t-md`}
+            className={`${getClassNames().nameContainer} px-1 py-0.5 border-b rounded-t-md flex items-center justify-between`}
             onDoubleClick={(e) => e.stopPropagation()} // Block global node doubleclick trigger
           >
             <InlineEditableText
@@ -85,6 +88,22 @@ function NodeFrame({
               className=" font-semibold text-sm"
               placeholder="Sans nom"
             />
+            <button
+              type="button"
+              className="opacity-0 group-hover:opacity-50 hover:opacity-100"
+              onClick={() =>
+                openWindow({
+                  id: xyNode.id,
+                  type: xyNode.type as NodeType,
+                  position: { x: 100, y: 100 },
+                  width: 400,
+                  height: 300,
+                  isMinimized: false,
+                })
+              }
+            >
+              <AiOutlineFullscreen size={12} />
+            </button>
           </div>
         )}
         <BaseNodeContent

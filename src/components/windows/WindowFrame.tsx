@@ -3,6 +3,8 @@ import { memo } from "react";
 import { useWindowDrag } from "@/hooks/useWindowDrag";
 import { Maximize2, Minimize2, X } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
+import { TbWindowMinimize } from "react-icons/tb";
+import { useReactFlow } from "@xyflow/react";
 
 interface WindowFrameProps {
   windowId: string;
@@ -11,6 +13,8 @@ interface WindowFrameProps {
 
 function WindowFrame({ windowId, children }: WindowFrameProps) {
   const { handleMouseDown } = useWindowDrag(windowId);
+  const { getNode } = useReactFlow();
+  const node = getNode(windowId);
 
   // Sélecteur optimisé avec shallow comparison
   const window = useWindowsStore(
@@ -19,6 +23,9 @@ function WindowFrame({ windowId, children }: WindowFrameProps) {
 
   const closeWindow = useWindowsStore((state) => state.closeWindow);
   const expandWindow = useWindowsStore((state) => state.expandWindow);
+  const toggleMinimizeWindow = useWindowsStore(
+    (state) => state.toggleMinimizeWindow
+  );
 
   if (!window) return null;
 
@@ -59,7 +66,7 @@ function WindowFrame({ windowId, children }: WindowFrameProps) {
 
       {/* WINDOW CONTENT */}
       <div
-        className="cursor-grab p-2 border rounded border-gray-200 bg-gray-100 inline-flex flex-col gap-2 h-full w-full shadow-xl"
+        className="cursor-grab p-0.5 border rounded border-gray-200 bg-gray-100 inline-flex flex-col gap-2 h-full w-full shadow"
         onMouseDown={(e) => {
           e.stopPropagation();
           handleMouseDown(e, "move");
@@ -67,6 +74,7 @@ function WindowFrame({ windowId, children }: WindowFrameProps) {
       >
         {/* HEADER */}
         <div className="flex items-center justify-between">
+          {node?.data?.name}
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -86,12 +94,19 @@ function WindowFrame({ windowId, children }: WindowFrameProps) {
             >
               <X className="h-5" />
             </button>
+            <button
+              type="button"
+              onClick={() => toggleMinimizeWindow(windowId, true)}
+              className="text-gray-500 p-1 rounded hover:bg-gray-200"
+            >
+              <TbWindowMinimize />
+            </button>
           </div>
         </div>
 
         {/* CONTENT */}
         <div
-          className="bg-white h-full rounded-sm p-3 border border-gray-200 cursor-auto overflow-auto"
+          className="bg-white h-full rounded-md p-3 border border-gray-200 cursor-auto overflow-auto"
           onMouseDown={(e) => e.stopPropagation()}
           style={{
             width: width - 16,

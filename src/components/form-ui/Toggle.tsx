@@ -1,5 +1,5 @@
 import { memo, useCallback, useId } from "react";
-import { get, set } from "lodash";
+import { get } from "lodash";
 import { useFormikContextSafe } from "@/hooks/useFormikContextSafe";
 import { Label } from "@/components/shadcn/label";
 import { Switch } from "@/components/shadcn/switch";
@@ -83,9 +83,8 @@ function Toggle({
     (newValue: boolean) => {
       // Si on utilise Formik
       if (name && formikContext) {
-        const newValues = { ...formikContext.values };
-        set(newValues, name, newValue);
-        formikContext.setValues(newValues);
+        // Utiliser setFieldValue pour garantir la réactivité
+        formikContext.setFieldValue(name, newValue);
       }
       // Sinon on appelle le callback externe
       else if (onChange) {

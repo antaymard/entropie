@@ -27,20 +27,6 @@ const fieldsDefinition: FieldDefinition[] = [
         label: "Valeur par défaut",
         type: "input",
       },
-      {
-        key: "displayAs",
-        label: "Formattage du texte",
-        type: "toggleGroup",
-        props: {
-          type: "single",
-          options: [
-            { value: "h1", label: "h1" },
-            { value: "h2", label: "h2" },
-            { value: "h3", label: "h3" },
-            { value: "p", label: "Paragraphe" },
-          ],
-        },
-      },
     ],
     visuals: {
       commonSettingsList: [
@@ -48,6 +34,13 @@ const fieldsDefinition: FieldDefinition[] = [
           key: "showLabel",
           label: "Afficher le label au dessus du champ",
           type: "boolean",
+          defaultValue: false,
+        },
+        {
+          key: "readOnly",
+          label: "Lecture seule",
+          type: "boolean",
+          defaultValue: false,
         },
       ],
       variants: [
@@ -56,7 +49,22 @@ const fieldsDefinition: FieldDefinition[] = [
           label: "Par défaut",
           visualType: "both",
           component: TextField,
-          settingsList: [],
+          settingsList: [
+            {
+              key: "displayAs",
+              label: "Formattage du texte",
+              type: "toggleGroup",
+              props: {
+                type: "single",
+                options: [
+                  { value: "h1", label: "h1" },
+                  { value: "h2", label: "h2" },
+                  { value: "h3", label: "h3" },
+                  { value: "p", label: "Paragraphe" },
+                ],
+              },
+            },
+          ],
         },
       ],
     },

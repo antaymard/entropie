@@ -47,6 +47,8 @@ export const createOrUpdateTemplate = mutation({
     if (!templateId) return;
 
     const now = Date.now();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { _creationTime, ...sanitizedData } = data;
 
     if (templateId !== "new") {
       // Update existing template
@@ -55,13 +57,13 @@ export const createOrUpdateTemplate = mutation({
       if (existing.creatorId !== authUserId) throw new Error("Unauthorized");
 
       await ctx.db.patch(templateId, {
-        ...data,
+        ...sanitizedData,
         updatedAt: now,
       });
     } else {
       // Create new template
       await ctx.db.insert("nodeTemplates", {
-        ...data,
+        ...sanitizedData,
         creatorId: authUserId,
         isSystem: false,
         updatedAt: now,

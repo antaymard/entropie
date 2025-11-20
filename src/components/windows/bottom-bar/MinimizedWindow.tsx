@@ -8,6 +8,10 @@ import { FaRegCircleXmark } from "react-icons/fa6";
 
 export default function MinimizedWindow({ window }: { window: Window }) {
   const closeWindow = useWindowsStore((state) => state.closeWindow);
+  const toggleMinimizeWindow = useWindowsStore(
+    (state) => state.toggleMinimizeWindow
+  );
+
   const nodeConfig = nodeList.find(
     (node) => node.type === window.type
   ) as NodeConfig;
@@ -22,7 +26,8 @@ export default function MinimizedWindow({ window }: { window: Window }) {
 
   return (
     <div
-      className={`flex items-center gap-2 h-8 border px-2 rounded-sm ${nodeColorClassNames.border} ${nodeColorClassNames.bg} ${nodeColorClassNames.text}`}
+      className={`cursor-pointer flex items-center gap-2 h-8 border px-2 rounded-sm ${nodeColorClassNames.border} ${nodeColorClassNames.bg} ${nodeColorClassNames.text}`}
+      onClick={() => toggleMinimizeWindow(window.id, false)}
     >
       <div className="flex items-center gap-1">
         {nodeConfig?.nodeIcon && null}

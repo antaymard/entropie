@@ -4,7 +4,10 @@ import type {
   NodeTemplate,
   NodeField,
 } from "../../types/node.types";
-import { useNodeEditorContext } from "../../hooks/useNodeEditorContext";
+import {
+  useNodeEditorContext,
+  useOptionalNodeEditorContext,
+} from "../../hooks/useNodeEditorContext";
 import fieldsDefinition from "../fields/fieldsDefinition";
 import { get } from "lodash";
 import { useFormikContext } from "formik";
@@ -87,6 +90,11 @@ export function NodeTemplateRendererEditor() {
   const fields = values.fields;
   const layout = get(values, currentVisualLayoutPath) as LayoutElement;
 
+  // Déterminer le visualType en fonction du path
+  const visualType = currentVisualLayoutPath.includes("visuals.window")
+    ? "window"
+    : "node";
+
   if (!layout) {
     return <div className="text-gray-500 text-sm">Rien à afficher</div>;
   }
@@ -95,7 +103,7 @@ export function NodeTemplateRendererEditor() {
     <LayoutRenderer
       element={layout}
       fields={fields}
-      visualType="node"
+      visualType={visualType}
       nodeData={undefined}
       onSaveNodeData={undefined}
     />
@@ -122,14 +130,16 @@ function LayoutRenderer({
   onSaveNodeData,
 }: LayoutRendererProps) {
   const style = element.style as CSSProperties | undefined;
-  const { selectedElementId } = useNodeEditorContext();
+  const editorContext = useOptionalNodeEditorContext();
+  const selectedElementId = editorContext?.selectedElementId;
 
   switch (element.element) {
     case "root":
       return (
         <div
           style={style}
-          className="min-w-28 min-h-12 rounded border border-gray-300 bg-white overflow-clip"
+          // className="min-w-28 min-h-12 rounded border border-gray-300 bg-white overflow-clip"
+          className="h-full"
         >
           {element.children?.map((child) => (
             <LayoutRenderer
@@ -328,6 +338,7 @@ const FieldRendererWrapper = memo(
     // Vérifier les autres props importantes
     if (prevProps.elementId !== nextProps.elementId) return false;
     if (prevProps.visualType !== nextProps.visualType) return false;
+    if (prevProps.visualName !== nextProps.visualName) return false;
     if (prevProps.isSelected !== nextProps.isSelected) return false;
     if (
       JSON.stringify(prevProps.visualSettings) !==

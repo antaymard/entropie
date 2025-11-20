@@ -46,10 +46,7 @@ function RouteComponent() {
           Créer un espace
         </button>
       </div>
-      <CanvasCreationModal
-        isModalOpen={isModalOpen}
-        setIsModalOpen={setIsModalOpen}
-      />
+      <CanvasCreationModal />
     </div>
   );
 }

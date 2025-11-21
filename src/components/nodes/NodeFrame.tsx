@@ -87,10 +87,11 @@ function NodeFrame({
         <BaseNodeContent
           className={
             "flex-1 overflow-hidden " +
-            nodeContentClassName +
             (headerless
               ? " p-1 px-2 " + nodeColor.bg + " " + nodeColor.text
-              : " bg-white mx-0.5 mb-0.5 rounded-xs")
+              : " bg-white mx-0.5 mb-0.5 rounded-xs") +
+            " " +
+            nodeContentClassName
           }
         >
           {children}

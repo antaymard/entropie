@@ -1,4 +1,5 @@
 import type { CanvasNode, NodeConfig } from "../../../types/node.types";
+import EmbedNode from "./EmbedNode";
 import FloatingTextNode from "./FloatingTextNode";
 import ImageNode from "./ImageNode";
 
@@ -60,6 +61,25 @@ const prebuiltNodesConfig = [
       },
       height: 200,
       width: 250,
+    },
+  },
+  {
+    nodeLabel: "Embed",
+    nodeIcon: "📈",
+    type: "embed",
+    component: EmbedNode,
+    minWidth: 150,
+    minHeight: 150,
+    initialNodeValues: {
+      ...defaultValues,
+      name: "Bloc Embed",
+      type: "embed",
+      data: {
+        // Actual data
+        url: "",
+      },
+      height: 150,
+      width: 150,
     },
   },
 ] as NodeConfig[];

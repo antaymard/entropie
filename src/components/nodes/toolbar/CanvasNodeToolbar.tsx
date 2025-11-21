@@ -27,6 +27,7 @@ function CanvasNodeToolbar({
     <NodeToolbar
       isVisible={isVisible}
       className={`flex gap-2 ${className || ""}`}
+      onDoubleClick={(e) => e.stopPropagation()}
     >
       {children}
       <ColorSelector xyNode={xyNode} />

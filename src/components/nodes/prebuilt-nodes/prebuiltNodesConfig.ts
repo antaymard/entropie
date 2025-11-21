@@ -25,13 +25,14 @@ const prebuiltNodesConfig = [
     minWidth: 100,
     minHeight: 28,
     disableDoubleClickToOpenWindow: true,
+    canBeTransparent: true,
 
     initialNodeValues: {
       ...defaultValues,
       name: "Bloc de texte",
       type: "floatingText",
       color: "transparent",
-      frameless: true,
+      headerless: true,
       height: 28,
       width: 150,
       data: {
@@ -48,7 +49,7 @@ const prebuiltNodesConfig = [
     component: ImageNode,
     minWidth: 100,
     minHeight: 100,
-    canSwitchFrameless: true,
+    canSwitchHeaderless: true,
     initialNodeValues: {
       ...defaultValues,
       name: "Bloc image",

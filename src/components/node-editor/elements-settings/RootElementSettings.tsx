@@ -26,7 +26,7 @@ export default function DivElementSettings({
         <h3 className="font-semibold">Apparence du bloc</h3>
         <Toggle
           label="Afficher le nom du bloc"
-          name={`${elementPath}.data.showName`}
+          name={`${elementPath}.data.headerless`}
         />
         <Toggle
           label="Désactiver l'ouverture de la fenêtre au double-clic"

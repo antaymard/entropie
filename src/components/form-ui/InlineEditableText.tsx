@@ -174,7 +174,10 @@ function InlineEditableText({
             "cursor-text",
             !currentValue && "text-muted-foreground/50 italic"
           )}
-          onDoubleClick={handleStartEdit}
+          onDoubleClick={(e) => {
+            e.stopPropagation();
+            handleStartEdit();
+          }}
         >
           {currentValue || placeholder}
         </Element>

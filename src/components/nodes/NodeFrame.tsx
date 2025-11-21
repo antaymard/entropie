@@ -14,14 +14,12 @@ function getNodeColorClasses(color: NodeColors) {
 
 function NodeFrame({
   xyNode,
-  frameless = false,
-  showName = true,
+  headerless = false,
   children,
   nodeContentClassName = "",
 }: {
   xyNode: Node;
-  frameless?: boolean;
-  showName?: boolean;
+  headerless?: boolean;
   children: React.ReactNode;
   nodeContentClassName?: string;
 }) {
@@ -34,28 +32,8 @@ function NodeFrame({
   const handleNameSave = (newName: string) => {
     updateNodeData(xyNode.id, { name: newName });
   };
+  const nodeColor = getNodeColorClasses(xyNode.data?.color as NodeColors);
 
-  function getClassNames() {
-    let baseNode = "",
-      baseNodeContent = "",
-      nameContainer = "";
-
-    const nodeColor = getNodeColorClasses(xyNode.data?.color as NodeColors);
-
-    if (frameless) {
-      baseNodeContent = "p-1 px-2 ";
-      baseNode = nodeColor.bg;
-    }
-
-    baseNode += ` ${nodeColor.border} ${nodeColor.text}`;
-    nameContainer += ` ${nodeColor.darkBg} ${nodeColor.text} ${nodeColor.border}`;
-
-    return {
-      baseNode,
-      baseNodeContent,
-      nameContainer,
-    };
-  }
   return (
     <>
       <NodeResizer
@@ -75,22 +53,22 @@ function NodeFrame({
       />
 
       <BaseNode
-        className={`group h-full flex flex-col overflow-hidden ${xyNode.selected ? "hover:ring-0" : "hover:ring-blue-300"} ${getClassNames().baseNode}`}
+        className={`group rounded-sm h-full flex flex-col overflow-hidden ${xyNode.selected ? "hover:ring-0" : "hover:ring-blue-300"} ${nodeColor.border} ${nodeColor.bg}`}
       >
-        {showName && (
+        {!headerless && (
           <div
-            className={`${getClassNames().nameContainer} px-1 py-0.5 border-b rounded-t-md flex items-center justify-between`}
-            onDoubleClick={(e) => e.stopPropagation()} // Block global node doubleclick trigger
+            className={`${nodeColor.bg} ${nodeColor.text} px-1 py-0.5 rounded-t-sm flex gap-8 items-center justify-between`}
+            // onDoubleClick={(e) => e.stopPropagation()} // Block global node doubleclick trigger
           >
             <InlineEditableText
               value={(xyNode?.data?.name as string) || "Sans nom"}
               onSave={handleNameSave}
-              className=" font-semibold text-sm"
+              className=" font-semibold text-sm truncate w-full"
               placeholder="Sans nom"
             />
             <button
               type="button"
-              className="opacity-0 group-hover:opacity-50 hover:opacity-100"
+              className="opacity-0 group-hover:opacity-100 hover:bg-black/10 rounded-xs "
               onClick={() =>
                 openWindow({
                   id: xyNode.id,
@@ -102,15 +80,17 @@ function NodeFrame({
                 })
               }
             >
-              <AiOutlineFullscreen size={12} />
+              <AiOutlineFullscreen size={15} />
             </button>
           </div>
         )}
         <BaseNodeContent
           className={
-            getClassNames().baseNodeContent +
-            " flex-1 overflow-hidden " +
-            nodeContentClassName
+            "flex-1 overflow-hidden " +
+            nodeContentClassName +
+            (headerless
+              ? " p-1 px-2 " + nodeColor.bg + " " + nodeColor.text
+              : " bg-white mx-0.5 mb-0.5 rounded-xs")
           }
         >
           {children}

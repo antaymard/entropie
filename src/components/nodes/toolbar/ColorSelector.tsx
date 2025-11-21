@@ -14,6 +14,7 @@ import nodeColors from "../nodeColors";
 import { memo, useCallback } from "react";
 
 import { type Node, useReactFlow } from "@xyflow/react";
+import prebuiltNodesConfig from "../prebuilt-nodes/prebuiltNodesConfig";
 
 const ColorSelector = memo(function ColorSelector({
   xyNode,
@@ -21,6 +22,7 @@ const ColorSelector = memo(function ColorSelector({
   xyNode: Node;
 }) {
   const { updateNode } = useReactFlow();
+  const nodeConfig = prebuiltNodesConfig.find((n) => n.type === xyNode.type);
 
   // OPTIMISATION: useCallback empêche la recréation de la fonction à chaque render
   // - Stable la référence de la fonction passée en prop au DropdownMenu
@@ -33,6 +35,14 @@ const ColorSelector = memo(function ColorSelector({
     },
     [xyNode.id, updateNode]
   );
+
+  // Filtrer les couleurs disponibles selon la config du nœud
+  const availableColors = Object.entries(nodeColors).filter(([key]) => {
+    if (key === "transparent") {
+      return nodeConfig?.canBeTransparent === true;
+    }
+    return true;
+  });
 
   return (
     <ButtonGroup>
@@ -48,7 +58,7 @@ const ColorSelector = memo(function ColorSelector({
             value={xyNode.data.color || "default"}
             onValueChange={handleColorChange}
           >
-            {Object.entries(nodeColors).map(([key, value]) => (
+            {availableColors.map(([key, value]) => (
               <DropdownMenuRadioItem
                 value={key}
                 key={key}

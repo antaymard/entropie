@@ -80,7 +80,7 @@ export interface CanvasNode {
   color: NodeColors;
   locked: boolean;
   hidden: boolean;
-  frameless?: boolean;
+  headerless?: boolean;
 
   data: Record<string, unknown>; // Données du node, qu'on pourra un jour sortir sur une table dédiée
 
@@ -111,5 +111,6 @@ export interface NodeConfig {
   minWidth: number;
   minHeight: number;
   disableDoubleClickToOpenWindow?: boolean;
-  canSwitchFrameless?: boolean;
+  canSwitchHeaderless?: boolean;
+  canBeTransparent?: boolean;
 }

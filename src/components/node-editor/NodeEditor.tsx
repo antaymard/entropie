@@ -79,7 +79,7 @@ export default function NodeEditor({
             },
             data: {
               resizable: true,
-              showName: true,
+              headerless: false,
               disableDoubleClickToOpenWindow: false,
             },
           },

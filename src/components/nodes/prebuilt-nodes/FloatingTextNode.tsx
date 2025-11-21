@@ -59,7 +59,7 @@ function FloatingTextNode(xyNode: Node) {
         </ToggleGroup>
       </CanvasNodeToolbar>
 
-      <NodeFrame xyNode={xyNode} frameless showName={false}>
+      <NodeFrame xyNode={xyNode} headerless>
         <InlineEditableText
           value={(xyNode.data?.text as string) || ""}
           onSave={handleTextSave}

@@ -32,7 +32,7 @@ const schema = defineSchema({
         locked: v.optional(v.boolean()),
         hidden: v.optional(v.boolean()),
         zIndex: v.optional(v.number()),
-        frameless: v.optional(v.boolean()),
+        headerless: v.optional(v.boolean()),
 
         data: v.any(),
         parentId: v.optional(v.string()),

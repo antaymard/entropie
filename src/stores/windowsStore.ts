@@ -28,6 +28,14 @@ export const useWindowsStore = create<WindowsStore>()(
             (w) => w.id === window.id
           );
           if (existingWindow) {
+            // Si la fenêtre existe et est minimisée, on la déminimise
+            if (existingWindow.isMinimized) {
+              return {
+                openWindows: state.openWindows.map((w) =>
+                  w.id === window.id ? { ...w, isMinimized: false } : w
+                ),
+              };
+            }
             return state;
           }
           return {

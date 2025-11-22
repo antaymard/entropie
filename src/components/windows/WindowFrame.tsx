@@ -12,13 +12,18 @@ import { HiMiniXMark } from "react-icons/hi2";
 interface WindowFrameProps {
   windowId: string;
   children?: React.ReactNode;
+  contentClassName?: string;
 }
 
 function getNodeColorClasses(color: NodeColors) {
   return nodeColors[color] || nodeColors["default"];
 }
 
-function WindowFrame({ windowId, children }: WindowFrameProps) {
+function WindowFrame({
+  windowId,
+  children,
+  contentClassName,
+}: WindowFrameProps) {
   const { handleMouseDown } = useWindowDrag(windowId);
   const { getNode } = useReactFlow();
   const { updateNodeData } = useReactFlow();
@@ -48,7 +53,7 @@ function WindowFrame({ windowId, children }: WindowFrameProps) {
 
   return (
     <div
-      className="absolute pointer-events-auto rounded-[10px] grid grid-cols-[7px_1fr_7px] grid-rows-[7px_1fr_7px] @container/window"
+      className="absolute pointer-events-auto rounded-[10px] grid grid-cols-[7px_1fr_7px] grid-rows-[7px_1fr_7px]"
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
         width: `${width}px`,
@@ -113,7 +118,10 @@ function WindowFrame({ windowId, children }: WindowFrameProps) {
 
         {/* CONTENT */}
         <div
-          className="bg-white h-full rounded-md p-3 border border-gray-200 cursor-auto overflow-auto"
+          className={
+            "bg-white h-full rounded-md p-3 border border-gray-200 cursor-auto overflow-auto " +
+            contentClassName
+          }
           onMouseDown={(e) => e.stopPropagation()}
           style={{
             width: width - 16,

@@ -9,7 +9,7 @@ import { Editor, EditorContainer } from "@/components/shadcn/editor";
 
 const defaultValue: Value = normalizeNodeId([
   {
-    children: [{ text: "Start typing..." }],
+    children: [{ text: "" }],
     type: "p",
   },
 ]);
@@ -24,6 +24,13 @@ export default function DocumentNode(xyNode: Node) {
   const editor = usePlateEditor({
     plugins: EditorKit,
     value: initialValue,
+    override: {
+      plugins: {
+        "fixed-toolbar": {
+          enabled: false,
+        },
+      },
+    },
   });
 
   const handleChange = useCallback(
@@ -40,11 +47,14 @@ export default function DocumentNode(xyNode: Node) {
       <CanvasNodeToolbar xyNode={xyNode}></CanvasNodeToolbar>
       <NodeFrame xyNode={xyNode} nodeContentClassName="p-0">
         <Plate editor={editor} onValueChange={handleChange} readOnly>
-          <EditorContainer variant="default" className="nodrag h-full">
+          <EditorContainer
+            variant="default"
+            className="nodrag h-full nowheel prose prose-sm prose-slate max-w-none scrollbar-hide"
+          >
             <Editor
               variant="none"
               placeholder="Commencez à écrire..."
-              className="size-full p-3"
+              className="p-3"
             />
           </EditorContainer>
         </Plate>

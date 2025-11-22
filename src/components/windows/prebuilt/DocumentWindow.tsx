@@ -1,5 +1,5 @@
 import { useReactFlow, useStore } from "@xyflow/react";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useRef } from "react";
 import type { Node } from "@xyflow/react";
 import type { Value } from "platejs";
 import { Editor, EditorContainer } from "@/components/shadcn/editor";
@@ -25,23 +25,35 @@ function DocumentWindow({ windowId }: DocumentWindowProps) {
     value: initialValue,
   });
 
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleChange = useCallback(
     ({ value }: { value: Value }) => {
-      console.log("DocumentNode value changed:", value);
-      // Met à jour les données du nœud ReactFlow à chaque changement
-      updateNodeData(windowId, { doc: value });
+      // Annule le timer précédent si existant
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      // Crée un nouveau timer pour mettre à jour après 300ms
+      debounceTimerRef.current = setTimeout(() => {
+        updateNodeData(windowId, { doc: value });
+      }, 750);
     },
     [updateNodeData, windowId]
   );
 
   return (
-    <WindowFrame windowId={windowId}>
+    <WindowFrame windowId={windowId} contentClassName="p-0!">
       <Plate editor={editor} onValueChange={handleChange}>
-        <EditorContainer variant="default" className="nodrag h-full">
+        <EditorContainer
+          variant="default"
+          className="nodrag h-full scrollbar-hide"
+        >
           <Editor
+            disableDefaultStyles={true}
             variant="none"
             placeholder="Commencez à écrire..."
-            className="size-full"
+            className="px-5 py-3 "
           />
         </EditorContainer>
       </Plate>

@@ -150,3 +150,41 @@
 .react-flow__pane {
   cursor: default !important;
 }
+
+.slate-h1 {
+  margin-top: 0.5em;
+  margin-bottom: 0.2em;
+  font-size: 1.875em;
+}
+
+.slate-h2 {
+  margin-top: 0.5em;
+  margin-bottom: 0.2em;
+  font-size: 1.5em;
+}
+
+.slate-h3 {
+  margin-top: 0.5em;
+  margin-bottom: 0.2em;
+  font-size: 1.375em;
+}
+.slate-h4 {
+  font-size: 1.3em;
+}
+.slate-h4 {
+  font-size: 1.21em;
+}
+.slate-h5 {
+  font-size: 1.115em;
+}
+
+/* .slate-p {
+  margin-top: 0.25em;
+  margin-bottom: 0.15em;
+}
+
+.slate-ul,
+.slate-ol {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+} */

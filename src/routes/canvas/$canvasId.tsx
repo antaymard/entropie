@@ -262,6 +262,7 @@ function RouteComponent() {
               onNodeContextMenu={handleNodeContextMenu}
               onSelectionContextMenu={handleSelectionContextMenu}
               onNodeDoubleClick={handleNodeDoubleClick}
+              deleteKeyCode={null}
               snapToGrid
               snapGrid={[5, 5]}
             >

@@ -116,7 +116,7 @@ const prebuiltNodesConfig = [
       data: {
         doc: [
           {
-            children: [{ text: "Start typing..." }],
+            children: [{ text: "" }],
             type: "p",
           },
         ] as Value,
@@ -124,7 +124,6 @@ const prebuiltNodesConfig = [
       height: 250,
       width: 200,
     },
-    disableDoubleClickToOpenWindow: true,
   },
 ] as NodeConfig[];
 

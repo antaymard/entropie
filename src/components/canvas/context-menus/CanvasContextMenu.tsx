@@ -32,38 +32,41 @@ export default function ContextMenu({
       <DropdownMenuLabel className="whitespace-nowrap">
         Ajouter un bloc
       </DropdownMenuLabel>
-      {prebuiltNodesConfig.map((nodeType) => (
-        <DropdownMenuItem
-          key={nodeType.type}
-          className="w-48"
-          onClick={() => {
-            const newNodeId = `node-${crypto.randomUUID()}`;
+      {prebuiltNodesConfig.map((nodeType) => {
+        const Icon = nodeType.nodeIcon;
+        return (
+          <DropdownMenuItem
+            key={nodeType.type}
+            className="w-48"
+            onClick={() => {
+              const newNodeId = `node-${crypto.randomUUID()}`;
 
-            // Ajouter le nouveau node dans le state Zustand (DB)
-            addNodes({
-              ...toXyNode(nodeType.initialNodeValues),
-              id: newNodeId,
-              type: nodeType.type,
-              position: newNodePosition,
-            });
+              // Ajouter le nouveau node dans le state Zustand (DB)
+              addNodes({
+                ...toXyNode(nodeType.initialNodeValues),
+                id: newNodeId,
+                type: nodeType.type,
+                position: newNodePosition,
+              });
 
-            // Sélectionner uniquement le nouveau node dans le state React Flow
-            // setTimeout pour laisser React Flow se synchroniser avec Zustand
-            setTimeout(() => {
-              setNodes((nodes) =>
-                nodes.map((n) => ({
-                  ...n,
-                  selected: n.id === newNodeId,
-                }))
-              );
-            }, 0);
+              // Sélectionner uniquement le nouveau node dans le state React Flow
+              // setTimeout pour laisser React Flow se synchroniser avec Zustand
+              setTimeout(() => {
+                setNodes((nodes) =>
+                  nodes.map((n) => ({
+                    ...n,
+                    selected: n.id === newNodeId,
+                  }))
+                );
+              }, 0);
 
-            closeMenu();
-          }}
-        >
-          {nodeType.nodeIcon} {nodeType.nodeLabel}
-        </DropdownMenuItem>
-      ))}
+              closeMenu();
+            }}
+          >
+            <Icon /> {nodeType.nodeLabel}
+          </DropdownMenuItem>
+        );
+      })}
       <DropdownMenuSeparator />
 
       <DropdownMenuLabel>Blocs personnalisés</DropdownMenuLabel>

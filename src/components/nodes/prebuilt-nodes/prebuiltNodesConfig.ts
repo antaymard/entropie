@@ -2,6 +2,13 @@ import type { CanvasNode, NodeConfig } from "../../../types/node.types";
 import EmbedNode from "./EmbedNode";
 import FloatingTextNode from "./FloatingTextNode";
 import ImageNode from "./ImageNode";
+import DocumentNode from "./DocumentNode";
+
+// Icons
+import { RiTextBlock, RiImageLine, RiLink } from "react-icons/ri";
+import { RxReader } from "react-icons/rx";
+import type { Value } from "platejs";
+import DocumentWindow from "@/components/windows/prebuilt/DocumentWindow";
 
 const defaultValues: CanvasNode = {
   id: "",
@@ -20,11 +27,13 @@ const defaultValues: CanvasNode = {
 const prebuiltNodesConfig = [
   {
     nodeLabel: "Texte flottant",
-    nodeIcon: "📝",
+    nodeIcon: RiTextBlock,
     type: "floatingText",
-    component: FloatingTextNode,
-    minWidth: 100,
-    minHeight: 28,
+    nodeComponent: FloatingTextNode,
+    node: {
+      minWidth: 100,
+      minHeight: 28,
+    },
     disableDoubleClickToOpenWindow: true,
     canBeTransparent: true,
 
@@ -45,11 +54,13 @@ const prebuiltNodesConfig = [
   },
   {
     nodeLabel: "Image",
-    nodeIcon: "🖼️",
+    nodeIcon: RiImageLine,
     type: "image",
-    component: ImageNode,
-    minWidth: 100,
-    minHeight: 100,
+    nodeComponent: ImageNode,
+    node: {
+      minWidth: 100,
+      minHeight: 100,
+    },
     canSwitchHeaderless: true,
     initialNodeValues: {
       ...defaultValues,
@@ -64,12 +75,14 @@ const prebuiltNodesConfig = [
     },
   },
   {
-    nodeLabel: "Embed",
-    nodeIcon: "📈",
+    nodeLabel: "Lien web",
+    nodeIcon: RiLink,
     type: "embed",
-    component: EmbedNode,
-    minWidth: 150,
-    minHeight: 150,
+    nodeComponent: EmbedNode,
+    node: {
+      minWidth: 150,
+      minHeight: 150,
+    },
     initialNodeValues: {
       ...defaultValues,
       name: "Bloc Embed",
@@ -81,6 +94,37 @@ const prebuiltNodesConfig = [
       height: 150,
       width: 150,
     },
+  },
+  {
+    nodeLabel: "Document",
+    nodeIcon: RxReader,
+    type: "document",
+    nodeComponent: DocumentNode,
+    windowComponent: DocumentWindow,
+    node: {
+      minWidth: 200,
+      minHeight: 250,
+    },
+    window: {
+      initialWidth: 400,
+      initialHeight: 500,
+    },
+    initialNodeValues: {
+      ...defaultValues,
+      name: "Bloc Document",
+      type: "document",
+      data: {
+        doc: [
+          {
+            children: [{ text: "Start typing..." }],
+            type: "p",
+          },
+        ] as Value,
+      },
+      height: 250,
+      width: 200,
+    },
+    disableDoubleClickToOpenWindow: true,
   },
 ] as NodeConfig[];
 

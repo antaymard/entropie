@@ -37,8 +37,8 @@ function NodeFrame({
   return (
     <>
       <NodeResizer
-        minWidth={nodeConfig?.minWidth || 150}
-        minHeight={nodeConfig?.minHeight || 100}
+        minWidth={nodeConfig?.node.minWidth || 150}
+        minHeight={nodeConfig?.node.minHeight || 100}
         isVisible={xyNode?.selected}
         lineStyle={{
           // padding: 1,
@@ -74,8 +74,8 @@ function NodeFrame({
                   id: xyNode.id,
                   type: xyNode.type as NodeType,
                   position: { x: 100, y: 100 },
-                  width: 400,
-                  height: 300,
+                  width: nodeConfig?.window?.initialWidth || 300,
+                  height: nodeConfig?.window?.initialHeight || 300,
                   isMinimized: false,
                 })
               }

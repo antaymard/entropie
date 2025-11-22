@@ -100,16 +100,24 @@ export type NodeColors =
 
 export interface NodeConfig {
   nodeLabel: string;
-  nodeIcon: string;
+  nodeIcon: React.ComponentType;
   type: NodeType;
-  component: React.ComponentType<any>;
+  nodeComponent: React.ComponentType<any>;
+  windowComponent?: React.ComponentType<any>;
 
   // Proche du format CanvasNode, sans id, position, templateId
   initialNodeValues: CanvasNode;
 
-  // Pour le resizer
-  minWidth: number;
-  minHeight: number;
+  node: {
+    // Pour le resizer
+    minWidth: number;
+    minHeight: number;
+  };
+  window?: {
+    initialWidth: number;
+    initialHeight: number;
+  };
+
   disableDoubleClickToOpenWindow?: boolean;
   canSwitchHeaderless?: boolean;
   canBeTransparent?: boolean;

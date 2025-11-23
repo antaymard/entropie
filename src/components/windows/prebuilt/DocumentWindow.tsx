@@ -21,6 +21,7 @@ function DocumentWindow({ windowId }: DocumentWindowProps) {
   const initialValue: Value = nodeData?.doc as Value;
 
   const editor = usePlateEditor({
+    id: `doc-${windowId}`,
     plugins: EditorKit,
     value: initialValue,
   });

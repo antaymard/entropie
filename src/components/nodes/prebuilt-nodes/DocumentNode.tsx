@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { type Node, useReactFlow } from "@xyflow/react";
 import { Plate, usePlateEditor } from "platejs/react";
 import { normalizeNodeId, type Value } from "platejs";
@@ -18,12 +18,13 @@ export default function DocumentNode(xyNode: Node) {
   const { updateNodeData } = useReactFlow();
 
   // Récupère la valeur depuis les données du nœud ou utilise la valeur par défaut
-  const initialValue: Value =
+  const currentValue: Value =
     (xyNode.data?.doc as Value | undefined) ?? defaultValue;
 
   const editor = usePlateEditor({
+    id: `doc-${xyNode.id}`,
     plugins: EditorKit,
-    value: initialValue,
+    value: currentValue,
     override: {
       plugins: {
         "fixed-toolbar": {
@@ -41,6 +42,20 @@ export default function DocumentNode(xyNode: Node) {
     },
     [updateNodeData, xyNode.id]
   );
+
+  // // Garde une référence de la dernière valeur pour éviter les updates inutiles
+  // const lastValueRef = useRef<Value>(currentValue);
+
+  // useEffect(() => {
+  //   // Compare la nouvelle valeur avec l'ancienne (comparaison par JSON)
+  //   const newValueStr = JSON.stringify(currentValue);
+  //   const lastValueStr = JSON.stringify(lastValueRef.current);
+
+  //   if (editor && newValueStr !== lastValueStr) {
+  //     editor.tf.setValue(currentValue);
+  //     lastValueRef.current = currentValue;
+  //   }
+  // }, [editor, currentValue]);
 
   return (
     <>

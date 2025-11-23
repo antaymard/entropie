@@ -153,37 +153,39 @@
 
 .slate-h1 {
   margin-top: 0.5em;
-  margin-bottom: 0.2em;
-  font-size: 1.875em;
+  font-size: 2em;
+}
+.slate-h1:first-child {
+  margin-top: 0;
 }
 
 .slate-h2 {
   margin-top: 0.5em;
-  margin-bottom: 0.2em;
-  font-size: 1.5em;
+  font-size: 1.65em;
 }
 
 .slate-h3 {
   margin-top: 0.5em;
-  margin-bottom: 0.2em;
-  font-size: 1.375em;
+  font-size: 1.35em;
 }
 .slate-h4 {
-  font-size: 1.3em;
+  margin-top: 0.5em;
+  font-size: 1.25em;
 }
 .slate-h4 {
-  font-size: 1.21em;
+  margin-top: 0.5em;
+  font-size: 1.1em;
 }
 .slate-h5 {
-  font-size: 1.115em;
+  margin-top: 0.5em;
+  font-size: 0.9rem;
 }
 
-/* .slate-p {
+.slate-p:first-child {
   margin-top: 0.25em;
-  margin-bottom: 0.15em;
 }
 
-.slate-ul,
+/* .slate-ul,
 .slate-ol {
   margin-top: 0.25em;
   margin-bottom: 0.25em;

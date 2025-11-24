@@ -76,7 +76,7 @@ function LinkField({
         <button
           type="button"
           onClick={() => setEditionPanelOpen(true)}
-          className=" items-center justify-center h-8 w-8 group-hover/linkfield:flex hidden"
+          className="items-center justify-center h-8 w-8 group-hover/linkfield:flex hidden"
         >
           <TbPencil />
         </button>

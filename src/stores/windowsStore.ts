@@ -15,6 +15,7 @@ interface WindowsStore {
   moveWindow: (windowId: string, delta: { x: number; y: number }) => void;
   resizeWindow: (windowId: string, delta: { x: number; y: number }) => void;
   expandWindow: (windowId: string, isExpanded?: boolean) => void;
+  toggleMinimizeWindow: (windowId: string, isMinimized?: boolean) => void;
 }
 
 export const useWindowsStore = create<WindowsStore>()(
@@ -27,12 +28,29 @@ export const useWindowsStore = create<WindowsStore>()(
             (w) => w.id === window.id
           );
           if (existingWindow) {
+            // Si la fenêtre existe et est minimisée, on la déminimise
+            if (existingWindow.isMinimized) {
+              return {
+                openWindows: state.openWindows.map((w) =>
+                  w.id === window.id ? { ...w, isMinimized: false } : w
+                ),
+              };
+            }
             return state;
           }
           return {
             openWindows: [...state.openWindows, window],
           };
         });
+      },
+      toggleMinimizeWindow: (windowId: string, isMinimized?: boolean) => {
+        set((state) => ({
+          openWindows: state.openWindows.map((window) =>
+            window.id === windowId
+              ? { ...window, isMinimized: isMinimized ?? !window.isMinimized }
+              : window
+          ),
+        }));
       },
       closeWindow: (windowId: string) => {
         set((state) => ({

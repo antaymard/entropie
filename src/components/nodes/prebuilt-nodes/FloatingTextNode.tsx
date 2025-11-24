@@ -4,7 +4,7 @@ import NodeFrame from "../NodeFrame";
 import { ToggleGroup, ToggleGroupItem } from "@/components/shadcn/toggle-group";
 import { LuHeading1, LuHeading2, LuHeading3 } from "react-icons/lu";
 import { BiParagraph } from "react-icons/bi";
-import InlineEditableText from "../../common/InlineEditableText";
+import InlineEditableText from "../../form-ui/InlineEditableText";
 import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
 
 function FloatingTextNode(xyNode: Node) {
@@ -59,7 +59,7 @@ function FloatingTextNode(xyNode: Node) {
         </ToggleGroup>
       </CanvasNodeToolbar>
 
-      <NodeFrame xyNode={xyNode} frameless showName={false}>
+      <NodeFrame xyNode={xyNode} headerless>
         <InlineEditableText
           value={(xyNode.data?.text as string) || ""}
           onSave={handleTextSave}

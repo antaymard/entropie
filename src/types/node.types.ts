@@ -2,14 +2,18 @@
 // Node Template Types
 // ===========================================================================
 
+import type { Id } from "convex/_generated/dataModel";
+import type { FieldType } from "./field.types";
+import type { IconType } from "react-icons/lib";
+
 export interface NodeTemplate {
-  _id: string;
+  _id: Id<"nodeTemplates"> | "new";
   _creationTime: number;
   name: string;
   description: string;
   icon: string;
   isSystem: boolean;
-  creatorId: string | null;
+  creatorId?: string | null;
 
   // Définition des champs (colonnes)
   fields: NodeField[];
@@ -29,17 +33,6 @@ export interface NodeTemplate {
   updatedAt: number;
 }
 
-export type FieldType =
-  | "short_text"
-  | "url"
-  | "select"
-  | "image"
-  | "image_url"
-  | "number"
-  | "date"
-  | "rich_text"
-  | "boolean";
-
 export interface NodeField {
   id: string;
   name: string;
@@ -57,8 +50,11 @@ export interface NodeVisual {
 export interface LayoutElement {
   id: string; // Random if not field, field_id if field
   element: "root" | "div" | "field" | "separator" | "spacer" | "text" | "image";
-  data?: string;
-  visual?: string; // Ici, ça indique quel component on utilisera dans les node renderers
+  data?: object; // Pour le type "text", contient le texte à afficher
+  visual?: {
+    name: string; // Ici, ça indique quel component on utilisera dans les node renderers
+    settings?: Record<string, unknown>;
+  };
   style?: Record<string, unknown>;
   children?: LayoutElement[];
 }
@@ -67,12 +63,12 @@ export interface LayoutElement {
 // Nodes on the canvas
 // ===========================================================================
 
-export type NodeType = "default" | "floatingText";
+export type NodeType = "default" | "floatingText" | "custom";
 
-// Made for react flow
+// Convex format
 export interface CanvasNode {
   id: string; // Pas _id car sous objet de canvas, qui lui un _id
-  name?: string;
+  name: string;
   type: string;
   templateId?: string;
   position: {
@@ -85,24 +81,13 @@ export interface CanvasNode {
   color: NodeColors;
   locked: boolean;
   hidden: boolean;
-  frameless?: boolean;
+  headerless?: boolean;
 
-  data: Record<string, unknown>;
+  data: Record<string, unknown>; // Données du node, qu'on pourra un jour sortir sur une table dédiée
 
   parentId?: string;
   extent?: any | null; //  "parent" | [[number, number], [number, number]]
   extendParent?: boolean;
-
-  // // ====== React Flow metadata, not stored in DB
-  // resizing?: boolean;
-  // dragging?: boolean;
-  // selected?: boolean;
-  // // Adapted from locked
-  // focusable?: boolean;
-  // draggable?: boolean;
-  // selectable?: boolean;
-  // connectable?: boolean;
-  // deletable?: boolean;
 }
 
 export type NodeColors =
@@ -115,13 +100,26 @@ export type NodeColors =
   | "default";
 
 export interface NodeConfig {
-  addButtonLabel: string;
-  nodeIcon: string;
+  nodeLabel: string;
+  nodeIcon: IconType;
   type: NodeType;
-  component: React.ComponentType<any>;
-  initialValues: any;
-  minWidth: number;
-  minHeight: number;
+  nodeComponent: React.ComponentType<any>;
+  windowComponent?: React.ComponentType<any>;
+
+  // Proche du format CanvasNode, sans id, position, templateId
+  initialNodeValues: CanvasNode;
+
+  node: {
+    // Pour le resizer
+    minWidth: number;
+    minHeight: number;
+  };
+  window?: {
+    initialWidth: number;
+    initialHeight: number;
+  };
+
   disableDoubleClickToOpenWindow?: boolean;
-  canSwitchFrameless?: boolean;
+  canSwitchHeaderless?: boolean;
+  canBeTransparent?: boolean;
 }

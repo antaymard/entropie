@@ -9,6 +9,7 @@ const colors: Record<
     plain: string;
     text: string;
     label: string;
+    transparentBg?: string;
   }
 > = {
   blue: {
@@ -18,6 +19,7 @@ const colors: Record<
     darkBg: "bg-blue-200",
     plain: "bg-blue-600",
     text: "text-blue-600",
+    transparentBg: "bg-blue-500/20",
   },
   green: {
     label: "Vert",
@@ -26,6 +28,7 @@ const colors: Record<
     darkBg: "bg-green-200",
     plain: "bg-green-600",
     text: "text-green-600",
+    transparentBg: "bg-green-500/20",
   },
   red: {
     label: "Rouge",
@@ -34,6 +37,7 @@ const colors: Record<
     darkBg: "bg-red-200",
     plain: "bg-red-600",
     text: "text-red-600",
+    transparentBg: "bg-red-500/20",
   },
   yellow: {
     label: "Jaune",
@@ -42,6 +46,7 @@ const colors: Record<
     darkBg: "bg-yellow-200",
     plain: "bg-yellow-600",
     text: "text-yellow-600",
+    transparentBg: "bg-yellow-500/20",
   },
   purple: {
     label: "Violet",
@@ -50,14 +55,16 @@ const colors: Record<
     darkBg: "bg-purple-200",
     plain: "bg-purple-600",
     text: "text-purple-600",
+    transparentBg: "bg-purple-500/20",
   },
   default: {
     label: "Par défaut",
-    border: "border-gray-300",
-    bg: "bg-gray-100",
-    darkBg: "bg-gray-200",
-    plain: "bg-gray-600",
-    text: "",
+    border: "border-slate-300",
+    bg: "bg-slate-100",
+    darkBg: "bg-slate-200",
+    plain: "bg-slate-600",
+    text: "text-slate-500",
+    transparentBg: "bg-slate-500/20",
   },
   transparent: {
     label: "Transparent",

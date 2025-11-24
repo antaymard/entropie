@@ -1,13 +1,15 @@
+import CustomNode from "./CustomNode";
 import prebuiltNodesConfig from "./prebuilt-nodes/prebuiltNodesConfig";
 
 const nodeTypes = {
   ...prebuiltNodesConfig.reduce<Record<string, React.ComponentType<any>>>(
     (acc, node) => {
-      acc[node.type] = node.component;
+      acc[node.type] = node.nodeComponent;
       return acc;
     },
     {}
   ),
+  custom: CustomNode,
 };
 
 const nodeList = [

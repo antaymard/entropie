@@ -164,7 +164,7 @@ function ImageNode(xyNode: Node) {
       <CanvasNodeToolbar xyNode={xyNode} />
       <NodeFrame
         xyNode={xyNode}
-        frameless={Boolean(xyNode.data.frameless)}
+        headerless={Boolean(xyNode.data.headerless)}
         nodeContentClassName="-p-3 nodrag"
       >
         {renderImageOrInput()}

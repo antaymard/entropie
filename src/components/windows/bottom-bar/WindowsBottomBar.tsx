@@ -6,11 +6,13 @@ export default function WindowsBottomBar() {
   const openWindows = useWindowsStore((state) => state.openWindows);
   const closeAllWindows = useWindowsStore((state) => state.closeAllWindows);
 
-  if (openWindows.length === 0) return null;
+  const minimizedWindows = openWindows.filter((window) => window.isMinimized);
+
+  if (minimizedWindows.length === 0) return null;
   return (
     <div className="flex gap-3 p-1 rounded-md bg-white shadow">
       <div className="flex gap-2">
-        {openWindows.map((window) => (
+        {minimizedWindows.map((window) => (
           <MinimizedWindow key={window.id} window={window}></MinimizedWindow>
         ))}
       </div>

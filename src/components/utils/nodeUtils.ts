@@ -25,7 +25,7 @@ export function toXyNode(canvasNode: Partial<CanvasNode>): Node {
       color: color,
       name: canvasNode.name || "Sans nom",
       templateId: canvasNode.templateId || undefined,
-      frameless: canvasNode.frameless ?? false,
+      headerless: canvasNode.headerless ?? false,
     },
     parentId: canvasNode.parentId,
     extent: canvasNode.extent,
@@ -47,9 +47,9 @@ export function toXyNode(canvasNode: Partial<CanvasNode>): Node {
  */
 export function toConvexNode(xyNode: Node): CanvasNode {
   // Récupération de la color depuis data
-  const { color, name, frameless, ...otherData } = (xyNode.data ?? {}) as {
+  const { color, name, headerless, ...otherData } = (xyNode.data ?? {}) as {
     color?: NodeColors;
-    frameless?: boolean;
+    headerless?: boolean;
     name?: string;
     [key: string]: unknown;
   };
@@ -70,7 +70,7 @@ export function toConvexNode(xyNode: Node): CanvasNode {
     color: color ?? "default",
     locked,
     hidden: xyNode.hidden ?? false,
-    frameless: frameless ?? false,
+    headerless: headerless ?? false,
     data: otherData,
     parentId: xyNode.parentId,
     extent: xyNode.extent,

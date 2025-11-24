@@ -17,7 +17,7 @@ function CanvasNodeToolbar({
   const selectedNodesCount = useStore(selectedNodesCountSelector);
 
   // Early return si le node n'est pas sélectionné
-  if (!xyNode.selected) {
+  if (!xyNode?.selected) {
     return null;
   }
 
@@ -27,6 +27,7 @@ function CanvasNodeToolbar({
     <NodeToolbar
       isVisible={isVisible}
       className={`flex gap-2 ${className || ""}`}
+      onDoubleClick={(e) => e.stopPropagation()}
     >
       {children}
       <ColorSelector xyNode={xyNode} />

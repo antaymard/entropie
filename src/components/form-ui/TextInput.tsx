@@ -1,5 +1,7 @@
 import type { InputHTMLAttributes } from "react";
 import { useField } from "formik";
+import { Input } from "../shadcn/input";
+import { FieldError, FieldLabel } from "../shadcn/field";
 
 interface TextInputProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "name"> {
@@ -25,32 +27,29 @@ export default function TextInput({
   return (
     <div className="flex flex-col gap-1.5">
       {label && (
-        <label
+        <FieldLabel
           htmlFor={name}
           className="text-sm font-medium flex items-center gap-1"
         >
           {label}
           {required && <span className="text-red-500">*</span>}
-        </label>
+        </FieldLabel>
       )}
-      <input
+      <Input
         id={name}
         type="text"
         className={`
-          px-3 py-2 placeholder-gray-400 placeholder:italic
-          border rounded-md 
-          transition-colors
-          bg-gray-100 hover:bg-gray-200
-          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-          disabled:bg-gray-200 disabled:cursor-not-allowed
-          ${errorMessage ? "border-red-500" : "border-gray-300"}
+          
+          ${errorMessage ? "border-pink-500" : "border-gray-300"}
           ${className}
         `}
         {...field}
         {...props}
       />
       {errorMessage && (
-        <span className="text-sm text-red-500">{errorMessage}</span>
+        <FieldError className="text-sm text-pink-500">
+          {errorMessage}
+        </FieldError>
       )}
       {!errorMessage && helperText && (
         <span className="text-sm text-gray-500">{helperText}</span>

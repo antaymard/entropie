@@ -16,7 +16,7 @@ function FloatingTextNode(xyNode: Node) {
     <>
       <CanvasNodeToolbar xyNode={xyNode}></CanvasNodeToolbar>
 
-      <NodeFrame xyNode={xyNode} frameless showName={false}>
+      <NodeFrame xyNode={xyNode} headerless>
         <UploadFile
           accept="image/*"
           onUploadComplete={(fileData) => {

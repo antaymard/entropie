@@ -23,17 +23,24 @@ import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import toast from "react-hot-toast";
 
-export default function NodeEditor({ templateId }: { templateId: Id<"nodeTemplates"> | "new" }) {
+export default function NodeEditor({
+  templateId,
+}: {
+  templateId: Id<"nodeTemplates"> | "new";
+}) {
   const [currentVisualLayoutPath, setCurrentVisualLayoutPath] =
     useState<string>("visuals.node.default.layout");
   const [overElementId, setOverElementId] = useState<string | null>(null);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(
     null
   );
-  const createOrUpdateTemplate = useMutation(api.templates.createOrUpdateTemplate);
-  const template = useQuery(api.templates.getTemplateById, templateId === "new" ? "skip" : { templateId }) as
-    | NodeTemplate
-    | undefined;
+  const createOrUpdateTemplate = useMutation(
+    api.templates.createOrUpdateTemplate
+  );
+  const template = useQuery(
+    api.templates.getTemplateById,
+    templateId === "new" ? "skip" : { templateId }
+  ) as NodeTemplate | undefined;
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -62,9 +69,18 @@ export default function NodeEditor({ templateId }: { templateId: Id<"nodeTemplat
             style: {
               display: "flex",
               flexDirection: "column",
+              paddingTop: "10px",
+              paddingBottom: "10px",
+              paddingRight: "10px",
+              paddingLeft: "10px",
               gap: "8px",
-              width: "300px",
-              minHeight: "100px",
+              minWidth: "300px",
+              minHeight: "300px",
+            },
+            data: {
+              resizable: true,
+              headerless: false,
+              disableDoubleClickToOpenWindow: false,
             },
           },
         },
@@ -75,12 +91,16 @@ export default function NodeEditor({ templateId }: { templateId: Id<"nodeTemplat
       node: "default",
       window: "",
     },
+    _id: templateId,
+    _creationTime: 0,
+    updatedAt: 0,
   };
 
   const handleSaveTemplate = async (values: NodeTemplate) => {
     // return console.log(values);
+    const { _id, ...data } = values;
 
-    await createOrUpdateTemplate({ templateId, data: values });
+    await createOrUpdateTemplate({ templateId: _id, data });
     toast.success("Template sauvegardé avec succès !");
   };
 
@@ -113,6 +133,11 @@ export default function NodeEditor({ templateId }: { templateId: Id<"nodeTemplat
       currentVisualLayoutPath
     ) as LayoutElement;
 
+    // Déterminer le type de visuel (node ou window) depuis le path
+    const visualType = currentVisualLayoutPath.includes("visuals.window")
+      ? "window"
+      : "node";
+
     // Ajout depuis le panel de gauche
     if (action === "add") {
       // Check if active.data.current.id is already in the layout to avoid duplicates
@@ -128,7 +153,9 @@ export default function NodeEditor({ templateId }: { templateId: Id<"nodeTemplat
       const updatedLayout = addElementToLayout(
         active.data.current?.element as LayoutElement,
         String(over.id),
-        nodeVisualLayoutToEdit
+        nodeVisualLayoutToEdit,
+        visualType,
+        values
       );
       console.log({ updatedLayout });
       setFieldValue(currentVisualLayoutPath, updatedLayout);
@@ -140,7 +167,9 @@ export default function NodeEditor({ templateId }: { templateId: Id<"nodeTemplat
       const updatedLayout = moveElementInLayout(
         String(active.id),
         String(over.id),
-        nodeVisualLayoutToEdit
+        nodeVisualLayoutToEdit,
+        visualType,
+        values
       );
       console.log({ updatedLayout });
       setFieldValue(currentVisualLayoutPath, updatedLayout);
@@ -148,7 +177,7 @@ export default function NodeEditor({ templateId }: { templateId: Id<"nodeTemplat
     }
   }
 
-  if (template === undefined) return null;
+  if (template === undefined && templateId !== "new") return null;
 
   return (
     <NodeEditorContext.Provider
@@ -161,9 +190,11 @@ export default function NodeEditor({ templateId }: { templateId: Id<"nodeTemplat
         setSelectedElementId,
       }}
     >
-
       {/* Form section */}
-      <Formik initialValues={template || initialValues} onSubmit={handleSaveTemplate}>
+      <Formik
+        initialValues={{ ...initialValues, ...template }}
+        onSubmit={handleSaveTemplate}
+      >
         {({ values, setFieldValue, handleSubmit }) => {
           return (
             <div className="h-full flex flex-col gap-2">
@@ -182,7 +213,13 @@ export default function NodeEditor({ templateId }: { templateId: Id<"nodeTemplat
                 </DndContext>
               </div>
               <div className="flex justify-end">
-                <button type="button" onClick={handleSubmit} className="p-2 bg-green-500 hover:bg-green-600 text-white w-fit rounded-sm" >Sauvegarder</button>
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  className="p-2 bg-green-500 hover:bg-green-600 text-white w-fit rounded-sm"
+                >
+                  Sauvegarder
+                </button>
               </div>
             </div>
           );

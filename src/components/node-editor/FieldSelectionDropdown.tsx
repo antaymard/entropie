@@ -1,9 +1,8 @@
 import { useFormikContext } from "formik";
 import type { NodeField, NodeTemplate } from "../../types";
-import {
-  fieldDefinitions,
-  type FieldDefinition,
-} from "../_fields/fieldDefinitions";
+import fieldsDefinition from "../fields/fieldsDefinition";
+import type { FieldDefinition } from "@/types/field.types";
+import { DropdownMenuItem } from "../shadcn/dropdown-menu";
 
 interface FieldSelectionDropdownProps {
   setFieldDropdownOpen?: (open: boolean) => void;
@@ -19,23 +18,22 @@ export default function FieldSelectionDropdown({
     setFieldValue("fields", [...values.fields, newField]);
   }
 
-  const fieldsOptions = fieldDefinitions.map((field: FieldDefinition) => ({
+  const fieldsOptions = fieldsDefinition.map((field: FieldDefinition) => ({
     ...field,
     onclick: () =>
       addField({
         id: crypto.randomUUID(),
         name: field.label,
         type: field.type,
-        options: field.options,
       }),
   }));
 
   return (
-    <div className="absolute bg-white border-2 border-gray-300 rounded-lg shadow-lg -right-72 w-72 divide-y overflow-clip">
+    <>
       {fieldsOptions.map((field, i) => {
         const Icon = field.icon;
         return (
-          <div
+          <DropdownMenuItem
             key={i}
             className="p-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2"
             onClick={() => {
@@ -50,9 +48,9 @@ export default function FieldSelectionDropdown({
               </span>
               <p className="text-xs italic opacity-70">{field.description}</p>
             </div>
-          </div>
+          </DropdownMenuItem>
         );
       })}
-    </div>
+    </>
   );
 }

@@ -34,12 +34,13 @@ import { Button } from "@/components/shadcn/button";
 import { SidebarProvider } from "@/components/shadcn/sidebar";
 import CanvasSidebar from "@/components/canvas/CanvasSidebar";
 import type { Canvas } from "@/types";
-import { debounce } from "lodash";
+import { debounce, set } from "lodash";
 import { toastError } from "@/components/utils/errorUtils";
 import WindowsContainer from "@/components/windows/WindowsContainer";
 import { useWindowsStore } from "@/stores/windowsStore";
 import type { NodeType } from "@/types/node.types";
 import WindowsBottomBar from "@/components/windows/bottom-bar/WindowsBottomBar";
+import { useTemplateStore } from "@/stores/templateStore";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -54,6 +55,9 @@ function RouteComponent() {
   }) as Canvas | null | undefined;
 
   const saveCanvasInConvex = useMutation(api.canvases.updateCanvasContent);
+
+  // Fetch templates
+  const userTemplates = useQuery(api.templates.getUserTemplates, {});
 
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{
@@ -71,6 +75,7 @@ function RouteComponent() {
   const canvasStatus = useCanvasStore((state) => state.status);
   const setCanvasStatus = useCanvasStore((state) => state.setStatus);
   const openWindow = useWindowsStore((state) => state.openWindow);
+  const setUserTemplates = useTemplateStore((state) => state.setTemplates);
 
   // xyFlow states
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
@@ -123,8 +128,8 @@ function RouteComponent() {
         id: node.id,
         type: node.type as NodeType,
         position: { x: 100, y: 100 },
-        width: 400,
-        height: 300,
+        width: nodeInfo?.window?.initialWidth || 400,
+        height: nodeInfo?.window?.initialHeight || 500,
         isMinimized: false,
       });
     },
@@ -146,7 +151,7 @@ function RouteComponent() {
           toastError(error, "Erreur lors de la sauvegarde de l'espace");
           setCanvasStatus("error");
         }
-      }, 3500),
+      }, 1000),
     [canvasId, saveCanvasInConvex]
   );
 
@@ -161,6 +166,11 @@ function RouteComponent() {
   function handleEdgesChange(changes: EdgeChange<Edge>[]) {
     onEdgesChange(changes);
   }
+
+  // Set templates in store when fetched
+  useEffect(() => {
+    setUserTemplates(userTemplates || []);
+  }, [userTemplates]);
 
   // Auto-save when nodes or edges change
   useEffect(() => {
@@ -252,12 +262,13 @@ function RouteComponent() {
               onNodeContextMenu={handleNodeContextMenu}
               onSelectionContextMenu={handleSelectionContextMenu}
               onNodeDoubleClick={handleNodeDoubleClick}
+              deleteKeyCode={null}
               snapToGrid
               snapGrid={[5, 5]}
             >
               <Background bgColor="#f9fafb" />
               <Controls />
-              <Panel position="bottom-right">
+              <Panel position="bottom-center">
                 <WindowsBottomBar />
               </Panel>
             </ReactFlow>

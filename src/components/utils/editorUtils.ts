@@ -1,21 +1,110 @@
-import { useFormikContext } from "formik";
 import type { LayoutElement, NodeField, NodeTemplate } from "../../types";
-import {
-  fieldDefinitions,
-  type FieldDefinition,
-} from "../_fields/fieldDefinitions";
+import fieldsDefinition from "../fields/fieldsDefinition";
+import type { FieldDefinition } from "@/types/field.types";
+
+/**
+ * Helper pour déterminer le nom du variant visuel à utiliser
+ * en fonction du contexte (node/window) et de la définition du champ
+ */
+export function getDefaultVisualName(
+  fieldId: string,
+  visualType: "node" | "window",
+  nodeTemplate: NodeTemplate
+): string {
+  const { fieldDefinition } = getFieldFromId(fieldId, nodeTemplate);
+
+  if (!fieldDefinition?.visuals) {
+    return "default";
+  }
+
+  // Trouver le premier variant qui correspond au visualType
+  const matchingVariant = fieldDefinition.visuals.variants.find(
+    (variant) =>
+      variant.visualType === visualType || variant.visualType === "both"
+  );
+
+  return matchingVariant?.name || "default";
+}
+
+/**
+ * Helper pour récupérer les settings par défaut d'un variant
+ * Construit l'objet à partir des defaultValue de chaque setting
+ */
+export function getDefaultSettingsForVariant(
+  fieldId: string,
+  variantName: string,
+  nodeTemplate: NodeTemplate
+): Record<string, unknown> {
+  const { fieldDefinition } = getFieldFromId(fieldId, nodeTemplate);
+
+  if (!fieldDefinition?.visuals) {
+    return {};
+  }
+
+  // Trouver le variant par son nom
+  const variant = fieldDefinition.visuals.variants.find(
+    (v) => v.name === variantName
+  );
+
+  if (!variant) {
+    return {};
+  }
+
+  // Construire l'objet des settings par défaut à partir des settingsList
+  const defaultSettings: Record<string, unknown> = {};
+
+  // Ajouter les settings communs
+  fieldDefinition.visuals.commonSettingsList?.forEach((setting) => {
+    if (setting.defaultValue !== undefined) {
+      defaultSettings[setting.key] = setting.defaultValue;
+    }
+  });
+
+  // Ajouter les settings spécifiques au variant (écrasent les communs si même clé)
+  variant.settingsList?.forEach((setting) => {
+    if (setting.defaultValue !== undefined) {
+      defaultSettings[setting.key] = setting.defaultValue;
+    }
+  });
+
+  return defaultSettings;
+}
 
 export function addElementToLayout(
   elementToAdd: LayoutElement,
   targetElementId: string,
-  layout: LayoutElement
+  layout: LayoutElement,
+  visualType: "node" | "window",
+  nodeTemplate: NodeTemplate
 ): LayoutElement {
   const findAndAddElement = (currentLayout: LayoutElement): LayoutElement => {
     if (currentLayout.id === targetElementId) {
+      // Déterminer le nom du variant visuel approprié
+      const visualName =
+        elementToAdd.element === "field"
+          ? getDefaultVisualName(elementToAdd.id, visualType, nodeTemplate)
+          : "default";
+
+      // Récupérer les settings par défaut pour ce variant
+      const defaultSettings =
+        elementToAdd.element === "field"
+          ? getDefaultSettingsForVariant(
+              elementToAdd.id,
+              visualName,
+              nodeTemplate
+            )
+          : {};
+
       // Si on a trouvé l'élément cible, on l'ajoute
       return {
         ...currentLayout,
-        children: [...(currentLayout.children || []), elementToAdd],
+        children: [
+          ...(currentLayout.children || []),
+          {
+            ...elementToAdd,
+            visual: { name: visualName, settings: defaultSettings },
+          },
+        ],
       };
     }
 
@@ -38,7 +127,9 @@ export function addElementToLayout(
 export function moveElementInLayout(
   elementId: string,
   newParentId: string,
-  layout: LayoutElement
+  layout: LayoutElement,
+  visualType: "node" | "window",
+  nodeTemplate: NodeTemplate
 ): LayoutElement {
   let elementToMove: LayoutElement | null = null;
 
@@ -68,7 +159,13 @@ export function moveElementInLayout(
 
   // If we found the element to move, we need to add it to the new parent
   if (elementToMove) {
-    layout = addElementToLayout(elementToMove, newParentId, layout);
+    layout = addElementToLayout(
+      elementToMove,
+      newParentId,
+      layout,
+      visualType,
+      nodeTemplate
+    );
   }
 
   return layout;
@@ -148,7 +245,7 @@ export function getFieldFromId(
   for (const field of nodeTemplate.fields) {
     if (field.id === fieldId) {
       // Récupérer l'icone depuis fieldDefinitions
-      const fieldDefinition = fieldDefinitions.find(
+      const fieldDefinition = fieldsDefinition.find(
         (def) => def.type === field.type
       );
 

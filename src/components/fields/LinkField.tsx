@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { BaseFieldProps } from "@/types/field.types";
 import fieldsDefinition from "./fieldsDefinition";
 import { TbPencil } from "react-icons/tb";
@@ -27,6 +27,14 @@ function LinkField({
   const [linkHref, setLinkHref] = useState(value?.href || "");
   const [linkPageTitle, setLinkPageTitle] = useState(value?.pageTitle || "");
 
+  // Sync local state with value prop when panel opens
+  useEffect(() => {
+    if (editionPanelOpen) {
+      setLinkHref(value?.href || "");
+      setLinkPageTitle(value?.pageTitle || "");
+    }
+  }, [editionPanelOpen, value?.href, value?.pageTitle]);
+
   const handleSave = () => {
     if (onChange) {
       onChange({
@@ -38,18 +46,11 @@ function LinkField({
   };
 
   const handleCancel = () => {
-    // Reset to current values
-    setLinkHref(value?.href || "");
-    setLinkPageTitle(value?.pageTitle || "");
     setEditionPanelOpen(false);
   };
 
   const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      handleCancel();
-    } else {
-      setEditionPanelOpen(open);
-    }
+    setEditionPanelOpen(open);
   };
 
   const FieldDefinition = fieldsDefinition.find((f) => f.type === field.type);

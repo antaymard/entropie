@@ -9,6 +9,8 @@ import { CgImage } from "react-icons/cg";
 import { ClassicNumberField, ProgressNumberField } from "./NumberField";
 import { TbNumber123 } from "react-icons/tb";
 import { HiOutlineChartBar } from "react-icons/hi";
+import { TbLink } from "react-icons/tb";
+import LinkField from "./LinkField";
 
 const fieldsDefinition: FieldDefinition[] = [
   {
@@ -156,6 +158,7 @@ const fieldsDefinition: FieldDefinition[] = [
   {
     label: "Case à cocher",
     type: "boolean",
+    defaultValue: false,
     icon: HiOutlineCheckCircle,
     description: "Champ booléen pour des réponses oui/non ou vrai/faux.",
     visuals: {
@@ -229,6 +232,37 @@ const fieldsDefinition: FieldDefinition[] = [
           label: "Par défaut",
           visualType: "both",
           component: TextField, // Temporaire
+          settingsList: [],
+        },
+      ],
+    },
+  },
+  {
+    label: "Lien",
+    type: "url",
+    icon: TbLink,
+    description: "Champ pour insérer une URL ou un lien web.",
+    fieldOptions: [
+      {
+        key: "sourceType",
+        label: "Type de source",
+        type: "select",
+        props: {
+          options: [
+            { value: "internal", label: "Interne" },
+            { value: "external", label: "Externe" },
+          ],
+        },
+      },
+    ],
+    visuals: {
+      commonSettingsList: [],
+      variants: [
+        {
+          name: "pageTitle",
+          label: "Titre de la page",
+          visualType: "both",
+          component: LinkField, // Temporaire
           settingsList: [],
         },
       ],

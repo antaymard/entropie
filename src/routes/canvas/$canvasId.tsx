@@ -128,8 +128,8 @@ function RouteComponent() {
         id: node.id,
         type: node.type as NodeType,
         position: { x: 100, y: 100 },
-        width: 400,
-        height: 300,
+        width: nodeInfo?.window?.initialWidth || 400,
+        height: nodeInfo?.window?.initialHeight || 500,
         isMinimized: false,
       });
     },

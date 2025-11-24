@@ -2,8 +2,8 @@ import { useReactFlow, useStore } from "@xyflow/react";
 import { memo, useCallback, useRef } from "react";
 import type { Node } from "@xyflow/react";
 import type { Value } from "platejs";
-import { Editor, EditorContainer } from "@/components/shadcn/editor";
-import { EditorKit } from "@/components/editor-kit";
+import { Editor, EditorContainer } from "@/components/plate/editor";
+import { EditorKit } from "@/components/plate/editor-kit";
 import { Plate, usePlateEditor } from "platejs/react";
 import WindowFrame from "../WindowFrame";
 

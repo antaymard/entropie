@@ -71,3 +71,18 @@ export const createOrUpdateTemplate = mutation({
     }
   },
 });
+
+export const deleteTemplate = mutation({
+  args: {
+    templateId: v.id("nodeTemplates"),
+  },
+  handler: async (ctx, args) => {
+    const { templateId } = args;
+    const authUserId = await requireAuth(ctx);
+    const template = await ctx.db.get(templateId);
+    if (!template) throw new Error("Template not found");
+    if (template.creatorId !== authUserId) throw new Error("Unauthorized");
+
+    await ctx.db.delete(templateId);
+  },
+});

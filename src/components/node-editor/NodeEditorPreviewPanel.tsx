@@ -38,13 +38,9 @@ export default function NodeEditorPreviewPanel() {
           className="flex flex-col items-center justify-between"
         >
           <p className="text-sm italic">Ce qui apparaît sur la toile</p>
-          <NodeTemplateRendererEditor />
-          <details>
-            <summary>Données JSON</summary>
-            <pre>
-              {JSON.stringify(get(values, currentVisualLayoutPath), null, 2)}
-            </pre>
-          </details>
+          <div className="bg-white rounded-md shadow border border-gray-300">
+            <NodeTemplateRendererEditor />
+          </div>
           <div />
         </TabsContent>
         <TabsContent

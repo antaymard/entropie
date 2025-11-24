@@ -8,6 +8,12 @@ import { HiMiniPlusCircle } from "react-icons/hi2";
 import FieldSelectionDropdown from "./FieldSelectionDropdown";
 import fieldsDefinition from "../fields/fieldsDefinition";
 import FieldItemWithOptionsEdition from "./FieldItemWithOptionsEdition";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "../shadcn/dropdown-menu";
+import { Button } from "../shadcn/button";
 
 // Where to describe the node, edit properties and set the fields for the node
 export default function NodeEditorLeftPanel() {
@@ -58,27 +64,22 @@ export default function NodeEditorLeftPanel() {
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold ">Champs du bloc</h3>
-          <div className="relative">
-            <button
-              type="button"
-              title="Ajouter un champ"
-              className=" bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm h-7 px-2 flex items-center justify-center"
-              onClick={() => setFieldDropdownOpen(true)}
-            >
-              Ajouter <HiMiniPlusCircle className="ml-1" size={20} />
-            </button>
-            {fieldDropdownOpen && (
-              <FieldSelectionDropdown
-                setFieldDropdownOpen={setFieldDropdownOpen}
-              />
-            )}
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <Button size="sm">
+                Ajouter <HiMiniPlusCircle className="ml-1" size={20} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <FieldSelectionDropdown />
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Render de la liste des fields du node */}
         <div className="flex flex-col gap-1">
           {values.fields.length === 0 ? (
-            <i onClick={() => setFieldDropdownOpen(true)}>Aucun champ ajouté</i>
+            <i>Aucun champ ajouté</i>
           ) : (
             values.fields.map((field, i) => {
               // Trouve l'icône depuis fieldList (côté front uniquement)

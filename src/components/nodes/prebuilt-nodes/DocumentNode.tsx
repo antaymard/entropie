@@ -4,8 +4,8 @@ import { Plate, usePlateEditor } from "platejs/react";
 import { normalizeNodeId, type Value } from "platejs";
 import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
 import NodeFrame from "../NodeFrame";
-import { EditorKit } from "@/components/editor-kit";
-import { Editor, EditorContainer } from "@/components/shadcn/editor";
+import { EditorKit } from "@/components/plate/editor-kit";
+import { Editor, EditorContainer } from "@/components/plate/editor";
 
 const defaultValue: Value = normalizeNodeId([
   {

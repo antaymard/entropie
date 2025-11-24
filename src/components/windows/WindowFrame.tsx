@@ -8,6 +8,7 @@ import InlineEditableText from "../form-ui/InlineEditableText";
 import type { NodeColors } from "@/types/node.types";
 import nodeColors from "../nodes/nodeColors";
 import { HiMiniXMark } from "react-icons/hi2";
+import prebuiltNodesConfig from "../nodes/prebuilt-nodes/prebuiltNodesConfig";
 
 interface WindowFrameProps {
   windowId: string;
@@ -51,6 +52,8 @@ function WindowFrame({
 
   if (isMinimized) return null;
 
+  const Icon = prebuiltNodesConfig.find((n) => n.type === node.type)?.nodeIcon;
+
   return (
     <div
       className="absolute pointer-events-auto rounded-[10px] grid grid-cols-[7px_1fr_7px] grid-rows-[7px_1fr_7px]"
@@ -92,12 +95,15 @@ function WindowFrame({
       >
         {/* HEADER */}
         <div className="flex items-center justify-between px-1">
-          <InlineEditableText
-            value={String(node?.data.name) || "Sans nom"}
-            onSave={handleNameSave}
-            className={`font-semibold text-sm w-full truncate ${nodeColor.text}`}
-            placeholder="Nom du bloc"
-          />
+          <div className={"flex gap-1 " + nodeColor.text}>
+            {Icon && <Icon size={18} className="mb" />}
+            <InlineEditableText
+              value={String(node?.data.name) || "Sans nom"}
+              onSave={handleNameSave}
+              className="font-semibold text-sm w-full truncate mt-[1px]"
+              placeholder="Nom du bloc"
+            />
+          </div>
           <div className="flex items-center gap-1">
             <button
               type="button"

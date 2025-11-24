@@ -6,6 +6,8 @@ import { useState } from "react";
 import Modal from "../../../components/modal/Modal";
 import NodeEditor from "../../../components/node-editor/NodeEditor";
 import type { Id } from "../../../../convex/_generated/dataModel";
+import { Button } from "@/components/shadcn/button";
+import NodeTemplateCard from "@/components/node-editor/NodeTemplateCard";
 
 export const Route = createFileRoute("/settings/templates/")({
   component: RouteComponent,
@@ -38,16 +40,11 @@ function RouteComponent() {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {userTemplates.map((template: NodeTemplate, i) => (
-          <div
+          <NodeTemplateCard
+            template={template}
             key={i}
-            className="border border-gray-300 p-4 rounded-md cursor-pointer"
-            onClick={() =>
-              setEditingTemplateId(template._id as Id<"nodeTemplates">)
-            }
-          >
-            <h3 className="text-lg font-semibold">{template.name}</h3>
-            <p className="text-sm text-gray-500">{template.description}</p>
-          </div>
+            editTemplate={setEditingTemplateId}
+          />
         ))}
       </div>
     );
@@ -55,9 +52,16 @@ function RouteComponent() {
 
   return (
     <>
-      <div className="mb-8 border-b border-gray-300 pb-5">
-        <h2 className="text-3xl font-semibold">Templates</h2>
-        <p className="italic">Créez et gérer vos blocs personnalisés ici.</p>
+      <div className="mb-8 pb-5 flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-semibold">Templates</h2>
+          <p className="italic text-sm">
+            Créez et gérer vos blocs personnalisés ici.
+          </p>
+        </div>
+        <Button onClick={() => setEditingTemplateId("new")}>
+          Créer un nouveau template
+        </Button>
       </div>
 
       <div>{renderUserTemplates()}</div>

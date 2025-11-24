@@ -102,12 +102,12 @@ const prebuiltNodesConfig = [
     nodeComponent: DocumentNode,
     windowComponent: DocumentWindow,
     node: {
-      minWidth: 200,
-      minHeight: 250,
+      minWidth: 100,
+      minHeight: 100,
     },
     window: {
-      initialWidth: 400,
-      initialHeight: 500,
+      initialWidth: 500,
+      initialHeight: 900,
     },
     initialNodeValues: {
       ...defaultValues,

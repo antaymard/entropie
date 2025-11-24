@@ -1,14 +1,16 @@
+import type { IconType } from "react-icons/lib";
+
 // Props communes à tous les field components
-export interface BaseFieldProps {
+export interface BaseFieldProps<T = unknown> {
   field: import("./node.types").NodeField;
-  value?: unknown;
-  onChange?: (value: unknown) => void; // undefined = preview (pas de sauvegarde)
+  value?: T;
+  onChange?: (value: T) => void; // undefined = preview (pas de sauvegarde)
   visualSettings?: Record<string, unknown>; // Provient de layout.visual.settings
 }
 
 export interface FieldDefinition {
   label: string;
-  icon: React.ComponentType;
+  icon: IconType;
   description?: string;
   type: FieldType;
 

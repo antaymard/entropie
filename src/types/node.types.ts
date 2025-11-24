@@ -4,6 +4,7 @@
 
 import type { Id } from "convex/_generated/dataModel";
 import type { FieldType } from "./field.types";
+import type { IconType } from "react-icons/lib";
 
 export interface NodeTemplate {
   _id: Id<"nodeTemplates"> | "new";
@@ -100,7 +101,7 @@ export type NodeColors =
 
 export interface NodeConfig {
   nodeLabel: string;
-  nodeIcon: React.ComponentType;
+  nodeIcon: IconType;
   type: NodeType;
   nodeComponent: React.ComponentType<any>;
   windowComponent?: React.ComponentType<any>;

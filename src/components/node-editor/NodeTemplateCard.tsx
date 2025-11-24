@@ -33,7 +33,7 @@ export default function NodeTemplateCard({
         <p className="text-sm text-gray-500">{template.description}</p>
       </div>
       <DropdownMenu>
-        <DropdownMenuTrigger>
+        <DropdownMenuTrigger asChild>
           <Button variant="ghost">
             <FiMoreVertical />
           </Button>

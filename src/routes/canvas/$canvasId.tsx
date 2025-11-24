@@ -49,6 +49,10 @@ export const Route = createFileRoute("/canvas/$canvasId")({
 function RouteComponent() {
   const { canvasId } = Route.useParams() as { canvasId: Id<"canvases"> };
 
+  return <CanvasContent key={canvasId} canvasId={canvasId} />;
+}
+
+function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   // Fetch canvas data
   const canvas = useQuery(api.canvases.getCanvas, {
     canvasId: canvasId,

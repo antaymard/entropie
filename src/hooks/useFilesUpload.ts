@@ -33,8 +33,8 @@ export const useFileUpload = () => {
    * @returns Les données du fichier uploadé (à utiliser pour mettre à jour votre state local)
    */
   const uploadFile = useCallback(
-    async (file: File): Promise<UploadedFileData> => {
-      const fileId = crypto.randomUUID();
+    async (file: File, customId?: string): Promise<UploadedFileData> => {
+      const fileId = customId || crypto.randomUUID();
 
       // Initialiser le tracking
       setUploads((prev) => ({

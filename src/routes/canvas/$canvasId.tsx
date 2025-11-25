@@ -161,8 +161,18 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
 
   function handleNodesChange(changes: NodeChange<Node>[]) {
     onNodesChange(changes);
+    console.log(saveIncrement);
+
+    // Ignore if dragging
+    const isDragging = changes.some(
+      (change) => change.type === "position" && change.dragging
+    );
+    if (isDragging) return;
+
     // Si tous les changes ne sont pas de type select, on incrémente le saveIncrement
     if (!changes.every((change) => change.type === "select")) {
+      if (canvasStatus === "saving") return; // Prevent multiple saves
+      if (canvasStatus !== "unsynced") setCanvasStatus("unsynced");
       setSaveIncrement((prev) => prev + 1);
     }
   }

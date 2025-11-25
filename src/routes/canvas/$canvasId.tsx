@@ -34,13 +34,14 @@ import { Button } from "@/components/shadcn/button";
 import { SidebarProvider } from "@/components/shadcn/sidebar";
 import CanvasSidebar from "@/components/canvas/CanvasSidebar";
 import type { Canvas } from "@/types";
-import { debounce, set } from "lodash";
+import { debounce } from "lodash";
 import { toastError } from "@/components/utils/errorUtils";
 import WindowsContainer from "@/components/windows/WindowsContainer";
 import { useWindowsStore } from "@/stores/windowsStore";
 import type { NodeType } from "@/types/node.types";
 import WindowsBottomBar from "@/components/windows/bottom-bar/WindowsBottomBar";
 import { useTemplateStore } from "@/stores/templateStore";
+import { useCanvasContentHistory } from "@/hooks/useCanvasContentHistory";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -86,6 +87,16 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const hasInitialized = useRef(false);
   const [saveIncrement, setSaveIncrement] = useState(0); // To trigger save effect
+  const isDraggingRef = useRef(false);
+
+  // History undo/redo management
+  const { recordChange, undo, redo, isUndoRedo } = useCanvasContentHistory(
+    nodes,
+    edges,
+    setNodes,
+    setEdges,
+    hasInitialized.current
+  );
 
   // ======= Handlers =======
 
@@ -160,13 +171,26 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   );
 
   function handleNodesChange(changes: NodeChange<Node>[]) {
-    onNodesChange(changes);
-    console.log(saveIncrement);
+    onNodesChange(changes); // Update xyFlow state (make the change visible on the canvas)
 
-    // Ignore if dragging
+    // Ignore if undo/redo
+    if (isUndoRedo.current) return;
+
+    // Manage dragging state
     const isDragging = changes.some(
       (change) => change.type === "position" && change.dragging
     );
+    const isDragEnd = changes.some(
+      (change) =>
+        change.type === "position" && !change.dragging && change.position
+    );
+
+    if (isDragging) {
+      isDraggingRef.current = true;
+    } else if (isDragEnd) {
+      isDraggingRef.current = false;
+    }
+
     if (isDragging) return;
 
     // Si tous les changes ne sont pas de type select, on incrémente le saveIncrement
@@ -179,12 +203,48 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
 
   function handleEdgesChange(changes: EdgeChange<Edge>[]) {
     onEdgesChange(changes);
+
+    // Ignore if undo/redo
+    if (isUndoRedo.current) return;
+
+    // Si tous les changes ne sont pas de type select, on incrémente le saveIncrement
+    if (!changes.every((change) => change.type === "select")) {
+      if (canvasStatus === "saving") return;
+      if (canvasStatus !== "unsynced") setCanvasStatus("unsynced");
+      setSaveIncrement((prev) => prev + 1);
+    }
   }
+
+  // Ctrl+Z / Cmd+Z for undo/redo
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
+
+      // Redo: Ctrl+Shift+Z ou Ctrl+Y
+      if (
+        (e.metaKey || e.ctrlKey) &&
+        ((key === "z" && e.shiftKey) || key === "y")
+      ) {
+        e.preventDefault();
+        redo();
+        return;
+      }
+
+      // Undo: Ctrl+Z
+      if ((e.metaKey || e.ctrlKey) && key === "z") {
+        e.preventDefault();
+        undo();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [undo, redo]);
 
   // Set templates in store when fetched
   useEffect(() => {
     setUserTemplates(userTemplates || []);
-  }, [userTemplates]);
+  }, [userTemplates, setUserTemplates]);
 
   // Auto-save when nodes or edges change
   useEffect(() => {
@@ -195,6 +255,12 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     debouncedSave(nodes, edges);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [saveIncrement, debouncedSave]);
+
+  // Record history changes
+  useEffect(() => {
+    if (isUndoRedo.current || isDraggingRef.current) return;
+    recordChange(nodes, edges);
+  }, [nodes, edges, recordChange, isUndoRedo]);
 
   // Load data from database into store
   useEffect(() => {

@@ -6,7 +6,7 @@ import { normalizeNodeId } from "platejs";
 import { Plate, usePlateEditor } from "platejs/react";
 
 import { EditorKit } from "@/components/plate/editor-kit";
-import { SettingsDialog } from "@/components/plate/settings-dialog";
+// import { SettingsDialog } from "@/components/plate/settings-dialog";
 import { Editor, EditorContainer } from "@/components/plate/editor";
 
 export function PlateEditor() {
@@ -21,7 +21,7 @@ export function PlateEditor() {
         <Editor variant="demo" />
       </EditorContainer>
 
-      <SettingsDialog />
+      {/* <SettingsDialog /> */}
     </Plate>
   );
 }

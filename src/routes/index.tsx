@@ -4,6 +4,7 @@ import type { RouterContext } from "./__root";
 import { VscGithubProject } from "react-icons/vsc";
 import { useState } from "react";
 import CanvasCreationModal from "../components/canvas/CanvasCreationModal";
+import { Dialog } from "@/components/shadcn/dialog";
 
 export const Route = createFileRoute("/")({
   beforeLoad: async ({ context }) => {
@@ -46,7 +47,9 @@ function RouteComponent() {
           Créer un espace
         </button>
       </div>
-      <CanvasCreationModal />
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <CanvasCreationModal />
+      </Dialog>
     </div>
   );
 }

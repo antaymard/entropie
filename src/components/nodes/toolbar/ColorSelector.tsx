@@ -21,7 +21,7 @@ const ColorSelector = memo(function ColorSelector({
 }: {
   xyNode: Node;
 }) {
-  const { updateNode } = useReactFlow();
+  const { updateNodeData } = useReactFlow();
   const nodeConfig = prebuiltNodesConfig.find((n) => n.type === xyNode.type);
 
   // OPTIMISATION: useCallback empêche la recréation de la fonction à chaque render
@@ -29,11 +29,9 @@ const ColorSelector = memo(function ColorSelector({
   // - Évite les rerenders des enfants qui dépendent de cette fonction
   const handleColorChange = useCallback(
     (value: string) => {
-      updateNode(xyNode.id, {
-        data: { ...xyNode.data, color: value as NodeColors },
-      });
+      updateNodeData(xyNode.id, { color: value as NodeColors });
     },
-    [xyNode.id, updateNode]
+    [xyNode.id, updateNodeData]
   );
 
   // Filtrer les couleurs disponibles selon la config du nœud

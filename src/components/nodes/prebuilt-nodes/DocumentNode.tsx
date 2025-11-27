@@ -65,7 +65,9 @@ const DocumentNode = memo(
     return (
       prev.id === next.id &&
       prev.selected === next.selected &&
-      prev.data?.doc === next.data?.doc
+      prev.data?.doc === next.data?.doc &&
+      prev.data?.color === next.data?.color &&
+      prev.data?.name === next.data?.name
     );
   }
 );

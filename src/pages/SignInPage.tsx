@@ -1,7 +1,7 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useState } from "react";
 
-export default function SignIn() {
+export default function SignInPage() {
   const { signIn } = useAuthActions();
   const [step, setStep] = useState<"signUp" | "signIn">("signIn");
 
@@ -16,7 +16,7 @@ export default function SignIn() {
         className="border border-gray-300 bg-white rounded p-5 flex flex-col gap-5"
       >
         <div>
-          <h1 className="text-3xl font-semibold">Entropie</h1>
+          <h1 className="text-3xl font-semibold">Nolenor</h1>
           <i>L'app des projets complexes</i>
         </div>
         <input

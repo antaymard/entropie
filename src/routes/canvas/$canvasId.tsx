@@ -55,14 +55,27 @@ function RouteComponent() {
 
 function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   // Fetch canvas data
-  const canvas = useQuery(api.canvases.getCanvas, {
+  const {
+    success: canvasSuccess,
+    canvas,
+    error: canvasError,
+  } = useQuery(api.canvases.getCanvas, {
     canvasId: canvasId,
-  }) as Canvas | null | undefined;
+  }) ||
+  ({} as {
+    success: boolean;
+    canvas: Canvas | null | undefined;
+    error: string | null;
+  });
 
   const saveCanvasInConvex = useMutation(api.canvases.updateCanvasContent);
 
   // Fetch templates
-  const userTemplates = useQuery(api.templates.getUserTemplates, {});
+  const {
+    success: templatesSuccess,
+    templates: userTemplates,
+    error: templatesError,
+  } = useQuery(api.templates.getUserTemplates, {}) || {};
 
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{
@@ -243,8 +256,12 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
 
   // Set templates in store when fetched
   useEffect(() => {
-    setUserTemplates(userTemplates || []);
-  }, [userTemplates, setUserTemplates]);
+    if (templatesSuccess) {
+      setUserTemplates(userTemplates || []);
+    } else if (templatesSuccess === false) {
+      toastError(templatesError, "Erreur lors du chargement des templates");
+    }
+  }, [templatesSuccess, userTemplates, setUserTemplates, templatesError]);
 
   // Auto-save when nodes or edges change
   useEffect(() => {
@@ -264,14 +281,14 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
 
   // Load data from database into store
   useEffect(() => {
-    if (canvas && !hasInitialized.current) {
+    if (canvasSuccess && canvas && !hasInitialized.current) {
       setCanvas(canvas);
       setNodes(toXyNodes(canvas.nodes));
       setEdges(canvas.edges || []);
       hasInitialized.current = true;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canvas]);
+  }, [canvasSuccess, canvas]);
 
   useEffect(() => {
     hasInitialized.current = false;
@@ -300,7 +317,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     );
   }
 
-  if (canvas === null) {
+  if (!canvasSuccess || canvas === null) {
     return (
       <div className="h-full w-full flex items-center justify-center">
         <Card>

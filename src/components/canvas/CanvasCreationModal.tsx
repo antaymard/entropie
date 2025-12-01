@@ -31,9 +31,18 @@ export default function CanvasCreationModal() {
       onSubmit={async (values) => {
         try {
           console.log("omf");
-          const canvasId = await createCanvas({ name: values.name });
-          toast.success(`Espace "${values.name}" créé avec succès !`);
-          navigate({ to: `/canvas/$canvasId`, params: { canvasId } });
+          const { newCanvasId, success } = await createCanvas({
+            name: values.name,
+          });
+          if (success) {
+            toast.success(`Espace "${values.name}" créé avec succès !`);
+            navigate({
+              to: `/canvas/${newCanvasId}`,
+              params: { canvasId: newCanvasId },
+            });
+          } else {
+            throw new Error("Échec de la création de l'espace.");
+          }
         } catch (error) {
           toastError(error, "Erreur lors de la création de l'espace.");
         }

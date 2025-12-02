@@ -16,10 +16,10 @@ import {
   SidebarTrigger,
 } from "../shadcn/sidebar";
 import CanvasCreationModal from "./CanvasCreationModal";
-import { useState, memo } from "react";
+import { memo } from "react";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { api } from "@/../convex/_generated/api";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { HiMiniPlus, HiMiniEllipsisVertical } from "react-icons/hi2";
 import {
   DropdownMenu,
@@ -29,27 +29,31 @@ import {
 } from "../shadcn/dropdown-menu";
 import { toastError } from "../utils/errorUtils";
 import toast from "react-hot-toast";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/shadcn/dialog";
+import { Dialog, DialogTrigger } from "@/components/shadcn/dialog";
+import { Button } from "../shadcn/button";
+import { useAuthActions } from "@convex-dev/auth/react";
 
 function CanvasSidebar({
   currentCanvasId,
 }: {
   currentCanvasId: Id<"canvases">;
 }) {
-  const [isCanvasCreationModalOpen, setIsCanvasCreationModalOpen] =
-    useState(false);
-  const userCanvases = useQuery(api.canvases.getUserCanvases);
+  const { canvases: userCanvases } =
+    useQuery(api.canvases.getUserCanvases) ||
+    ({} as {
+      canvases: Array<{ _id: Id<"canvases">; name: string }>;
+    });
   const deleteCanvas = useMutation(api.canvases.deleteCanvas);
   const { setOpen } = useSidebar();
+  const { signOut } = useAuthActions();
+  const navigate = useNavigate();
 
   async function handleDeleteCanvas(canvasId: Id<"canvases">) {
     try {
-      await deleteCanvas({ canvasId });
-      toast.success("Espace supprimé");
+      const res = await deleteCanvas({ canvasId });
+      if (res.success) {
+        toast.success("Espace supprimé");
+      }
     } catch (error) {
       toastError(error, "Erreur lors de la suppression de l'espace.");
     }
@@ -79,42 +83,47 @@ function CanvasSidebar({
             <SidebarGroupContent>
               <SidebarMenu>
                 {userCanvases ? (
-                  userCanvases.map((canvas) => (
-                    <SidebarMenuItem key={canvas._id} className="group/item">
-                      <SidebarMenuButton
-                        asChild
-                        isActive={canvas._id === currentCanvasId}
-                      >
-                        <Link
-                          key={canvas._id}
-                          to={`/canvas/${canvas._id}`}
-                          onClick={() => setOpen(false)}
-                        >
-                          {canvas.name}
-                          {canvas._id === currentCanvasId && (
-                            <span className="text-xs ml-2 italic">Actuel</span>
-                          )}
-                        </Link>
-                      </SidebarMenuButton>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
+                  userCanvases.map(
+                    (canvas: { _id: Id<"canvases">; name: string }) => (
+                      <SidebarMenuItem key={canvas._id} className="group/item">
+                        <SidebarMenuButton
                           asChild
-                          className="group-hover/item:opacity-100 opacity-0 transition-opacity"
+                          isActive={canvas._id === currentCanvasId}
                         >
-                          <SidebarMenuAction>
-                            <HiMiniEllipsisVertical />
-                          </SidebarMenuAction>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent side="right" align="start">
-                          <DropdownMenuItem
-                            onClick={() => handleDeleteCanvas(canvas._id)}
+                          <Link
+                            key={canvas._id}
+                            to="/canvas/$canvasId"
+                            params={{ canvasId: canvas._id }}
+                            onClick={() => setOpen(false)}
                           >
-                            Supprimer l'espace
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </SidebarMenuItem>
-                  ))
+                            {canvas.name}
+                            {canvas._id === currentCanvasId && (
+                              <span className="text-xs ml-2 italic">
+                                Actuel
+                              </span>
+                            )}
+                          </Link>
+                        </SidebarMenuButton>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger
+                            asChild
+                            className="group-hover/item:opacity-100 opacity-0 transition-opacity"
+                          >
+                            <SidebarMenuAction>
+                              <HiMiniEllipsisVertical />
+                            </SidebarMenuAction>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent side="right" align="start">
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteCanvas(canvas._id)}
+                            >
+                              Supprimer l'espace
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </SidebarMenuItem>
+                    )
+                  )
                 ) : (
                   <SidebarMenuItem>Aucun espace disponible</SidebarMenuItem>
                 )}
@@ -123,7 +132,17 @@ function CanvasSidebar({
           </SidebarGroup>
         </SidebarContent>
 
-        <SidebarFooter>Footer</SidebarFooter>
+        <SidebarFooter>
+          <Button
+            onClick={() => {
+              signOut().then(() => {
+                navigate({ to: "/signin" });
+              });
+            }}
+          >
+            Déconnexion
+          </Button>
+        </SidebarFooter>
       </Sidebar>
       {/* <div className="flex flex-row justify-between items-center">
         <h2 className="text-lg font-semibold">Espaces</h2>

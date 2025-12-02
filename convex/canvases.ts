@@ -1,11 +1,20 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { requireAuth } from "./lib/auth";
+import { requireAuth, getAuth } from "./lib/auth";
+import { get } from "lodash";
 
 export const getLastModifiedCanvas = query({
   args: {},
   handler: async (ctx) => {
-    const authUserId = await requireAuth(ctx);
+    const authUserId = await getAuth(ctx);
+
+    if (!authUserId) {
+      return {
+        success: false,
+        canvas: null,
+        error: "Utilisateur non authentifié",
+      };
+    }
 
     // Récupérer le dernier canvas modifié de l'utilisateur
     const canvas = await ctx.db
@@ -16,14 +25,22 @@ export const getLastModifiedCanvas = query({
       .order("desc")
       .first();
 
-    return canvas;
+    return { success: true, canvas };
   },
 });
 
 export const getUserCanvases = query({
   args: {},
   handler: async (ctx) => {
-    const authUserId = await requireAuth(ctx);
+    const authUserId = await getAuth(ctx);
+
+    if (!authUserId) {
+      return {
+        success: false,
+        canvases: [],
+        error: "Utilisateur non authentifié",
+      };
+    }
 
     // Récupérer tous les canvas de l'utilisateur
     const canvases = await ctx.db
@@ -32,10 +49,13 @@ export const getUserCanvases = query({
       .collect();
 
     // Retourner seulement l'id et le nom
-    return canvases.map((canvas) => ({
-      _id: canvas._id,
-      name: canvas.name,
-    }));
+    return {
+      success: true,
+      canvases: canvases.map((canvas) => ({
+        _id: canvas._id,
+        name: canvas.name,
+      })),
+    };
   },
 });
 
@@ -44,7 +64,15 @@ export const getCanvas = query({
     canvasId: v.id("canvases"),
   },
   handler: async (ctx, { canvasId }) => {
-    const authUserId = await requireAuth(ctx);
+    const authUserId = await getAuth(ctx);
+
+    if (!authUserId) {
+      return {
+        success: false,
+        canvas: null,
+        error: "Utilisateur non authentifié",
+      };
+    }
 
     // Vérifier si l'utilisateur est le créateur du canvas
     const canvas = await ctx.db.get(canvasId);
@@ -57,7 +85,7 @@ export const getCanvas = query({
       return null;
     }
 
-    return canvas;
+    return { success: true, canvas };
   },
 });
 
@@ -77,7 +105,7 @@ export const createCanvas = mutation({
       updatedAt: 0,
     });
 
-    return newCanvasId;
+    return { success: true, newCanvasId };
   },
 });
 
@@ -113,7 +141,7 @@ export const updateCanvasDetails = mutation({
       updatedAt: Date.now(),
     });
 
-    return canvasId;
+    return { success: true, canvasId };
   },
 });
 
@@ -140,7 +168,7 @@ export const updateCanvasContent = mutation({
       edges,
       updatedAt: Date.now(),
     });
-    return canvasId;
+    return { success: true, canvasId };
   },
 });
 
@@ -162,7 +190,7 @@ export const deleteCanvas = mutation({
 
     // Supprimer le canvas
     await ctx.db.delete(canvasId);
-    return canvasId;
+    return { success: true, canvasId };
   },
 });
 
@@ -195,6 +223,6 @@ export const updateCanvasNodeData = mutation({
       nodes: updatedNodes,
       updatedAt: Date.now(),
     });
-    return canvasId;
+    return { success: true, canvasId };
   },
 });

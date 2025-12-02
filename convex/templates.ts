@@ -1,18 +1,26 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { requireAuth } from "./lib/auth";
+import { requireAuth, getAuth } from "./lib/auth";
 
 export const getUserTemplates = query({
   args: {},
   handler: async (ctx) => {
-    const authUserId = await requireAuth(ctx);
+    const authUserId = await getAuth(ctx);
+
+    if (!authUserId) {
+      return {
+        success: false,
+        templates: [],
+        error: "Utilisateur non authentifié",
+      };
+    }
 
     const templates = await ctx.db
       .query("nodeTemplates")
       .withIndex("by_creator", (q) => q.eq("creatorId", authUserId))
       .collect();
 
-    return templates;
+    return { success: true, templates };
   },
 });
 
@@ -22,7 +30,15 @@ export const getTemplateById = query({
   },
   handler: async (ctx, args) => {
     const { templateId } = args;
-    const authUserId = await requireAuth(ctx);
+    const authUserId = await getAuth(ctx);
+
+    if (!authUserId) {
+      return {
+        success: false,
+        template: null,
+        error: "Utilisateur non authentifié",
+      };
+    }
 
     const template = await ctx.db.get(templateId);
     if (!template) throw new Error("Template not found");
@@ -31,7 +47,7 @@ export const getTemplateById = query({
       throw new Error("Unauthorized");
     }
 
-    return template;
+    return { success: true, template };
   },
 });
 

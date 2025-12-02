@@ -15,72 +15,72 @@ let saveTimer: ReturnType<typeof setTimeout> | null = null;
  * À appeler au démarrage de l'application
  */
 export const initializeCanvasApi = (client: ConvexReactClient) => {
-    convexClient = client;
+  convexClient = client;
 };
 
 /**
  * Annule la sauvegarde en attente
  */
 export const cancelPendingSave = () => {
-    if (saveTimer) {
-        clearTimeout(saveTimer);
-        saveTimer = null;
-    }
+  if (saveTimer) {
+    clearTimeout(saveTimer);
+    saveTimer = null;
+  }
 };
 
 /**
  * Force la sauvegarde immédiate (sans debounce)
  */
 export const saveCanvasToDbNow = async (
-    canvasId: Id<"canvases">,
-    nodes: CanvasNode[],
-    edges: Edge[]
+  canvasId: Id<"canvases">,
+  nodes: CanvasNode[],
+  edges: Edge[]
 ) => {
-    // Annuler le timer en attente
-    cancelPendingSave();
+  // Annuler le timer en attente
+  cancelPendingSave();
 
-    if (!convexClient) {
-        console.error(
-            "Convex client not initialized. Call initializeCanvasApi first."
-        );
-        return;
-    }
+  if (!convexClient) {
+    console.error(
+      "Convex client not initialized. Call initializeCanvasApi first."
+    );
+    return;
+  }
 
-    try {
-        await convexClient.mutation(api.canvases.updateCanvasContent, {
-            canvasId,
-            nodes,
-            edges,
-        });
-        console.log("✅ Canvas saved immediately");
-    } catch (error) {
-        console.error("❌ Error saving canvas to DB:", error);
-        throw error;
-    }
+  try {
+    await convexClient.mutation(api.canvases.updateCanvasContent, {
+      canvasId,
+      nodes,
+      edges,
+    });
+    console.log("✅ Canvas saved immediately");
+  } catch (error) {
+    console.error("❌ Error saving canvas to DB:", error);
+    throw error;
+  }
 };
 
 /**
  * Sauvegarde le canvas dans la base de données avec debounce
  * Peut être appelée de n'importe où, réinitialise le timer à chaque appel
- * 
+ *
  * @param canvasId - L'ID du canvas à sauvegarder
  * @param nodes - Les nodes du canvas
  * @param edges - Les edges du canvas
  * @param delay - Délai du debounce en ms (défaut: 1000ms)
  */
 export const saveCanvasToDbDebounced = (
-    canvasId: Id<"canvases">,
-    nodes: CanvasNode[],
-    edges: Edge[],
-    delay: number = 1000
+  canvasId: Id<"canvases">,
+  nodes: CanvasNode[],
+  edges: Edge[],
+  delay: number = 1000
 ) => {
-    // Annuler le timer précédent s'il existe
-    if (saveTimer) {
-        clearTimeout(saveTimer);
-    }
+  // Annuler le timer précédent s'il existe
+  if (saveTimer) {
+    clearTimeout(saveTimer);
+  }
 
-    // Créer un nouveau timer qui appelle saveCanvasToDbNow
-    saveTimer = setTimeout(() => {
-        saveCanvasToDbNow(canvasId, nodes, edges);
-    }, delay);
+  // Créer un nouveau timer qui appelle saveCanvasToDbNow
+  saveTimer = setTimeout(() => {
+    saveCanvasToDbNow(canvasId, nodes, edges);
+  }, delay);
 };

@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import CanvasTopBar from "../../components/canvas/CanvasTopBar";
 import {
   Background,
   ReactFlow,
@@ -42,6 +41,8 @@ import type { NodeType } from "@/types/node.types";
 import WindowsBottomBar from "@/components/windows/bottom-bar/WindowsBottomBar";
 import { useTemplateStore } from "@/stores/templateStore";
 import { useCanvasContentHistory } from "@/hooks/useCanvasContentHistory";
+import TopLeftToolbar from "@/components/canvas/on-canvas-ui/TopLeftToolbar";
+import TopRightToolbar from "@/components/canvas/on-canvas-ui/TopRightToolbar";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -342,7 +343,6 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
       <div className="h-screen w-screen bg-gray-50 flex flex-col">
         <CanvasSidebar currentCanvasId={canvasId} />
         <ReactFlowProvider>
-          <CanvasTopBar />
           <div className="flex-1 w-full">
             <ReactFlow
               panOnScroll
@@ -367,6 +367,12 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
               <Controls />
               <Panel position="bottom-center">
                 <WindowsBottomBar />
+              </Panel>
+              <Panel position="top-left">
+                <TopLeftToolbar undo={undo} redo={redo} />
+              </Panel>
+              <Panel position="top-right">
+                <TopRightToolbar />
               </Panel>
             </ReactFlow>
           </div>

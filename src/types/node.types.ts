@@ -97,6 +97,8 @@ export type NodeColors =
   | "yellow"
   | "purple"
   | "transparent"
+  | "pink"
+  | "orange"
   | "default";
 
 export interface NodeConfig {

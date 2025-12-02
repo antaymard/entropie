@@ -14,9 +14,10 @@ export const Route = createFileRoute("/settings/templates/")({
 });
 
 function RouteComponent() {
-  const userTemplates = useQuery(api.templates.getUserTemplates) as
-    | NodeTemplate[]
-    | undefined;
+  const { templates: userTemplates } =
+    (useQuery(api.templates.getUserTemplates) as {
+      templates: NodeTemplate[] | undefined;
+    }) || {};
 
   const [editingTemplateId, setEditingTemplateId] = useState<
     Id<"nodeTemplates"> | "new" | null

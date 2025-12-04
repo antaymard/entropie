@@ -1,6 +1,5 @@
 import type { FieldDefinition } from "@/types/field.types";
 import TextField from "./TextField";
-
 import { RiTextBlock } from "react-icons/ri";
 import { GoNumber } from "react-icons/go";
 import { HiMiniCalendarDateRange, HiOutlineCheckCircle } from "react-icons/hi2";
@@ -11,6 +10,7 @@ import { TbNumber123 } from "react-icons/tb";
 import { HiOutlineChartBar } from "react-icons/hi";
 import { TbLink } from "react-icons/tb";
 import LinkField from "./LinkField";
+import ImageField from "./ImageField";
 
 const fieldsDefinition: FieldDefinition[] = [
   {
@@ -158,7 +158,6 @@ const fieldsDefinition: FieldDefinition[] = [
   {
     label: "Case à cocher",
     type: "boolean",
-    defaultValue: false,
     icon: HiOutlineCheckCircle,
     description: "Champ booléen pour des réponses oui/non ou vrai/faux.",
     visuals: {
@@ -210,28 +209,22 @@ const fieldsDefinition: FieldDefinition[] = [
     type: "image",
     icon: CgImage,
     description: "Champ pour insérer une image.",
-    fieldOptions: [
-      {
-        key: "imageSource",
-        label: "Source de l'image",
-        type: "select",
-        props: {
-          options: [
-            { value: "upload", label: "Téléchargement" },
-            { value: "url", label: "URL" },
-            { value: "any", label: "Les deux" },
-          ],
-        },
-      },
-    ],
+    fieldOptions: [],
     visuals: {
-      commonSettingsList: [],
+      commonSettingsList: [
+        {
+          key: "enableInImageNavigation",
+          label: "Navigation dans l'image",
+          type: "boolean",
+          defaultValue: false,
+        },
+      ],
       variants: [
         {
           name: "default",
           label: "Par défaut",
           visualType: "both",
-          component: TextField, // Temporaire
+          component: ImageField,
           settingsList: [],
         },
       ],

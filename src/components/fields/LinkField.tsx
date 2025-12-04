@@ -3,12 +3,7 @@ import type { BaseFieldProps } from "@/types/field.types";
 import fieldsDefinition from "./fieldsDefinition";
 import { TbPencil } from "react-icons/tb";
 import { Input } from "../shadcn/input";
-import { Label } from "../shadcn/label";
-import { Card } from "../shadcn/card";
-import {
-  NodeContext,
-  useNodeSidePanel,
-} from "../nodes/side-panels/NodeSidePanelContext";
+import { useNodeSidePanel } from "../nodes/side-panels/NodeSidePanelContext";
 import { Button } from "../shadcn/button";
 import SidePanelFrame from "../nodes/side-panels/SidePanelFrame";
 import toast from "react-hot-toast";
@@ -76,7 +71,7 @@ function LinkEditionContent({
   };
 
   return (
-    <SidePanelFrame sidePanelId="linkEdition" sidePanelTitle="Options du lien">
+    <SidePanelFrame id="linkEdition" title="Options du lien">
       <Input
         onDoubleClick={(e) => e.stopPropagation()}
         type="text"

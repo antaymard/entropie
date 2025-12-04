@@ -37,10 +37,11 @@ export default function NodeEditor({
   const createOrUpdateTemplate = useMutation(
     api.templates.createOrUpdateTemplate
   );
-  const template = useQuery(
-    api.templates.getTemplateById,
-    templateId === "new" ? "skip" : { templateId }
-  ) as NodeTemplate | undefined;
+  const { template } =
+    (useQuery(
+      api.templates.getTemplateById,
+      templateId === "new" ? "skip" : { templateId }
+    ) as NodeTemplate | undefined) || {};
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -74,8 +75,6 @@ export default function NodeEditor({
               paddingRight: "10px",
               paddingLeft: "10px",
               gap: "8px",
-              minWidth: "300px",
-              minHeight: "300px",
             },
             data: {
               resizable: true,

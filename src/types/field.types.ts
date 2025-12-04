@@ -1,7 +1,7 @@
 import type { IconType } from "react-icons/lib";
 
 // Props communes à tous les field components
-export interface BaseFieldProps<T = unknown> {
+export interface BaseFieldProps<T = any> {
   field: import("./node.types").NodeField;
   value?: T;
   onChange?: (value: T) => void; // undefined = preview (pas de sauvegarde)

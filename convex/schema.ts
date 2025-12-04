@@ -99,7 +99,8 @@ const schema = defineSchema({
           v.literal("number"),
           v.literal("date"),
           v.literal("rich_text"),
-          v.literal("boolean")
+          v.literal("boolean"),
+          v.literal("document")
         ),
         options: v.optional(v.any()), // currency, placeholder, select options, etc.
       })

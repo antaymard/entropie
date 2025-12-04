@@ -2,7 +2,11 @@ import type { FieldDefinition } from "@/types/field.types";
 import TextField from "./TextField";
 import { RiTextBlock } from "react-icons/ri";
 import { GoNumber } from "react-icons/go";
-import { HiMiniCalendarDateRange, HiOutlineCheckCircle } from "react-icons/hi2";
+import {
+  HiMiniCalendarDateRange,
+  HiOutlineCheckCircle,
+  HiOutlineDocumentText,
+} from "react-icons/hi2";
 import { TbSelect } from "react-icons/tb";
 import { CgImage } from "react-icons/cg";
 import { ClassicNumberField, ProgressNumberField } from "./NumberField";
@@ -11,6 +15,9 @@ import { HiOutlineChartBar } from "react-icons/hi";
 import { TbLink } from "react-icons/tb";
 import LinkField from "./LinkField";
 import ImageField from "./ImageField";
+import DocumentEditorField from "./document-fields/DocumentEditorField";
+import DocumentNameField from "./document-fields/DocumentNameField";
+import DocumentStaticField from "./document-fields/DocumentStaticField";
 
 const fieldsDefinition: FieldDefinition[] = [
   {
@@ -256,6 +263,39 @@ const fieldsDefinition: FieldDefinition[] = [
           label: "Titre de la page",
           visualType: "both",
           component: LinkField, // Temporaire
+          settingsList: [],
+        },
+      ],
+    },
+  },
+  {
+    label: "Document",
+    type: "document",
+    icon: HiOutlineDocumentText,
+    description: "Champ pour insérer et éditer des documents texte formatés.",
+    fieldOptions: [],
+    visuals: {
+      commonSettingsList: [],
+      variants: [
+        {
+          name: "editor",
+          label: "Editeur complet",
+          visualType: "window",
+          component: DocumentEditorField, // Temporaire
+          settingsList: [],
+        },
+        {
+          name: "nameOnly",
+          label: "Nom du doc uniquement",
+          visualType: "node",
+          component: DocumentNameField, // Temporaire
+          settingsList: [],
+        },
+        {
+          name: "staticReader",
+          label: "Affichage en lecture seule",
+          visualType: "node",
+          component: DocumentStaticField, // Temporaire
           settingsList: [],
         },
       ],

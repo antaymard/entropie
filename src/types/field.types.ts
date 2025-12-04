@@ -2,7 +2,7 @@ import type { IconType } from "react-icons/lib";
 
 // Props communes à tous les field components
 export interface BaseFieldProps<T = any> {
-  field: import("./node.types").NodeField;
+  field?: import("./node.types").NodeField;
   value?: T;
   onChange?: (value: T) => void; // undefined = preview (pas de sauvegarde)
   visualSettings?: Record<string, unknown>; // Provient de layout.visual.settings
@@ -55,4 +55,5 @@ export type FieldType =
   | "number"
   | "date"
   | "rich_text"
-  | "boolean";
+  | "boolean"
+  | "document";

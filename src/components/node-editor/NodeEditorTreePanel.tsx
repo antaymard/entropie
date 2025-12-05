@@ -6,27 +6,34 @@ import { RiSeparator } from "react-icons/ri";
 import type { NodeTemplate } from "../../types";
 import type { LayoutElement } from "../../types/node.types";
 import TreeRenderer from "./TreeRenderer";
+import { useNodeEditorContext } from "@/hooks/useNodeEditorContext";
 
 export default function NodeEditorTreePanel() {
   const { values, setFieldValue } = useFormikContext<NodeTemplate>();
+  const { currentVisualLayoutPath } = useNodeEditorContext();
 
-  // Get the default node visual variant ID
-  const defaultVariantId = values.defaultVisuals?.node || "default";
-  const nodeVisual = values.visuals?.node?.[defaultVariantId];
+  // Déterminer le type de visuel (node ou window) depuis le path
+  const visualType = currentVisualLayoutPath.includes("visuals.window")
+    ? "window"
+    : "node";
+
+  // Get the default visual variant ID based on visualType
+  const defaultVariantId = values.defaultVisuals?.[visualType] || "default";
+  const visual = values.visuals?.[visualType]?.[defaultVariantId];
 
   function addElementToLayout(element: LayoutElement) {
-    if (!nodeVisual) return;
+    if (!visual) return;
 
     // For simplicity, we add the new element as a child of the root
     const updatedLayout: LayoutElement = {
-      ...nodeVisual.layout,
+      ...visual.layout,
       children: [
-        ...(nodeVisual.layout.children || []),
+        ...(visual.layout.children || []),
         { ...element, visual: { name: "default", settings: {} } },
       ],
     };
     // Use setFieldValue to update the layout in Formik state
-    setFieldValue(`visuals.node.${defaultVariantId}.layout`, updatedLayout);
+    setFieldValue(`visuals.${visualType}.${defaultVariantId}.layout`, updatedLayout);
   }
 
   const staticElements = [
@@ -58,9 +65,11 @@ export default function NodeEditorTreePanel() {
     },
   ];
 
+  const panelTitle = visualType === "node" ? "Apparence du bloc" : "Apparence de la fenêtre";
+
   return (
     <div className="space-y-4 border-gray-300 border-r px-5 py-4">
-      <h3 className="font-semibold">Apparence du bloc</h3>
+      <h3 className="font-semibold">{panelTitle}</h3>
       {/* Disposition elements */}
       <div className="">
         <h4 className="text-sm font-medium mb-2">
@@ -98,7 +107,7 @@ export default function NodeEditorTreePanel() {
       <div className="">
         <h4 className="text-sm font-medium mb-2">Structure du bloc</h4>
 
-        {nodeVisual?.layout && <TreeRenderer layout={nodeVisual.layout} />}
+        {visual?.layout && <TreeRenderer layout={visual.layout} />}
       </div>
     </div>
   );

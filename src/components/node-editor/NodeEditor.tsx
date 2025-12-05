@@ -84,11 +84,30 @@ export default function NodeEditor({
           },
         },
       },
-      window: {},
+      window: {
+        default: {
+          name: "Visuel fenêtre par défaut",
+          description: "Apparence de la fenêtre",
+          layout: {
+            element: "root",
+            children: [],
+            id: "root",
+            style: {
+              display: "flex",
+              flexDirection: "column",
+              paddingTop: "16px",
+              paddingBottom: "16px",
+              paddingRight: "16px",
+              paddingLeft: "16px",
+              gap: "12px",
+            },
+          },
+        },
+      },
     },
     defaultVisuals: {
       node: "default",
-      window: "",
+      window: "default",
     },
     _id: templateId,
     _creationTime: 0,

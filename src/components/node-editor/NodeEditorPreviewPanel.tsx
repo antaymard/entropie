@@ -23,7 +23,7 @@ export default function NodeEditorPreviewPanel() {
   };
 
   return (
-    <div className="bg-gray-50  p-10">
+    <div className="bg-gray-50 p-10 overflow-auto h-full flex flex-col gap-4">
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}

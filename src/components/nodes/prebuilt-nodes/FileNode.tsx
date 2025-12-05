@@ -1,24 +1,16 @@
 import { useReactFlow, type Node } from "@xyflow/react";
-import { memo, useCallback } from "react";
+import { useCallback } from "react";
 import NodeFrame from "../NodeFrame";
 import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
-// import { Toggle } from "@/components/shadcn/toggle";
-// import { TbPencil } from "react-icons/tb";
-// import {
-//   Popover,
-//   PopoverContent,
-//   PopoverTrigger,
-// } from "@/components/shadcn/popover";
-// import { Button } from "@/components/shadcn/button";
-// import { Textarea } from "@/components/shadcn/textarea";
-import LinkField, { type LinkValueType } from "@/components/fields/LinkField";
+import FileField, { type FileFieldType } from "@/components/fields/FileField";
 
 // Composant principal qui gère la sélection et les interactions
-function LinkNode(xyNode: Node) {
+function FileNode(xyNode: Node) {
   const { updateNodeData } = useReactFlow();
+  const nodeData = xyNode.data || ([] as FileFieldType[]);
 
   const handleSave = useCallback(
-    (val: LinkValueType) => {
+    (val: FileFieldType[]) => {
       updateNodeData(xyNode.id, val);
     },
     [updateNodeData, xyNode.id]
@@ -33,8 +25,8 @@ function LinkNode(xyNode: Node) {
         headerless
         notResizable
       >
-        <LinkField
-          value={xyNode.data as LinkValueType}
+        <FileField
+          value={nodeData}
           onChange={handleSave}
           className="hover:bg-transparent bg-transparent"
         />
@@ -43,4 +35,4 @@ function LinkNode(xyNode: Node) {
   );
 }
 
-export default LinkNode;
+export default FileNode;

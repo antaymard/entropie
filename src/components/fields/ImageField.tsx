@@ -19,7 +19,7 @@ type ImageValueType = {
     positionX: number;
     positionY: number;
   };
-}[];
+};
 
 const sidePanelId = "imageEdition";
 
@@ -28,12 +28,12 @@ export default function ImageField({
   value,
   onChange,
   visualSettings,
-}: BaseFieldProps<ImageValueType>) {
+}: BaseFieldProps<ImageValueType[]>) {
   const { closeSidePanel, openSidePanel } = useNodeSidePanel();
   const imageUrl = value && value.length > 0 ? value[0].url : "";
 
   const handleSave = useCallback((newValue: ImageValueType) => {
-    onChange?.(newValue);
+    onChange?.([newValue]);
     closeSidePanel(sidePanelId);
   }, []);
 
@@ -182,7 +182,7 @@ function ImageUploader({ initialValue, onSave, onClose }) {
 
   const handleUrlSubmit = () => {
     if (urlInput.trim()) {
-      onSave([{ url: urlInput.trim() }]);
+      onSave({ url: urlInput.trim() });
       setUrlInput("");
     }
   };
@@ -195,7 +195,7 @@ function ImageUploader({ initialValue, onSave, onClose }) {
     uploadedAt: number;
     key: string;
   }) => {
-    onSave([{ url: fileData.url }]);
+    onSave({ url: fileData.url });
   };
 
   return (

@@ -17,7 +17,8 @@ export default function SidePanelFrame({
   return (
     <div
       className={
-        "space-y-2 rounded border border-gray-300 bg-white " + className
+        "space-y-2 rounded border border-gray-300 bg-white mb-2 shadow-xl ring-2 " +
+        className
       }
     >
       <div className="flex items-center justify-between p-2 pb-0 gap-5">

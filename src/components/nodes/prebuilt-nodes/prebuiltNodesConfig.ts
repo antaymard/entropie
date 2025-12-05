@@ -5,10 +5,16 @@ import ImageNode from "./ImageNode";
 import DocumentNode from "./DocumentNode";
 
 // Icons
-import { RiTextBlock, RiImageLine, RiLink } from "react-icons/ri";
-import { RxReader } from "react-icons/rx";
+import {
+  RiTextBlock,
+  RiImageLine,
+  RiLink,
+  RiAttachment2,
+  RiFileList3Line,
+} from "react-icons/ri";
 import type { Value } from "platejs";
 import DocumentWindow from "@/components/windows/prebuilt/DocumentWindow";
+import FileNode from "./FileNode";
 
 const defaultValues: CanvasNode = {
   id: "",
@@ -92,12 +98,38 @@ const prebuiltNodesConfig = [
         url: "",
       },
       height: 40,
-      width: 190,
+      width: 220,
+    },
+  },
+  {
+    nodeLabel: "Fichier attaché",
+    nodeIcon: RiAttachment2,
+    type: "file",
+    nodeComponent: FileNode,
+    node: {
+      // minWidth: 150,
+      // minHeight: 150, // notResizable
+    },
+    initialNodeValues: {
+      ...defaultValues,
+      name: "Bloc Fichier",
+      type: "file",
+      data: {
+        // Actual data
+        url: "",
+        filename: "",
+        mimeType: "",
+        size: 0,
+        uploadedAt: 0,
+        key: "",
+      },
+      height: 40,
+      width: 220,
     },
   },
   {
     nodeLabel: "Document",
-    nodeIcon: RxReader,
+    nodeIcon: RiFileList3Line,
     type: "document",
     nodeComponent: DocumentNode,
     windowComponent: DocumentWindow,

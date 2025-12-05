@@ -1,12 +1,8 @@
 import type { FieldDefinition } from "@/types/field.types";
 import TextField from "./TextField";
-import { RiTextBlock } from "react-icons/ri";
+import { RiTextBlock, RiAttachment2, RiFileList3Line } from "react-icons/ri";
 import { GoNumber } from "react-icons/go";
-import {
-  HiMiniCalendarDateRange,
-  HiOutlineCheckCircle,
-  HiOutlineDocumentText,
-} from "react-icons/hi2";
+import { HiMiniCalendarDateRange, HiOutlineCheckCircle } from "react-icons/hi2";
 import { TbSelect } from "react-icons/tb";
 import { CgImage } from "react-icons/cg";
 import { ClassicNumberField, ProgressNumberField } from "./NumberField";
@@ -18,6 +14,7 @@ import ImageField from "./ImageField";
 import DocumentEditorField from "./document-fields/DocumentEditorField";
 import DocumentNameField from "./document-fields/DocumentNameField";
 import DocumentStaticField from "./document-fields/DocumentStaticField";
+import FileField from "./FileField";
 
 const fieldsDefinition: FieldDefinition[] = [
   {
@@ -238,6 +235,51 @@ const fieldsDefinition: FieldDefinition[] = [
     },
   },
   {
+    label: "Image",
+    type: "image",
+    icon: CgImage,
+    description: "Champ pour insérer une image.",
+    fieldOptions: [],
+    visuals: {
+      commonSettingsList: [
+        {
+          key: "enableInImageNavigation",
+          label: "Navigation dans l'image",
+          type: "boolean",
+          defaultValue: false,
+        },
+      ],
+      variants: [
+        {
+          name: "default",
+          label: "Par défaut",
+          visualType: "both",
+          component: ImageField,
+          settingsList: [],
+        },
+      ],
+    },
+  },
+  {
+    label: "Fichier",
+    type: "file",
+    icon: RiAttachment2,
+    description: "Champ pour insérer un fichier.",
+    fieldOptions: [],
+    visuals: {
+      commonSettingsList: [],
+      variants: [
+        {
+          name: "default",
+          label: "Par défaut",
+          visualType: "both",
+          component: FileField,
+          settingsList: [],
+        },
+      ],
+    },
+  },
+  {
     label: "Lien",
     type: "url",
     icon: TbLink,
@@ -271,7 +313,7 @@ const fieldsDefinition: FieldDefinition[] = [
   {
     label: "Document",
     type: "document",
-    icon: HiOutlineDocumentText,
+    icon: RiFileList3Line,
     description: "Champ pour insérer et éditer des documents texte formatés.",
     fieldOptions: [],
     visuals: {

@@ -1,6 +1,6 @@
 import type { BaseFieldProps } from "@/types/field.types";
 import type { Value } from "platejs";
-import { HiOutlineDocumentText } from "react-icons/hi2";
+import { RiFileList3Line } from "react-icons/ri";
 
 interface DocumentNameFieldProps extends BaseFieldProps<{ doc: Value }> {
   documentTitle?: string;
@@ -14,8 +14,8 @@ export default function DocumentNameField({
   documentTitle = "Document",
 }: DocumentNameFieldProps) {
   return (
-    <div className="flex gap-2 items-center p-2 rounded-md bg-gray-100 hover:bg-gray-200">
-      <HiOutlineDocumentText />
+    <div className="flex h-8 gap-2 items-center p-2 rounded-md bg-slate-100 hover:bg-slate-200">
+      <RiFileList3Line size={16} />
       {documentTitle}
     </div>
   );

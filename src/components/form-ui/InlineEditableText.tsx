@@ -148,7 +148,21 @@ function InlineEditableText({
   }, [saveOnBlur, handleSave]);
 
   return (
-    <div className={cn("inline-block", className)}>
+    <div
+      className={cn("inline-grid", className)}
+      style={{ gridTemplateColumns: "1fr" }}
+    >
+      {/* Élément invisible qui maintient la largeur */}
+      <Element
+        className={cn(
+          "invisible col-start-1 row-start-1 whitespace-pre",
+          !currentValue && "text-muted-foreground/50 italic"
+        )}
+        aria-hidden="true"
+      >
+        {(isEditing ? editValue : currentValue) || placeholder}
+      </Element>
+
       {isEditing ? (
         <input
           ref={inputRef}
@@ -159,7 +173,7 @@ function InlineEditableText({
           onBlur={handleBlur}
           placeholder={placeholder}
           className={cn(
-            "w-full bg-transparent border-none outline-none",
+            "col-start-1 row-start-1 bg-transparent border-none outline-none",
             inputClassName
           )}
           style={{
@@ -171,7 +185,7 @@ function InlineEditableText({
       ) : (
         <Element
           className={cn(
-            "cursor-text",
+            "col-start-1 row-start-1 cursor-text",
             !currentValue && "text-muted-foreground/50 italic"
           )}
           onDoubleClick={(e) => {

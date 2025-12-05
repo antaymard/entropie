@@ -16,6 +16,7 @@ export type LinkValueType = {
   pageDescription?: string;
   siteName?: string;
 };
+const sidePanelId = "linkEdition";
 
 function LinkEditionContent({
   initialValue,
@@ -70,7 +71,7 @@ function LinkEditionContent({
   };
 
   return (
-    <SidePanelFrame id="linkEdition" title="Options du lien">
+    <SidePanelFrame id={sidePanelId} title="Options du lien">
       <Input
         onDoubleClick={(e) => e.stopPropagation()}
         type="text"
@@ -107,40 +108,42 @@ function LinkField({ value, onChange, className = "" }: LinkFieldProps) {
   };
 
   return (
-    <div
+    <a
       className={
-        "hover:bg-gray-100 h-8 rounded-md flex items-center group/linkfield w-full " +
+        "bg-slate-100 hover:bg-slate-200 h-8 rounded-md flex items-center group/linkfield w-full px-2 gap-2 min-w-0 flex-1 " +
         className
       }
+      href={value?.href}
+      target="_blank"
     >
-      <a
-        href={value?.href}
-        target="_blank"
-        className="px-1 flex items-center gap-2 min-w-0 flex-1"
-      >
+      <span className="flex items-center gap-2 min-w-0 flex-1 cursor-pointer">
         <TbLink size={18} className="shrink-0" />
-        <span className="truncate hover:underline">
-          {linkValue.pageTitle || <i>Pas de titre</i>}
-        </span>
-      </a>
+        <p className="truncate hover:underline">
+          {linkValue?.href ? (
+            linkValue.pageTitle || <i>Pas de titre</i>
+          ) : (
+            <i>Pas de lien</i>
+          )}
+        </p>
+      </span>
 
       <button
         type="button"
         onClick={() =>
           openSidePanel(
-            "linkEdition",
+            sidePanelId,
             <LinkEditionContent
               initialValue={value?.href || ""}
               onSave={handleSave}
-              onClose={() => closeSidePanel("linkEdition")}
+              onClose={() => closeSidePanel(sidePanelId)}
             />
           )
         }
-        className="items-center justify-center h-8 w-8 shrink-0 group-hover/linkfield:flex hidden"
+        className="cursor-default hover:bg-black/5 rounded-sm items-center justify-center h-6 w-6 shrink-0 group-hover/linkfield:flex hidden"
       >
         <TbPencil />
       </button>
-    </div>
+    </a>
   );
 }
 

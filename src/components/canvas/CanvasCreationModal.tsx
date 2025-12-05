@@ -2,7 +2,7 @@ import { Formik } from "formik";
 import TextInput from "../form-ui/TextInput";
 import toast from "react-hot-toast";
 import { useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api";
+import { api } from "@/../convex/_generated/api";
 import { useNavigate } from "@tanstack/react-router";
 import { toastError } from "../utils/errorUtils";
 import {

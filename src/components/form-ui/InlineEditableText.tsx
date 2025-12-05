@@ -15,6 +15,7 @@ interface InlineEditableTextProps {
    * La valeur du texte à afficher et éditer
    */
   value?: string;
+  disabled?: boolean;
 
   /**
    * Callback appelé lors de la sauvegarde (uniquement en mode non-Formik)
@@ -80,6 +81,7 @@ function InlineEditableText({
   placeholder = "Cliquez pour éditer...",
   saveOnBlur = true,
   as: Element = "span",
+  disabled = false,
 }: InlineEditableTextProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
@@ -189,6 +191,7 @@ function InlineEditableText({
             !currentValue && "text-muted-foreground/50 italic"
           )}
           onDoubleClick={(e) => {
+            if (disabled) return;
             e.stopPropagation();
             handleStartEdit();
           }}

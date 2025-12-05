@@ -16,7 +16,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
-import { useMutation, useQuery } from "convex/react";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { nodeTypes, nodeList } from "../../components/nodes/nodeTypes";
 import { useCanvasStore } from "../../stores/canvasStore";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -69,6 +69,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     error: string | null;
   });
 
+  const { isAuthenticated } = useConvexAuth();
   const saveCanvasInConvex = useMutation(api.canvases.updateCanvasContent);
 
   // Fetch templates
@@ -114,29 +115,38 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
 
   // ======= Handlers =======
 
-  const handleRightClick = useCallback(function (
-    e: React.MouseEvent | MouseEvent,
-    type: "node" | "edge" | "canvas" | "selection",
-    element: object | null
-  ) {
-    e.preventDefault();
+  const handleRightClick = useCallback(
+    function (
+      e: React.MouseEvent | MouseEvent,
+      type: "node" | "edge" | "canvas" | "selection",
+      element: object | null
+    ) {
+      e.preventDefault();
+      if (!isAuthenticated) return;
 
-    setContextMenu({
-      type,
-      position: { x: e.clientX, y: e.clientY },
-      element,
-    });
-  }, []);
+      setContextMenu({
+        type,
+        position: { x: e.clientX, y: e.clientY },
+        element,
+      });
+    },
+    [isAuthenticated]
+  );
 
   const handlePaneContextMenu = useCallback(
-    (e: React.MouseEvent | MouseEvent) => handleRightClick(e, "canvas", null),
-    [handleRightClick]
+    (e: React.MouseEvent | MouseEvent) => {
+      if (!isAuthenticated) return;
+      handleRightClick(e, "canvas", null);
+    },
+    [handleRightClick, isAuthenticated]
   );
 
   const handleNodeContextMenu = useCallback(
-    (e: React.MouseEvent | MouseEvent, node: Node) =>
-      handleRightClick(e, "node", node),
-    [handleRightClick]
+    (e: React.MouseEvent | MouseEvent, node: Node) => {
+      if (!isAuthenticated) return;
+      handleRightClick(e, "node", node);
+    },
+    [handleRightClick, isAuthenticated]
   );
 
   const handleSelectionContextMenu = useCallback(
@@ -185,6 +195,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   );
 
   function handleNodesChange(changes: NodeChange<Node>[]) {
+    if (!isAuthenticated) return;
     onNodesChange(changes); // Update xyFlow state (make the change visible on the canvas)
 
     // Ignore if undo/redo
@@ -216,6 +227,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   }
 
   function handleEdgesChange(changes: EdgeChange<Edge>[]) {
+    if (!isAuthenticated) return;
     onEdgesChange(changes);
 
     // Ignore if undo/redo
@@ -232,6 +244,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   // Ctrl+Z / Cmd+Z for undo/redo
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isAuthenticated) return;
       const key = e.key.toLowerCase();
 
       // Redo: Ctrl+Shift+Z ou Ctrl+Y
@@ -257,12 +270,19 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
 
   // Set templates in store when fetched
   useEffect(() => {
+    if (!isAuthenticated) return;
     if (templatesSuccess) {
       setUserTemplates(userTemplates || []);
     } else if (templatesSuccess === false) {
       toastError(templatesError, "Erreur lors du chargement des templates");
     }
-  }, [templatesSuccess, userTemplates, setUserTemplates, templatesError]);
+  }, [
+    templatesSuccess,
+    userTemplates,
+    setUserTemplates,
+    templatesError,
+    isAuthenticated,
+  ]);
 
   // Auto-save when nodes or edges change
   useEffect(() => {
@@ -276,6 +296,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
 
   // Record history changes
   useEffect(() => {
+    if (!isAuthenticated) return;
     if (isUndoRedo.current || isDraggingRef.current) return;
     recordChange(nodes, edges);
   }, [nodes, edges, recordChange, isUndoRedo]);
@@ -330,7 +351,11 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           </CardContent>
           <CardFooter>
             <Button asChild>
-              <Link to="/">Retourner à l'accueil</Link>
+              {isAuthenticated ? (
+                <Link to="/">Retourner à l'accueil</Link>
+              ) : (
+                <Link to="/signin">Connectez-vous</Link>
+              )}
             </Button>
           </CardFooter>
         </Card>
@@ -362,6 +387,8 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
               deleteKeyCode={null}
               snapToGrid
               snapGrid={[5, 5]}
+              nodesDraggable={isAuthenticated}
+              edgesConnectable={isAuthenticated}
             >
               <Background bgColor="#f9fafb" />
               <Controls />

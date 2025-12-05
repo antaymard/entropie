@@ -14,7 +14,6 @@ import { Switch } from "@/components/shadcn/switch";
 import { useConvexAuth, useMutation } from "convex/react";
 import { api } from "@/../convex/_generated/api";
 import { toastError } from "@/components/utils/errorUtils";
-import { isAuthenticated } from "convex/auth";
 
 function TopRightToolbar() {
   const { isAuthenticated } = useConvexAuth();

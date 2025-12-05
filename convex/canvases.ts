@@ -64,6 +64,18 @@ export const getCanvas = query({
     canvasId: v.id("canvases"),
   },
   handler: async (ctx, { canvasId }) => {
+    const canvas = await ctx.db.get(canvasId);
+
+    if (!canvas) {
+      return null;
+    }
+
+    // If the canvas is public, return it directly
+    if (canvas.sharingOptions?.isPubliclyReadable === true) {
+      return { success: true, canvas };
+    }
+
+    // Else check if the user is auth and is the creator
     const authUserId = await getAuth(ctx);
 
     if (!authUserId) {
@@ -72,13 +84,6 @@ export const getCanvas = query({
         canvas: null,
         error: "Utilisateur non authentifié",
       };
-    }
-
-    // Vérifier si l'utilisateur est le créateur du canvas
-    const canvas = await ctx.db.get(canvasId);
-
-    if (!canvas) {
-      return null;
     }
 
     if (canvas.creatorId !== authUserId) {
@@ -115,6 +120,7 @@ export const updateCanvasDetails = mutation({
     name: v.optional(v.string()),
     icon: v.optional(v.string()),
     description: v.optional(v.string()),
+    sharingOptions: v.optional(v.object({ isPubliclyReadable: v.boolean() })),
   },
   handler: async (ctx, { canvasId, ...updates }) => {
     const authUserId = await requireAuth(ctx);

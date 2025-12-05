@@ -8,6 +8,11 @@ interface CanvasStore {
   canvas: Omit<Canvas, "nodes" | "edges"> | null;
   status: Status;
   setCanvas: (canvas: Canvas) => void;
+  updateCanvas: (
+    updates: Partial<
+      Omit<Canvas, "nodes" | "edges" | "_id" | "creatorId" | "updatedAt">
+    >
+  ) => void;
   setStatus: (status: Status) => void;
 }
 
@@ -19,6 +24,21 @@ export const useCanvasStore = create<CanvasStore>()(
 
       setCanvas: (canvas: Canvas) => {
         set({ canvas });
+      },
+
+      updateCanvas: (
+        updates: Partial<
+          Omit<Canvas, "nodes" | "edges" | "_id" | "creatorId" | "updatedAt">
+        >
+      ) => {
+        const currentCanvas = get().canvas;
+        if (!currentCanvas) return;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { _id, creatorId, updatedAt, ...safeUpdates } = updates as Record<
+          string,
+          unknown
+        >;
+        set({ canvas: { ...currentCanvas, ...safeUpdates } });
       },
 
       setStatus: (status: Status) => {

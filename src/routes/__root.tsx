@@ -24,7 +24,7 @@ function RootComponent() {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated && location.pathname !== "/signin") {
-      navigate({ to: "/signin" });
+      // navigate({ to: "/signin" });
     }
   }, [isAuthenticated, isLoading, navigate, location.pathname]);
 

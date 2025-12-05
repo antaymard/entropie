@@ -4,12 +4,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/shadcn/dropdown-menu";
 import { useCanvasStore } from "@/stores/canvasStore";
 import { api } from "@/../convex/_generated/api";
-import { useMutation, useQuery } from "convex/react";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { HiMiniChevronDown } from "react-icons/hi2";
 import InlineEditableText from "@/components/form-ui/InlineEditableText";
@@ -29,6 +28,7 @@ export default function TopLeftToolbar({
   const canvas = useCanvasStore((state) => state.canvas);
   const updateCanvasDetails = useMutation(api.canvases.updateCanvasDetails);
   const deleteCanvas = useMutation(api.canvases.deleteCanvas);
+  const { isAuthenticated } = useConvexAuth();
 
   const { canvases: userCanvases } =
     useQuery(api.canvases.getUserCanvases) ||
@@ -65,9 +65,13 @@ export default function TopLeftToolbar({
       <div className="bg-white p-2 rounded h-full border border-gray-300 flex items-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-1">
+            <Button
+              disabled={!isAuthenticated}
+              variant="ghost"
+              className="flex items-center gap-1 disabled:opacity-100"
+            >
               <img src="/favicon.svg" alt="Logo de Nolenor" className="h-5" />
-              <HiMiniChevronDown size={20} />
+              {isAuthenticated && <HiMiniChevronDown size={20} />}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
@@ -84,6 +88,7 @@ export default function TopLeftToolbar({
           </DropdownMenuContent>
         </DropdownMenu>
         <InlineEditableText
+          disabled={!isAuthenticated}
           value={canvas?.name || "Sans nom"}
           onSave={handleUpdateCanvasDetails}
           as="h1"
@@ -92,14 +97,16 @@ export default function TopLeftToolbar({
         />
       </div>
 
-      <div className="bg-white p-2 rounded h-full border border-gray-300 flex items-center">
-        <Button variant="ghost" onClick={undo}>
-          <LuUndo />
-        </Button>
-        <Button variant="ghost" onClick={redo}>
-          <LuRedo />
-        </Button>
-      </div>
+      {isAuthenticated && (
+        <div className="bg-white p-2 rounded h-full border border-gray-300 flex items-center">
+          <Button variant="ghost" onClick={undo}>
+            <LuUndo />
+          </Button>
+          <Button variant="ghost" onClick={redo}>
+            <LuRedo />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

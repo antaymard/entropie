@@ -13,6 +13,11 @@ const schema = defineSchema({
     name: v.string(),
     icon: v.optional(v.string()),
     description: v.optional(v.string()),
+    sharingOptions: v.optional(
+      v.object({
+        isPubliclyReadable: v.boolean(),
+      })
+    ),
 
     // Nodes et edges (dénormalisés pour ReactFlow)
     nodes: v.array(

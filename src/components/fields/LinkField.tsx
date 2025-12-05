@@ -109,23 +109,19 @@ function LinkField({ value, onChange, className = "" }: LinkFieldProps) {
   return (
     <div
       className={
-        "hover:bg-gray-100 h-8 rounded-md flex justify-between items-center gap-2 group/linkfield w-full " +
+        "hover:bg-gray-100 h-8 rounded-md flex items-center group/linkfield w-full " +
         className
       }
     >
       <a
         href={value?.href}
         target="_blank"
-        className="px-1 flex items-center gap-2"
+        className="px-1 flex items-center gap-2 min-w-0 flex-1"
       >
-        <TbLink size={18} />
-        {linkValue.pageTitle ? (
-          <div className="flex truncate flex-1">
-            <p>{linkValue.pageTitle}</p>
-          </div>
-        ) : (
-          <i>Pas de titre</i>
-        )}
+        <TbLink size={18} className="shrink-0" />
+        <span className="truncate hover:underline">
+          {linkValue.pageTitle || <i>Pas de titre</i>}
+        </span>
       </a>
 
       <button
@@ -140,7 +136,7 @@ function LinkField({ value, onChange, className = "" }: LinkFieldProps) {
             />
           )
         }
-        className=" items-center justify-center h-8 w-8 group-hover/linkfield:flex hidden"
+        className="items-center justify-center h-8 w-8 shrink-0 group-hover/linkfield:flex hidden"
       >
         <TbPencil />
       </button>

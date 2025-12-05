@@ -1,5 +1,5 @@
 import type { CanvasNode, NodeConfig } from "../../../types/node.types";
-import EmbedNode from "./EmbedNode";
+import LinkNode from "./LinkNode";
 import FloatingTextNode from "./FloatingTextNode";
 import ImageNode from "./ImageNode";
 import DocumentNode from "./DocumentNode";
@@ -77,22 +77,22 @@ const prebuiltNodesConfig = [
   {
     nodeLabel: "Lien web",
     nodeIcon: RiLink,
-    type: "embed",
-    nodeComponent: EmbedNode,
+    type: "link",
+    nodeComponent: LinkNode,
     node: {
-      minWidth: 150,
-      minHeight: 150,
+      // minWidth: 150,
+      // minHeight: 150, // notResizable
     },
     initialNodeValues: {
       ...defaultValues,
-      name: "Bloc Embed",
-      type: "embed",
+      name: "Bloc Lien",
+      type: "link",
       data: {
         // Actual data
         url: "",
       },
-      height: 150,
-      width: 150,
+      height: 40,
+      width: 190,
     },
   },
   {

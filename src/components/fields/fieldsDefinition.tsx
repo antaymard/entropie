@@ -262,7 +262,7 @@ const fieldsDefinition: FieldDefinition[] = [
           name: "pageTitle",
           label: "Titre de la page",
           visualType: "both",
-          component: LinkField, // Temporaire
+          component: LinkField,
           settingsList: [],
         },
       ],

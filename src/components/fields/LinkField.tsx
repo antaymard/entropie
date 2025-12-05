@@ -1,7 +1,6 @@
-import { useCallback, useContext, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import type { BaseFieldProps } from "@/types/field.types";
-import fieldsDefinition from "./fieldsDefinition";
-import { TbPencil } from "react-icons/tb";
+import { TbPencil, TbLink } from "react-icons/tb";
 import { Input } from "../shadcn/input";
 import { useNodeSidePanel } from "../nodes/side-panels/NodeSidePanelContext";
 import { Button } from "../shadcn/button";
@@ -10,7 +9,7 @@ import toast from "react-hot-toast";
 import { useAction } from "convex/react";
 import { api } from "@/../convex/_generated/api";
 
-type LinkValueType = {
+export type LinkValueType = {
   href: string;
   pageTitle: string;
   pageImage?: string;
@@ -86,12 +85,11 @@ function LinkEditionContent({
   );
 }
 
-function LinkField({
-  field,
-  value,
-  onChange,
-  visualSettings,
-}: BaseFieldProps<LinkValueType>) {
+interface LinkFieldProps extends BaseFieldProps<LinkValueType> {
+  className?: string;
+}
+
+function LinkField({ value, onChange, className = "" }: LinkFieldProps) {
   const { closeSidePanel, openSidePanel } = useNodeSidePanel();
 
   const handleSave = useCallback(
@@ -103,22 +101,24 @@ function LinkField({
     [onChange]
   );
 
-  const FieldDefinition = fieldsDefinition.find((f) => f.type === field.type);
   const linkValue: LinkValueType = (value as LinkValueType) || {
     href: "",
     pageTitle: "",
   };
 
-  const Icon = FieldDefinition?.icon;
-
   return (
-    <div className="hover:bg-gray-100 h-8 rounded-md flex justify-between items-center gap-2 group/linkfield w-full">
+    <div
+      className={
+        "hover:bg-gray-100 h-8 rounded-md flex justify-between items-center gap-2 group/linkfield w-full " +
+        className
+      }
+    >
       <a
         href={value?.href}
         target="_blank"
         className="px-1 flex items-center gap-2"
       >
-        {Icon && <Icon size={18} />}
+        <TbLink size={18} />
         {linkValue.pageTitle ? (
           <div className="flex truncate flex-1">
             <p>{linkValue.pageTitle}</p>

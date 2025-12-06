@@ -3,21 +3,23 @@ import { v } from "convex/values";
 import { requireAuth, getAuth } from "./lib/auth";
 
 export const getUserTemplates = query({
-  args: {},
-  handler: async (ctx) => {
-    const authUserId = await getAuth(ctx);
+  args: {
+    canvasId: v.id("canvases"),
+  },
+  handler: async (ctx, args) => {
+    const { canvasId } = args;
 
-    if (!authUserId) {
+    const canvas = await ctx.db.get(canvasId);
+    if (!canvas) {
       return {
         success: false,
-        templates: [],
-        error: "Utilisateur non authentifié",
       };
     }
+    const userId = canvas.creatorId;
 
     const templates = await ctx.db
       .query("nodeTemplates")
-      .withIndex("by_creator", (q) => q.eq("creatorId", authUserId))
+      .withIndex("by_creator", (q) => q.eq("creatorId", userId))
       .collect();
 
     return { success: true, templates };

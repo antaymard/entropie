@@ -61,7 +61,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     canvas,
     error: canvasError,
   } = useQuery(api.canvases.getCanvas, {
-    canvasId: canvasId,
+    canvasId,
   }) ||
   ({} as {
     success: boolean;
@@ -77,7 +77,9 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     success: templatesSuccess,
     templates: userTemplates,
     error: templatesError,
-  } = useQuery(api.templates.getUserTemplates, {}) || {};
+  } = useQuery(api.templates.getUserTemplates, {
+    canvasId,
+  }) || {};
 
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{
@@ -191,7 +193,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           setCanvasStatus("error");
         }
       }, 1000),
-    [canvasId, saveCanvasInConvex]
+    [canvasId, saveCanvasInConvex, isAuthenticated]
   );
 
   function handleNodesChange(changes: NodeChange<Node>[]) {
@@ -270,19 +272,12 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
 
   // Set templates in store when fetched
   useEffect(() => {
-    if (!isAuthenticated) return;
     if (templatesSuccess) {
       setUserTemplates(userTemplates || []);
     } else if (templatesSuccess === false) {
       toastError(templatesError, "Erreur lors du chargement des templates");
     }
-  }, [
-    templatesSuccess,
-    userTemplates,
-    setUserTemplates,
-    templatesError,
-    isAuthenticated,
-  ]);
+  }, [templatesSuccess, userTemplates, setUserTemplates, templatesError]);
 
   // Auto-save when nodes or edges change
   useEffect(() => {
@@ -290,6 +285,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     if (canvasStatus === "saving") return; // Prevent multiple saves
     if (canvasStatus !== "unsynced") setCanvasStatus("unsynced");
 
+    if (!isAuthenticated) return;
     debouncedSave(nodes, edges);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [saveIncrement, debouncedSave]);

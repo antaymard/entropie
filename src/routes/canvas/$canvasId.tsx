@@ -19,7 +19,7 @@ import type { Id } from "../../../convex/_generated/dataModel";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { nodeTypes, nodeList } from "../../components/nodes/nodeTypes";
 import { useCanvasStore } from "../../stores/canvasStore";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ContextMenu from "../../components/canvas/context-menus";
 import { toConvexNodes, toXyNodes } from "../../components/utils/nodeUtils";
 import {
@@ -43,6 +43,7 @@ import { useTemplateStore } from "@/stores/templateStore";
 import { useCanvasContentHistory } from "@/hooks/useCanvasContentHistory";
 import TopLeftToolbar from "@/components/canvas/on-canvas-ui/TopLeftToolbar";
 import TopRightToolbar from "@/components/canvas/on-canvas-ui/TopRightToolbar";
+import { useDeviceType } from "@/hooks/useDeviceType";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -98,6 +99,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   const setCanvasStatus = useCanvasStore((state) => state.setStatus);
   const openWindow = useWindowsStore((state) => state.openWindow);
   const setUserTemplates = useTemplateStore((state) => state.setTemplates);
+  const deviceType = useDeviceType();
 
   // xyFlow states
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
@@ -371,7 +373,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
               panOnScroll
               panOnDrag={[1]}
               selectNodesOnDrag={false}
-              selectionOnDrag
+              selectionOnDrag={deviceType === "desktop"}
               selectionMode={SelectionMode.Partial}
               nodeTypes={nodeTypes}
               nodes={nodes}

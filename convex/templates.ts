@@ -4,18 +4,32 @@ import { requireAuth, getAuth } from "./lib/auth";
 
 export const getUserTemplates = query({
   args: {
-    canvasId: v.id("canvases"),
+    canvasId: v.optional(v.id("canvases")),
   },
   handler: async (ctx, args) => {
     const { canvasId } = args;
+    let userId;
 
-    const canvas = await ctx.db.get(canvasId);
-    if (!canvas) {
+    // If canvasId is provided, get the creatorId of the canvas (when no user is logged in)
+    if (canvasId) {
+      const canvas = await ctx.db.get(canvasId);
+      if (!canvas) {
+        return {
+          success: false,
+        };
+      }
+      userId = canvas.creatorId;
+    }
+    // Otherwise, get the authenticated user's ID
+    else {
+      userId = await getAuth(ctx);
+    }
+
+    if (!userId) {
       return {
         success: false,
       };
     }
-    const userId = canvas.creatorId;
 
     const templates = await ctx.db
       .query("nodeTemplates")

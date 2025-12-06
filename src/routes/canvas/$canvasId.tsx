@@ -359,6 +359,8 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     );
   }
 
+  document.title = `${canvas.name}`;
+
   return (
     <SidebarProvider defaultOpen={false}>
       <div className="h-screen w-screen bg-gray-50 flex flex-col">

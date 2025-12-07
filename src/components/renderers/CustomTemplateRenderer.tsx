@@ -309,6 +309,7 @@ const FieldRendererWrapper = memo(
         }
       >
         <FieldComponent
+          visualType={visualType}
           field={field}
           value={value}
           onChange={onSaveNodeData ? handleChange : undefined}

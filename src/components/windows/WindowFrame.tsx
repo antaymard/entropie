@@ -56,7 +56,7 @@ function WindowFrame({
 
   return (
     <div
-      className="absolute pointer-events-auto rounded-[10px] grid grid-cols-[7px_1fr_7px] grid-rows-[7px_1fr_7px]"
+      className="pointer-events-auto rounded-[10px] grid grid-cols-[7px_1fr_7px] grid-rows-[7px_1fr_7px]"
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
         width: `${width}px`,
@@ -88,13 +88,15 @@ function WindowFrame({
       {/* WINDOW CONTENT */}
       <div
         className={`cursor-grab p-0.5 border rounded ${nodeColor.border} inline-flex flex-col h-full w-full shadow backdrop-blur-xs ${nodeColor.transparentBg}`}
-        onMouseDown={(e) => {
-          e.stopPropagation();
-          handleMouseDown(e, "move");
-        }}
       >
         {/* HEADER */}
-        <div className="flex items-center justify-between px-1">
+        <div
+          className="flex items-center justify-between px-1"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            handleMouseDown(e, "move");
+          }}
+        >
           <div className={"flex gap-1 " + nodeColor.text}>
             {Icon && <Icon size={18} className="mb" />}
             <InlineEditableText
@@ -128,7 +130,6 @@ function WindowFrame({
             "bg-white h-full rounded-md p-3 border border-gray-200 cursor-auto overflow-auto " +
             contentClassName
           }
-          onMouseDown={(e) => e.stopPropagation()}
           style={{
             width: width - 16,
             height: height - 16 - 28 - 8,

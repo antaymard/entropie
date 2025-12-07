@@ -4,6 +4,7 @@ import type { IconType } from "react-icons/lib";
 export interface BaseFieldProps<T = any> {
   field?: import("./node.types").NodeField;
   value?: T;
+  visualType?: "node" | "window";
   onChange?: (value: T) => void; // undefined = preview (pas de sauvegarde)
   visualSettings?: Record<string, unknown>; // Provient de layout.visual.settings
 }

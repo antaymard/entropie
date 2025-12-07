@@ -157,7 +157,7 @@ function InlineEditableText({
       {/* Élément invisible qui maintient la largeur */}
       <Element
         className={cn(
-          "invisible col-start-1 row-start-1 whitespace-pre",
+          "invisible col-start-1 row-start-1 whitespace-normal",
           !currentValue && "text-muted-foreground/50 italic"
         )}
         aria-hidden="true"
@@ -175,7 +175,7 @@ function InlineEditableText({
           onBlur={handleBlur}
           placeholder={placeholder}
           className={cn(
-            "col-start-1 row-start-1 bg-transparent border-none outline-none",
+            "col-start-1 row-start-1 bg-transparent border-none outline-none nodrag",
             inputClassName
           )}
           style={{

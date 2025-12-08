@@ -40,7 +40,7 @@ export default function FileField({
   return (
     <div
       className={
-        "bg-slate-100 hover:bg-slate-200 h-8 rounded-md flex items-center group/linkfield w-full px-2 gap-2 min-w-0 flex-1" +
+        "relative bg-slate-100 hover:bg-slate-200 h-8 rounded-md flex items-center group/linkfield w-full px-2 gap-2 min-w-0 flex-1" +
         className
       }
     >
@@ -74,7 +74,7 @@ export default function FileField({
             />
           )
         }
-        className="cursor-default hover:bg-black/5 rounded-sm items-center justify-center h-6 w-6 shrink-0 group-hover/linkfield:flex hidden"
+        className="absolute right-2 cursor-default hover:bg-black/5 rounded-sm items-center justify-center h-6 w-6 shrink-0 group-hover/linkfield:flex hidden"
       >
         <TbPencil />
       </button>

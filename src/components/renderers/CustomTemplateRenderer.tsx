@@ -106,6 +106,7 @@ export function NodeTemplateRendererEditor() {
       visualType={visualType}
       nodeData={undefined}
       onSaveNodeData={undefined}
+      componentProps={undefined}
     />
   );
 }
@@ -286,6 +287,7 @@ const FieldRendererWrapper = memo(
         variant.name === targetVariantName &&
         (variant.visualType === visualType || variant.visualType === "both")
     );
+    const componentProps = visualVariant?.componentProps || {};
 
     if (!visualVariant) {
       return (
@@ -310,6 +312,7 @@ const FieldRendererWrapper = memo(
       >
         <FieldComponent
           visualType={visualType}
+          componentProps={componentProps}
           field={field}
           value={value}
           onChange={onSaveNodeData ? handleChange : undefined}

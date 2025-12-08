@@ -7,6 +7,7 @@ export interface BaseFieldProps<T = any> {
   visualType?: "node" | "window";
   onChange?: (value: T) => void; // undefined = preview (pas de sauvegarde)
   visualSettings?: Record<string, unknown>; // Provient de layout.visual.settings
+  componentProps?: Record<string, unknown>; // Props supplémentaires passées au composant
 }
 
 export interface FieldDefinition {
@@ -34,7 +35,9 @@ export interface FieldVisualVariant {
   description?: string; // Description du variant
   icon?: React.ComponentType; // Icône optionnelle pour le variant
   visualType: "node" | "window" | "both";
+  style?: React.CSSProperties; // Styles CSS spécifiques pour ce variant
   component: React.ComponentType<BaseFieldProps>;
+  componentProps?: Record<string, unknown>; // Props supplémentaires passées au composant
   settingsList?: FieldSettingOption[]; // Settings spécifiques à ce variant
 }
 

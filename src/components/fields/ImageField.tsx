@@ -11,6 +11,7 @@ import {
   TransformWrapper,
   type ReactZoomPanPinchRef,
 } from "react-zoom-pan-pinch";
+import { Button } from "../shadcn/button";
 
 type ImageValueType = {
   url: string;
@@ -28,6 +29,7 @@ export default function ImageField({
   value,
   onChange,
   visualSettings,
+  visualType,
 }: BaseFieldProps<ImageValueType[]>) {
   const { closeSidePanel, openSidePanel } = useNodeSidePanel();
   const imageUrl = value && value.length > 0 ? value[0].url : "";
@@ -63,7 +65,7 @@ export default function ImageField({
     <div className="relative group/imagefield">
       <button
         type="button"
-        className="absolute top-2 right-2 bg-white rounded items-center justify-center h-8 w-8 group-hover/imagefield:flex hidden"
+        className="absolute top-2 right-2 bg-white rounded items-center justify-center h-8 w-8 group-hover/imagefield:flex hidden z-10"
         onClick={openSidePanelForImageEdition}
       >
         <TbPencil />
@@ -76,6 +78,7 @@ export default function ImageField({
             positionX: number;
             positionY: number;
           }) => {
+            if (visualType === "window") return; // Pas de sauvegarde en mode preview
             onChange?.([
               {
                 url: imageUrl || "",
@@ -212,18 +215,15 @@ function ImageUploader({ initialValue, onSave, onClose }) {
             accept="image/*"
           />
         </TabsContent>
-        <TabsContent value="url" className="mt-4">
+        <TabsContent value="url" className="mt-4 space-y-2">
           <input
             type="text"
             value={urlInput}
             onChange={(e) => setUrlInput(e.target.value)}
             placeholder="https://example.com/image.jpg"
             className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onKeyDown={(e) => e.key === "Enter" && handleUrlSubmit()}
           />
-          <p className="text-xs italic mt-2 float-end mr-1">
-            Entrée pour valider
-          </p>
+          <Button onClick={handleUrlSubmit}>Valider</Button>
         </TabsContent>
       </Tabs>
     </SidePanelFrame>

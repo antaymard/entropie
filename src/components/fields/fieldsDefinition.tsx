@@ -15,6 +15,7 @@ import DocumentEditorField from "./document-fields/DocumentEditorField";
 import DocumentNameField from "./document-fields/DocumentNameField";
 import DocumentStaticField from "./document-fields/DocumentStaticField";
 import FileField from "./FileField";
+import SelectField from "./SelectField";
 
 const fieldsDefinition: FieldDefinition[] = [
   {
@@ -202,7 +203,7 @@ const fieldsDefinition: FieldDefinition[] = [
           name: "default",
           label: "Par défaut",
           visualType: "both",
-          component: TextField, // Temporaire
+          component: SelectField, // Temporaire
           settingsList: [],
         },
       ],
@@ -305,6 +306,14 @@ const fieldsDefinition: FieldDefinition[] = [
           label: "Titre de la page",
           visualType: "both",
           component: LinkField,
+          settingsList: [],
+        },
+        {
+          name: "icon",
+          label: "Icône",
+          visualType: "both",
+          component: LinkField,
+          componentProps: { iconOnly: true },
           settingsList: [],
         },
       ],

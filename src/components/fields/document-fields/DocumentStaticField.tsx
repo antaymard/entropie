@@ -25,5 +25,10 @@ export default function DocumentStaticField({
     return null;
   }
 
-  return <EditorStatic editor={editor} className="p-4 nowheel nodrag" />;
+  return (
+    <EditorStatic
+      editor={editor}
+      className="p-4 nowheel nodrag scrollbar-hide"
+    />
+  );
 }

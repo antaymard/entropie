@@ -8,6 +8,7 @@ import SidePanelFrame from "../nodes/side-panels/SidePanelFrame";
 import toast from "react-hot-toast";
 import { useAction } from "convex/react";
 import { api } from "@/../convex/_generated/api";
+import { cn } from "@/lib/utils";
 
 export type LinkValueType = {
   href: string;
@@ -90,8 +91,14 @@ interface LinkFieldProps extends BaseFieldProps<LinkValueType> {
   className?: string;
 }
 
-function LinkField({ value, onChange, className = "" }: LinkFieldProps) {
+function LinkField({
+  value,
+  onChange,
+  className = "",
+  componentProps,
+}: LinkFieldProps) {
   const { closeSidePanel, openSidePanel } = useNodeSidePanel();
+  const { iconOnly } = componentProps || {};
 
   const handleSave = useCallback(
     (newValue: LinkValueType) => {
@@ -108,24 +115,31 @@ function LinkField({ value, onChange, className = "" }: LinkFieldProps) {
   };
 
   return (
-    <a
-      className={
-        "bg-slate-100 hover:bg-slate-200 h-8 rounded-md flex items-center group/linkfield w-full px-2 gap-2 min-w-0 flex-1 " +
+    <div
+      className={cn(
+        "relative bg-slate-100 hover:bg-slate-200 h-8 rounded-md flex items-center group/linkfield px-2 gap-2 min-w-0 ",
+        iconOnly ? "w-8" : "flex-1 w-full",
         className
-      }
-      href={value?.href}
-      target="_blank"
+      )}
     >
-      <span className="flex items-center gap-2 min-w-0 flex-1 cursor-pointer">
+      <a
+        href={value?.href}
+        target="_blank"
+        className={`flex items-center gap-2 min-w-0 flex-1 cursor-pointer ${linkValue?.href ? "" : "opacity-50"} ${
+          iconOnly ? "justify-center" : ""
+        }`}
+      >
         <TbLink size={18} className="shrink-0" />
-        <p className="truncate hover:underline">
-          {linkValue?.href ? (
-            linkValue.pageTitle || <i>Pas de titre</i>
-          ) : (
-            <i>Pas de lien</i>
-          )}
-        </p>
-      </span>
+        {!iconOnly && (
+          <p className="truncate hover:underline flex-1 min-w-0">
+            {linkValue?.href ? (
+              linkValue.pageTitle || <i>Pas de titre</i>
+            ) : (
+              <i>Pas de lien</i>
+            )}
+          </p>
+        )}
+      </a>
 
       <button
         type="button"
@@ -139,11 +153,11 @@ function LinkField({ value, onChange, className = "" }: LinkFieldProps) {
             />
           )
         }
-        className="cursor-default hover:bg-black/5 rounded-sm items-center justify-center h-6 w-6 shrink-0 group-hover/linkfield:flex hidden"
+        className="absolute right-2 cursor-default hover:bg-black/5 rounded-sm items-center justify-center h-6 w-6 shrink-0 group-hover/linkfield:flex hidden"
       >
         <TbPencil />
       </button>
-    </a>
+    </div>
   );
 }
 

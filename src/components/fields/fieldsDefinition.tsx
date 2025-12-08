@@ -15,6 +15,7 @@ import DocumentEditorField from "./document-fields/DocumentEditorField";
 import DocumentNameField from "./document-fields/DocumentNameField";
 import DocumentStaticField from "./document-fields/DocumentStaticField";
 import FileField from "./FileField";
+import SelectField from "./SelectField";
 
 const fieldsDefinition: FieldDefinition[] = [
   {
@@ -202,7 +203,7 @@ const fieldsDefinition: FieldDefinition[] = [
           name: "default",
           label: "Par défaut",
           visualType: "both",
-          component: TextField, // Temporaire
+          component: SelectField, // Temporaire
           settingsList: [],
         },
       ],

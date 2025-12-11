@@ -246,9 +246,15 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   }
 
   // Ctrl+Z / Cmd+Z for undo/redo
+  const enableCanvasUndoRedo = useCanvasStore(
+    (state) => state.enableCanvasUndoRedo
+  );
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isAuthenticated) return;
+      if (!enableCanvasUndoRedo) return; // Skip if canvas undo/redo is disabled (e.g., when editing in Plate)
+
       const key = e.key.toLowerCase();
 
       // Redo: Ctrl+Shift+Z ou Ctrl+Y
@@ -270,7 +276,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [undo, redo]);
+  }, [undo, redo, enableCanvasUndoRedo, isAuthenticated]);
 
   // Set templates in store when fetched
   useEffect(() => {

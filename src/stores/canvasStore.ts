@@ -7,6 +7,9 @@ type Status = "idle" | "unsynced" | "saving" | "saved" | "error";
 interface CanvasStore {
   canvas: Omit<Canvas, "nodes" | "edges"> | null;
   status: Status;
+  enableCanvasUndoRedo: boolean;
+
+  setEnableCanvasUndoRedo: (enable: boolean) => void;
   setCanvas: (canvas: Canvas) => void;
   updateCanvas: (
     updates: Partial<
@@ -21,6 +24,11 @@ export const useCanvasStore = create<CanvasStore>()(
     (set, get) => ({
       canvas: null,
       status: "idle",
+      enableCanvasUndoRedo: false,
+
+      setEnableCanvasUndoRedo: (enable: boolean) => {
+        set({ enableCanvasUndoRedo: enable });
+      },
 
       setCanvas: (canvas: Canvas) => {
         set({ canvas });

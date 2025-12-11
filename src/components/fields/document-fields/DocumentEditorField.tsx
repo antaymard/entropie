@@ -4,6 +4,7 @@ import { Editor, EditorContainer } from "@/components/plate/editor";
 import { EditorKit } from "@/components/plate/editor-kit";
 import { Plate, usePlateEditor } from "platejs/react";
 import type { BaseFieldProps } from "@/types/field.types";
+import { useCanvasStore } from "@/stores/canvasStore";
 
 interface DocumentEditorFieldProps extends BaseFieldProps<{ doc: Value }> {
   editorId?: string;
@@ -15,6 +16,9 @@ function DocumentEditorField({
   onChange,
 }: DocumentEditorFieldProps) {
   const initialValue: Value = value?.doc as Value;
+  const setEnableCanvasUndoRedo = useCanvasStore(
+    (s) => s.setEnableCanvasUndoRedo
+  );
 
   const editor = usePlateEditor({
     id: editorId ? `doc-${editorId}` : undefined,
@@ -39,11 +43,22 @@ function DocumentEditorField({
     [onChange]
   );
 
+  // Désactive l'undo/redo du canvas lors de la focalisation de l'éditeur
+  const handleFocus = useCallback(() => {
+    setEnableCanvasUndoRedo(false);
+  }, [setEnableCanvasUndoRedo]);
+
+  const handleBlur = useCallback(() => {
+    setEnableCanvasUndoRedo(true);
+  }, [setEnableCanvasUndoRedo]);
+
   return (
     <Plate editor={editor} onValueChange={handleChange}>
       <EditorContainer
         variant="default"
         className="nodrag h-full scrollbar-hide"
+        onFocus={handleFocus}
+        onBlur={handleBlur}
       >
         <Editor
           disableDefaultStyles={true}

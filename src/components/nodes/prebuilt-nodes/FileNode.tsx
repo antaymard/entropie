@@ -2,7 +2,9 @@ import { useReactFlow, type Node } from "@xyflow/react";
 import { useCallback } from "react";
 import NodeFrame from "../NodeFrame";
 import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
-import FileField, { type FileFieldType } from "@/components/fields/FileField";
+import FileNameField, {
+  type FileFieldType,
+} from "@/components/fields/file-fields/FileNameField";
 
 // Composant principal qui gère la sélection et les interactions
 function FileNode(xyNode: Node) {
@@ -26,7 +28,7 @@ function FileNode(xyNode: Node) {
         headerless
         notResizable
       >
-        <FileField
+        <FileNameField
           value={nodeData?.files || []}
           onChange={handleSave}
           className="hover:bg-transparent bg-transparent"

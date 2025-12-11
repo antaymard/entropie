@@ -2,7 +2,11 @@ import type { CanvasNode, NodeConfig } from "../../../types/node.types";
 import LinkNode from "./LinkNode";
 import FloatingTextNode from "./FloatingTextNode";
 import ImageNode from "./ImageNode";
+import FileNode from "./FileNode";
 import DocumentNode from "./DocumentNode";
+import DocumentWindow from "@/components/windows/prebuilt/DocumentWindow";
+import ImageWindow from "@/components/windows/prebuilt/ImageWindow";
+import FileWindow from "@/components/windows/prebuilt/FileWindow";
 
 // Icons
 import {
@@ -13,8 +17,6 @@ import {
   RiFileList3Line,
 } from "react-icons/ri";
 import type { Value } from "platejs";
-import DocumentWindow from "@/components/windows/prebuilt/DocumentWindow";
-import FileNode from "./FileNode";
 
 const defaultValues: CanvasNode = {
   id: "",
@@ -63,6 +65,7 @@ const prebuiltNodesConfig = [
     nodeIcon: RiImageLine,
     type: "image",
     nodeComponent: ImageNode,
+    windowComponent: ImageWindow,
     node: {
       minWidth: 100,
       minHeight: 100,
@@ -106,6 +109,7 @@ const prebuiltNodesConfig = [
     nodeIcon: RiAttachment2,
     type: "file",
     nodeComponent: FileNode,
+    windowComponent: FileWindow,
     node: {
       // minWidth: 150,
       // minHeight: 150, // notResizable
@@ -115,13 +119,7 @@ const prebuiltNodesConfig = [
       name: "Bloc Fichier",
       type: "file",
       data: {
-        // Actual data
-        url: "",
-        filename: "",
-        mimeType: "",
-        size: 0,
-        uploadedAt: 0,
-        key: "",
+        files: [],
       },
       height: 40,
       width: 220,

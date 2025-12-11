@@ -31,11 +31,14 @@ export default function FileField({
   const { closeSidePanel, openSidePanel } = useNodeSidePanel();
   const fileUrl = value && value.length > 0 ? value[0].url : "";
 
-  const handleSave = useCallback((newValue: FileFieldType) => {
-    console.log("Saved file:", newValue);
-    onChange?.([newValue]);
-    closeSidePanel(sidePanelId);
-  }, []);
+  const handleSave = useCallback(
+    (newValue: FileFieldType) => {
+      console.log("Saved file:", newValue);
+      onChange?.([newValue]);
+      closeSidePanel(sidePanelId);
+    },
+    [onChange, closeSidePanel]
+  );
 
   return (
     <div
@@ -52,32 +55,34 @@ export default function FileField({
           <p className="text-gray-500">Aucun fichier</p>
         )}
       </span>
-      {value && value.length > 0 && (
+      <span className="absolute right-2 cursor-default flex gap-1 bg-inherit">
+        {value && value.length > 0 && (
+          <button
+            type="button"
+            onClick={() => window.open(value[0].url, "_blank")}
+            className="cursor-default hover:bg-black/5 rounded-sm items-center justify-center h-6 w-6 shrink-0 group-hover/linkfield:flex hidden"
+            title="Ouvrir le fichier"
+          >
+            <TbExternalLink />
+          </button>
+        )}
         <button
           type="button"
-          onClick={() => window.open(value[0].url, "_blank")}
-          className="cursor-default hover:bg-black/5 rounded-sm items-center justify-center h-6 w-6 shrink-0 group-hover/linkfield:flex hidden"
-          title="Ouvrir le fichier"
+          onClick={() =>
+            openSidePanel(
+              sidePanelId,
+              <FileUploaderSidePanel
+                initialValue={fileUrl}
+                onSave={handleSave}
+                onClose={() => closeSidePanel(sidePanelId)}
+              />
+            )
+          }
+          className=" hover:bg-black/5 rounded-sm items-center justify-center h-6 w-6 shrink-0 group-hover/linkfield:flex hidden"
         >
-          <TbExternalLink />
+          <TbPencil />
         </button>
-      )}
-      <button
-        type="button"
-        onClick={() =>
-          openSidePanel(
-            sidePanelId,
-            <FileUploaderSidePanel
-              initialValue={fileUrl}
-              onSave={handleSave}
-              onClose={() => closeSidePanel(sidePanelId)}
-            />
-          )
-        }
-        className="absolute right-2 cursor-default hover:bg-black/5 rounded-sm items-center justify-center h-6 w-6 shrink-0 group-hover/linkfield:flex hidden"
-      >
-        <TbPencil />
-      </button>
+      </span>
     </div>
   );
 }

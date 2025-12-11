@@ -143,6 +143,7 @@ function LinkField({
 
       <button
         type="button"
+        className="absolute right-2 cursor-default bg-inherit hover:bg-black/5 rounded-sm items-center justify-center h-6 w-6 shrink-0 group-hover/linkfield:flex hidden"
         onClick={() =>
           openSidePanel(
             sidePanelId,
@@ -153,7 +154,6 @@ function LinkField({
             />
           )
         }
-        className="absolute right-2 cursor-default hover:bg-black/5 rounded-sm items-center justify-center h-6 w-6 shrink-0 group-hover/linkfield:flex hidden"
       >
         <TbPencil />
       </button>

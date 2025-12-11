@@ -30,8 +30,6 @@ export default function SelectField({
   const selectedOptions = (value && value?.selectedOptions) || [];
   const { isMultipleSelect, selectChoices } = (field && field.options) || {};
 
-  console.log({ field });
-
   const handleSave = useCallback((newValue: SelectFieldType) => {
     onChange?.(newValue);
     closeSidePanel(sidePanelId);

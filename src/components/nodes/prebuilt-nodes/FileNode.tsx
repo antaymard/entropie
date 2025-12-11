@@ -11,7 +11,8 @@ function FileNode(xyNode: Node) {
 
   const handleSave = useCallback(
     (val: FileFieldType[]) => {
-      updateNodeData(xyNode.id, val);
+      console.log("Saving file node data:", val);
+      updateNodeData(xyNode.id, { files: val });
     },
     [updateNodeData, xyNode.id]
   );
@@ -26,7 +27,7 @@ function FileNode(xyNode: Node) {
         notResizable
       >
         <FileField
-          value={nodeData}
+          value={nodeData?.files || []}
           onChange={handleSave}
           className="hover:bg-transparent bg-transparent"
         />

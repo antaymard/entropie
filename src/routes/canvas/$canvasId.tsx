@@ -97,6 +97,9 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   const setCanvas = useCanvasStore((state) => state.setCanvas);
   const canvasStatus = useCanvasStore((state) => state.status);
   const setCanvasStatus = useCanvasStore((state) => state.setStatus);
+  const enableCanvasUndoRedo = useCanvasStore(
+    (state) => state.enableCanvasUndoRedo
+  );
   const openWindow = useWindowsStore((state) => state.openWindow);
   const setUserTemplates = useTemplateStore((state) => state.setTemplates);
   const deviceType = useDeviceType();
@@ -107,6 +110,8 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   const hasInitialized = useRef(false);
   const [saveIncrement, setSaveIncrement] = useState(0); // To trigger save effect
   const isDraggingRef = useRef(false);
+  const isResizingRef = useRef(false);
+  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // History undo/redo management
   const { recordChange, undo, redo, isUndoRedo } = useCanvasContentHistory(
@@ -220,7 +225,21 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
       isDraggingRef.current = false;
     }
 
-    if (isDragging) return;
+    // Manage resizing state (dimensions changes don't have a resizing flag like dragging)
+    const isResizing = changes.some((change) => change.type === "dimensions");
+    if (isResizing) {
+      isResizingRef.current = true;
+      // Clear previous timeout
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
+      // Set timeout to detect resize end (no more dimension changes after 150ms)
+      resizeTimeoutRef.current = setTimeout(() => {
+        isResizingRef.current = false;
+      }, 150);
+    }
+
+    if (isDragging || isResizing) return;
 
     // Si tous les changes ne sont pas de type select, on incrémente le saveIncrement
     if (!changes.every((change) => change.type === "select")) {
@@ -246,10 +265,6 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   }
 
   // Ctrl+Z / Cmd+Z for undo/redo
-  const enableCanvasUndoRedo = useCanvasStore(
-    (state) => state.enableCanvasUndoRedo
-  );
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isAuthenticated) return;
@@ -301,7 +316,8 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   // Record history changes
   useEffect(() => {
     if (!isAuthenticated) return;
-    if (isUndoRedo.current || isDraggingRef.current) return;
+    if (isUndoRedo.current || isDraggingRef.current || isResizingRef.current)
+      return;
     recordChange(nodes, edges);
   }, [nodes, edges, recordChange, isUndoRedo]);
 

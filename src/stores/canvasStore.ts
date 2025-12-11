@@ -24,7 +24,7 @@ export const useCanvasStore = create<CanvasStore>()(
     (set, get) => ({
       canvas: null,
       status: "idle",
-      enableCanvasUndoRedo: false,
+      enableCanvasUndoRedo: true,
 
       setEnableCanvasUndoRedo: (enable: boolean) => {
         set({ enableCanvasUndoRedo: enable });

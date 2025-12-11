@@ -44,6 +44,7 @@ import { useCanvasContentHistory } from "@/hooks/useCanvasContentHistory";
 import TopLeftToolbar from "@/components/canvas/on-canvas-ui/TopLeftToolbar";
 import TopRightToolbar from "@/components/canvas/on-canvas-ui/TopRightToolbar";
 import { useDeviceType } from "@/hooks/useDeviceType";
+import CanvasToolbar from "@/components/canvas/on-canvas-ui/CanvasToolbar";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -413,7 +414,11 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
               edgesConnectable={isAuthenticated}
             >
               <Background bgColor="#f9fafb" />
-              <Controls />
+              {/* <Controls /> */}
+
+              <Panel position="center-left">
+                <CanvasToolbar />
+              </Panel>
               <Panel position="bottom-center">
                 <WindowsBottomBar />
               </Panel>

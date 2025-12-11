@@ -1,8 +1,8 @@
 import type { BaseFieldProps } from "@/types/field.types";
 import { useCallback } from "react";
-import { useNodeSidePanel } from "../nodes/side-panels/NodeSidePanelContext";
-import SidePanelFrame from "../nodes/side-panels/SidePanelFrame";
-import { UploadFile } from "./UploadFile";
+import { useNodeSidePanel } from "../../nodes/side-panels/NodeSidePanelContext";
+import SidePanelFrame from "../../nodes/side-panels/SidePanelFrame";
+import { UploadFile } from "../UploadFile";
 import { TbPencil, TbExternalLink } from "react-icons/tb";
 import { RiAttachment2 } from "react-icons/ri";
 
@@ -17,17 +17,17 @@ export type FileFieldType = {
 
 const sidePanelId = "fileEdition";
 
-interface FileFieldProps extends BaseFieldProps<FileFieldType[]> {
+interface FileNameFieldProps extends BaseFieldProps<FileFieldType[]> {
   className?: string;
 }
 
-export default function FileField({
+export default function FileNameField({
   field,
   value,
   onChange,
   visualSettings,
   className = "",
-}: FileFieldProps) {
+}: FileNameFieldProps) {
   const { closeSidePanel, openSidePanel } = useNodeSidePanel();
   const fileUrl = value && value.length > 0 ? value[0].url : "";
 

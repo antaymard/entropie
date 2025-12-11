@@ -63,13 +63,15 @@ export default function ImageField({
 
   return (
     <div className="relative group/imagefield">
-      <button
-        type="button"
-        className="absolute top-2 right-2 bg-white rounded items-center justify-center h-8 w-8 group-hover/imagefield:flex hidden z-10"
-        onClick={openSidePanelForImageEdition}
-      >
-        <TbPencil />
-      </button>
+      {visualSettings?.disableEditButton ? null : (
+        <button
+          type="button"
+          className="absolute top-2 right-2 bg-white rounded items-center justify-center h-8 w-8 group-hover/imagefield:flex hidden z-10"
+          onClick={openSidePanelForImageEdition}
+        >
+          <TbPencil />
+        </button>
+      )}
       {visualSettings?.enableInImageNavigation ? (
         <NavigatingImage
           imageUrl={imageUrl}

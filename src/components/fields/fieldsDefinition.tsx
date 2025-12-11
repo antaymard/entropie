@@ -14,7 +14,7 @@ import ImageField from "./ImageField";
 import DocumentEditorField from "./document-fields/DocumentEditorField";
 import DocumentNameField from "./document-fields/DocumentNameField";
 import DocumentStaticField from "./document-fields/DocumentStaticField";
-import FileField from "./FileField";
+import FileField from "./file-fields/FileNameField";
 import SelectField from "./SelectField";
 
 const fieldsDefinition: FieldDefinition[] = [

@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Background,
   ReactFlow,
-  Controls,
   type Edge,
   ReactFlowProvider,
   type Node,
@@ -19,7 +18,7 @@ import type { Id } from "../../../convex/_generated/dataModel";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { nodeTypes, nodeList } from "../../components/nodes/nodeTypes";
 import { useCanvasStore } from "../../stores/canvasStore";
-import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ContextMenu from "../../components/canvas/context-menus";
 import { toConvexNodes, toXyNodes } from "../../components/utils/nodeUtils";
 import {
@@ -38,7 +37,6 @@ import { toastError } from "@/components/utils/errorUtils";
 import WindowsContainer from "@/components/windows/WindowsContainer";
 import { useWindowsStore } from "@/stores/windowsStore";
 import type { NodeType } from "@/types/node.types";
-import WindowsBottomBar from "@/components/windows/bottom-bar/WindowsBottomBar";
 import { useTemplateStore } from "@/stores/templateStore";
 import { useCanvasContentHistory } from "@/hooks/useCanvasContentHistory";
 import TopLeftToolbar from "@/components/canvas/on-canvas-ui/TopLeftToolbar";
@@ -103,6 +101,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   );
   const openWindow = useWindowsStore((state) => state.openWindow);
   const setUserTemplates = useTemplateStore((state) => state.setTemplates);
+  const currentCanvasTool = useCanvasStore((state) => state.currentCanvasTool);
   const deviceType = useDeviceType();
 
   // xyFlow states
@@ -419,9 +418,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
               <Panel position="center-left">
                 <CanvasToolbar />
               </Panel>
-              <Panel position="bottom-center">
-                <WindowsBottomBar />
-              </Panel>
+
               <Panel position="top-left">
                 <TopLeftToolbar undo={undo} redo={redo} />
               </Panel>

@@ -17,6 +17,8 @@ import {
   NodeContext,
   type NodeSidePanel,
 } from "./side-panels/NodeSidePanelContext";
+import { useCanvasStore } from "@/stores/canvasStore";
+import { cn } from "@/lib/utils";
 
 function getNodeColorClasses(color: NodeColors) {
   return nodeColors[color] || nodeColors["default"];
@@ -38,6 +40,7 @@ function NodeFrame({
   const { updateNodeData } = useReactFlow();
   const nodeConfig = prebuiltNodesConfig.find((n) => n.type === xyNode.type);
   const openWindow = useWindowsStore((state) => state.openWindow);
+  const currentCanvasTool = useCanvasStore((state) => state.currentCanvasTool);
 
   const [openSidePanels, setOpenSidePanels] = useState<NodeSidePanel[]>([]);
 
@@ -72,6 +75,8 @@ function NodeFrame({
   const nodeColor = getNodeColorClasses(xyNode.data?.color as NodeColors);
   const Icon = nodeConfig?.nodeIcon;
 
+  const canDrag = currentCanvasTool === "default";
+
   return (
     <>
       <NodeContext.Provider value={contextValue}>
@@ -100,7 +105,23 @@ function NodeFrame({
           ))}
         </NodeToolbar>
         <BaseNode
-          className={`group rounded-sm h-full flex flex-col overflow-hidden ${xyNode.selected ? (notResizable ? " ring-2 ring-muted-foreground" : "") : "hover:ring-blue-300"} ${nodeColor.border} ${nodeColor.bg}`}
+          onMouseDown={() => {
+            if (currentCanvasTool !== "edge") return;
+            console.log("In", xyNode.id);
+          }}
+          onMouseUp={() => {
+            if (currentCanvasTool !== "edge") return;
+            console.log("Out", xyNode.id);
+          }}
+          className={cn(
+            "group rounded-sm h-full flex flex-col overflow-hidden",
+            xyNode.selected
+              ? notResizable && "ring-2 ring-muted-foreground"
+              : "hover:ring-blue-300",
+            nodeColor.border,
+            nodeColor.bg,
+            canDrag ? "" : "nodrag cursor-crosshair"
+          )}
         >
           {!headerless && (
             <div

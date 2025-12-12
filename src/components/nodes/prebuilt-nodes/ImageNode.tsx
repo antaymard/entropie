@@ -11,12 +11,14 @@ import {
   type ReactZoomPanPinchRef,
 } from "react-zoom-pan-pinch";
 import { debounce } from "lodash";
+import { useCanvasStore } from "@/stores/canvasStore";
 
 function ImageNode(xyNode: Node) {
   const { updateNodeData } = useReactFlow();
   const [urlInput, setUrlInput] = useState("");
   const transformRef = useRef<ReactZoomPanPinchRef>(null);
   const hasInitialized = useRef(false);
+  const currentCanvasTool = useCanvasStore((state) => state.currentCanvasTool);
 
   const handleUploadComplete = (fileData: {
     url: string;
@@ -89,6 +91,7 @@ function ImageNode(xyNode: Node) {
     if (xyNode.data.url) {
       return (
         <TransformWrapper
+          disabled={currentCanvasTool !== "default"}
           ref={transformRef}
           panning={{ velocityDisabled: true }}
           doubleClick={{ disabled: true }}

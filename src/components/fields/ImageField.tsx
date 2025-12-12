@@ -12,6 +12,7 @@ import {
   type ReactZoomPanPinchRef,
 } from "react-zoom-pan-pinch";
 import { Button } from "../shadcn/button";
+import { useCanvasStore } from "@/stores/canvasStore";
 
 type ImageValueType = {
   url: string;
@@ -33,6 +34,7 @@ export default function ImageField({
 }: BaseFieldProps<ImageValueType[]>) {
   const { closeSidePanel, openSidePanel } = useNodeSidePanel();
   const imageUrl = value && value.length > 0 ? value[0].url : "";
+  const currentCanvasTool = useCanvasStore((state) => state.currentCanvasTool);
 
   const handleSave = useCallback((newValue: ImageValueType) => {
     onChange?.([newValue]);
@@ -74,6 +76,7 @@ export default function ImageField({
       )}
       {visualSettings?.enableInImageNavigation ? (
         <NavigatingImage
+          disabled={currentCanvasTool !== "default"}
           imageUrl={imageUrl}
           onMouve={(newTransform: {
             scale: number;
@@ -102,10 +105,12 @@ export default function ImageField({
 }
 
 function NavigatingImage({
+  disabled,
   imageUrl,
   onMouve,
   inImageNavigation,
 }: {
+  disabled?: boolean;
   imageUrl: string;
   onMouve: (newTransform: {
     scale: number;
@@ -170,6 +175,7 @@ function NavigatingImage({
 
   return (
     <TransformWrapper
+      disabled={disabled}
       ref={transformRef}
       panning={{ velocityDisabled: true }}
       doubleClick={{ disabled: true }}

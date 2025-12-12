@@ -7,12 +7,8 @@ import {
 } from "@/components/shadcn/tooltip";
 import { useCanvasStore } from "@/stores/canvasStore";
 import { useWindowsStore } from "@/stores/windowsStore";
-import { useShallow } from "zustand/react/shallow";
-import {
-  LuMousePointer,
-  LuGitBranchPlus,
-  LuSquareMousePointer,
-} from "react-icons/lu";
+import { LuMousePointer, LuGitBranchPlus } from "react-icons/lu";
+import { TbFrame } from "react-icons/tb";
 import MinimizedWindow from "@/components/canvas/on-canvas-ui/MinimizedWindow";
 
 export default function CanvasToolbar() {
@@ -35,7 +31,7 @@ export default function CanvasToolbar() {
     {
       value: "frame",
       label: "Ajouter une frame",
-      icon: LuSquareMousePointer,
+      icon: TbFrame,
     },
   ] as const;
 

@@ -8,9 +8,9 @@ interface CanvasStore {
   canvas: Omit<Canvas, "nodes" | "edges"> | null;
   status: Status;
   enableCanvasUndoRedo: boolean;
-  currentCanvasTool: "default" | "edge" | "draw";
+  currentCanvasTool: "default" | "edge" | "draw" | "frame";
 
-  setCurrentCanvasTool: (tool: "default" | "edge" | "draw") => void;
+  setCurrentCanvasTool: (tool: "default" | "edge" | "draw" | "frame") => void;
 
   setEnableCanvasUndoRedo: (enable: boolean) => void;
   setCanvas: (canvas: Canvas) => void;

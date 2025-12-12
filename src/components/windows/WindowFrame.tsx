@@ -56,7 +56,7 @@ function WindowFrame({
 
   return (
     <div
-      className="pointer-events-auto rounded-[10px] grid grid-cols-[7px_1fr_7px] grid-rows-[7px_1fr_7px]"
+      className="absolute pointer-events-auto rounded-[10px] grid grid-cols-[7px_1fr_7px] grid-rows-[7px_1fr_7px]"
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
         width: `${width}px`,

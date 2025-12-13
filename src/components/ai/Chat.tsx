@@ -138,7 +138,7 @@ function ChatInterface({
               void onSendClicked();
             }
           }}
-          className="placeholder:text-white/60 flex-1 rounded-md pt-8 pb-2 bg-white/30 text-white resize-none"
+          className="placeholder:text-white/60 flex-1 rounded-md pt-8 pb-2 bg-white/10 hover:bg-white/20 focus:bg-white/20 text-white resize-none border-0"
           placeholder="Posez votre question..."
         />
         <button

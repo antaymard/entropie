@@ -14,6 +14,7 @@ on an infinite canvas, connect them, and can integrate external data sources.
 - TanStack Router (file-based routing)
 - Plate.js for rich text editing
 - Tailwind CSS
+- Utilisation de convex-dev/agent (composant convex agent) pour tout ce qui concerne les agents IA. Le MCP Convex est installé si besoin.
 
 ## Key Concepts
 

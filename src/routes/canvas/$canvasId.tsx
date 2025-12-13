@@ -29,8 +29,6 @@ import {
   CardTitle,
 } from "@/components/shadcn/card";
 import { Button } from "@/components/shadcn/button";
-import { SidebarProvider } from "@/components/shadcn/sidebar";
-import CanvasSidebar from "@/components/canvas/CanvasSidebar";
 import type { Canvas } from "@/types";
 import { debounce } from "lodash";
 import { toastError } from "@/components/utils/errorUtils";
@@ -43,6 +41,8 @@ import TopLeftToolbar from "@/components/canvas/on-canvas-ui/TopLeftToolbar";
 import TopRightToolbar from "@/components/canvas/on-canvas-ui/TopRightToolbar";
 import { useDeviceType } from "@/hooks/useDeviceType";
 import CanvasToolbar from "@/components/canvas/on-canvas-ui/CanvasToolbar";
+import Chat from "@/components/ai/Chat";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -102,6 +102,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   const openWindow = useWindowsStore((state) => state.openWindow);
   const setUserTemplates = useTemplateStore((state) => state.setTemplates);
   const currentCanvasTool = useCanvasStore((state) => state.currentCanvasTool);
+  const isAiPanelOpen = useCanvasStore((state) => state.isAiPanelOpen);
   const deviceType = useDeviceType();
 
   // xyFlow states
@@ -386,11 +387,16 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   document.title = `${canvas.name}`;
 
   return (
-    <SidebarProvider defaultOpen={false}>
-      <div className="h-screen w-screen bg-gray-50 flex flex-col">
-        <CanvasSidebar currentCanvasId={canvasId} />
-        <ReactFlowProvider>
-          <div className="flex-1 w-full">
+    <div>
+      {/* <CanvasSidebar currentCanvasId={canvasId} /> */}
+      <ReactFlowProvider>
+        <div
+          className={cn(
+            "grid grid-cols-[1fr_420px] h-screen w-screen ",
+            isAiPanelOpen ? "grid-cols-[1fr_420px]" : "grid-cols-[1fr_0px]"
+          )}
+        >
+          <div className="flex-1 w-full border-r">
             <ReactFlow
               panOnScroll
               panOnDrag={[1]}
@@ -411,6 +417,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
               snapGrid={[5, 5]}
               nodesDraggable={isAuthenticated}
               edgesConnectable={isAuthenticated}
+              className="rounded-md"
             >
               <Background bgColor="#f9fafb" />
               {/* <Controls /> */}
@@ -426,16 +433,17 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
                 <TopRightToolbar />
               </Panel>
             </ReactFlow>
+            {contextMenu.type && (
+              <ContextMenu
+                contextMenu={contextMenu}
+                setContextMenu={setContextMenu}
+              />
+            )}
+            <WindowsContainer />
           </div>
-          {contextMenu.type && (
-            <ContextMenu
-              contextMenu={contextMenu}
-              setContextMenu={setContextMenu}
-            />
-          )}
-          <WindowsContainer />
-        </ReactFlowProvider>
-      </div>
-    </SidebarProvider>
+          {isAiPanelOpen && <Chat />}
+        </div>
+      </ReactFlowProvider>
+    </div>
   );
 }

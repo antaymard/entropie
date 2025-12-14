@@ -10,7 +10,7 @@ import { viewImageTool } from "./tools/viewImageTool";
 export const noleAgent = new Agent(components.agent, {
   name: "Nolë",
   maxSteps: 50,
-  languageModel: anthropic("claude-opus-4-5-20251101"),
+  languageModel: anthropic("claude-sonnet-4-5"),
   tools: {
     web_search: websearchTool,
     open_web_page: openWebPageTool,

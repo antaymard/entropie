@@ -2,65 +2,52 @@
 
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
+import { anthropic } from "@ai-sdk/anthropic";
+import { generateText } from "ai";
 
 export const viewImageTool = createTool({
-  description: "View an image from a URL by fetching and encoding it",
+  description:
+    "Analyze an image from a URL using AI vision. Returns a natural-language description of the image content based on the specified objective.",
   args: z.object({
-    url: z.string().describe("The URL of the image to view"),
+    url: z.string().describe("The URL of the image to analyze"),
+    objective: z
+      .string()
+      .describe(
+        "THIS MUST BE IN ENGLISH. Natural-language description of what information you're looking for concerning the image. The AI will analyze the image and provide a response focused on this objective."
+      ),
   }),
-  handler: async (
-    ctx,
-    args
-  ): Promise<{
-    type: "image";
-    data: string;
-    mimeType: string;
-  }> => {
-    console.log(`🖼️ Fetching image from URL: ${args.url}`);
+  handler: async (ctx, args): Promise<string> => {
+    console.log(`🖼️ Analyzing image from URL: ${args.url}`);
+    console.log(`📋 Objective: ${args.objective}`);
 
     try {
-      // Fetch l'image depuis l'URL
-      const response = await fetch(args.url);
+      // Analyser l'image avec Anthropic (supporte les URLs directement)
+      console.log(`🤖 Sending image to Anthropic for analysis...`);
+      const result = await generateText({
+        model: anthropic("claude-sonnet-4-5"),
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image",
+                image: args.url,
+              },
+              {
+                type: "text",
+                text: args.objective,
+              },
+            ],
+          },
+        ],
+      });
 
-      if (!response.ok) {
-        console.error(
-          `Failed to fetch image: ${response.status} ${response.statusText}`
-        );
-        throw new Error(`Failed to fetch image: ${response.statusText}`);
-      }
-
-      // Récupère le Content-Type
-      const contentType = response.headers.get("content-type");
-      console.log(`Image content type: ${contentType}`);
-
-      if (!contentType?.startsWith("image/")) {
-        console.error(`URL does not point to an image: ${contentType}`);
-        throw new Error(`URL does not point to an image: ${contentType}`);
-      }
-
-      // Convertit en ArrayBuffer puis en base64
-      const arrayBuffer = await response.arrayBuffer();
-      const imageSizeKB = Math.round(arrayBuffer.byteLength / 1024);
-      console.log(`Image size: ${imageSizeKB} KB`);
-
-      // Convertir ArrayBuffer en base64 sans Buffer (pas disponible dans Convex)
-      const uint8Array = new Uint8Array(arrayBuffer);
-      const binaryString = Array.from(uint8Array)
-        .map((byte) => String.fromCharCode(byte))
-        .join("");
-      const base64 = btoa(binaryString);
-      console.log(`✅ Image successfully fetched and encoded`);
-
-      // Retourne dans un format structuré
-      return {
-        type: "image",
-        data: base64,
-        mimeType: contentType,
-      };
+      console.log(`✅ Image analysis complete`);
+      return result.text;
     } catch (error) {
       console.error("View image error:", error);
       throw new Error(
-        `Failed to view image: ${error instanceof Error ? error.message : "Unknown error"}. Please verify the URL and try again.`
+        `Failed to analyze image: ${error instanceof Error ? error.message : "Unknown error"}. Please verify the URL and try again.`
       );
     }
   },

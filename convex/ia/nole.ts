@@ -77,6 +77,13 @@ export const sendMessage = mutation({
   args: {
     threadId: v.string(),
     prompt: v.string(),
+    canvasContext: v.optional(
+      v.object({
+        canvasId: v.optional(v.string()),
+        viewport: v.optional(v.any()),
+        selectedNodes: v.optional(v.array(v.any())),
+      })
+    ),
   },
   returns: v.union(
     v.object({
@@ -87,7 +94,7 @@ export const sendMessage = mutation({
       error: v.string(),
     })
   ),
-  handler: async (ctx, { threadId, prompt }) => {
+  handler: async (ctx, { threadId, prompt, canvasContext }) => {
     const authUserId = await getAuth(ctx);
     if (!authUserId) {
       return {
@@ -106,6 +113,9 @@ export const sendMessage = mutation({
     void ctx.scheduler.runAfter(0, internal.ia.nole.streamResponse, {
       threadId,
       promptMessageId: messageId,
+      metadata: {
+        canvasContext,
+      },
     });
 
     return { messageId };
@@ -117,12 +127,21 @@ export const streamResponse = internalAction({
   args: {
     promptMessageId: v.string(),
     threadId: v.string(),
+    metadata: v.optional(v.any()),
   },
-  handler: async (ctx, { promptMessageId, threadId }) => {
+  handler: async (ctx, { promptMessageId, threadId, metadata }) => {
     const result = await noleAgent.streamText(
       ctx,
       { threadId },
-      { promptMessageId },
+      {
+        promptMessageId,
+        system: `${noleAgent.options.instructions}
+        Contexte de l'utilisateur lors de la question : 
+        - canvasId (canvas ouverte) : ${metadata?.canvasContext?.canvasId || "N/A"}
+        - viewport (zone regardée par l'utilisateur) : ${JSON.stringify(metadata?.canvasContext?.viewport) || "N/A"}
+        - selectedNodes (nodes sélectionnés lors de la question) : ${JSON.stringify(metadata?.canvasContext?.selectedNodes) || "N/A"}
+        `,
+      },
       {
         saveStreamDeltas: {
           chunking: "word", // Stream word by word

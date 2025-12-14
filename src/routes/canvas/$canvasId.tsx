@@ -43,11 +43,6 @@ import { useDeviceType } from "@/hooks/useDeviceType";
 import CanvasToolbar from "@/components/canvas/on-canvas-ui/CanvasToolbar";
 import Chat from "@/components/ai/Chat";
 import { cn } from "@/lib/utils";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/shadcn/resizable";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -61,12 +56,12 @@ function RouteComponent() {
     <ReactFlowProvider>
       <div
         className={cn(
-          "grid grid-cols-[1fr_420px] h-screen w-screen ",
-          isAiPanelOpen ? "grid-cols-[1fr_450px]" : "grid-cols-[1fr_0px]"
+          "h-screen w-screen ",
+          isAiPanelOpen ? "grid grid-cols-[450px_1fr]" : "flex"
         )}
       >
+        {isAiPanelOpen && <Chat canvasContext={{ canvasId }} />}
         <CanvasContent key={canvasId} canvasId={canvasId} />
-        {isAiPanelOpen && <Chat />}
       </div>
     </ReactFlowProvider>
   );
@@ -80,12 +75,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     error: canvasError,
   } = useQuery(api.canvases.getCanvas, {
     canvasId,
-  }) ||
-  ({} as {
-    success: boolean;
-    canvas: Canvas | null | undefined;
-    error: string | null;
-  });
+  }) || {};
 
   const { isAuthenticated } = useConvexAuth();
   const saveCanvasInConvex = useMutation(api.canvases.updateCanvasContent);

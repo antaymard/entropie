@@ -172,7 +172,7 @@ function Message({ message }: { message: UIMessage }) {
   if (isUser) {
     return (
       <div className="flex justify-end">
-        <div className="rounded whitespace-pre-wrap shadow-sm p-3 bg-primary text-white max-w-4/5 border border-white/20 text-[0.85em]">
+        <div className="rounded whitespace-pre-wrap shadow-sm p-3 bg-primary text-white max-w-4/5 border border-white/20 text-[0.9em]">
           <Markdown remarkPlugins={[remarkGfm]}>{message.text ?? ""}</Markdown>
         </div>
       </div>

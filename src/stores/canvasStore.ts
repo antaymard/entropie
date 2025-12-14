@@ -31,7 +31,7 @@ export const useCanvasStore = create<CanvasStore>()(
       status: "idle",
       enableCanvasUndoRedo: true,
       currentCanvasTool: "default",
-      isAiPanelOpen: true,
+      isAiPanelOpen: false,
 
       setIsAiPanelOpen: (isOpen: boolean) => {
         set({ isAiPanelOpen: isOpen });

@@ -43,6 +43,11 @@ import { useDeviceType } from "@/hooks/useDeviceType";
 import CanvasToolbar from "@/components/canvas/on-canvas-ui/CanvasToolbar";
 import Chat from "@/components/ai/Chat";
 import { cn } from "@/lib/utils";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/shadcn/resizable";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -393,7 +398,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
         <div
           className={cn(
             "grid grid-cols-[1fr_420px] h-screen w-screen ",
-            isAiPanelOpen ? "grid-cols-[1fr_420px]" : "grid-cols-[1fr_0px]"
+            isAiPanelOpen ? "grid-cols-[1fr_450px]" : "grid-cols-[1fr_0px]"
           )}
         >
           <div className="flex-1 w-full border-r">

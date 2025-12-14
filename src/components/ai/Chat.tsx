@@ -14,6 +14,8 @@ import { PiPaperPlaneRightBold } from "react-icons/pi";
 import { Textarea } from "../shadcn/textarea";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import type { MessagePart, TextPart } from "@/types/message.types";
+import toolCardsConfig from "./tool-cards/toolCardsConfig";
 
 export default function Chat() {
   const { threadId, isLoading, resetThread } = useNoleThread();
@@ -58,6 +60,8 @@ function ChatInterface({
     { initialNumItems: 20, stream: true }
   );
 
+  console.log(messages);
+
   const sendMessage = useMutation(api.ia.nole.sendMessage).withOptimisticUpdate(
     optimisticallySendMessage(api.ia.nole.listMessages)
   );
@@ -89,7 +93,7 @@ function ChatInterface({
     <div className="h-full flex flex-col w-full ">
       {messages.length > 0 && (
         <button
-          className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition font-medium flex items-center gap-2"
+          className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition font-medium flex items-center gap-2 mx-2"
           onClick={() => void resetThread()}
           type="button"
         >
@@ -155,30 +159,97 @@ function ChatInterface({
 
 function Message({ message }: { message: UIMessage }) {
   const isUser = message.role === "user";
-  const [visibleText] = useSmoothText(message.text ?? "", {
-    startStreaming: message.status === "streaming",
-  });
+
+  // Pour les messages utilisateur, afficher simplement le texte
+  if (isUser) {
+    return (
+      <div className="flex justify-end">
+        <div className="rounded whitespace-pre-wrap shadow-sm p-3 bg-accent text-primary max-w-4/5">
+          <Markdown remarkPlugins={[remarkGfm]}>{message.text ?? ""}</Markdown>
+        </div>
+      </div>
+    );
+  }
+
+  // Pour les messages assistant, itérer sur les parts
+  const parts = (message.parts ?? []) as MessagePart[];
 
   return (
-    <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
+    <div className="flex justify-start">
       <div
         className={cn(
-          "rounded whitespace-pre-wrap shadow-sm p-3 nole-chat-message flex flex-col",
-          isUser
-            ? "bg-accent text-primary max-w-4/5"
-            : "text-white bg-white/10 rounded-sm border border-white/20",
+          "rounded whitespace-pre-wrap shadow-sm nole-chat-message flex flex-col gap-5 text-white",
+          "p-2 bg-white/10 rounded-sm border border-white/20 w-full",
           {
-            "": message.status === "streaming",
             "bg-red-100": message.status === "failed",
           }
         )}
       >
-        {visibleText ? (
-          <Markdown remarkPlugins={[remarkGfm]}>{visibleText}</Markdown>
-        ) : (
+        {parts.length === 0 && (
           <span className="text-white italic">En cours...</span>
         )}
+
+        {parts.map((part, index) => {
+          // Ignorer les step-start (marqueurs de début d'étape)
+          if (part.type === "step-start") {
+            return null;
+          }
+
+          // Afficher les parts texte avec Markdown
+          if (part.type === "text") {
+            return <TextPartRenderer key={index} part={part as TextPart} />;
+          }
+
+          // Afficher les tool calls en utilisant la config
+          if (part.type.startsWith("tool-")) {
+            const toolConfig = toolCardsConfig.find(
+              (tool) => tool.name === part.type
+            );
+
+            if (toolConfig && "state" in part) {
+              const ToolComponent = toolConfig.component;
+              return (
+                <ToolComponent
+                  key={index}
+                  state={part.state}
+                  input={
+                    part.state === "output-available" ? part.input : undefined
+                  }
+                  output={
+                    part.state === "output-available" ? part.output : undefined
+                  }
+                />
+              );
+            }
+
+            // Fallback pour les outils non configurés
+            const toolName = part.type.replace("tool-", "");
+            return (
+              <div key={index} className="text-gray-400 italic text-sm">
+                Outil : {toolName} (non configuré)
+              </div>
+            );
+          }
+
+          return null;
+        })}
       </div>
+    </div>
+  );
+}
+
+function TextPartRenderer({ part }: { part: TextPart }) {
+  const [visibleText] = useSmoothText(part.text ?? "", {
+    startStreaming: part.state === "streaming",
+  });
+
+  if (!visibleText) {
+    return null;
+  }
+
+  return (
+    <div className="whitespace-pre-wrap px-1 flex flex-col gap-5">
+      <Markdown remarkPlugins={[remarkGfm]}>{visibleText}</Markdown>
     </div>
   );
 }

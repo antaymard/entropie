@@ -1,13 +1,19 @@
-import type {
-  WebSearchInput,
-  WebSearchResult,
-  ToolCardProps,
-} from "@/types/message.types";
+import type { ToolCardProps } from "@/types/message.types";
 import { TbWorldSearch } from "react-icons/tb";
 import { RiLoaderLine } from "react-icons/ri";
 import { HiMiniChevronDown } from "react-icons/hi2";
 import { useState } from "react";
 
+interface WebSearchInput {
+  objective: string;
+  search_queries?: string[];
+}
+interface WebSearchResult {
+  excerpts: string[];
+  publish_date?: string;
+  title: string;
+  url: string;
+}
 type WebsearchToolCardProps = ToolCardProps<WebSearchInput, WebSearchResult[]>;
 
 function getRelativeTime(dateString: string | undefined): string {

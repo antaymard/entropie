@@ -1,13 +1,21 @@
-import type {
-  OpenWebpageInput,
-  OpenWebpageResult,
-  ToolCardProps,
-} from "@/types/message.types";
+import type { ToolCardProps } from "@/types/message.types";
 import { TbPointer } from "react-icons/tb";
 import { RiLoaderLine } from "react-icons/ri";
 import { HiMiniChevronDown } from "react-icons/hi2";
 import { useState } from "react";
 
+interface OpenWebpageInput {
+  urls: string[];
+  objective: string;
+  search_queries?: string[];
+}
+interface OpenWebpageResult {
+  url: string;
+  title: string;
+  full_content: string;
+  excerpts: string[];
+  publish_date?: string;
+}
 type OpenWebpageToolCardProps = ToolCardProps<
   OpenWebpageInput,
   OpenWebpageResult[]

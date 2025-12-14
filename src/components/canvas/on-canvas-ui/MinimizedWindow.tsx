@@ -35,7 +35,7 @@ export default function MinimizedWindow({ window }: { window: Window }) {
         <div className="relative group">
           <Button
             type="button"
-            onClick={() => toggleMinimizeWindow(window.id, false)}
+            onClick={() => toggleMinimizeWindow(window.id, !window.isMinimized)}
             className={window.isMinimized ? "" : "bg-accent"}
             variant="ghost"
           >

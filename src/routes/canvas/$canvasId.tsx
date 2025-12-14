@@ -55,8 +55,21 @@ export const Route = createFileRoute("/canvas/$canvasId")({
 
 function RouteComponent() {
   const { canvasId } = Route.useParams() as { canvasId: Id<"canvases"> };
+  const isAiPanelOpen = useCanvasStore((state) => state.isAiPanelOpen);
 
-  return <CanvasContent key={canvasId} canvasId={canvasId} />;
+  return (
+    <ReactFlowProvider>
+      <div
+        className={cn(
+          "grid grid-cols-[1fr_420px] h-screen w-screen ",
+          isAiPanelOpen ? "grid-cols-[1fr_450px]" : "grid-cols-[1fr_0px]"
+        )}
+      >
+        <CanvasContent key={canvasId} canvasId={canvasId} />
+        {isAiPanelOpen && <Chat />}
+      </div>
+    </ReactFlowProvider>
+  );
 }
 
 function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
@@ -107,7 +120,6 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   const openWindow = useWindowsStore((state) => state.openWindow);
   const setUserTemplates = useTemplateStore((state) => state.setTemplates);
   const currentCanvasTool = useCanvasStore((state) => state.currentCanvasTool);
-  const isAiPanelOpen = useCanvasStore((state) => state.isAiPanelOpen);
   const deviceType = useDeviceType();
 
   // xyFlow states
@@ -392,63 +404,54 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   document.title = `${canvas.name}`;
 
   return (
-    <div>
+    <>
       {/* <CanvasSidebar currentCanvasId={canvasId} /> */}
-      <ReactFlowProvider>
-        <div
-          className={cn(
-            "grid grid-cols-[1fr_420px] h-screen w-screen ",
-            isAiPanelOpen ? "grid-cols-[1fr_450px]" : "grid-cols-[1fr_0px]"
-          )}
+
+      <div className="flex-1 w-full border-r">
+        <ReactFlow
+          panOnScroll
+          panOnDrag={[1]}
+          selectNodesOnDrag={false}
+          selectionOnDrag={deviceType === "desktop"}
+          selectionMode={SelectionMode.Partial}
+          nodeTypes={nodeTypes}
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={handleNodesChange}
+          onEdgesChange={handleEdgesChange}
+          onPaneContextMenu={handlePaneContextMenu}
+          onNodeContextMenu={handleNodeContextMenu}
+          onSelectionContextMenu={handleSelectionContextMenu}
+          onNodeDoubleClick={handleNodeDoubleClick}
+          deleteKeyCode={null}
+          snapToGrid
+          snapGrid={[5, 5]}
+          nodesDraggable={isAuthenticated}
+          edgesConnectable={isAuthenticated}
+          className="rounded-md"
         >
-          <div className="flex-1 w-full border-r">
-            <ReactFlow
-              panOnScroll
-              panOnDrag={[1]}
-              selectNodesOnDrag={false}
-              selectionOnDrag={deviceType === "desktop"}
-              selectionMode={SelectionMode.Partial}
-              nodeTypes={nodeTypes}
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={handleNodesChange}
-              onEdgesChange={handleEdgesChange}
-              onPaneContextMenu={handlePaneContextMenu}
-              onNodeContextMenu={handleNodeContextMenu}
-              onSelectionContextMenu={handleSelectionContextMenu}
-              onNodeDoubleClick={handleNodeDoubleClick}
-              deleteKeyCode={null}
-              snapToGrid
-              snapGrid={[5, 5]}
-              nodesDraggable={isAuthenticated}
-              edgesConnectable={isAuthenticated}
-              className="rounded-md"
-            >
-              <Background bgColor="#f9fafb" />
-              {/* <Controls /> */}
+          <Background bgColor="#f9fafb" />
+          {/* <Controls /> */}
 
-              <Panel position="center-left">
-                <CanvasToolbar />
-              </Panel>
+          <Panel position="center-left">
+            <CanvasToolbar />
+          </Panel>
 
-              <Panel position="top-left">
-                <TopLeftToolbar undo={undo} redo={redo} />
-              </Panel>
-              <Panel position="top-right">
-                <TopRightToolbar />
-              </Panel>
-            </ReactFlow>
-            {contextMenu.type && (
-              <ContextMenu
-                contextMenu={contextMenu}
-                setContextMenu={setContextMenu}
-              />
-            )}
-            <WindowsContainer />
-          </div>
-          {isAiPanelOpen && <Chat />}
-        </div>
-      </ReactFlowProvider>
-    </div>
+          <Panel position="top-left">
+            <TopLeftToolbar undo={undo} redo={redo} />
+          </Panel>
+          <Panel position="top-right">
+            <TopRightToolbar />
+          </Panel>
+        </ReactFlow>
+        {contextMenu.type && (
+          <ContextMenu
+            contextMenu={contextMenu}
+            setContextMenu={setContextMenu}
+          />
+        )}
+        <WindowsContainer />
+      </div>
+    </>
   );
 }

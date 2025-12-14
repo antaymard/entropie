@@ -15,6 +15,8 @@ import type * as ia_agents from "../ia/agents.js";
 import type * as ia_nole from "../ia/nole.js";
 import type * as ia_prompts_noleSystemPrompt from "../ia/prompts/noleSystemPrompt.js";
 import type * as ia_tools_openWebPageTool from "../ia/tools/openWebPageTool.js";
+import type * as ia_tools_readCanvasTool from "../ia/tools/readCanvasTool.js";
+import type * as ia_tools_viewImageTool from "../ia/tools/viewImageTool.js";
 import type * as ia_tools_websearchTool from "../ia/tools/websearchTool.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_r2 from "../lib/r2.js";
@@ -45,6 +47,8 @@ declare const fullApi: ApiFromModules<{
   "ia/nole": typeof ia_nole;
   "ia/prompts/noleSystemPrompt": typeof ia_prompts_noleSystemPrompt;
   "ia/tools/openWebPageTool": typeof ia_tools_openWebPageTool;
+  "ia/tools/readCanvasTool": typeof ia_tools_readCanvasTool;
+  "ia/tools/viewImageTool": typeof ia_tools_viewImageTool;
   "ia/tools/websearchTool": typeof ia_tools_websearchTool;
   "lib/auth": typeof lib_auth;
   "lib/r2": typeof lib_r2;

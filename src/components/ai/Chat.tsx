@@ -14,7 +14,7 @@ import { PiPaperPlaneRightBold } from "react-icons/pi";
 import { Textarea } from "../shadcn/textarea";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import type { MessagePart, TextPart } from "@/types/message.types";
+import type { TextPart } from "@/types/message.types";
 import toolCardsConfig from "./tool-cards/toolCardsConfig";
 
 export default function Chat() {
@@ -69,6 +69,13 @@ function ChatInterface({
   const [prompt, setPrompt] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Vérifier si l'assistant est en train de répondre
+  const isAssistantResponding =
+    messages.length > 0 &&
+    messages[messages.length - 1].role === "assistant" &&
+    messages[messages.length - 1].status !== "success" &&
+    messages[messages.length - 1].status !== "failed";
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -104,7 +111,7 @@ function ChatInterface({
       {/* Messages area - scrollable */}
       <div className="flex-1 overflow-y-auto p-3 scrollbar-hide">
         {messages.length > 0 ? (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-8">
             {status === "CanLoadMore" && (
               <button
                 onClick={() => loadMore(10)}
@@ -144,11 +151,12 @@ function ChatInterface({
           }}
           className="placeholder:text-white/60 flex-1 rounded-md pt-8 pb-2 bg-white/10 hover:bg-white/20 focus:bg-white/20 text-white resize-none border-0"
           placeholder="Posez votre question..."
+          disabled={isAssistantResponding}
         />
         <button
           type="submit"
-          className="absolute bottom-4 right-4 text-white p-1 rounded-xs hover:bg-white/20"
-          disabled={!prompt.trim()}
+          className="absolute bottom-4 right-4 text-white p-1 rounded-xs hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={!prompt.trim() || isAssistantResponding}
         >
           <PiPaperPlaneRightBold size={12} />
         </button>
@@ -164,7 +172,7 @@ function Message({ message }: { message: UIMessage }) {
   if (isUser) {
     return (
       <div className="flex justify-end">
-        <div className="rounded whitespace-pre-wrap shadow-sm p-3 bg-accent text-primary max-w-4/5">
+        <div className="rounded whitespace-pre-wrap shadow-sm p-3 bg-primary text-white max-w-4/5 border border-white/20 text-[0.85em]">
           <Markdown remarkPlugins={[remarkGfm]}>{message.text ?? ""}</Markdown>
         </div>
       </div>
@@ -172,7 +180,7 @@ function Message({ message }: { message: UIMessage }) {
   }
 
   // Pour les messages assistant, itérer sur les parts
-  const parts = (message.parts ?? []) as MessagePart[];
+  const parts = message.parts ?? [];
 
   return (
     <div className="flex justify-start">

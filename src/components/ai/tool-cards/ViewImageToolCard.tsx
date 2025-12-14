@@ -2,9 +2,11 @@ import type { ToolCardProps } from "@/types/message.types";
 import { TbPhotoSearch } from "react-icons/tb";
 import { RiLoaderLine } from "react-icons/ri";
 import { useState } from "react";
+import { HiMiniChevronDown } from "react-icons/hi2";
 
 interface ViewImageInput {
   url: string;
+  objective: string;
 }
 
 type ViewImageToolProps = ToolCardProps<ViewImageInput, unknown>;
@@ -27,15 +29,31 @@ export default function ViewImageToolCard({
           <RiLoaderLine size={15} className="animate-spin text-white" />
         ) : null}
         {state === "output-available" ? (
-          <a
-            className="text-xs text-white hover:underline"
-            target="_blank"
-            href={input?.url}
+          <button
+            className="text-white flex items-center gap-1"
+            type="button"
+            onClick={() => setExpanded(!expanded)}
           >
-            Voir l'image
-          </a>
+            <HiMiniChevronDown size={15} className="text-white" />
+          </button>
         ) : null}
       </div>
+
+      {state === "output-available" && expanded ? (
+        <div className="flex flex-col divide-y divide-white/20 -mx-2 text-white mt-3 -mb-2">
+          <div className="p-2">
+            <p>Objectif</p>
+            <p>{input?.objective}</p>
+          </div>
+          <div className="p-2">
+            <img
+              src={input?.url}
+              alt="Analyzed Image"
+              className="w-full rounded-md object-cover"
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

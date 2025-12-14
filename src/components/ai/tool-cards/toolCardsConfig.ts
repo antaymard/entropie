@@ -2,6 +2,7 @@ import type { ToolCardProps } from "@/types/message.types";
 import WebsearchToolCard from "./WebsearchToolCard";
 import OpenWebpageToolCard from "./OpenWebpageToolCard";
 import ReadCanvasToolCard from "./ReadCanvasToolCard";
+import ViewImageToolCard from "./ViewImageToolCard";
 
 interface ToolCardConfig {
   name: string;
@@ -24,6 +25,12 @@ const tools: ToolCardConfig[] = [
   {
     name: "tool-read_canvas",
     component: ReadCanvasToolCard as React.ComponentType<
+      ToolCardProps<unknown, unknown>
+    >,
+  },
+  {
+    name: "tool-view_image",
+    component: ViewImageToolCard as React.ComponentType<
       ToolCardProps<unknown, unknown>
     >,
   },

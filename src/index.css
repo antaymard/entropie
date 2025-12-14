@@ -196,3 +196,78 @@
   margin-top: 0.25em;
   margin-bottom: 0.25em;
 } */
+
+/* Styles pour le markdown dans les messages Nole */
+.nole-chat-message h1 {
+  font-size: 1.5em;
+  font-weight: 700;
+  margin-top: 1em;
+  margin-bottom: 2em;
+}
+.nole-chat-message h1:first-child {
+  margin-top: 0;
+}
+
+.nole-chat-message h2 {
+  font-size: 1.35em;
+  font-weight: 700;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+.nole-chat-message h2:first-child {
+  margin-top: 0;
+}
+
+.nole-chat-message h3 {
+  font-size: 1.15em;
+  font-weight: 700;
+  margin-top: 1.5em;
+  margin-bottom: 1em;
+}
+.nole-chat-message h3:first-child {
+  margin-top: 0;
+}
+
+.nole-chat-message p {
+  font-size: 0.94em;
+  /* margin-bottom: 0.8em; */
+}
+
+.nole-chat-message ul {
+  list-style-type: disc;
+  margin-left: 1.5em;
+  margin-bottom: 0.4em;
+  margin-top: -2em;
+}
+
+.nole-chat-message ol {
+  list-style-type: decimal;
+  margin-left: 1.5em;
+  margin-bottom: 0.4em;
+  margin-top: -1em;
+}
+
+.nole-chat-message li {
+  font-size: 0.94em;
+  margin-bottom: -1.2em;
+}
+
+.nole-chat-message code {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.nole-chat-message pre {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 1em;
+  border-radius: 5px;
+  overflow-x: auto;
+  margin-bottom: 0.75em;
+}
+
+.nole-chat-message pre code {
+  background-color: transparent;
+  padding: 0;
+}

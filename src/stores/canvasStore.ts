@@ -9,7 +9,9 @@ interface CanvasStore {
   status: Status;
   enableCanvasUndoRedo: boolean;
   currentCanvasTool: "default" | "edge" | "draw" | "frame";
+  isAiPanelOpen: boolean;
 
+  setIsAiPanelOpen: (isOpen: boolean) => void;
   setCurrentCanvasTool: (tool: "default" | "edge" | "draw" | "frame") => void;
 
   setEnableCanvasUndoRedo: (enable: boolean) => void;
@@ -29,6 +31,11 @@ export const useCanvasStore = create<CanvasStore>()(
       status: "idle",
       enableCanvasUndoRedo: true,
       currentCanvasTool: "default",
+      isAiPanelOpen: false,
+
+      setIsAiPanelOpen: (isOpen: boolean) => {
+        set({ isAiPanelOpen: isOpen });
+      },
 
       setCurrentCanvasTool: (tool: "default" | "edge" | "draw") => {
         set({ currentCanvasTool: tool });

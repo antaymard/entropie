@@ -12,12 +12,12 @@ export const websearchTool = createTool({
     objective: z
       .string()
       .describe(
-        "THIS MUST BE IN ENGLISH. Natural-language description of the web research goal, including source or freshness guidance and broader context from the task. Maximum 5000 characters. \nExample:  I want to know when the UN was founded. Prefer UN's websites."
+        "Natural-language description of the web research goal, including source or freshness guidance and broader context from the task. Maximum 5000 characters. Choose the right language, depending on the user's language, and the type of info needed. For example, if local or country specific, use the user language. \nExample:  I want to know when the UN was founded. Prefer UN's websites."
       ),
     search_queries: z
       .array(z.string())
       .describe(
-        "THIS MUST BE IN ENGLISH. Optional search queries to supplement the objective. Maximum 200 characters per query. \nExample: ['Founding year UN', 'Year of founding United Nations']"
+        "Optional search queries to supplement the objective. Maximum 200 characters per query. Choose the right language, depending on the user's language, and the type of info needed. For example, if local or country specific, use the user language. \nExample: ['Founding year UN', 'Year of founding United Nations']"
       )
       .optional(),
   }),

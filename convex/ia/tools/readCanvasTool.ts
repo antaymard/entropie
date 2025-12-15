@@ -5,7 +5,7 @@ import { Id } from "../../_generated/dataModel";
 
 export const readCanvasTool = createTool({
   description:
-    "Allow to read the whole canvas object, from a canvas ID. Returns the complete canvas object including the canvas data, and the belonging nodes and edges.",
+    "Allow to read a whole canvas object, from a canvas ID. Returns the complete canvas object including the canvas data, and the belonging nodes and edges.",
   args: z.object({
     canvasId: z.string().describe("ID of the canvas to read."),
     scope: z

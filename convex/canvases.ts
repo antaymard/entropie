@@ -1,4 +1,9 @@
-import { query, mutation } from "./_generated/server";
+import {
+  query,
+  mutation,
+  internalMutation,
+  internalQuery,
+} from "./_generated/server";
 import { v } from "convex/values";
 import { requireAuth, getAuth } from "./lib/auth";
 import { get } from "lodash";
@@ -94,6 +99,17 @@ export const getCanvas = query({
   },
 });
 
+export const getCanvasInternal = internalQuery({
+  args: {
+    canvasId: v.id("canvases"),
+  },
+  returns: v.any(),
+  handler: async (ctx, { canvasId }) => {
+    const canvas = await ctx.db.get(canvasId);
+    return canvas;
+  },
+});
+
 export const createCanvas = mutation({
   args: {
     name: v.string(),
@@ -168,6 +184,24 @@ export const updateCanvasContent = mutation({
     if (canvas.creatorId !== authUserId) {
       throw new Error("Vous n'avez pas accès à ce canvas");
     }
+    // Mettre à jour le contenu du canvas
+    await ctx.db.patch(canvasId, {
+      nodes,
+      edges,
+      updatedAt: Date.now(),
+    });
+    return { success: true, canvasId };
+  },
+});
+
+export const updateCanvasContentInternal = internalMutation({
+  args: {
+    canvasId: v.id("canvases"),
+    nodes: v.array(v.any()),
+    edges: v.array(v.any()),
+  },
+  returns: v.object({ success: v.boolean(), canvasId: v.id("canvases") }),
+  handler: async (ctx, { canvasId, nodes, edges }) => {
     // Mettre à jour le contenu du canvas
     await ctx.db.patch(canvasId, {
       nodes,

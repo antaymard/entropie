@@ -23,7 +23,7 @@ const schema = defineSchema({
     nodes: v.array(
       v.object({
         id: v.string(),
-        name: v.optional(v.string()), // Displayed on the node
+        name: v.string(), // Displayed on the node
         type: v.string(), // customNode or frame or pre-built node types
         templateId: v.optional(v.id("nodeTemplates")), // If based on a template
 

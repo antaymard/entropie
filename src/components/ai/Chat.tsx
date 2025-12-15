@@ -16,9 +16,15 @@ import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { TextPart } from "@/types/message.types";
 import toolCardsConfig from "./tool-cards/toolCardsConfig";
+import { useNodes, useViewport } from "@xyflow/react";
+import { useCanvasStore } from "@/stores/canvasStore";
 
 export default function Chat() {
   const { threadId, isLoading, resetThread } = useNoleThread();
+
+  const canvas = useCanvasStore((s) => s.canvas);
+  const viewport = useViewport();
+  const nodes = useNodes();
 
   if (isLoading) {
     return (
@@ -38,7 +44,15 @@ export default function Chat() {
 
   return (
     <div className="bg-primary h-screen">
-      <ChatInterface threadId={threadId} resetThread={resetThread} />
+      <ChatInterface
+        threadId={threadId}
+        resetThread={resetThread}
+        canvasContext={{
+          currentCanvasId: canvas?._id,
+          currentViewport: viewport,
+          selectedNodesIds: nodes.filter((n) => n.selected).map((n) => n.id),
+        }}
+      />
     </div>
   );
 }
@@ -46,9 +60,15 @@ export default function Chat() {
 function ChatInterface({
   threadId,
   resetThread,
+  canvasContext,
 }: {
   threadId: string;
   resetThread: () => Promise<void>;
+  canvasContext: {
+    currentCanvasId: string | undefined;
+    currentViewport: { x: number; y: number; zoom: number } | undefined;
+    selectedNodesIds: string[];
+  };
 }) {
   const {
     results: messages,
@@ -89,7 +109,7 @@ function ChatInterface({
     const currentPrompt = prompt;
     setPrompt("");
     try {
-      await sendMessage({ threadId, prompt: currentPrompt });
+      await sendMessage({ threadId, prompt: currentPrompt, canvasContext });
     } catch (error) {
       console.error("Erreur lors de l'envoi:", error);
       setPrompt(currentPrompt);

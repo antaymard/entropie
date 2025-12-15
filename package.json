@@ -73,6 +73,7 @@
     "@tailwindcss/vite": "^4.1.15",
     "@tanstack/react-router": "^1.134.9",
     "@tanstack/react-router-devtools": "^1.134.9",
+    "@toon-format/toon": "^2.1.0",
     "@types/lodash": "^4.17.20",
     "@udecode/cn": "^51.1.2",
     "@uploadthing/react": "7.3.3",

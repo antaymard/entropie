@@ -11,6 +11,8 @@ import {
 import { components } from "../_generated/api";
 import { paginationOptsValidator } from "convex/server";
 import { getAuth } from "../lib/auth";
+import { encode } from "@toon-format/toon";
+import { Id } from "../_generated/dataModel";
 
 // Get the latest thread for the user
 export const getLatestThread = query({
@@ -77,6 +79,13 @@ export const sendMessage = mutation({
   args: {
     threadId: v.string(),
     prompt: v.string(),
+    canvasContext: v.optional(
+      v.object({
+        currentCanvasId: v.optional(v.string()),
+        currentViewport: v.optional(v.any()),
+        selectedNodesIds: v.optional(v.array(v.any())),
+      })
+    ),
   },
   returns: v.union(
     v.object({
@@ -87,13 +96,20 @@ export const sendMessage = mutation({
       error: v.string(),
     })
   ),
-  handler: async (ctx, { threadId, prompt }) => {
+  handler: async (ctx, { threadId, prompt, canvasContext }) => {
     const authUserId = await getAuth(ctx);
     if (!authUserId) {
       return {
         success: false,
         error: "Utilisateur non authentifié",
       };
+    }
+
+    // Get the canvas from context if available
+    const currentCanvasId = canvasContext?.currentCanvasId;
+    let currentCanvas = null;
+    if (currentCanvasId) {
+      currentCanvas = await ctx.db.get(currentCanvasId as Id<"canvases">);
     }
 
     // Save the user message
@@ -106,6 +122,13 @@ export const sendMessage = mutation({
     void ctx.scheduler.runAfter(0, internal.ia.nole.streamResponse, {
       threadId,
       promptMessageId: messageId,
+      metadata: {
+        canvasContext: {
+          currentCanvas,
+          currentViewport: canvasContext?.currentViewport,
+          selectedNodesIds: canvasContext?.selectedNodesIds,
+        },
+      },
     });
 
     return { messageId };
@@ -117,12 +140,43 @@ export const streamResponse = internalAction({
   args: {
     promptMessageId: v.string(),
     threadId: v.string(),
+    metadata: v.optional(
+      v.object({
+        canvasContext: v.optional(
+          v.object({
+            currentCanvas: v.optional(v.any()),
+            currentViewport: v.optional(v.any()),
+            selectedNodesIds: v.optional(v.array(v.any())),
+          })
+        ),
+      })
+    ),
   },
-  handler: async (ctx, { promptMessageId, threadId }) => {
+  handler: async (ctx, { promptMessageId, threadId, metadata }) => {
     const result = await noleAgent.streamText(
       ctx,
       { threadId },
-      { promptMessageId },
+      {
+        promptMessageId,
+        system: `${noleAgent.options.instructions}
+
+        ## Contexte de l'utilisateur quand il a posé la question : 
+
+        ### Canvas et nodes ouverts
+        
+        Le canvas que l'utilisateur a sous les yeux au moment de te poser la question, avec les nodes et edges qu'il contient.
+
+        ${encode(metadata?.canvasContext?.currentCanvas) || "N/A"}
+
+        Parmi ces nodes, ceux qui sont sélectionnés (mis en avant par l'utilisateur) sont les suivants : ${JSON.stringify(metadata?.canvasContext?.selectedNodesIds) || "N/A"}
+        
+        ### Position du user dans le canvas
+        
+        Au moment de la question, l'utilisateur était positionné à cet endroit du canvas : ${JSON.stringify(metadata?.canvasContext?.currentViewport) || "N/A"}
+        
+        Utilise ces informations pour mieux comprendre la question de l'utilisateur et fournir une réponse plus pertinente et des arguments plus précis pour les tool_use. Ne les mentionne que si nécessaire et opportun.
+        `,
+      },
       {
         saveStreamDeltas: {
           chunking: "word", // Stream word by word

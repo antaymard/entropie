@@ -43,10 +43,7 @@ function PdfViewerField({ value }: BaseFieldProps<FileFieldType[]>) {
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className="w-full h-full overflow-y-auto scrollbar-hide"
-    >
+    <div ref={containerRef} className="w-full h-full overflow-y-auto">
       <Document
         file={value && value.length > 0 ? value[0].url : ""}
         className="flex flex-col gap-2"

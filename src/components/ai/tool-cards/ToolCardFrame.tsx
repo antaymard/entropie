@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import { RiLoaderLine } from "react-icons/ri";
 import { HiMiniChevronDown } from "react-icons/hi2";
 import type { IconType } from "react-icons";
+import { cn } from "@/lib/utils";
 
 interface ToolCardFrameProps {
   icon: IconType;
@@ -25,7 +26,14 @@ export default function ToolCardFrame({
   return (
     <div className="w-full bg-white/10 border border-white/20 rounded-sm text-primary p-2">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-white text-sm font-semibold">
+        <div
+          className={cn(
+            "flex items-center gap-2 text-white text-sm font-semibold",
+            {
+              "animate-pulse": state === "input-streaming",
+            }
+          )}
+        >
           <Icon size={15} />
           {name}
         </div>

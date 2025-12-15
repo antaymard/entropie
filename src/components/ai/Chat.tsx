@@ -6,15 +6,20 @@ import {
   useUIMessages,
   type UIMessage,
 } from "@convex-dev/agent/react";
-import { useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { cn } from "@/lib/utils";
 import { useNoleThread } from "@/hooks/useNoleThread";
 import { RotateCcw, Loader2 } from "lucide-react";
 import { PiPaperPlaneRightBold } from "react-icons/pi";
 import { Textarea } from "../shadcn/textarea";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import type { TextPart } from "@/types/message.types";
+import { MarkdownText } from "./MarkdownText";
 import toolCardsConfig from "./tool-cards/toolCardsConfig";
 import { useNodes, useViewport } from "@xyflow/react";
 import { useCanvasStore } from "@/stores/canvasStore";
@@ -104,7 +109,12 @@ function ChatInterface({
   );
 
   const [prompt, setPrompt] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollViewportRef = useRef<HTMLDivElement>(null);
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const lastScrollTop = useRef<number>(0);
+  const scrollingToBottomRef = useRef(false);
+  const previousMessagesLengthRef = useRef(0);
+  const previousLastMessageRef = useRef<UIMessage | null>(null);
 
   // Vérifier si l'assistant est en train de répondre
   const isAssistantResponding =
@@ -113,18 +123,79 @@ function ChatInterface({
     messages[messages.length - 1].status !== "success" &&
     messages[messages.length - 1].status !== "failed";
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
+    const div = scrollViewportRef.current;
+    if (!div) return;
+    scrollingToBottomRef.current = true;
+    div.scrollTo({ top: div.scrollHeight, behavior });
+  }, []);
 
+  const checkIsAtBottom = useCallback(() => {
+    const div = scrollViewportRef.current;
+    if (!div) return true;
+    return (
+      Math.abs(div.scrollHeight - div.scrollTop - div.clientHeight) < 1 ||
+      div.scrollHeight <= div.clientHeight
+    );
+  }, []);
+
+  const handleScroll = useCallback(() => {
+    const div = scrollViewportRef.current;
+    if (!div) return;
+
+    const newIsAtBottom = checkIsAtBottom();
+
+    // Ne pas mettre à jour isAtBottom si on scrolle vers le bas
+    if (!newIsAtBottom && lastScrollTop.current < div.scrollTop) {
+      // ignore scroll down
+    } else {
+      if (newIsAtBottom) {
+        scrollingToBottomRef.current = false;
+      }
+      setIsAtBottom(newIsAtBottom);
+    }
+
+    lastScrollTop.current = div.scrollTop;
+  }, [checkIsAtBottom]);
+
+  // Auto-scroll quand les messages changent ou que le contenu change
+  useLayoutEffect(() => {
+    const div = scrollViewportRef.current;
+    if (!div) return;
+
+    // Vérifier si les messages ont vraiment changé
+    const currentLength = messages.length;
+    const lastMessage = messages[messages.length - 1];
+    const hasNewMessage = currentLength !== previousMessagesLengthRef.current;
+    const lastMessageChanged = lastMessage !== previousLastMessageRef.current;
+
+    // Mettre à jour les refs
+    previousMessagesLengthRef.current = currentLength;
+    previousLastMessageRef.current = lastMessage;
+
+    // Ne scroller que si les messages ont changé
+    if (!hasNewMessage && !lastMessageChanged) return;
+
+    if (scrollingToBottomRef.current) {
+      scrollToBottom("auto");
+    } else if (isAtBottom) {
+      scrollToBottom("instant");
+    }
+  }, [messages, isAtBottom, scrollToBottom]);
+
+  // Scroll instantané lors du premier chargement
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    scrollToBottom("instant");
+  }, [scrollToBottom]);
 
   const onSendClicked = async () => {
     if (prompt.trim() === "") return;
     const currentPrompt = prompt;
     setPrompt("");
+    // Forcer le scroll en bas lors de l'envoi
+    setIsAtBottom(true);
+    scrollingToBottomRef.current = true;
+    scrollToBottom("auto");
     try {
       await sendMessage({ threadId, prompt: currentPrompt, canvasContext });
     } catch (error) {
@@ -146,7 +217,11 @@ function ChatInterface({
         </button>
       )}
       {/* Messages area - scrollable */}
-      <div className="flex-1 overflow-y-auto p-3 scrollbar-hide">
+      <div
+        ref={scrollViewportRef}
+        className="flex-1 overflow-y-auto p-3"
+        onScroll={handleScroll}
+      >
         {messages.length > 0 ? (
           <div className="flex flex-col gap-8">
             {status === "CanLoadMore" && (
@@ -160,7 +235,6 @@ function ChatInterface({
             {messages.map((m) => (
               <Message key={m.key} message={m} />
             ))}
-            <div ref={messagesEndRef} />
           </div>
         ) : (
           <div className="flex items-center justify-center h-full text-gray-500">
@@ -209,8 +283,8 @@ function Message({ message }: { message: UIMessage }) {
   if (isUser) {
     return (
       <div className="flex justify-end">
-        <div className="rounded whitespace-pre-wrap shadow-sm p-3 bg-primary text-white max-w-4/5 border border-white/20 text-[0.9em]">
-          <Markdown remarkPlugins={[remarkGfm]}>{message.text ?? ""}</Markdown>
+        <div className="rounded whitespace-pre-wrap shadow-sm p-3 bg-primary text-white max-w-4/5 border border-white/20">
+          <MarkdownText>{message.text ?? ""}</MarkdownText>
         </div>
       </div>
     );
@@ -232,10 +306,6 @@ function Message({ message }: { message: UIMessage }) {
           }
         )}
       >
-        {parts.length === 0 && (
-          <span className="text-white italic">En cours...</span>
-        )}
-
         {parts.map((part, index) => {
           // Ignorer les step-start (marqueurs de début d'étape)
           if (part.type === "step-start") {
@@ -295,7 +365,7 @@ function Message({ message }: { message: UIMessage }) {
         })}
 
         {isProcessing && (
-          <div className="flex items-center justify-center py-1">
+          <div className="flex items-center py-1 px-1">
             <RiLoaderLine size={15} className="animate-spin text-white" />
           </div>
         )}
@@ -314,8 +384,8 @@ function TextPartRenderer({ part }: { part: TextPart }) {
   }
 
   return (
-    <div className="whitespace-pre-wrap px-1 flex flex-col gap-5">
-      <Markdown remarkPlugins={[remarkGfm]}>{visibleText}</Markdown>
+    <div className="whitespace-pre-wrap px-1 ">
+      <MarkdownText>{visibleText}</MarkdownText>
     </div>
   );
 }

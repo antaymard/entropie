@@ -16,7 +16,7 @@ function ImageWindow({ windowId }: ImageWindowProps) {
   const value = [{ url: nodeData?.url }];
 
   return (
-    <WindowFrame windowId={windowId} contentClassName="p-0! scrollbar-hide">
+    <WindowFrame windowId={windowId} contentClassName="p-0! ">
       <ImageField
         value={value}
         visualType="window"

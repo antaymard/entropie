@@ -6,7 +6,13 @@ import {
   useUIMessages,
   type UIMessage,
 } from "@convex-dev/agent/react";
-import { useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { cn } from "@/lib/utils";
 import { useNoleThread } from "@/hooks/useNoleThread";
 import { RotateCcw, Loader2 } from "lucide-react";
@@ -103,7 +109,10 @@ function ChatInterface({
   );
 
   const [prompt, setPrompt] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollViewportRef = useRef<HTMLDivElement>(null);
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const lastScrollTop = useRef<number>(0);
+  const scrollingToBottomRef = useRef(false);
 
   // Vérifier si l'assistant est en train de répondre
   const isAssistantResponding =
@@ -112,18 +121,66 @@ function ChatInterface({
     messages[messages.length - 1].status !== "success" &&
     messages[messages.length - 1].status !== "failed";
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
+    const div = scrollViewportRef.current;
+    if (!div) return;
+    scrollingToBottomRef.current = true;
+    div.scrollTo({ top: div.scrollHeight, behavior });
+  }, []);
 
+  const checkIsAtBottom = useCallback(() => {
+    const div = scrollViewportRef.current;
+    if (!div) return true;
+    return (
+      Math.abs(div.scrollHeight - div.scrollTop - div.clientHeight) < 1 ||
+      div.scrollHeight <= div.clientHeight
+    );
+  }, []);
+
+  const handleScroll = useCallback(() => {
+    const div = scrollViewportRef.current;
+    if (!div) return;
+
+    const newIsAtBottom = checkIsAtBottom();
+
+    // Ne pas mettre à jour isAtBottom si on scrolle vers le bas
+    if (!newIsAtBottom && lastScrollTop.current < div.scrollTop) {
+      // ignore scroll down
+    } else {
+      if (newIsAtBottom) {
+        scrollingToBottomRef.current = false;
+      }
+      setIsAtBottom(newIsAtBottom);
+    }
+
+    lastScrollTop.current = div.scrollTop;
+  }, [checkIsAtBottom]);
+
+  // Auto-scroll quand les messages changent ou que le contenu change
+  useLayoutEffect(() => {
+    const div = scrollViewportRef.current;
+    if (!div) return;
+
+    if (scrollingToBottomRef.current) {
+      scrollToBottom("auto");
+    } else if (isAtBottom) {
+      scrollToBottom("instant");
+    }
+  }, [messages, isAtBottom, scrollToBottom]);
+
+  // Scroll instantané lors du premier chargement
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    scrollToBottom("instant");
+  }, [scrollToBottom]);
 
   const onSendClicked = async () => {
     if (prompt.trim() === "") return;
     const currentPrompt = prompt;
     setPrompt("");
+    // Forcer le scroll en bas lors de l'envoi
+    setIsAtBottom(true);
+    scrollingToBottomRef.current = true;
+    scrollToBottom("auto");
     try {
       await sendMessage({ threadId, prompt: currentPrompt, canvasContext });
     } catch (error) {
@@ -145,7 +202,11 @@ function ChatInterface({
         </button>
       )}
       {/* Messages area - scrollable */}
-      <div className="flex-1 overflow-y-auto p-3">
+      <div
+        ref={scrollViewportRef}
+        className="flex-1 overflow-y-auto p-3"
+        onScroll={handleScroll}
+      >
         {messages.length > 0 ? (
           <div className="flex flex-col gap-8">
             {status === "CanLoadMore" && (
@@ -159,7 +220,6 @@ function ChatInterface({
             {messages.map((m) => (
               <Message key={m.key} message={m} />
             ))}
-            <div ref={messagesEndRef} />
           </div>
         ) : (
           <div className="flex items-center justify-center h-full text-gray-500">
@@ -231,10 +291,6 @@ function Message({ message }: { message: UIMessage }) {
           }
         )}
       >
-        {parts.length === 0 && (
-          <span className="text-white italic">En cours...</span>
-        )}
-
         {parts.map((part, index) => {
           // Ignorer les step-start (marqueurs de début d'étape)
           if (part.type === "step-start") {
@@ -294,7 +350,7 @@ function Message({ message }: { message: UIMessage }) {
         })}
 
         {isProcessing && (
-          <div className="flex items-center justify-center py-1">
+          <div className="flex items-center py-1 px-1">
             <RiLoaderLine size={15} className="animate-spin text-white" />
           </div>
         )}

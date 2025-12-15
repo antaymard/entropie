@@ -69,39 +69,19 @@ function RouteComponent() {
 }
 
 function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
-  // Fetch canvas data
-  const {
-    success: canvasSuccess,
-    canvas,
-    error: canvasError,
-  } = useQuery(api.canvases.getCanvas, {
-    canvasId,
-  }) || {};
-
-  const { isAuthenticated } = useConvexAuth();
-  const saveCanvasInConvex = useMutation(api.canvases.updateCanvasContent);
-
-  // Fetch templates
+  // ========== Data Fetching ==========
+  const { success: canvasSuccess, canvas } =
+    useQuery(api.canvases.getCanvas, { canvasId }) || {};
   const {
     success: templatesSuccess,
     templates: userTemplates,
     error: templatesError,
-  } = useQuery(api.templates.getUserTemplates, {
-    canvasId,
-  }) || {};
+  } = useQuery(api.templates.getUserTemplates, { canvasId }) || {};
 
-  // Context menu state
-  const [contextMenu, setContextMenu] = useState<{
-    type: "node" | "edge" | "canvas" | "selection" | null;
-    position: { x: number; y: number };
-    element: object | null;
-  }>({
-    type: null,
-    position: { x: 0, y: 0 },
-    element: null,
-  });
+  const { isAuthenticated } = useConvexAuth();
+  const saveCanvasInConvex = useMutation(api.canvases.updateCanvasContent);
 
-  // Zustand store
+  // ========== Stores ==========
   const setCanvas = useCanvasStore((state) => state.setCanvas);
   const canvasStatus = useCanvasStore((state) => state.status);
   const setCanvasStatus = useCanvasStore((state) => state.setStatus);
@@ -110,19 +90,26 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   );
   const openWindow = useWindowsStore((state) => state.openWindow);
   const setUserTemplates = useTemplateStore((state) => state.setTemplates);
-  const currentCanvasTool = useCanvasStore((state) => state.currentCanvasTool);
   const deviceType = useDeviceType();
 
-  // xyFlow states
+  // ========== React Flow State ==========
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+
+  // ========== Local State ==========
+  const [contextMenu, setContextMenu] = useState<{
+    type: "node" | "edge" | "canvas" | "selection" | null;
+    position: { x: number; y: number };
+    element: object | null;
+  }>({ type: null, position: { x: 0, y: 0 }, element: null });
+
   const hasInitialized = useRef(false);
-  const [saveIncrement, setSaveIncrement] = useState(0); // To trigger save effect
+  const [saveIncrement, setSaveIncrement] = useState(0);
   const isDraggingRef = useRef(false);
   const isResizingRef = useRef(false);
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // History undo/redo management
+  // ========== History Management ==========
   const { recordChange, undo, redo, isUndoRedo } = useCanvasContentHistory(
     nodes,
     edges,
@@ -131,17 +118,35 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     hasInitialized.current
   );
 
-  // ======= Handlers =======
+  // ========== Auto-save ==========
+  const debouncedSave = useMemo(
+    () =>
+      debounce((currentNodes: Node[], currentEdges: Edge[]) => {
+        try {
+          setCanvasStatus("saving");
+          saveCanvasInConvex({
+            canvasId,
+            nodes: toConvexNodes(currentNodes),
+            edges: currentEdges,
+          });
+          setCanvasStatus("saved");
+        } catch (error) {
+          toastError(error, "Erreur lors de la sauvegarde de l'espace");
+          setCanvasStatus("error");
+        }
+      }, 1000),
+    [canvasId, saveCanvasInConvex]
+  );
 
+  // ========== Context Menu Handlers ==========
   const handleRightClick = useCallback(
-    function (
+    (
       e: React.MouseEvent | MouseEvent,
       type: "node" | "edge" | "canvas" | "selection",
       element: object | null
-    ) {
+    ) => {
       e.preventDefault();
       if (!isAuthenticated) return;
-
       setContextMenu({
         type,
         position: { x: e.clientX, y: e.clientY },
@@ -152,18 +157,14 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   );
 
   const handlePaneContextMenu = useCallback(
-    (e: React.MouseEvent | MouseEvent) => {
-      if (!isAuthenticated) return;
-      handleRightClick(e, "canvas", null);
-    },
+    (e: React.MouseEvent | MouseEvent) =>
+      isAuthenticated && handleRightClick(e, "canvas", null),
     [handleRightClick, isAuthenticated]
   );
 
   const handleNodeContextMenu = useCallback(
-    (e: React.MouseEvent | MouseEvent, node: Node) => {
-      if (!isAuthenticated) return;
-      handleRightClick(e, "node", node);
-    },
+    (e: React.MouseEvent | MouseEvent, node: Node) =>
+      isAuthenticated && handleRightClick(e, "node", node),
     [handleRightClick, isAuthenticated]
   );
 
@@ -176,11 +177,9 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   const handleNodeDoubleClick = useCallback(
     (e: React.MouseEvent | MouseEvent, node: Node) => {
       e.preventDefault();
-      // Checker dans nodeList si le node a la propriété doubleClickToOpenWindow à true
       const nodeInfo = nodeList.find((n) => n.type === node.type);
       if (nodeInfo?.disableDoubleClickToOpenWindow) return;
 
-      // Open a window for this node
       openWindow({
         id: node.id,
         type: node.type as NodeType,
@@ -193,67 +192,41 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     [openWindow]
   );
 
-  const debouncedSave = useMemo(
-    () =>
-      debounce((currentNodes: Node[], currentEdges: Edge[]) => {
-        try {
-          setCanvasStatus("saving");
-          saveCanvasInConvex({
-            canvasId,
-            nodes: toConvexNodes(currentNodes), // Retransform en format base
-            edges: currentEdges,
-          });
-          setCanvasStatus("saved");
-        } catch (error) {
-          toastError(error, "Erreur lors de la sauvegarde de l'espace");
-          setCanvasStatus("error");
-        }
-      }, 1000),
-    [canvasId, saveCanvasInConvex, isAuthenticated]
+  // ========== Change Handlers ==========
+  const shouldSaveChange = useCallback(
+    (changes: NodeChange<Node>[] | EdgeChange<Edge>[]) => {
+      return !changes.every((change) => change.type === "select");
+    },
+    []
   );
 
   function handleNodesChange(changes: NodeChange<Node>[]) {
     if (!isAuthenticated) return;
-    onNodesChange(changes); // Update xyFlow state (make the change visible on the canvas)
-
-    // Ignore if undo/redo
+    onNodesChange(changes);
     if (isUndoRedo.current) return;
 
-    // Manage dragging state
-    const isDragging = changes.some(
-      (change) => change.type === "position" && change.dragging
-    );
+    // Track dragging
+    const isDragging = changes.some((c) => c.type === "position" && c.dragging);
     const isDragEnd = changes.some(
-      (change) =>
-        change.type === "position" && !change.dragging && change.position
+      (c) => c.type === "position" && !c.dragging && c.position
     );
+    if (isDragging) isDraggingRef.current = true;
+    else if (isDragEnd) isDraggingRef.current = false;
 
-    if (isDragging) {
-      isDraggingRef.current = true;
-    } else if (isDragEnd) {
-      isDraggingRef.current = false;
-    }
-
-    // Manage resizing state (dimensions changes don't have a resizing flag like dragging)
-    const isResizing = changes.some((change) => change.type === "dimensions");
+    // Track resizing
+    const isResizing = changes.some((c) => c.type === "dimensions");
     if (isResizing) {
       isResizingRef.current = true;
-      // Clear previous timeout
-      if (resizeTimeoutRef.current) {
-        clearTimeout(resizeTimeoutRef.current);
-      }
-      // Set timeout to detect resize end (no more dimension changes after 150ms)
+      if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current);
       resizeTimeoutRef.current = setTimeout(() => {
         isResizingRef.current = false;
       }, 150);
     }
 
-    if (isDragging || isResizing) return;
-
-    // Si tous les changes ne sont pas de type select, on incrémente le saveIncrement
-    if (!changes.every((change) => change.type === "select")) {
-      if (canvasStatus === "saving") return; // Prevent multiple saves
-      if (canvasStatus !== "unsynced") setCanvasStatus("unsynced");
+    // Trigger save
+    if (!isDragging && !isResizing && shouldSaveChange(changes)) {
+      if (canvasStatus !== "saving" && canvasStatus !== "unsynced")
+        setCanvasStatus("unsynced");
       setSaveIncrement((prev) => prev + 1);
     }
   }
@@ -261,38 +234,67 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   function handleEdgesChange(changes: EdgeChange<Edge>[]) {
     if (!isAuthenticated) return;
     onEdgesChange(changes);
-
-    // Ignore if undo/redo
     if (isUndoRedo.current) return;
 
-    // Si tous les changes ne sont pas de type select, on incrémente le saveIncrement
-    if (!changes.every((change) => change.type === "select")) {
-      if (canvasStatus === "saving") return;
-      if (canvasStatus !== "unsynced") setCanvasStatus("unsynced");
+    if (shouldSaveChange(changes)) {
+      if (canvasStatus !== "saving" && canvasStatus !== "unsynced")
+        setCanvasStatus("unsynced");
       setSaveIncrement((prev) => prev + 1);
     }
   }
 
-  // Ctrl+Z / Cmd+Z for undo/redo
+  // ========== Sync Helper ==========
+  const syncFromConvex = useCallback(() => {
+    // Don't sync if:
+    // - No canvas data
+    // - Currently dragging or resizing
+    // - Have unsaved local changes (would cause rollback)
+    if (
+      !canvas ||
+      isDraggingRef.current ||
+      isResizingRef.current ||
+      canvasStatus === "unsynced" ||
+      canvasStatus === "saving"
+    ) {
+      return;
+    }
+
+    setNodes((currentNodes) => {
+      const convexNodes = toXyNodes(canvas.nodes);
+      const currentNodeMap = new Map(currentNodes.map((n) => [n.id, n]));
+      return convexNodes.map((convexNode) => ({
+        ...convexNode,
+        selected: currentNodeMap.get(convexNode.id)?.selected ?? false,
+      }));
+    });
+
+    setEdges((currentEdges) => {
+      const convexEdges = canvas.edges || [];
+      const currentEdgeMap = new Map(currentEdges.map((e) => [e.id, e]));
+      return convexEdges.map((convexEdge) => ({
+        ...convexEdge,
+        selected: currentEdgeMap.get(convexEdge.id)?.selected ?? false,
+      }));
+    });
+
+    setCanvas(canvas);
+  }, [canvas, setNodes, setEdges, setCanvas, canvasStatus]);
+
+  // ========== Effects ==========
+
+  // Keyboard shortcuts (undo/redo)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isAuthenticated) return;
-      if (!enableCanvasUndoRedo) return; // Skip if canvas undo/redo is disabled (e.g., when editing in Plate)
-
+      if (!isAuthenticated || !enableCanvasUndoRedo) return;
       const key = e.key.toLowerCase();
 
-      // Redo: Ctrl+Shift+Z ou Ctrl+Y
       if (
         (e.metaKey || e.ctrlKey) &&
         ((key === "z" && e.shiftKey) || key === "y")
       ) {
         e.preventDefault();
         redo();
-        return;
-      }
-
-      // Undo: Ctrl+Z
-      if ((e.metaKey || e.ctrlKey) && key === "z") {
+      } else if ((e.metaKey || e.ctrlKey) && key === "z") {
         e.preventDefault();
         undo();
       }
@@ -302,7 +304,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [undo, redo, enableCanvasUndoRedo, isAuthenticated]);
 
-  // Set templates in store when fetched
+  // Load templates
   useEffect(() => {
     if (templatesSuccess) {
       setUserTemplates(userTemplates || []);
@@ -311,46 +313,57 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     }
   }, [templatesSuccess, userTemplates, setUserTemplates, templatesError]);
 
-  // Auto-save when nodes or edges change
+  // Auto-save
   useEffect(() => {
-    if (!hasInitialized.current) return;
-    if (canvasStatus === "saving") return; // Prevent multiple saves
+    if (
+      !hasInitialized.current ||
+      canvasStatus === "saving" ||
+      !isAuthenticated
+    )
+      return;
     if (canvasStatus !== "unsynced") setCanvasStatus("unsynced");
-
-    if (!isAuthenticated) return;
     debouncedSave(nodes, edges);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [saveIncrement, debouncedSave]);
 
-  // Record history changes
+  // Record history
   useEffect(() => {
-    if (!isAuthenticated) return;
-    if (isUndoRedo.current || isDraggingRef.current || isResizingRef.current)
+    if (
+      !isAuthenticated ||
+      isUndoRedo.current ||
+      isDraggingRef.current ||
+      isResizingRef.current
+    )
       return;
     recordChange(nodes, edges);
-  }, [nodes, edges, recordChange, isUndoRedo]);
+  }, [nodes, edges, recordChange, isAuthenticated, isUndoRedo]);
 
-  // Load data from database into store
+  // Initial load & sync
   useEffect(() => {
-    if (canvasSuccess && canvas && !hasInitialized.current) {
+    if (!canvasSuccess || !canvas) return;
+
+    if (!hasInitialized.current) {
       setCanvas(canvas);
       setNodes(toXyNodes(canvas.nodes));
       setEdges(canvas.edges || []);
       hasInitialized.current = true;
+    } else {
+      syncFromConvex();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvasSuccess, canvas]);
 
+  // Reset on canvas change
   useEffect(() => {
     hasInitialized.current = false;
   }, [canvasId]);
 
-  // Warn before leaving if unsaved changes
+  // Warn before leaving
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (canvasStatus !== "saved") {
         e.preventDefault();
-        e.returnValue = ""; // Modern browsers ignore custom messages
+        e.returnValue = "";
       }
     };
 
@@ -396,8 +409,6 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
 
   return (
     <>
-      {/* <CanvasSidebar currentCanvasId={canvasId} /> */}
-
       <div className="flex-1 w-full border-r">
         <ReactFlow
           panOnScroll

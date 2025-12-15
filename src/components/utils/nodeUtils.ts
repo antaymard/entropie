@@ -58,14 +58,18 @@ export function toConvexNode(xyNode: Node): CanvasNode {
   // Un node est locked si draggable ou connectable sont false
   const locked = !xyNode.draggable || !xyNode.connectable;
 
+  // Use measured dimensions if available (after resize), otherwise use width/height
+  const width = xyNode.measured?.width ?? xyNode.width ?? 200;
+  const height = xyNode.measured?.height ?? xyNode.height ?? 100;
+
   return {
     id: xyNode.id,
     type: xyNode.type ?? "default",
     position: xyNode.position,
     name,
     templateId: xyNode.data?.templateId as string | undefined,
-    width: xyNode.width ?? 200,
-    height: xyNode.height ?? 100,
+    width,
+    height,
     zIndex: xyNode.zIndex ?? 0,
     color: color ?? "default",
     locked,

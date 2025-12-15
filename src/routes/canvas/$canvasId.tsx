@@ -332,11 +332,50 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
 
   // Load data from database into store
   useEffect(() => {
-    if (canvasSuccess && canvas && !hasInitialized.current) {
-      setCanvas(canvas);
-      setNodes(toXyNodes(canvas.nodes));
-      setEdges(canvas.edges || []);
-      hasInitialized.current = true;
+    if (canvasSuccess && canvas) {
+      if (!hasInitialized.current) {
+        // Initial load
+        setCanvas(canvas);
+        setNodes(toXyNodes(canvas.nodes));
+        setEdges(canvas.edges || []);
+        hasInitialized.current = true;
+      } else if (!isDraggingRef.current && !isResizingRef.current) {
+        // Sync everything from Convex except selection state
+        // This handles additions, deletions, and modifications from external sources
+        setNodes((currentNodes) => {
+          const convexNodes = toXyNodes(canvas.nodes);
+          const currentNodeMap = new Map(currentNodes.map((n) => [n.id, n]));
+
+          // Update everything from Convex but preserve selection state
+          const mergedNodes = convexNodes.map((convexNode) => {
+            const currentNode = currentNodeMap.get(convexNode.id);
+            return {
+              ...convexNode,
+              selected: currentNode?.selected ?? false,
+            };
+          });
+
+          return mergedNodes;
+        });
+
+        setEdges((currentEdges) => {
+          const convexEdges = canvas.edges || [];
+          const currentEdgeMap = new Map(currentEdges.map((e) => [e.id, e]));
+
+          // Update everything from Convex but preserve selection state
+          const mergedEdges = convexEdges.map((convexEdge) => {
+            const currentEdge = currentEdgeMap.get(convexEdge.id);
+            return {
+              ...convexEdge,
+              selected: currentEdge?.selected ?? false,
+            };
+          });
+
+          return mergedEdges;
+        });
+
+        setCanvas(canvas);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvasSuccess, canvas]);

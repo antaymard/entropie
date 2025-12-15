@@ -113,6 +113,8 @@ function ChatInterface({
   const [isAtBottom, setIsAtBottom] = useState(true);
   const lastScrollTop = useRef<number>(0);
   const scrollingToBottomRef = useRef(false);
+  const previousMessagesLengthRef = useRef(0);
+  const previousLastMessageRef = useRef<UIMessage | null>(null);
 
   // Vérifier si l'assistant est en train de répondre
   const isAssistantResponding =
@@ -160,6 +162,19 @@ function ChatInterface({
   useLayoutEffect(() => {
     const div = scrollViewportRef.current;
     if (!div) return;
+
+    // Vérifier si les messages ont vraiment changé
+    const currentLength = messages.length;
+    const lastMessage = messages[messages.length - 1];
+    const hasNewMessage = currentLength !== previousMessagesLengthRef.current;
+    const lastMessageChanged = lastMessage !== previousLastMessageRef.current;
+
+    // Mettre à jour les refs
+    previousMessagesLengthRef.current = currentLength;
+    previousLastMessageRef.current = lastMessage;
+
+    // Ne scroller que si les messages ont changé
+    if (!hasNewMessage && !lastMessageChanged) return;
 
     if (scrollingToBottomRef.current) {
       scrollToBottom("auto");

@@ -29,6 +29,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ai-sdk/mistral@npm:^2.0.26":
+  version: 2.0.26
+  resolution: "@ai-sdk/mistral@npm:2.0.26"
+  dependencies:
+    "@ai-sdk/provider": "npm:2.0.0"
+    "@ai-sdk/provider-utils": "npm:3.0.19"
+  peerDependencies:
+    zod: ^3.25.76 || ^4.1.8
+  checksum: 10c0/f068981fec680ec06d2bdc7a4045ca5be2bcf3934230039068ce58e02fa762747c838577bdbe39666784ae5fe92d5eb2e8c0ebf425a7b71c980fe1ecfa7e4d1d
+  languageName: node
+  linkType: hard
+
 "@ai-sdk/provider-utils@npm:3.0.19":
   version: 3.0.19
   resolution: "@ai-sdk/provider-utils@npm:3.0.19"
@@ -6424,6 +6436,7 @@ __metadata:
   resolution: "app@workspace:."
   dependencies:
     "@ai-sdk/anthropic": "npm:^2.0.56"
+    "@ai-sdk/mistral": "npm:^2.0.26"
     "@ai-sdk/react": "npm:2.0.28"
     "@ariakit/react": "npm:^0.4.19"
     "@auth/core": "npm:0.37.0"

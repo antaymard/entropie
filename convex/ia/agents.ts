@@ -1,5 +1,6 @@
 import { Agent } from "@convex-dev/agent";
 import { anthropic } from "@ai-sdk/anthropic";
+import { mistral } from "@ai-sdk/mistral";
 import { components } from "../_generated/api";
 import noleSystemPrompt from "./prompts/noleSystemPrompt";
 import { websearchTool } from "./tools/websearchTool";
@@ -12,7 +13,7 @@ import { createCanvasElementsTool } from "./tools/createCanvasElementsTool";
 export const noleAgent = new Agent(components.agent, {
   name: "Nolë",
   maxSteps: 50,
-  languageModel: anthropic("claude-sonnet-4-5"),
+  languageModel: mistral("mistral-small-latest"),
   tools: {
     web_search: websearchTool,
     open_web_page: openWebPageTool,

@@ -81,9 +81,9 @@ export const sendMessage = mutation({
     prompt: v.string(),
     canvasContext: v.optional(
       v.object({
-        currentCanvasId: v.optional(v.string()),
+        currentCanvas: v.optional(v.any()),
         currentViewport: v.optional(v.any()),
-        selectedNodesIds: v.optional(v.array(v.any())),
+        selectedNodes: v.optional(v.array(v.any())),
       })
     ),
   },
@@ -105,13 +105,6 @@ export const sendMessage = mutation({
       };
     }
 
-    // Get the canvas from context if available
-    const currentCanvasId = canvasContext?.currentCanvasId;
-    let currentCanvas = null;
-    if (currentCanvasId) {
-      currentCanvas = await ctx.db.get(currentCanvasId as Id<"canvases">);
-    }
-
     // Save the user message
     const { messageId } = await noleAgent.saveMessage(ctx, {
       threadId,
@@ -120,13 +113,14 @@ export const sendMessage = mutation({
 
     // Schedule the streaming action (no await needed for scheduler)
     void ctx.scheduler.runAfter(0, internal.ia.nole.streamResponse, {
+      authUserId: authUserId,
       threadId,
       promptMessageId: messageId,
       metadata: {
         canvasContext: {
-          currentCanvas,
+          currentCanvas: canvasContext?.currentCanvas,
           currentViewport: canvasContext?.currentViewport,
-          selectedNodesIds: canvasContext?.selectedNodesIds,
+          selectedNodes: canvasContext?.selectedNodes ?? [],
         },
       },
     });
@@ -138,6 +132,7 @@ export const sendMessage = mutation({
 // Internal action that handles streaming
 export const streamResponse = internalAction({
   args: {
+    authUserId: v.string(),
     promptMessageId: v.string(),
     threadId: v.string(),
     metadata: v.optional(
@@ -146,31 +141,33 @@ export const streamResponse = internalAction({
           v.object({
             currentCanvas: v.optional(v.any()),
             currentViewport: v.optional(v.any()),
-            selectedNodesIds: v.optional(v.array(v.any())),
+            selectedNodes: v.optional(v.array(v.any())),
           })
         ),
       })
     ),
   },
-  handler: async (ctx, { promptMessageId, threadId, metadata }) => {
+  handler: async (ctx, { authUserId, promptMessageId, threadId, metadata }) => {
     const result = await noleAgent.streamText(
       ctx,
-      { threadId },
+      { threadId, userId: authUserId },
       {
         promptMessageId,
         system: `${noleAgent.options.instructions}
 
-        ## Contexte de l'utilisateur quand il a posé la question : 
+        # Contexte de l'utilisateur quand il a posé la question : 
 
-        ### Canvas et nodes ouverts
+        ## Canvas et nodes ouverts
         
         Le canvas que l'utilisateur a sous les yeux au moment de te poser la question, avec les nodes et edges qu'il contient.
 
-        ${encode(metadata?.canvasContext?.currentCanvas) || "N/A"}
+        ${encode(metadata?.canvasContext?.currentCanvas ?? null) || "N/A"}
 
-        Parmi ces nodes, ceux qui sont sélectionnés (mis en avant par l'utilisateur) sont les suivants : ${JSON.stringify(metadata?.canvasContext?.selectedNodesIds) || "N/A"}
+        Parmi ces nodes, ceux qui sont sélectionnés (mis en avant par l'utilisateur) sont les suivants : 
         
-        ### Position du user dans le canvas
+        ${encode(metadata?.canvasContext?.selectedNodes ?? []) || "N/A"}
+        
+        ## Position du user dans le canvas
         
         Au moment de la question, l'utilisateur était positionné à cet endroit du canvas : ${JSON.stringify(metadata?.canvasContext?.currentViewport) || "N/A"}
         

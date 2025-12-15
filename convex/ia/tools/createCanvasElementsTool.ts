@@ -39,9 +39,12 @@ export const createCanvasElementsTool = createTool({
       }
 
       // Get the canvas from the db using internal query
-      const canvas = await ctx.runQuery(internal.canvases.getCanvasInternal, {
-        canvasId: canvasId as Id<"canvases">,
-      });
+      const canvas = await ctx.runQuery(
+        internal.ia.tools.readCanvasTool.getCanvasInternal,
+        {
+          canvasId: canvasId as Id<"canvases">,
+        }
+      );
 
       if (!canvas) {
         return `Failed to retrieve canvas with ID ${canvasId}. Please verify the canvas ID and try again.`;

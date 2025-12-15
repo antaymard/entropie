@@ -1,5 +1,5 @@
 import type { ToolCardProps } from "@/types/message.types";
-import { TbPhotoSearch } from "react-icons/tb";
+import { TbFileSearch } from "react-icons/tb";
 import ToolCardFrame from "./ToolCardFrame";
 
 interface ViewImageInput {
@@ -16,8 +16,8 @@ export default function ViewImageToolCard({
 }: ViewImageToolProps) {
   return (
     <ToolCardFrame
-      icon={TbPhotoSearch}
-      name="Lecture de l'image"
+      icon={TbFileSearch}
+      name="Lecture du PDF"
       state={state}
       canBeExpanded={true}
     >

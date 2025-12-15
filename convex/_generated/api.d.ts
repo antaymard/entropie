@@ -18,6 +18,7 @@ import type * as ia_tools_createCanvasElementsTool from "../ia/tools/createCanva
 import type * as ia_tools_openWebPageTool from "../ia/tools/openWebPageTool.js";
 import type * as ia_tools_readCanvasTool from "../ia/tools/readCanvasTool.js";
 import type * as ia_tools_readNodeTemplatesTool from "../ia/tools/readNodeTemplatesTool.js";
+import type * as ia_tools_readPdfTool from "../ia/tools/readPdfTool.js";
 import type * as ia_tools_viewImageTool from "../ia/tools/viewImageTool.js";
 import type * as ia_tools_websearchTool from "../ia/tools/websearchTool.js";
 import type * as lib_auth from "../lib/auth.js";
@@ -52,6 +53,7 @@ declare const fullApi: ApiFromModules<{
   "ia/tools/openWebPageTool": typeof ia_tools_openWebPageTool;
   "ia/tools/readCanvasTool": typeof ia_tools_readCanvasTool;
   "ia/tools/readNodeTemplatesTool": typeof ia_tools_readNodeTemplatesTool;
+  "ia/tools/readPdfTool": typeof ia_tools_readPdfTool;
   "ia/tools/viewImageTool": typeof ia_tools_viewImageTool;
   "ia/tools/websearchTool": typeof ia_tools_websearchTool;
   "lib/auth": typeof lib_auth;

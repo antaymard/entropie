@@ -3,6 +3,7 @@ import WebsearchToolCard from "./WebsearchToolCard";
 import OpenWebpageToolCard from "./OpenWebpageToolCard";
 import ReadCanvasToolCard from "./ReadCanvasToolCard";
 import ViewImageToolCard from "./ViewImageToolCard";
+import ReadPdfToolCard from "./ReadPdfToolCard";
 
 interface ToolCardConfig {
   name: string;
@@ -34,6 +35,11 @@ const tools: ToolCardConfig[] = [
       ToolCardProps<unknown, unknown>
     >,
   },
+  {
+    name: "tool-read_pdf",
+    component: ReadPdfToolCard as React.ComponentType<
+      ToolCardProps<unknown, unknown>
+    >,
+  },
 ];
-
 export default tools;

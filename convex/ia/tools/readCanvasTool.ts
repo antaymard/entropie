@@ -1,11 +1,24 @@
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
-import { api } from "../../_generated/api";
+import { internal } from "../../_generated/api";
 import { Id } from "../../_generated/dataModel";
+import { internalQuery } from "../../_generated/server";
+import { v } from "convex/values";
+
+export const getCanvasInternal = internalQuery({
+  args: {
+    canvasId: v.id("canvases"),
+  },
+  returns: v.any(),
+  handler: async (ctx, { canvasId }) => {
+    const canvas = await ctx.db.get(canvasId);
+    return canvas;
+  },
+});
 
 export const readCanvasTool = createTool({
   description:
-    "Allow to read a whole canvas object, from a canvas ID. Returns the complete canvas object including the canvas data, and the belonging nodes and edges.",
+    "Allow to read a whole canvas object, from a canvas ID. Returns the complete canvas object including the canvas data, and the belonging nodes and edges. This is token-expensive, so use with caution.",
   args: z.object({
     canvasId: z.string().describe("ID of the canvas to read."),
     scope: z
@@ -20,16 +33,17 @@ export const readCanvasTool = createTool({
     console.log(`🔍 Read canvas: ${canvasId} | Scope: ${scope.join(", ")}`);
 
     try {
-      // Get the canvas from the db
-      const result = await ctx.runQuery(api.canvases.getCanvas, {
-        canvasId: canvasId as Id<"canvases">,
-      });
+      // Get the canvas from the db (internal query without auth)
+      const canvas = await ctx.runQuery(
+        internal.ia.tools.readCanvasTool.getCanvasInternal,
+        {
+          canvasId: canvasId as Id<"canvases">,
+        }
+      );
 
-      if (!result || !result.success || !result.canvas) {
-        return `Canvas not found or access denied for ID: ${canvasId}`;
+      if (!canvas) {
+        return `Canvas not found for ID: ${canvasId}`;
       }
-
-      const canvas = result.canvas;
 
       // Return the object depending on the scope
       if (scope.includes("canvasDataOnly")) {

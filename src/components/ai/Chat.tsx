@@ -18,6 +18,10 @@ import type { TextPart } from "@/types/message.types";
 import toolCardsConfig from "./tool-cards/toolCardsConfig";
 import { useNodes, useViewport } from "@xyflow/react";
 import { useCanvasStore } from "@/stores/canvasStore";
+import ToolCardFrame from "./tool-cards/ToolCardFrame";
+import { TbTool } from "react-icons/tb";
+import { RiLoaderLine } from "react-icons/ri";
+import { toConvexNodes } from "../utils/nodeUtils";
 
 export default function Chat() {
   const { threadId, isLoading, resetThread } = useNoleThread();
@@ -48,9 +52,22 @@ export default function Chat() {
         threadId={threadId}
         resetThread={resetThread}
         canvasContext={{
-          currentCanvasId: canvas?._id,
+          currentCanvas: {
+            name: canvas ? canvas.name : "Untitled",
+            description: canvas ? canvas.description : "",
+            nodes: nodes.map((n) => ({
+              id: n.id,
+              name: n.data.name,
+              type: n.type,
+              position: n.position,
+              height: n.height,
+              width: n.width,
+              templateId: n.data.templateId,
+              color: n.data.color,
+            })),
+          },
           currentViewport: viewport,
-          selectedNodesIds: nodes.filter((n) => n.selected).map((n) => n.id),
+          selectedNodes: toConvexNodes(nodes.filter((n) => n.selected)),
         }}
       />
     </div>
@@ -65,9 +82,9 @@ function ChatInterface({
   threadId: string;
   resetThread: () => Promise<void>;
   canvasContext: {
-    currentCanvasId: string | undefined;
+    currentCanvas: object | undefined;
     currentViewport: { x: number; y: number; zoom: number } | undefined;
-    selectedNodesIds: string[];
+    selectedNodes: object[];
   };
 }) {
   const {
@@ -201,13 +218,15 @@ function Message({ message }: { message: UIMessage }) {
 
   // Pour les messages assistant, itérer sur les parts
   const parts = message.parts ?? [];
+  const isProcessing =
+    message.status !== "success" && message.status !== "failed";
 
   return (
     <div className="flex justify-start">
       <div
         className={cn(
           "rounded whitespace-pre-wrap shadow-sm nole-chat-message flex flex-col gap-5 text-white",
-          "p-2 bg-white/10 rounded-sm border border-white/20 w-full",
+          "p-2 py-3 bg-white/10 rounded-sm border border-white/20 w-full",
           {
             "bg-red-100": message.status === "failed",
           }
@@ -236,15 +255,22 @@ function Message({ message }: { message: UIMessage }) {
 
             if (toolConfig && "state" in part) {
               const ToolComponent = toolConfig.component;
+              const partState = part.state as
+                | "input-streaming"
+                | "output-available";
               return (
                 <ToolComponent
                   key={index}
-                  state={part.state}
+                  state={partState}
                   input={
-                    part.state === "output-available" ? part.input : undefined
+                    partState === "output-available" && "input" in part
+                      ? part.input
+                      : undefined
                   }
                   output={
-                    part.state === "output-available" ? part.output : undefined
+                    partState === "output-available" && "output" in part
+                      ? part.output
+                      : undefined
                   }
                 />
               );
@@ -252,15 +278,27 @@ function Message({ message }: { message: UIMessage }) {
 
             // Fallback pour les outils non configurés
             const toolName = part.type.replace("tool-", "");
+            const partState = (
+              "state" in part ? part.state : "input-streaming"
+            ) as "input-streaming" | "output-available";
             return (
-              <div key={index} className="text-gray-400 italic text-sm">
-                Outil : {toolName} (non configuré)
-              </div>
+              <ToolCardFrame
+                key={index}
+                icon={TbTool}
+                name={toolName}
+                state={partState}
+              />
             );
           }
 
           return null;
         })}
+
+        {isProcessing && (
+          <div className="flex items-center justify-center py-1">
+            <RiLoaderLine size={15} className="animate-spin text-white" />
+          </div>
+        )}
       </div>
     </div>
   );

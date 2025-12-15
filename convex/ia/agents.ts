@@ -9,18 +9,20 @@ import { readCanvasTool } from "./tools/readCanvasTool";
 import { viewImageTool } from "./tools/viewImageTool";
 import { readNodeTemplatesTool } from "./tools/readNodeTemplatesTool";
 import { createCanvasElementsTool } from "./tools/createCanvasElementsTool";
+import { readPdfTool } from "./tools/readPdfTool";
 
 export const noleAgent = new Agent(components.agent, {
   name: "Nolë",
   maxSteps: 50,
-  languageModel: mistral("mistral-medium-latest"),
+  languageModel: mistral("mistral-large-2512"),
   tools: {
     web_search: websearchTool,
     open_web_page: openWebPageTool,
-    // read_canvas: readCanvasTool,
+    read_canvas: readCanvasTool,
     view_image: viewImageTool,
     read_node_templates: readNodeTemplatesTool,
     create_canvas_elements: createCanvasElementsTool,
+    read_pdf: readPdfTool,
   },
   instructions: noleSystemPrompt,
   contextOptions: {

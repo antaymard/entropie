@@ -69,6 +69,7 @@ export const getCanvas = query({
     canvasId: v.id("canvases"),
   },
   handler: async (ctx, { canvasId }) => {
+    // Check if canvas is public
     const canvas = await ctx.db.get(canvasId);
 
     if (!canvas) {
@@ -96,17 +97,6 @@ export const getCanvas = query({
     }
 
     return { success: true, canvas };
-  },
-});
-
-export const getCanvasInternal = internalQuery({
-  args: {
-    canvasId: v.id("canvases"),
-  },
-  returns: v.any(),
-  handler: async (ctx, { canvasId }) => {
-    const canvas = await ctx.db.get(canvasId);
-    return canvas;
   },
 });
 

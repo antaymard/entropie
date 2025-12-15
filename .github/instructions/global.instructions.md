@@ -15,6 +15,7 @@ on an infinite canvas, connect them, and can integrate external data sources.
 - Plate.js for rich text editing
 - Tailwind CSS
 - Utilisation de convex-dev/agent (composant convex agent) pour tout ce qui concerne les agents IA. Le MCP Convex est installé si besoin.
+- Gestion des packages avec yarn
 
 ## Key Concepts
 

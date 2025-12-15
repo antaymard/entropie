@@ -12,9 +12,8 @@ import { useNoleThread } from "@/hooks/useNoleThread";
 import { RotateCcw, Loader2 } from "lucide-react";
 import { PiPaperPlaneRightBold } from "react-icons/pi";
 import { Textarea } from "../shadcn/textarea";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import type { TextPart } from "@/types/message.types";
+import { MarkdownText } from "./MarkdownText";
 import toolCardsConfig from "./tool-cards/toolCardsConfig";
 import { useNodes, useViewport } from "@xyflow/react";
 import { useCanvasStore } from "@/stores/canvasStore";
@@ -146,7 +145,7 @@ function ChatInterface({
         </button>
       )}
       {/* Messages area - scrollable */}
-      <div className="flex-1 overflow-y-auto p-3 scrollbar-hide">
+      <div className="flex-1 overflow-y-auto p-3">
         {messages.length > 0 ? (
           <div className="flex flex-col gap-8">
             {status === "CanLoadMore" && (
@@ -209,8 +208,8 @@ function Message({ message }: { message: UIMessage }) {
   if (isUser) {
     return (
       <div className="flex justify-end">
-        <div className="rounded whitespace-pre-wrap shadow-sm p-3 bg-primary text-white max-w-4/5 border border-white/20 text-[0.9em]">
-          <Markdown remarkPlugins={[remarkGfm]}>{message.text ?? ""}</Markdown>
+        <div className="rounded whitespace-pre-wrap shadow-sm p-3 bg-primary text-white max-w-4/5 border border-white/20">
+          <MarkdownText>{message.text ?? ""}</MarkdownText>
         </div>
       </div>
     );
@@ -314,8 +313,8 @@ function TextPartRenderer({ part }: { part: TextPart }) {
   }
 
   return (
-    <div className="whitespace-pre-wrap px-1 flex flex-col gap-5">
-      <Markdown remarkPlugins={[remarkGfm]}>{visibleText}</Markdown>
+    <div className="whitespace-pre-wrap px-1 ">
+      <MarkdownText>{visibleText}</MarkdownText>
     </div>
   );
 }

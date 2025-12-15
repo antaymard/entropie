@@ -9,9 +9,9 @@
   --radius: 15px;
   --font-sans: "Poppins", sans-serif;
   --color-text: #475569;
-  --text-base: 14px;
-  --text-sm: 12px;
-  --text-xs: 10px;
+  --text-base: 13px;
+  --text-sm: 11px;
+  --text-xs: 9px;
   --text-lg: 17px;
 }
 
@@ -145,6 +145,44 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Scrollbar styles - fine et discrète */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.554 0.046 257.417 / 0.3) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: oklch(0.554 0.046 257.417 / 0.3);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: oklch(0.554 0.046 257.417 / 0.5);
+  }
+
+  .dark *::-webkit-scrollbar-thumb {
+    background-color: oklch(0.704 0.04 256.788 / 0.3);
+  }
+
+  .dark *::-webkit-scrollbar-thumb:hover {
+    background-color: oklch(0.704 0.04 256.788 / 0.5);
+  }
+
+  .dark * {
+    scrollbar-color: oklch(0.704 0.04 256.788 / 0.3) transparent;
+  }
 }
 
 .react-flow__pane {
@@ -198,76 +236,37 @@
 } */
 
 /* Styles pour le markdown dans les messages Nole */
-.nole-chat-message h1 {
-  font-size: 1.5em;
-  font-weight: 700;
-  margin-top: 1em;
-  margin-bottom: 2em;
-}
-.nole-chat-message h1:first-child {
-  margin-top: 0;
+@keyframes aui-pulse {
+  50% {
+    opacity: 0.5;
+  }
 }
 
-.nole-chat-message h2 {
-  font-size: 1.35em;
-  font-weight: 700;
-  margin-top: 1em;
-  margin-bottom: 1em;
-}
-.nole-chat-message h2:first-child {
-  margin-top: 0;
-}
-
-.nole-chat-message h3 {
-  font-size: 1.15em;
-  font-weight: 700;
-  margin-top: 1.5em;
-  margin-bottom: 1em;
-}
-.nole-chat-message h3:first-child {
-  margin-top: 0;
-}
-
-.nole-chat-message p {
-  font-size: 0.9em;
-  /* margin-bottom: 0.8em; */
-}
-
-.nole-chat-message ul {
-  list-style-type: disc;
-  margin-left: 1.5em;
-  margin-bottom: 0.4em;
-  margin-top: -2em;
-}
-
-.nole-chat-message ol {
-  list-style-type: decimal;
-  margin-left: 1.5em;
-  margin-bottom: 0.4em;
-  margin-top: -1em;
-}
-
-.nole-chat-message li {
-  font-size: 0.9em;
-  margin-bottom: -1.2em;
-}
-
-.nole-chat-message code {
-  background-color: rgba(255, 255, 255, 0.1);
-  padding: 0.2em 0.4em;
-  border-radius: 3px;
-  font-size: 0.9em;
-}
-
-.nole-chat-message pre {
-  background-color: rgba(255, 255, 255, 0.1);
-  padding: 1em;
-  border-radius: 5px;
-  overflow-x: auto;
-  margin-bottom: 0.75em;
-}
-
-.nole-chat-message pre code {
-  background-color: transparent;
-  padding: 0;
+:where(.aui-md[data-status="running"]):empty::after,
+:where(.aui-md[data-status="running"])
+  > :where(:not(ol):not(ul):not(pre)):last-child::after,
+:where(.aui-md[data-status="running"]) > pre:last-child code::after,
+:where(.aui-md[data-status="running"])
+  > :where(:is(ol, ul):last-child)
+  > :where(li:last-child:not(:has(* > li)))::after,
+:where(.aui-md[data-status="running"])
+  > :where(:is(ol, ul):last-child)
+  > :where(li:last-child)
+  > :where(:is(ol, ul):last-child)
+  > :where(li:last-child:not(:has(* > li)))::after,
+:where(.aui-md[data-status="running"])
+  > :where(:is(ol, ul):last-child)
+  > :where(li:last-child)
+  > :where(:is(ol, ul):last-child)
+  > :where(li:last-child)
+  > :where(:is(ol, ul):last-child)
+  > :where(li:last-child)::after {
+  animation: aui-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  font-family:
+    ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
+  --aui-content: "\25cf";
+  content: var(--aui-content);
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
 }

@@ -56,7 +56,7 @@ function DocumentEditorField({
     <Plate editor={editor} onValueChange={handleChange}>
       <EditorContainer
         variant="default"
-        className="nodrag h-full scrollbar-hide"
+        className="nodrag h-full"
         onFocus={handleFocus}
         onBlur={handleBlur}
       >

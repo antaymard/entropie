@@ -17,7 +17,7 @@ function FileWindow({ windowId }: FileWindowProps) {
   const value = (nodeData?.files as FileFieldType[]) || [];
 
   return (
-    <WindowFrame windowId={windowId} contentClassName="p-0! scrollbar-hide">
+    <WindowFrame windowId={windowId} contentClassName="p-0! ">
       <PdfViewerField value={value} />
     </WindowFrame>
   );

@@ -13,7 +13,7 @@ import { createCanvasElementsTool } from "./tools/createCanvasElementsTool";
 export const noleAgent = new Agent(components.agent, {
   name: "Nolë",
   maxSteps: 50,
-  languageModel: mistral("mistral-small-latest"),
+  languageModel: mistral("mistral-medium-latest"),
   tools: {
     web_search: websearchTool,
     open_web_page: openWebPageTool,

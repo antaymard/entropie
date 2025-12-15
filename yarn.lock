@@ -5794,6 +5794,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@toon-format/toon@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "@toon-format/toon@npm:2.1.0"
+  checksum: 10c0/61cb4721f0da0b388e01278e285d8ca5c37c0a06a9f3371a37590d0f570bd60f23d1f6ab9c43033e510e1db597fcf2c2f9d8cc868ffd2b064c20a694e9e338c5
+  languageName: node
+  linkType: hard
+
 "@tybys/wasm-util@npm:^0.10.1":
   version: 0.10.1
   resolution: "@tybys/wasm-util@npm:0.10.1"
@@ -6482,6 +6489,7 @@ __metadata:
     "@tanstack/react-router": "npm:^1.134.9"
     "@tanstack/react-router-devtools": "npm:^1.134.9"
     "@tanstack/router-plugin": "npm:^1.134.9"
+    "@toon-format/toon": "npm:^2.1.0"
     "@types/lodash": "npm:^4.17.20"
     "@types/node": "npm:^24.10.0"
     "@types/react": "npm:^19.1.16"

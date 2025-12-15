@@ -16,13 +16,15 @@ import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { TextPart } from "@/types/message.types";
 import toolCardsConfig from "./tool-cards/toolCardsConfig";
+import { useNodes, useViewport } from "@xyflow/react";
+import { useCanvasStore } from "@/stores/canvasStore";
 
-export default function Chat({
-  canvasContext,
-}: {
-  canvasContext: { canvasId: string };
-}) {
+export default function Chat() {
   const { threadId, isLoading, resetThread } = useNoleThread();
+
+  const canvas = useCanvasStore((s) => s.canvas);
+  const viewport = useViewport();
+  const nodes = useNodes();
 
   if (isLoading) {
     return (
@@ -45,7 +47,11 @@ export default function Chat({
       <ChatInterface
         threadId={threadId}
         resetThread={resetThread}
-        canvasContext={canvasContext}
+        canvasContext={{
+          currentCanvasId: canvas?._id,
+          currentViewport: viewport,
+          selectedNodesIds: nodes.filter((n) => n.selected).map((n) => n.id),
+        }}
       />
     </div>
   );
@@ -58,7 +64,11 @@ function ChatInterface({
 }: {
   threadId: string;
   resetThread: () => Promise<void>;
-  canvasContext: { canvasId: string };
+  canvasContext: {
+    currentCanvasId: string | undefined;
+    currentViewport: { x: number; y: number; zoom: number } | undefined;
+    selectedNodesIds: string[];
+  };
 }) {
   const {
     results: messages,

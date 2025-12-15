@@ -57,10 +57,11 @@ function RouteComponent() {
       <div
         className={cn(
           "h-screen w-screen ",
+
           isAiPanelOpen ? "grid grid-cols-[450px_1fr]" : "flex"
         )}
       >
-        {isAiPanelOpen && <Chat canvasContext={{ canvasId }} />}
+        {isAiPanelOpen && <Chat />}
         <CanvasContent key={canvasId} canvasId={canvasId} />
       </div>
     </ReactFlowProvider>

@@ -14,7 +14,7 @@ import { readPdfTool } from "./tools/readPdfTool";
 export const noleAgent = new Agent(components.agent, {
   name: "Nolë",
   maxSteps: 50,
-  languageModel: mistral("mistral-large-2512"),
+  languageModel: mistral("mistral-small-latest"),
   tools: {
     web_search: websearchTool,
     open_web_page: openWebPageTool,

@@ -12,6 +12,8 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  useMemo,
+  memo,
 } from "react";
 import { cn } from "@/lib/utils";
 import { useNoleThread } from "@/hooks/useNoleThread";
@@ -31,10 +33,6 @@ import { toConvexNodes } from "../utils/nodeUtils";
 export default function Chat() {
   const { threadId, isLoading, resetThread } = useNoleThread();
 
-  const canvas = useCanvasStore((s) => s.canvas);
-  const viewport = useViewport();
-  const nodes = useNodes();
-
   if (isLoading) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -53,45 +51,44 @@ export default function Chat() {
 
   return (
     <div className="bg-primary h-screen">
-      <ChatInterface
-        threadId={threadId}
-        resetThread={resetThread}
-        canvasContext={{
-          currentCanvas: {
-            name: canvas ? canvas.name : "Untitled",
-            description: canvas ? canvas.description : "",
-            nodes: nodes.map((n) => ({
-              id: n.id,
-              name: n.data.name,
-              type: n.type,
-              position: n.position,
-              height: n.height,
-              width: n.width,
-              templateId: n.data.templateId,
-              color: n.data.color,
-            })),
-          },
-          currentViewport: viewport,
-          selectedNodes: toConvexNodes(nodes.filter((n) => n.selected)),
-        }}
-      />
+      <ChatInterface threadId={threadId} resetThread={resetThread} />
     </div>
   );
 }
 
-function ChatInterface({
+const ChatInterface = memo(function ChatInterface({
   threadId,
   resetThread,
-  canvasContext,
 }: {
   threadId: string;
   resetThread: () => Promise<void>;
-  canvasContext: {
-    currentCanvas: object | undefined;
-    currentViewport: { x: number; y: number; zoom: number } | undefined;
-    selectedNodes: object[];
-  };
 }) {
+  const canvas = useCanvasStore((s) => s.canvas);
+  const viewport = useViewport();
+  const nodes = useNodes();
+
+  // Fonction pour capturer le contexte au moment de l'envoi
+  const getCanvasContext = useCallback(
+    () => ({
+      currentCanvas: {
+        name: canvas ? canvas.name : "Untitled",
+        description: canvas ? canvas.description : "",
+        nodes: nodes.map((n) => ({
+          id: n.id,
+          name: n.data.name,
+          type: n.type,
+          position: n.position,
+          height: n.height,
+          width: n.width,
+          templateId: n.data.templateId,
+          color: n.data.color,
+        })),
+      },
+      currentViewport: viewport,
+      selectedNodes: toConvexNodes(nodes.filter((n) => n.selected)),
+    }),
+    [canvas, viewport, nodes]
+  );
   const {
     results: messages,
     status,
@@ -197,7 +194,11 @@ function ChatInterface({
     scrollingToBottomRef.current = true;
     scrollToBottom("auto");
     try {
-      await sendMessage({ threadId, prompt: currentPrompt, canvasContext });
+      await sendMessage({
+        threadId,
+        prompt: currentPrompt,
+        canvasContext: getCanvasContext(),
+      });
     } catch (error) {
       console.error("Erreur lors de l'envoi:", error);
       setPrompt(currentPrompt);
@@ -260,9 +261,8 @@ function ChatInterface({
               void onSendClicked();
             }
           }}
-          className="placeholder:text-white/60 flex-1 rounded-md pt-8 pb-2 bg-white/10 hover:bg-white/20 focus:bg-white/20 text-white resize-none border-0"
+          className="placeholder:text-white/60 flex-1 rounded-md pt-8 pb-2 bg-white/10 hover:bg-white/20 focus:bg-white/20 text-white resize-none border-0 text-base! "
           placeholder="Posez votre question..."
-          disabled={isAssistantResponding}
         />
         <button
           type="submit"
@@ -274,7 +274,7 @@ function ChatInterface({
       </form>
     </div>
   );
-}
+});
 
 function Message({ message }: { message: UIMessage }) {
   const isUser = message.role === "user";
@@ -384,7 +384,7 @@ function TextPartRenderer({ part }: { part: TextPart }) {
   }
 
   return (
-    <div className="whitespace-pre-wrap px-1 ">
+    <div className="whitespace-pre-wrap px-1 overflow-x-auto">
       <MarkdownText>{visibleText}</MarkdownText>
     </div>
   );

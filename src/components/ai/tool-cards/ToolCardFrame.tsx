@@ -17,7 +17,7 @@ export default function ToolCardFrame({
   icon: Icon,
   name,
   state,
-  canBeExpanded = false,
+  canBeExpanded = true,
   detailLabel,
   children,
 }: ToolCardFrameProps) {
@@ -40,13 +40,13 @@ export default function ToolCardFrame({
         {state === "input-streaming" ? (
           <RiLoaderLine size={15} className="animate-spin text-white" />
         ) : null}
-        {state === "output-available" && canBeExpanded && detailLabel ? (
+        {state === "output-available" && canBeExpanded ? (
           <button
             className="text-white flex items-center gap-1"
             type="button"
             onClick={() => setExpanded(!expanded)}
           >
-            <span className="text-xs">{detailLabel}</span>
+            {detailLabel && <span className="text-xs">{detailLabel}</span>}
             <HiMiniChevronDown
               size={15}
               className={`text-white transition-transform ${

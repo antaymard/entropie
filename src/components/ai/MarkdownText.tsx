@@ -71,7 +71,7 @@ const defaultComponents = {
   h1: ({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h1
       className={cn(
-        "aui-md-h1 mb-8 scroll-m-20 font-extrabold text-4xl tracking-tight last:mb-0",
+        "aui-md-h1 mb-8 scroll-m-20 font-extrabold text-3xl tracking-tight last:mb-0",
         className
       )}
       {...props}
@@ -80,7 +80,7 @@ const defaultComponents = {
   h2: ({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h2
       className={cn(
-        "aui-md-h2 mt-6 mb-3 scroll-m-20 font-semibold text-3xl tracking-tight first:mt-0 last:mb-0",
+        "aui-md-h2 mt-6 mb-3 scroll-m-20 font-semibold text-2xl tracking-tight first:mt-0 last:mb-0",
         className
       )}
       {...props}
@@ -89,7 +89,7 @@ const defaultComponents = {
   h3: ({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h3
       className={cn(
-        "aui-md-h3 mt-4 mb-2 scroll-m-20 font-semibold text-2xl tracking-tight first:mt-0 last:mb-0",
+        "aui-md-h3 mt-4 mb-2 scroll-m-20 font-semibold text-xl tracking-tight first:mt-0 last:mb-0",
         className
       )}
       {...props}
@@ -98,7 +98,7 @@ const defaultComponents = {
   h4: ({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h4
       className={cn(
-        "aui-md-h4 mt-4 mb-2 scroll-m-20 font-semibold text-xl tracking-tight first:mt-0 last:mb-0",
+        "aui-md-h4 mt-4 mb-2 scroll-m-20 font-semibold tracking-tight first:mt-0 last:mb-0",
         className
       )}
       {...props}
@@ -137,7 +137,7 @@ const defaultComponents = {
   }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
     <a
       className={cn(
-        "aui-md-a font-medium text-primary underline underline-offset-4",
+        "aui-md-a font-medium text-white underline underline-offset-4",
         className
       )}
       {...props}
@@ -169,6 +169,9 @@ const defaultComponents = {
       )}
       {...props}
     />
+  ),
+  li: ({ className, ...props }: React.LiHTMLAttributes<HTMLLIElement>) => (
+    <li className={cn("aui-md-li", className)} {...props} />
   ),
   hr: ({ className, ...props }: React.HTMLAttributes<HTMLHRElement>) => (
     <hr className={cn("aui-md-hr my-4 border-b", className)} {...props} />

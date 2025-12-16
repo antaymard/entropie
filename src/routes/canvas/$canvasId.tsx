@@ -79,11 +79,10 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   } = useQuery(api.templates.getUserTemplates, { canvasId }) || {};
 
   const { isAuthenticated } = useConvexAuth();
-  const saveCanvasInConvex = useMutation(api.canvases.updateCanvasContent);
+  const saveCanvas = useMutation(api.canvases.updateCanvasContent);
 
   // ========== Stores ==========
   const setCanvas = useCanvasStore((state) => state.setCanvas);
-  const canvasStatus = useCanvasStore((state) => state.status);
   const setCanvasStatus = useCanvasStore((state) => state.setStatus);
   const enableCanvasUndoRedo = useCanvasStore(
     (state) => state.enableCanvasUndoRedo
@@ -103,11 +102,12 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     element: object | null;
   }>({ type: null, position: { x: 0, y: 0 }, element: null });
 
-  const hasInitialized = useRef(false);
-  const [saveIncrement, setSaveIncrement] = useState(0);
-  const isDraggingRef = useRef(false);
-  const isResizingRef = useRef(false);
-  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Load initial une seule fois par canvas
+  const loadedCanvasIdRef = useRef<string | null>(null);
+
+  // Ignore les updates Convex pendant un délai après avoir sauvegardé
+  const lastSaveTimeRef = useRef<number>(0);
+  const SYNC_IGNORE_DELAY = 2000; // 2 secondes
 
   // ========== History Management ==========
   const { recordChange, undo, redo, isUndoRedo } = useCanvasContentHistory(
@@ -115,27 +115,26 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     edges,
     setNodes,
     setEdges,
-    hasInitialized.current
+    loadedCanvasIdRef.current === canvasId
   );
 
-  // ========== Auto-save ==========
+  // ========== Auto-save avec debounce ==========
   const debouncedSave = useMemo(
     () =>
-      debounce((currentNodes: Node[], currentEdges: Edge[]) => {
-        try {
-          setCanvasStatus("saving");
-          saveCanvasInConvex({
-            canvasId,
-            nodes: toConvexNodes(currentNodes),
-            edges: currentEdges,
-          });
-          setCanvasStatus("saved");
-        } catch (error) {
-          toastError(error, "Erreur lors de la sauvegarde de l'espace");
-          setCanvasStatus("error");
-        }
+      debounce((n: Node[], e: Edge[]) => {
+        if (!isAuthenticated) return;
+        // Marque le moment du save pour ignorer les updates Convex qui reviennent
+        lastSaveTimeRef.current = Date.now();
+        setCanvasStatus("saving");
+        saveCanvas({
+          canvasId,
+          nodes: toConvexNodes(n),
+          edges: e,
+        })
+          .then(() => setCanvasStatus("saved"))
+          .catch(() => setCanvasStatus("error"));
       }, 1000),
-    [canvasId, saveCanvasInConvex]
+    [canvasId, saveCanvas, isAuthenticated, setCanvasStatus]
   );
 
   // ========== Context Menu Handlers ==========
@@ -193,94 +192,76 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   );
 
   // ========== Change Handlers ==========
-  const shouldSaveChange = useCallback(
-    (changes: NodeChange<Node>[] | EdgeChange<Edge>[]) => {
-      return !changes.every((change) => change.type === "select");
+  const handleNodesChange = useCallback(
+    (changes: NodeChange<Node>[]) => {
+      if (!isAuthenticated) return;
+      onNodesChange(changes);
     },
-    []
+    [onNodesChange, isAuthenticated]
   );
 
-  function handleNodesChange(changes: NodeChange<Node>[]) {
-    if (!isAuthenticated) return;
-    onNodesChange(changes);
-    if (isUndoRedo.current) return;
+  const handleEdgesChange = useCallback(
+    (changes: EdgeChange<Edge>[]) => {
+      if (!isAuthenticated) return;
+      onEdgesChange(changes);
+    },
+    [onEdgesChange, isAuthenticated]
+  );
 
-    // Track dragging
-    const isDragging = changes.some((c) => c.type === "position" && c.dragging);
-    const isDragEnd = changes.some(
-      (c) => c.type === "position" && !c.dragging && c.position
-    );
-    if (isDragging) isDraggingRef.current = true;
-    else if (isDragEnd) isDraggingRef.current = false;
+  // ========== Effects ==========
 
-    // Track resizing
-    const isResizing = changes.some((c) => c.type === "dimensions");
-    if (isResizing) {
-      isResizingRef.current = true;
-      if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current);
-      resizeTimeoutRef.current = setTimeout(() => {
-        isResizingRef.current = false;
-      }, 150);
+  // 1️⃣ Load initial (une seule fois par canvas)
+  useEffect(() => {
+    if (canvas && loadedCanvasIdRef.current !== canvas._id) {
+      setCanvas(canvas);
+      setNodes(toXyNodes(canvas.nodes));
+      setEdges(canvas.edges || []);
+      loadedCanvasIdRef.current = canvas._id;
     }
+  }, [canvas, setNodes, setEdges, setCanvas]);
 
-    // Trigger save
-    if (!isDragging && !isResizing && shouldSaveChange(changes)) {
-      if (canvasStatus !== "saving" && canvasStatus !== "unsynced")
-        setCanvasStatus("unsynced");
-      setSaveIncrement((prev) => prev + 1);
+  // 2️⃣ Auto-save avec debounce
+  useEffect(() => {
+    if (loadedCanvasIdRef.current === canvasId) {
+      setCanvasStatus("unsynced");
+      debouncedSave(nodes, edges);
     }
-  }
+  }, [nodes, edges, debouncedSave, canvasId, setCanvasStatus]);
 
-  function handleEdgesChange(changes: EdgeChange<Edge>[]) {
-    if (!isAuthenticated) return;
-    onEdgesChange(changes);
-    if (isUndoRedo.current) return;
+  // 3️⃣ Record history
+  useEffect(() => {
+    if (!isAuthenticated || isUndoRedo.current) return;
+    recordChange(nodes, edges);
+  }, [nodes, edges, recordChange, isAuthenticated, isUndoRedo]);
 
-    if (shouldSaveChange(changes)) {
-      if (canvasStatus !== "saving" && canvasStatus !== "unsynced")
-        setCanvasStatus("unsynced");
-      setSaveIncrement((prev) => prev + 1);
-    }
-  }
+  // 4️⃣ Sync depuis Convex si les données viennent d'ailleurs (ex: IA)
+  useEffect(() => {
+    if (!canvas || loadedCanvasIdRef.current !== canvas._id) return;
 
-  // ========== Sync Helper ==========
-  const syncFromConvex = useCallback(() => {
-    // Don't sync if:
-    // - No canvas data
-    // - Currently dragging or resizing
-    // - Have unsaved local changes (would cause rollback)
-    if (
-      !canvas ||
-      isDraggingRef.current ||
-      isResizingRef.current ||
-      canvasStatus === "unsynced" ||
-      canvasStatus === "saving"
-    ) {
-      return;
-    }
+    // Ignore les updates qui arrivent juste après un save local
+    // (ce sont probablement nos propres changements qui reviennent)
+    const timeSinceLastSave = Date.now() - lastSaveTimeRef.current;
+    if (timeSinceLastSave < SYNC_IGNORE_DELAY) return;
 
+    // Les données viennent d'ailleurs → sync
     setNodes((currentNodes) => {
       const convexNodes = toXyNodes(canvas.nodes);
-      const currentNodeMap = new Map(currentNodes.map((n) => [n.id, n]));
       return convexNodes.map((convexNode) => ({
         ...convexNode,
-        selected: currentNodeMap.get(convexNode.id)?.selected ?? false,
+        selected:
+          currentNodes.find((n) => n.id === convexNode.id)?.selected ?? false,
       }));
     });
 
     setEdges((currentEdges) => {
       const convexEdges = canvas.edges || [];
-      const currentEdgeMap = new Map(currentEdges.map((e) => [e.id, e]));
       return convexEdges.map((convexEdge) => ({
         ...convexEdge,
-        selected: currentEdgeMap.get(convexEdge.id)?.selected ?? false,
+        selected:
+          currentEdges.find((e) => e.id === convexEdge.id)?.selected ?? false,
       }));
     });
-
-    setCanvas(canvas);
-  }, [canvas, setNodes, setEdges, setCanvas, canvasStatus]);
-
-  // ========== Effects ==========
+  }, [canvas, setNodes, setEdges]);
 
   // Keyboard shortcuts (undo/redo)
   useEffect(() => {
@@ -312,64 +293,6 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
       toastError(templatesError, "Erreur lors du chargement des templates");
     }
   }, [templatesSuccess, userTemplates, setUserTemplates, templatesError]);
-
-  // Auto-save
-  useEffect(() => {
-    if (
-      !hasInitialized.current ||
-      canvasStatus === "saving" ||
-      !isAuthenticated
-    )
-      return;
-    if (canvasStatus !== "unsynced") setCanvasStatus("unsynced");
-    debouncedSave(nodes, edges);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [saveIncrement, debouncedSave]);
-
-  // Record history
-  useEffect(() => {
-    if (
-      !isAuthenticated ||
-      isUndoRedo.current ||
-      isDraggingRef.current ||
-      isResizingRef.current
-    )
-      return;
-    recordChange(nodes, edges);
-  }, [nodes, edges, recordChange, isAuthenticated, isUndoRedo]);
-
-  // Initial load & sync
-  useEffect(() => {
-    if (!canvasSuccess || !canvas) return;
-
-    if (!hasInitialized.current) {
-      setCanvas(canvas);
-      setNodes(toXyNodes(canvas.nodes));
-      setEdges(canvas.edges || []);
-      hasInitialized.current = true;
-    } else {
-      syncFromConvex();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canvasSuccess, canvas]);
-
-  // Reset on canvas change
-  useEffect(() => {
-    hasInitialized.current = false;
-  }, [canvasId]);
-
-  // Warn before leaving
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (canvasStatus !== "saved") {
-        e.preventDefault();
-        e.returnValue = "";
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [canvasStatus]);
 
   // ======= Render =======
 
@@ -426,8 +349,8 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           onSelectionContextMenu={handleSelectionContextMenu}
           onNodeDoubleClick={handleNodeDoubleClick}
           deleteKeyCode={null}
-          snapToGrid
-          snapGrid={[5, 5]}
+          // snapToGrid
+          // snapGrid={[5, 5]}
           nodesDraggable={isAuthenticated}
           edgesConnectable={isAuthenticated}
           className="rounded-md"

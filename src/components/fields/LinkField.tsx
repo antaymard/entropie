@@ -141,22 +141,24 @@ function LinkField({
         )}
       </a>
 
-      <button
-        type="button"
-        className="absolute right-2 cursor-default bg-inherit hover:bg-black/5 rounded-sm items-center justify-center h-6 w-6 shrink-0 group-hover/linkfield:flex hidden"
-        onClick={() =>
-          openSidePanel(
-            sidePanelId,
-            <LinkEditionContent
-              initialValue={value?.href || ""}
-              onSave={handleSave}
-              onClose={() => closeSidePanel(sidePanelId)}
-            />
-          )
-        }
-      >
-        <TbPencil />
-      </button>
+      {!iconOnly && (
+        <button
+          type="button"
+          className="absolute right-2 cursor-default bg-inherit hover:bg-black/5 rounded-sm items-center justify-center h-6 w-6 shrink-0 group-hover/linkfield:flex hidden"
+          onClick={() =>
+            openSidePanel(
+              sidePanelId,
+              <LinkEditionContent
+                initialValue={value?.href || ""}
+                onSave={handleSave}
+                onClose={() => closeSidePanel(sidePanelId)}
+              />
+            )
+          }
+        >
+          <TbPencil />
+        </button>
+      )}
     </div>
   );
 }

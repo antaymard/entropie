@@ -30,7 +30,7 @@ export default function MinimizedWindow({ window }: { window: Window }) {
   const Icon = nodeConfig?.nodeIcon || TbTemplate;
 
   return (
-    <Tooltip delayDuration={500}>
+    <Tooltip delayDuration={0}>
       <TooltipTrigger asChild>
         <div className="relative group">
           <Button
@@ -42,7 +42,7 @@ export default function MinimizedWindow({ window }: { window: Window }) {
             {Icon && <Icon size={20} />}
           </Button>
           <button
-            className="hidden group-hover:flex h-4 w-4 rounded-full p-0 m-0 aspect-square  items-center justify-center absolute bg-red-400 text-white top-0 right-0"
+            className="hidden group-hover:flex h-4 w-4 rounded-full p-0 m-0 aspect-square items-center justify-center absolute bg-red-100 text-red-400 hover:bg-red-400 hover:text-white -top-1 -right-1"
             onClick={() => closeWindow(window.id)}
           >
             <HiMiniXMark size={12} />

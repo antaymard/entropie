@@ -40,13 +40,13 @@ export default function CanvasToolbar() {
 
   return (
     <div className="bg-white p-2 rounded h-full border border-gray-300 flex flex-col gap-1 items-center">
-      <Tooltip delayDuration={500}>
+      <Tooltip delayDuration={300}>
         <TooltipTrigger asChild>
           <Button
             type="button"
             onClick={() => setIsAiPanelOpen(!isAiPanelOpen)}
             variant={isAiPanelOpen ? "default" : "ghost"}
-            // className={`p-2 rounded hover:bg-slate-100 ${isActive ? "bg-slate-200 border-slate-300" : "border-transparent text-slate-500"}`}
+            // className={`p-2 rounded hover:bg-slate-100 ${isActive ? "bg-slate-200 border-slate-300" : "border-transparent text-slate-300"}`}
           >
             <RiRobot2Fill size={20} />
           </Button>
@@ -58,7 +58,7 @@ export default function CanvasToolbar() {
         const Icon = tool.icon;
         const isActive = currentTool === tool.value;
         return (
-          <Tooltip key={tool.value} delayDuration={500}>
+          <Tooltip key={tool.value} delayDuration={300}>
             <TooltipTrigger asChild>
               <Button
                 type="button"

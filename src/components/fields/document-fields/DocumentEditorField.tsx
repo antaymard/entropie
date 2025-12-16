@@ -5,6 +5,7 @@ import { EditorKit } from "@/components/plate/editor-kit";
 import { Plate, usePlateEditor } from "platejs/react";
 import type { BaseFieldProps } from "@/types/field.types";
 import { useCanvasStore } from "@/stores/canvasStore";
+import { cn } from "@/lib/utils";
 
 interface DocumentEditorFieldProps extends BaseFieldProps<{ doc: Value }> {
   editorId?: string;
@@ -13,6 +14,7 @@ interface DocumentEditorFieldProps extends BaseFieldProps<{ doc: Value }> {
 function DocumentEditorField({
   editorId,
   value,
+  visualType,
   onChange,
 }: DocumentEditorFieldProps) {
   const initialValue: Value = value?.doc as Value;
@@ -56,7 +58,10 @@ function DocumentEditorField({
     <Plate editor={editor} onValueChange={handleChange}>
       <EditorContainer
         variant="default"
-        className="nodrag h-full"
+        className={cn(
+          "nodrag h-full rounded-md",
+          visualType === "window" && "border border-slate-300"
+        )}
         onFocus={handleFocus}
         onBlur={handleBlur}
       >
@@ -64,7 +69,7 @@ function DocumentEditorField({
           disableDefaultStyles={true}
           variant="none"
           placeholder="Commencez à écrire..."
-          className="px-5 py-3 "
+          className={cn("px-5 py-3")}
         />
       </EditorContainer>
     </Plate>

@@ -147,7 +147,7 @@ export const streamResponse = internalAction({
         promptMessageId,
         system: `${noleAgent.options.instructions}
 
-        ======== Contexte utilisateur lors de la question ========
+        # ======== Contexte utilisateur lors de la question ========
 
         ## Canvas actuel (utilise tes tools pour plus de détails si besoin)
         ${encode(optimizedCanvas ?? null) || "N/A"}
@@ -161,7 +161,10 @@ export const streamResponse = internalAction({
         ### Position attachée
         ${encode(metadata?.canvasContext?.attachedPosition ?? null) || "N/A"}
         
-        ========= Fin du contexte ========`,
+        ========= Fin du contexte ========
+        
+        Si l'utilisateur te dit de mettre de l'info ou de placer une info ou d'écrire ou quelque chose, ton réflexe doit être de passer par la création de nodes sur le canvas. Surtout quand l'information est complexe. C'est mieux qu'une longue réponse texte dans le chat.
+        `,
       },
       {
         saveStreamDeltas: {

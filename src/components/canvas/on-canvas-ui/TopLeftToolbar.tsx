@@ -17,15 +17,17 @@ import { AiOutlinePlusCircle } from "react-icons/ai";
 import { Link } from "@tanstack/react-router";
 import { Dialog, DialogTrigger } from "@/components/shadcn/dialog";
 import CanvasCreationModal from "../CanvasCreationModal";
+import { memo } from "react";
+import { useShallow } from "zustand/shallow";
 
-export default function TopLeftToolbar({
+function TopLeftToolbar({
   undo,
   redo,
 }: {
   undo: () => void;
   redo: () => void;
 }) {
-  const canvas = useCanvasStore((state) => state.canvas);
+  const canvas = useCanvasStore(useShallow((state) => state.canvas));
   const updateCanvasDetails = useMutation(api.canvases.updateCanvasDetails);
   const deleteCanvas = useMutation(api.canvases.deleteCanvas);
   const { isAuthenticated } = useConvexAuth();
@@ -110,3 +112,5 @@ export default function TopLeftToolbar({
     </div>
   );
 }
+
+export default memo(TopLeftToolbar);

@@ -10,27 +10,31 @@ import { viewImageTool } from "./tools/viewImageTool";
 import { readNodeTemplatesTool } from "./tools/readNodeTemplatesTool";
 import { createCanvasElementsTool } from "./tools/createCanvasElementsTool";
 import { readPdfTool } from "./tools/readPdfTool";
+import { editCanvasNodesAndEdgesTool } from "./tools/editCanvasNodesAndEdgesTool";
+import { readNodeConfigsTool } from "./tools/readNodeConfigsTool";
 
 export const noleAgent = new Agent(components.agent, {
   name: "Nolë",
-  maxSteps: 50,
-  languageModel: mistral("mistral-small-latest"),
+  maxSteps: 15,
+  languageModel: mistral("ministral-14b-2512"),
   tools: {
+    // read_node_templates: readNodeTemplatesTool,
+    // create_canvas_elements: createCanvasElementsTool,
     web_search: websearchTool,
     open_web_page: openWebPageTool,
     read_canvas: readCanvasTool,
     view_image: viewImageTool,
-    read_node_templates: readNodeTemplatesTool,
-    create_canvas_elements: createCanvasElementsTool,
     read_pdf: readPdfTool,
+    edit_canvas_nodes_and_edges: editCanvasNodesAndEdgesTool,
+    read_node_configs: readNodeConfigsTool,
   },
   instructions: noleSystemPrompt,
-  contextOptions: {
-    searchOtherThreads: true,
-    searchOptions: {
-      limit: 10,
-      textSearch: true,
-      // vectorSearch: true,
-    },
-  },
+  // contextOptions: {
+  //   searchOtherThreads: true,
+  //   searchOptions: {
+  //     limit: 10,
+  //     textSearch: true,
+  //     // vectorSearch: true,
+  //   },
+  // },
 });

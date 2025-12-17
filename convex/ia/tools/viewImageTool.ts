@@ -4,6 +4,7 @@ import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
 import { anthropic } from "@ai-sdk/anthropic";
 import { generateText } from "ai";
+import { mistral } from "@ai-sdk/mistral";
 
 export const viewImageTool = createTool({
   description:
@@ -22,9 +23,9 @@ export const viewImageTool = createTool({
 
     try {
       // Analyser l'image avec Anthropic (supporte les URLs directement)
-      console.log(`🤖 Sending image to Anthropic for analysis...`);
+      console.log(`🤖 Sending image for analysis...`);
       const result = await generateText({
-        model: anthropic("claude-sonnet-4-5"),
+        model: mistral("mistral-medium-latest"),
         messages: [
           {
             role: "user",

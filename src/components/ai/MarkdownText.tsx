@@ -141,6 +141,7 @@ const defaultComponents = {
         className
       )}
       {...props}
+      target="_blank"
     />
   ),
   blockquote: ({

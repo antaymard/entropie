@@ -2,23 +2,10 @@ import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
 import { internal } from "../../_generated/api";
 import { Id } from "../../_generated/dataModel";
-import { internalQuery } from "../../_generated/server";
-import { v } from "convex/values";
-
-export const getCanvasInternal = internalQuery({
-  args: {
-    canvasId: v.id("canvases"),
-  },
-  returns: v.any(),
-  handler: async (ctx, { canvasId }) => {
-    const canvas = await ctx.db.get(canvasId);
-    return canvas;
-  },
-});
 
 export const readCanvasTool = createTool({
   description:
-    "Allow to read a whole canvas object, from a canvas ID. Returns the complete canvas object including the canvas data, and the belonging nodes and edges. This is token-expensive, so use with caution.",
+    "Allow to read a whole canvas object, from a canvas ID. Returns the complete canvas object including the canvas data, and the nodes and edges. This is token-expensive, so use with caution.",
   args: z.object({
     canvasId: z.string().describe("ID of the canvas to read."),
     scope: z
@@ -35,7 +22,7 @@ export const readCanvasTool = createTool({
     try {
       // Get the canvas from the db (internal query without auth)
       const canvas = await ctx.runQuery(
-        internal.ia.tools.readCanvasTool.getCanvasInternal,
+        internal.ia.helpers.canvasHelpers.getCanvasInternal,
         {
           canvasId: canvasId as Id<"canvases">,
         }

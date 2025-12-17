@@ -29,7 +29,6 @@ import {
   CardTitle,
 } from "@/components/shadcn/card";
 import { Button } from "@/components/shadcn/button";
-import type { Canvas } from "@/types";
 import { debounce } from "lodash";
 import { toastError } from "@/components/utils/errorUtils";
 import WindowsContainer from "@/components/windows/WindowsContainer";
@@ -43,6 +42,7 @@ import { useDeviceType } from "@/hooks/useDeviceType";
 import CanvasToolbar from "@/components/canvas/on-canvas-ui/CanvasToolbar";
 import Chat from "@/components/ai/Chat";
 import { cn } from "@/lib/utils";
+import { useNoleStore } from "@/stores/noleStore";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -84,6 +84,8 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   // ========== Stores ==========
   const setCanvas = useCanvasStore((state) => state.setCanvas);
   const setCanvasStatus = useCanvasStore((state) => state.setStatus);
+  const resetNoleContext = useNoleStore((state) => state.resetAttachments);
+  const addAttachments = useNoleStore((state) => state.addAttachments);
   const enableCanvasUndoRedo = useCanvasStore(
     (state) => state.enableCanvasUndoRedo
   );
@@ -105,9 +107,9 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   // Load initial une seule fois par canvas
   const loadedCanvasIdRef = useRef<string | null>(null);
 
-  // Ignore les updates Convex pendant un délai après avoir sauvegardé
-  const lastSaveTimeRef = useRef<number>(0);
-  const SYNC_IGNORE_DELAY = 2000; // 2 secondes
+  // Ignore les updates Convex pendant un délai après des changements locaux
+  const lastLocalChangeTimeRef = useRef<number>(0);
+  const SYNC_IGNORE_DELAY = 3000; // 3 secondes
 
   // ========== History Management ==========
   const { recordChange, undo, redo, isUndoRedo } = useCanvasContentHistory(
@@ -123,8 +125,6 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     () =>
       debounce((n: Node[], e: Edge[]) => {
         if (!isAuthenticated) return;
-        // Marque le moment du save pour ignorer les updates Convex qui reviennent
-        lastSaveTimeRef.current = Date.now();
         setCanvasStatus("saving");
         saveCanvas({
           canvasId,
@@ -214,6 +214,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   useEffect(() => {
     if (canvas && loadedCanvasIdRef.current !== canvas._id) {
       setCanvas(canvas);
+      resetNoleContext(canvas);
       setNodes(toXyNodes(canvas.nodes));
       setEdges(canvas.edges || []);
       loadedCanvasIdRef.current = canvas._id;
@@ -223,6 +224,8 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   // 2️⃣ Auto-save avec debounce
   useEffect(() => {
     if (loadedCanvasIdRef.current === canvasId) {
+      // Marque le moment du changement local pour ignorer les updates Convex
+      lastLocalChangeTimeRef.current = Date.now();
       setCanvasStatus("unsynced");
       debouncedSave(nodes, edges);
     }
@@ -238,10 +241,10 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   useEffect(() => {
     if (!canvas || loadedCanvasIdRef.current !== canvas._id) return;
 
-    // Ignore les updates qui arrivent juste après un save local
+    // Ignore les updates qui arrivent juste après un changement local
     // (ce sont probablement nos propres changements qui reviennent)
-    const timeSinceLastSave = Date.now() - lastSaveTimeRef.current;
-    if (timeSinceLastSave < SYNC_IGNORE_DELAY) return;
+    const timeSinceLastChange = Date.now() - lastLocalChangeTimeRef.current;
+    if (timeSinceLastChange < SYNC_IGNORE_DELAY) return;
 
     // Les données viennent d'ailleurs → sync
     setNodes((currentNodes) => {
@@ -345,6 +348,14 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           onNodesChange={handleNodesChange}
           onEdgesChange={handleEdgesChange}
           onPaneContextMenu={handlePaneContextMenu}
+          onPaneClick={(e: React.MouseEvent) => {
+            if (e.altKey) {
+              addAttachments(
+                { position: { x: e.clientX, y: e.clientY } },
+                true
+              );
+            }
+          }}
           onNodeContextMenu={handleNodeContextMenu}
           onSelectionContextMenu={handleSelectionContextMenu}
           onNodeDoubleClick={handleNodeDoubleClick}

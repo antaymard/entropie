@@ -12,16 +12,21 @@ export default function DocumentStaticField({
   onChange,
   visualSettings,
 }: BaseFieldProps<{ doc: Value }>) {
+  // Vérifier que doc est bien un tableau valide pour Plate.js
+  const isValidDoc = Array.isArray(value?.doc) && value.doc.length > 0;
+
   const editor = useMemo(
     () =>
       createSlateEditor({
         plugins: BaseEditorKit,
-        value: value?.doc,
+        value: isValidDoc
+          ? value.doc
+          : [{ type: "p", children: [{ text: "" }] }],
       }),
-    [value?.doc]
+    [value?.doc, isValidDoc]
   );
 
-  if (!value?.doc || value.doc.length === 0) {
+  if (!isValidDoc) {
     return null;
   }
 

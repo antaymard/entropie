@@ -23,12 +23,14 @@ import { Textarea } from "../shadcn/textarea";
 import type { TextPart } from "@/types/message.types";
 import { MarkdownText } from "./MarkdownText";
 import toolCardsConfig from "./tool-cards/toolCardsConfig";
-import { useNodes, useViewport } from "@xyflow/react";
-import { useCanvasStore } from "@/stores/canvasStore";
 import ToolCardFrame from "./tool-cards/ToolCardFrame";
 import { TbTool } from "react-icons/tb";
 import { RiLoaderLine } from "react-icons/ri";
 import { toConvexNodes } from "../utils/nodeUtils";
+import { useNoleStore } from "@/stores/noleStore";
+import prebuiltNodesConfig from "../nodes/prebuilt-nodes/prebuiltNodesConfig";
+import { HiMiniXMark } from "react-icons/hi2";
+import { LuMousePointer } from "react-icons/lu";
 
 export default function Chat() {
   const { threadId, isLoading, resetThread } = useNoleThread();
@@ -63,32 +65,6 @@ const ChatInterface = memo(function ChatInterface({
   threadId: string;
   resetThread: () => Promise<void>;
 }) {
-  const canvas = useCanvasStore((s) => s.canvas);
-  const viewport = useViewport();
-  const nodes = useNodes();
-
-  // Fonction pour capturer le contexte au moment de l'envoi
-  const getCanvasContext = useCallback(
-    () => ({
-      currentCanvas: {
-        name: canvas ? canvas.name : "Untitled",
-        description: canvas ? canvas.description : "",
-        nodes: nodes.map((n) => ({
-          id: n.id,
-          name: n.data.name,
-          type: n.type,
-          position: n.position,
-          height: n.height,
-          width: n.width,
-          templateId: n.data.templateId,
-          color: n.data.color,
-        })),
-      },
-      currentViewport: viewport,
-      selectedNodes: toConvexNodes(nodes.filter((n) => n.selected)),
-    }),
-    [canvas, viewport, nodes]
-  );
   const {
     results: messages,
     status,
@@ -197,7 +173,11 @@ const ChatInterface = memo(function ChatInterface({
       await sendMessage({
         threadId,
         prompt: currentPrompt,
-        canvasContext: getCanvasContext(),
+        canvasContext: {
+          attachedNodes: toConvexNodes(useNoleStore.getState().attachedNodes),
+          attachedPosition: useNoleStore.getState().attachedPosition,
+          canvas: useNoleStore.getState().canvas ?? null,
+        },
       });
     } catch (error) {
       console.error("Erreur lors de l'envoi:", error);
@@ -207,16 +187,26 @@ const ChatInterface = memo(function ChatInterface({
 
   return (
     <div className="h-full flex flex-col w-full ">
-      {messages.length > 0 && (
+      <div className="flex">
+        {messages.length > 0 && (
+          <button
+            className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition font-medium flex items-center gap-2 mx-2"
+            onClick={() => void resetThread()}
+            type="button"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Reset
+          </button>
+        )}
         <button
           className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition font-medium flex items-center gap-2 mx-2"
-          onClick={() => void resetThread()}
+          onClick={() => console.log({})}
           type="button"
         >
           <RotateCcw className="w-4 h-4" />
-          Reset
+          Canvas
         </button>
-      )}
+      </div>
       {/* Messages area - scrollable */}
       <div
         ref={scrollViewportRef}
@@ -245,36 +235,99 @@ const ChatInterface = memo(function ChatInterface({
       </div>
 
       {/* Fixed input area at bottom */}
-      <form
-        className="w-full flex flex-col p-2 relative"
-        onSubmit={(e) => {
-          e.preventDefault();
-          void onSendClicked();
-        }}
-      >
-        <Textarea
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey) {
-              e.preventDefault();
-              void onSendClicked();
-            }
+      <div className="p-2">
+        <form
+          className="w-full flex flex-col gap-2 p-3 rounded-md bg-white/10 hover:bg-white/20 focus:bg-white/20"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void onSendClicked();
           }}
-          className="placeholder:text-white/60 flex-1 rounded-md pt-8 pb-2 bg-white/10 hover:bg-white/20 focus:bg-white/20 text-white resize-none border-0 text-base! "
-          placeholder="Posez votre question..."
-        />
-        <button
-          type="submit"
-          className="absolute bottom-4 right-4 text-white p-1 rounded-xs hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!prompt.trim() || isAssistantResponding}
         >
-          <PiPaperPlaneRightBold size={12} />
-        </button>
-      </form>
+          <AttachmentRenderer />
+          <textarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey) {
+                e.preventDefault();
+                void onSendClicked();
+              }
+            }}
+            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md bg-transparent text-base! shadow-xs transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm placeholder:text-white/60 flex-1 text-white resize-none "
+            placeholder="Posez votre question..."
+          />
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              className="bottom-4 right-4 text-white p-1 rounded-xs hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!prompt.trim() || isAssistantResponding}
+            >
+              <PiPaperPlaneRightBold size={12} />
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 });
+
+function AttachmentRenderer() {
+  const attachedNodes = useNoleStore((state) => state.attachedNodes);
+  const attachedPosition = useNoleStore((state) => state.attachedPosition);
+  if (attachedNodes.length === 0 && !attachedPosition) {
+    return null;
+  }
+  return (
+    <div className="text-white flex my-1 flex-wrap gap-2">
+      {/* Render attachments here */}
+      {attachedPosition && (
+        <AttachmentCard type="position" data={attachedPosition} />
+      )}
+      {attachedNodes.map((node) => (
+        <AttachmentCard key={node.id} type="node" data={node} />
+      ))}
+    </div>
+  );
+}
+
+function AttachmentCard({
+  type,
+  data,
+}: {
+  type: "position" | "node";
+  data: any;
+}) {
+  const removeAttachments = useNoleStore((state) => state.removeAttachments);
+  let Icon;
+  let label;
+  if (type === "node") {
+    Icon =
+      prebuiltNodesConfig.find((n) => n.type === data.type)?.nodeIcon || null;
+    label = data?.data?.name || data.type;
+  }
+  if (type === "position") {
+    Icon = LuMousePointer;
+    label = `Position (${data.x.toFixed(0)}, ${data.y.toFixed(0)})`;
+  }
+
+  return (
+    <div className="group relative flex items-center gap-1 border border-white/20 bg-white/10 rounded-sm text-sm text-white max-w-[200px] truncate p-1">
+      {Icon && <Icon size={12} className="min-w-3" />}
+      {label}
+      <button
+        onClick={() =>
+          removeAttachments([
+            { type, ids: type === "node" ? [data?.id] : undefined },
+          ])
+        }
+        type="button"
+        className="absolute top-1 right-1 hidden group-hover:block bg-white text-red-300 rounded-sm "
+      >
+        <HiMiniXMark size={15} />
+      </button>
+    </div>
+  );
+}
 
 function Message({ message }: { message: UIMessage }) {
   const isUser = message.role === "user";

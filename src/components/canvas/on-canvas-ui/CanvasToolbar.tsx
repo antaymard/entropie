@@ -11,14 +11,21 @@ import { LuMousePointer, LuGitBranchPlus } from "react-icons/lu";
 import { TbFrame } from "react-icons/tb";
 import { RiRobot2Fill } from "react-icons/ri";
 import MinimizedWindow from "@/components/canvas/on-canvas-ui/MinimizedWindow";
+import { memo } from "react";
+import { useShallow } from "zustand/shallow";
 
-export default function CanvasToolbar() {
-  const currentTool = useCanvasStore((state) => state.currentCanvasTool);
-  const setCurrentTool = useCanvasStore((state) => state.setCurrentCanvasTool);
-  const isAiPanelOpen = useCanvasStore((state) => state.isAiPanelOpen);
-  const setIsAiPanelOpen = useCanvasStore((state) => state.setIsAiPanelOpen);
+function CanvasToolbar() {
+  const { currentTool, setCurrentTool, isAiPanelOpen, setIsAiPanelOpen } =
+    useCanvasStore(
+      useShallow((state) => ({
+        currentTool: state.currentCanvasTool,
+        setCurrentTool: state.setCurrentCanvasTool,
+        isAiPanelOpen: state.isAiPanelOpen,
+        setIsAiPanelOpen: state.setIsAiPanelOpen,
+      }))
+    );
 
-  const openWindows = useWindowsStore((state) => state.openWindows);
+  const openWindows = useWindowsStore(useShallow((state) => state.openWindows));
 
   const tools = [
     {
@@ -80,3 +87,5 @@ export default function CanvasToolbar() {
     </div>
   );
 }
+
+export default memo(CanvasToolbar, () => true);

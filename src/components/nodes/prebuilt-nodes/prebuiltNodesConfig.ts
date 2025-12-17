@@ -119,7 +119,16 @@ const prebuiltNodesConfig = [
       name: "Bloc Fichier",
       type: "file",
       data: {
-        files: [],
+        files: [
+          {
+            url: "",
+            filename: "",
+            mimeType: "",
+            size: 0,
+            uploadedAt: 0,
+            key: "",
+          },
+        ],
       },
       height: 40,
       width: 220,

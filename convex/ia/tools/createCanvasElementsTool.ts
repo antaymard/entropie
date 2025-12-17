@@ -1,6 +1,6 @@
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
-import { api, internal } from "../../_generated/api";
+import { internal } from "../../_generated/api";
 import { Id } from "../../_generated/dataModel";
 
 export const createCanvasElementsTool = createTool({
@@ -40,7 +40,7 @@ export const createCanvasElementsTool = createTool({
 
       // Get the canvas from the db using internal query
       const canvas = await ctx.runQuery(
-        internal.ia.tools.readCanvasTool.getCanvasInternal,
+        internal.ia.helpers.canvasHelpers.getCanvasInternal,
         {
           canvasId: canvasId as Id<"canvases">,
         }

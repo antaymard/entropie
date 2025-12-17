@@ -4,6 +4,8 @@ import OpenWebpageToolCard from "./OpenWebpageToolCard";
 import ReadCanvasToolCard from "./ReadCanvasToolCard";
 import ViewImageToolCard from "./ViewImageToolCard";
 import ReadPdfToolCard from "./ReadPdfToolCard";
+import ReadNodeConfigsToolCard from "./ReadNodeConfigsToolCard";
+import EditCanvasNodesAndEdgesToolCard from "./EditCanvasNodesAndEdgesToolCard";
 
 interface ToolCardConfig {
   name: string;
@@ -38,6 +40,18 @@ const tools: ToolCardConfig[] = [
   {
     name: "tool-read_pdf",
     component: ReadPdfToolCard as React.ComponentType<
+      ToolCardProps<unknown, unknown>
+    >,
+  },
+  {
+    name: "tool-read_node_configs",
+    component: ReadNodeConfigsToolCard as React.ComponentType<
+      ToolCardProps<unknown, unknown>
+    >,
+  },
+  {
+    name: "tool-edit_canvas_nodes_and_edges",
+    component: EditCanvasNodesAndEdgesToolCard as React.ComponentType<
       ToolCardProps<unknown, unknown>
     >,
   },

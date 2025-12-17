@@ -79,13 +79,7 @@ export const sendMessage = mutation({
   args: {
     threadId: v.string(),
     prompt: v.string(),
-    canvasContext: v.optional(
-      v.object({
-        currentCanvas: v.optional(v.any()),
-        currentViewport: v.optional(v.any()),
-        selectedNodes: v.optional(v.array(v.any())),
-      })
-    ),
+    canvasContext: v.optional(v.any()),
   },
   returns: v.union(
     v.object({
@@ -117,11 +111,7 @@ export const sendMessage = mutation({
       threadId,
       promptMessageId: messageId,
       metadata: {
-        canvasContext: {
-          currentCanvas: canvasContext?.currentCanvas,
-          currentViewport: canvasContext?.currentViewport,
-          selectedNodes: canvasContext?.selectedNodes ?? [],
-        },
+        canvasContext,
       },
     });
 
@@ -137,17 +127,19 @@ export const streamResponse = internalAction({
     threadId: v.string(),
     metadata: v.optional(
       v.object({
-        canvasContext: v.optional(
-          v.object({
-            currentCanvas: v.optional(v.any()),
-            currentViewport: v.optional(v.any()),
-            selectedNodes: v.optional(v.array(v.any())),
-          })
-        ),
+        canvasContext: v.optional(v.any()),
       })
     ),
   },
   handler: async (ctx, { authUserId, promptMessageId, threadId, metadata }) => {
+    const optimizedCanvas = {
+      canvasId: metadata?.canvasContext?.canvas?._id || null,
+      name: metadata?.canvasContext?.canvas?.name || null,
+      description: metadata?.canvasContext?.canvas?.description || null,
+      nodesNb: metadata?.canvasContext?.canvas?.nodes
+        ? metadata?.canvasContext?.canvas?.nodes.length
+        : 0,
+    };
     const result = await noleAgent.streamText(
       ctx,
       { threadId, userId: authUserId },
@@ -155,24 +147,21 @@ export const streamResponse = internalAction({
         promptMessageId,
         system: `${noleAgent.options.instructions}
 
-        # Contexte de l'utilisateur quand il a posé la question : 
+        ======== Contexte utilisateur lors de la question ========
 
-        ## Canvas et nodes ouverts
+        ## Canvas actuel (utilise tes tools pour plus de détails si besoin)
+        ${encode(optimizedCanvas ?? null) || "N/A"}
         
-        Le canvas que l'utilisateur a sous les yeux au moment de te poser la question, avec les nodes et edges qu'il contient.
+        ## Pièces jointes
+        L'utilisateur a joint les éléments suivants à sa question. Si des nodes sont fournis, utilise-les pour mieux comprendre le contexte et répondre à la question. Si une position est fournie, utilise-la pour situer la question dans le canvas ou générer des nodes à cet endroit.
 
-        ${encode(metadata?.canvasContext?.currentCanvas ?? null) || "N/A"}
+        ### Nodes attachés
+        ${encode(metadata?.canvasContext?.attachedNodes ?? null) || "N/A"}
 
-        Parmi ces nodes, ceux qui sont sélectionnés (mis en avant par l'utilisateur) sont les suivants : 
+        ### Position attachée
+        ${encode(metadata?.canvasContext?.attachedPosition ?? null) || "N/A"}
         
-        ${encode(metadata?.canvasContext?.selectedNodes ?? []) || "N/A"}
-        
-        ## Position du user dans le canvas
-        
-        Au moment de la question, l'utilisateur était positionné à cet endroit du canvas : ${JSON.stringify(metadata?.canvasContext?.currentViewport) || "N/A"}
-        
-        Utilise ces informations pour mieux comprendre la question de l'utilisateur et fournir une réponse plus pertinente et des arguments plus précis pour les tool_use. Ne les mentionne que si nécessaire et opportun.
-        `,
+        ========= Fin du contexte ========`,
       },
       {
         saveStreamDeltas: {

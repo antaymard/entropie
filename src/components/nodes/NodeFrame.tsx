@@ -5,7 +5,7 @@ import {
   Position,
   type Node,
 } from "@xyflow/react";
-import { memo, useState, useMemo, useCallback } from "react";
+import { memo, useState, useMemo, useCallback, type MouseEvent } from "react";
 import type { NodeColors, NodeType } from "../../types/node.types";
 import prebuiltNodesConfig from "./prebuilt-nodes/prebuiltNodesConfig";
 import { BaseNode, BaseNodeContent } from "./base-node";
@@ -19,6 +19,7 @@ import {
 } from "./side-panels/NodeSidePanelContext";
 import { useCanvasStore } from "@/stores/canvasStore";
 import { cn } from "@/lib/utils";
+import { useIsNodeAttached, useNoleStore } from "@/stores/noleStore";
 
 function getNodeColorClasses(color: NodeColors) {
   return nodeColors[color] || nodeColors["default"];
@@ -41,6 +42,8 @@ function NodeFrame({
   const nodeConfig = prebuiltNodesConfig.find((n) => n.type === xyNode.type);
   const openWindow = useWindowsStore((state) => state.openWindow);
   const currentCanvasTool = useCanvasStore((state) => state.currentCanvasTool);
+  const addAttachments = useNoleStore((state) => state.addAttachments);
+  const isNoleAttached = useIsNodeAttached(xyNode.id);
 
   const [openSidePanels, setOpenSidePanels] = useState<NodeSidePanel[]>([]);
 
@@ -114,14 +117,24 @@ function NodeFrame({
             console.log("Out", xyNode.id);
           }}
           className={cn(
-            "group rounded-sm h-full flex flex-col overflow-hidden",
-            xyNode.selected
-              ? notResizable && "ring-2 ring-muted-foreground"
-              : "hover:ring-blue-300",
+            "group rounded-sm h-full flex flex-col overflow-hidden transition-shadow duration-150",
             nodeColor.border,
             nodeColor.bg,
-            canDrag ? "" : "nodrag cursor-crosshair"
+            !canDrag && "nodrag cursor-crosshair",
+            // États visuels par priorité
+            isNoleAttached
+              ? "ring-2 ring-violet-400 shadow-md shadow-violet-300/40"
+              : xyNode.selected
+                ? notResizable
+                  ? "ring-2 ring-muted-foreground"
+                  : "ring-2 ring-blue-500/70"
+                : "hover:ring-1 hover:ring-blue-400/60"
           )}
+          onClick={(e: MouseEvent) => {
+            if (e.altKey) {
+              addAttachments({ nodes: [xyNode] }, true);
+            }
+          }}
         >
           {!headerless && (
             <div

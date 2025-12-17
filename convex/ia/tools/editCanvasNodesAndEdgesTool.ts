@@ -41,6 +41,17 @@ function validateNodeData(
   const errors: string[] = [];
   const data = nodeData || {};
 
+  // Check for unexpected properties
+  const allowedProps = new Set(expectedProps.properties.map((p) => p.name));
+  const dataKeys = Object.keys(data);
+  for (const key of dataKeys) {
+    if (!allowedProps.has(key)) {
+      errors.push(
+        `Unexpected property "${key}" for node type "${nodeType}". Allowed properties: ${[...allowedProps].join(", ") || "none"}.`
+      );
+    }
+  }
+
   // Check required properties
   for (const prop of expectedProps.properties) {
     if (prop.required && !(prop.name in data)) {

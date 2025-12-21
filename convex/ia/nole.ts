@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { action, internalAction, mutation, query } from "../_generated/server";
 import { internal } from "../_generated/api";
-import { noleAgent } from "./agents";
+import { createNoleAgent } from "./agents";
 import {
   createThread,
   listUIMessages,
@@ -10,9 +10,10 @@ import {
 } from "@convex-dev/agent";
 import { components } from "../_generated/api";
 import { paginationOptsValidator } from "convex/server";
-import { getAuth } from "../lib/auth";
+import { getAuth, requireAuth } from "../lib/auth";
 import { encode } from "@toon-format/toon";
-import { Id } from "../_generated/dataModel";
+import z from "zod";
+import { mistral } from "@ai-sdk/mistral";
 
 // Get the latest thread for the user
 export const getLatestThread = query({
@@ -79,7 +80,7 @@ export const sendMessage = mutation({
   args: {
     threadId: v.string(),
     prompt: v.string(),
-    canvasContext: v.optional(v.any()),
+    context: v.optional(v.any()),
   },
   returns: v.union(
     v.object({
@@ -90,7 +91,7 @@ export const sendMessage = mutation({
       error: v.string(),
     })
   ),
-  handler: async (ctx, { threadId, prompt, canvasContext }) => {
+  handler: async (ctx, { threadId, prompt, context }) => {
     const authUserId = await getAuth(ctx);
     if (!authUserId) {
       return {
@@ -100,6 +101,7 @@ export const sendMessage = mutation({
     }
 
     // Save the user message
+    const noleAgent = createNoleAgent();
     const { messageId } = await noleAgent.saveMessage(ctx, {
       threadId,
       prompt,
@@ -111,7 +113,7 @@ export const sendMessage = mutation({
       threadId,
       promptMessageId: messageId,
       metadata: {
-        canvasContext,
+        context,
       },
     });
 
@@ -127,19 +129,20 @@ export const streamResponse = internalAction({
     threadId: v.string(),
     metadata: v.optional(
       v.object({
-        canvasContext: v.optional(v.any()),
+        context: v.optional(v.any()),
       })
     ),
   },
   handler: async (ctx, { authUserId, promptMessageId, threadId, metadata }) => {
     const optimizedCanvas = {
-      canvasId: metadata?.canvasContext?.canvas?._id || null,
-      name: metadata?.canvasContext?.canvas?.name || null,
-      description: metadata?.canvasContext?.canvas?.description || null,
-      nodesNb: metadata?.canvasContext?.canvas?.nodes
-        ? metadata?.canvasContext?.canvas?.nodes.length
+      canvasId: metadata?.context?.canvas?._id || null,
+      name: metadata?.context?.canvas?.name || null,
+      description: metadata?.context?.canvas?.description || null,
+      nodesNb: metadata?.context?.canvas?.nodes
+        ? metadata?.context?.canvas?.nodes.length
         : 0,
     };
+    const noleAgent = createNoleAgent();
     const result = await noleAgent.streamText(
       ctx,
       { threadId, userId: authUserId },
@@ -156,10 +159,10 @@ export const streamResponse = internalAction({
         L'utilisateur a joint les éléments suivants à sa question. Si des nodes sont fournis, utilise-les pour mieux comprendre le contexte et répondre à la question. Si une position est fournie, utilise-la pour situer la question dans le canvas ou générer des nodes à cet endroit.
 
         ### Nodes attachés
-        ${encode(metadata?.canvasContext?.attachedNodes ?? null) || "N/A"}
+        ${encode(metadata?.context?.attachedNodes ?? null) || "N/A"}
 
         ### Position attachée
-        ${encode(metadata?.canvasContext?.attachedPosition ?? null) || "N/A"}
+        ${encode(metadata?.context?.attachedPosition ?? null) || "N/A"}
         
         ========= Fin du contexte ========
         
@@ -210,5 +213,47 @@ export const listMessages = query({
       ...paginated,
       streams,
     };
+  },
+});
+
+export const updateThreadTitle = action({
+  args: { threadId: v.string(), onlyIfUntitled: v.optional(v.boolean()) },
+  handler: async (ctx, { threadId, onlyIfUntitled }) => {
+    // await authorizeThreadAccess(ctx, threadId);
+    await requireAuth(ctx);
+    const noleAgent = createNoleAgent({ model: mistral("ministral-14b-2512") });
+    const { thread } = await noleAgent.continueThread(ctx, { threadId });
+    if (onlyIfUntitled) {
+      const metadata = await thread.getMetadata();
+      if (metadata.title && metadata.title.trim().length > 0) {
+        return;
+      }
+    }
+    const {
+      object: { title },
+    } = await thread.generateObject(
+      {
+        mode: "json",
+        schemaDescription:
+          "Generate a title for the thread. The title should be a single sentence that captures the main topic of the thread. **Must be in French.**",
+        schema: z.object({
+          title: z.string().describe("The new title for the thread"),
+          // summary: z.string().describe("The new summary for the thread"),
+        }),
+        prompt: "Generate a title for this thread.",
+      },
+      { storageOptions: { saveMessages: "none" } }
+    );
+    await thread.updateMetadata({ title });
+  },
+});
+
+export const deleteThread = action({
+  args: { threadId: v.string() },
+  handler: async (ctx, { threadId }) => {
+    await requireAuth(ctx);
+    const noleAgent = createNoleAgent();
+    await noleAgent.deleteThreadAsync(ctx, { threadId });
+    return { success: true };
   },
 });

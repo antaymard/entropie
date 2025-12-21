@@ -40,9 +40,9 @@ import TopLeftToolbar from "@/components/canvas/on-canvas-ui/TopLeftToolbar";
 import TopRightToolbar from "@/components/canvas/on-canvas-ui/TopRightToolbar";
 import { useDeviceType } from "@/hooks/useDeviceType";
 import CanvasToolbar from "@/components/canvas/on-canvas-ui/CanvasToolbar";
-import Chat from "@/components/ai/Chat";
 import { cn } from "@/lib/utils";
 import { useNoleStore } from "@/stores/noleStore";
+import { NoleChat } from "@/components/ai/NoleChat";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -62,7 +62,7 @@ function RouteComponent() {
         )}
       >
         <CanvasContent key={canvasId} canvasId={canvasId} />
-        {isAiPanelOpen && <Chat />}
+        {isAiPanelOpen && <NoleChat />}
       </div>
     </ReactFlowProvider>
   );

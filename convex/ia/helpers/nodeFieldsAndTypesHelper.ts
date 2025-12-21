@@ -76,7 +76,7 @@ export const nodeTypes: NodeTypeConfig[] = [
       canBeResized: true,
     },
     description:
-      "Bloc de texte simple, affiché directement sur le canvas. Peut être déplacé librement. Permet de structurer des zones dans le canvas. Utile pour les annotations ou les titres. Peut être formaté en h1, h2, h3 ou paragraphe, globalement pour tout le bloc.",
+      "**Ne supporte pas le markdown.** Bloc de texte simple, affiché directement sur le canvas. Utile pour les annotations ou des titres courts. Pour du texte riche, utiliser le type Document. ",
     expectedDataProps: {
       type: "object",
       required: true,
@@ -85,7 +85,8 @@ export const nodeTypes: NodeTypeConfig[] = [
           name: "text",
           type: "string",
           required: true,
-          description: "Le contenu textuel du bloc.",
+          description:
+            "Le contenu textuel du bloc. En texte brut. Pas de markdown.",
         },
         {
           name: "level",
@@ -94,7 +95,7 @@ export const nodeTypes: NodeTypeConfig[] = [
           required: true,
           default: "p",
           description:
-            "Le niveau de titre ou paragraphe pour le formatage du texte.",
+            "Le niveau de titre ou paragraphe pour le formatage du texte, pour le bloc entier.",
         },
       ],
     },

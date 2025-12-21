@@ -164,29 +164,18 @@ export const editCanvasNodesAndEdgesTool = createTool({
   }),
   handler: async (ctx, { canvas_id, nodes }) => {
     try {
-      const results: {
-        created: string[];
-        edited: string[];
-        deleted: string[];
-        errors: string[];
-        validationErrors?: {
-          nodeName: string;
-          errors: string[];
-          expectedFormat?: object;
-        }[];
-      } = {
-        created: [],
-        edited: [],
-        deleted: [],
-        errors: [],
-      };
+      const createdNodeIds: string[] = [];
+      const editedNodeIds: string[] = [];
+      const deletedNodeIds: string[] = [];
+      const errors: string[] = [];
+      const detailedValidationErrors: string[] = [];
 
       // Handle CREATE operations
       const nodesToCreate = nodes.filter((n) => n.operation === "create");
       if (nodesToCreate.length > 0) {
         const missingTypes = nodesToCreate.filter((n) => !n.node_type);
         if (missingTypes.length > 0) {
-          results.errors.push(
+          errors.push(
             `${missingTypes.length} node(s) missing required node_type for create operation.`
           );
         }
@@ -198,11 +187,6 @@ export const editCanvasNodesAndEdgesTool = createTool({
           node: (typeof validNodesToCreate)[0];
           validation: ValidationResult;
         }[] = [];
-        const invalidNodes: {
-          nodeName: string;
-          errors: string[];
-          expectedFormat?: object;
-        }[] = [];
 
         for (const node of validNodesToCreate) {
           const validation = validateNodeData(
@@ -210,29 +194,18 @@ export const editCanvasNodesAndEdgesTool = createTool({
             node.node_data as Record<string, unknown>
           );
           if (!validation.isValid) {
-            invalidNodes.push({
-              nodeName: node.name || node.node_type!,
-              errors: validation.errors,
-              expectedFormat: validation.expectedFormat,
-            });
+            const nodeName = node.name || node.node_type!;
+            errors.push(`Node "${nodeName}" validation failed`);
+
+            // Create detailed error messages with expected format
+            detailedValidationErrors.push(
+              `Node: ${nodeName}\n` +
+                `Errors: ${validation.errors.join("; ")}\n` +
+                `Expected format: ${JSON.stringify(validation.expectedFormat, null, 2)}`
+            );
           } else {
             validationResults.push({ node, validation });
           }
-        }
-
-        // Report validation errors
-        if (invalidNodes.length > 0) {
-          for (const invalid of invalidNodes) {
-            results.errors.push(
-              `Node "${invalid.nodeName}" has invalid data: ${invalid.errors.join(" ")}`
-            );
-          }
-          // Add expected formats to help the model correct the data
-          results.validationErrors = invalidNodes.map((inv) => ({
-            nodeName: inv.nodeName,
-            errors: inv.errors,
-            expectedFormat: inv.expectedFormat,
-          }));
         }
 
         // Only create nodes that passed validation
@@ -266,7 +239,7 @@ export const editCanvasNodesAndEdgesTool = createTool({
             }
           );
 
-          results.created = newNodeIds;
+          createdNodeIds.push(...newNodeIds);
         }
       }
 
@@ -275,12 +248,12 @@ export const editCanvasNodesAndEdgesTool = createTool({
       if (nodesToEdit.length > 0) {
         const missingIds = nodesToEdit.filter((n) => !n.node_id);
         if (missingIds.length > 0) {
-          results.errors.push(
+          errors.push(
             `${missingIds.length} node(s) missing required node_id for edit operation.`
           );
         }
         // TODO: Implement edit logic when canvasHelpers supports it
-        results.errors.push("Edit operation not yet implemented.");
+        errors.push("Edit operation not yet implemented.");
       }
 
       // Handle DELETE operations
@@ -288,43 +261,49 @@ export const editCanvasNodesAndEdgesTool = createTool({
       if (nodesToDelete.length > 0) {
         const missingIds = nodesToDelete.filter((n) => !n.node_id);
         if (missingIds.length > 0) {
-          results.errors.push(
+          errors.push(
             `${missingIds.length} node(s) missing required node_id for delete operation.`
           );
         }
         // TODO: Implement delete logic when canvasHelpers supports it
-        results.errors.push("Delete operation not yet implemented.");
+        errors.push("Delete operation not yet implemented.");
       }
 
-      const hasErrors = results.errors.length > 0;
+      const hasErrors = errors.length > 0;
       const hasSuccess =
-        results.created.length > 0 ||
-        results.edited.length > 0 ||
-        results.deleted.length > 0;
+        createdNodeIds.length > 0 ||
+        editedNodeIds.length > 0 ||
+        deletedNodeIds.length > 0;
+      const hasValidationErrors = detailedValidationErrors.length > 0;
 
-      const hasValidationErrors = (results.validationErrors?.length ?? 0) > 0;
+      const summaryParts = [
+        createdNodeIds.length > 0
+          ? `Created ${createdNodeIds.length} node(s)`
+          : null,
+        editedNodeIds.length > 0
+          ? `Edited ${editedNodeIds.length} node(s)`
+          : null,
+        deletedNodeIds.length > 0
+          ? `Deleted ${deletedNodeIds.length} node(s)`
+          : null,
+        errors.length > 0 ? `${errors.length} error(s)` : null,
+      ].filter(Boolean);
 
       return {
         success: !hasErrors || hasSuccess,
-        summary: [
-          results.created.length > 0
-            ? `Created ${results.created.length} node(s)`
-            : null,
-          results.edited.length > 0
-            ? `Edited ${results.edited.length} node(s)`
-            : null,
-          results.deleted.length > 0
-            ? `Deleted ${results.deleted.length} node(s)`
-            : null,
-          results.errors.length > 0
-            ? `${results.errors.length} error(s)`
-            : null,
-        ]
-          .filter(Boolean)
-          .join(", "),
-        results,
+        summary:
+          summaryParts.length > 0
+            ? summaryParts.join(", ")
+            : "No operations performed",
+        createdNodeIds,
+        editedNodeIds,
+        deletedNodeIds,
+        errors,
+        validationErrors: hasValidationErrors
+          ? detailedValidationErrors
+          : undefined,
         hint: hasValidationErrors
-          ? "Some nodes were rejected due to invalid data. Check validationErrors for the expected format and correct your data structure."
+          ? "Some nodes were rejected due to invalid data. Check validationErrors for details and expected format."
           : hasErrors
             ? "Check the errors array for details. Use readNodeConfigsTool to verify data structure."
             : "Nodes modified successfully. Use readCanvasTool to verify changes.",
@@ -334,7 +313,10 @@ export const editCanvasNodesAndEdgesTool = createTool({
       return {
         success: false,
         summary: "Operation failed",
-        error: error instanceof Error ? error.message : String(error),
+        createdNodeIds: [],
+        editedNodeIds: [],
+        deletedNodeIds: [],
+        errors: [error instanceof Error ? error.message : String(error)],
         hint: "Check canvas_id validity and node data structure using readNodeConfigsTool.",
       };
     }

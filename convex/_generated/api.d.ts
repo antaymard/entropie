@@ -18,7 +18,6 @@ import type * as ia_helpers_nodeFieldsAndTypesHelper from "../ia/helpers/nodeFie
 import type * as ia_helpers_plateToMarkdownHelper from "../ia/helpers/plateToMarkdownHelper.js";
 import type * as ia_nole from "../ia/nole.js";
 import type * as ia_prompts_noleSystemPrompt from "../ia/prompts/noleSystemPrompt.js";
-import type * as ia_tools_createCanvasElementsTool from "../ia/tools/createCanvasElementsTool.js";
 import type * as ia_tools_editCanvasNodesAndEdgesTool from "../ia/tools/editCanvasNodesAndEdgesTool.js";
 import type * as ia_tools_openWebPageTool from "../ia/tools/openWebPageTool.js";
 import type * as ia_tools_readCanvasTool from "../ia/tools/readCanvasTool.js";
@@ -32,6 +31,7 @@ import type * as lib_r2 from "../lib/r2.js";
 import type * as links from "../links.js";
 import type * as migrations from "../migrations.js";
 import type * as templates from "../templates.js";
+import type * as threads from "../threads.js";
 import type * as uploads from "../uploads.js";
 
 import type {
@@ -59,7 +59,6 @@ declare const fullApi: ApiFromModules<{
   "ia/helpers/plateToMarkdownHelper": typeof ia_helpers_plateToMarkdownHelper;
   "ia/nole": typeof ia_nole;
   "ia/prompts/noleSystemPrompt": typeof ia_prompts_noleSystemPrompt;
-  "ia/tools/createCanvasElementsTool": typeof ia_tools_createCanvasElementsTool;
   "ia/tools/editCanvasNodesAndEdgesTool": typeof ia_tools_editCanvasNodesAndEdgesTool;
   "ia/tools/openWebPageTool": typeof ia_tools_openWebPageTool;
   "ia/tools/readCanvasTool": typeof ia_tools_readCanvasTool;
@@ -73,6 +72,7 @@ declare const fullApi: ApiFromModules<{
   links: typeof links;
   migrations: typeof migrations;
   templates: typeof templates;
+  threads: typeof threads;
   uploads: typeof uploads;
 }>;
 declare const fullApiWithMounts: typeof fullApi;

@@ -19,7 +19,7 @@ interface NoleStore {
       ids?: string[]; // Null if position
     }[]
   ) => void;
-  resetAttachments: (canvas: Canvas) => void;
+  resetAttachments: () => void;
 }
 
 export const useNoleStore = create<NoleStore>()(
@@ -78,8 +78,8 @@ export const useNoleStore = create<NoleStore>()(
           attachedPosition: newAttachedPosition,
         });
       },
-      resetAttachments: (canvas) => {
-        set({ attachedNodes: [], attachedPosition: null, canvas });
+      resetAttachments: () => {
+        set({ attachedNodes: [], attachedPosition: null });
       },
     }),
     { name: "canvas-store" }

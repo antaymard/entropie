@@ -98,7 +98,7 @@ function serializeNode(
           .join("\n") + "\n\n"
       );
 
-    case "code_block":
+    case "code_block": {
       const lang = node.lang || "";
       const code = (node.children || [])
         .map((line: any) =>
@@ -106,16 +106,46 @@ function serializeNode(
         )
         .join("\n");
       return `\`\`\`${lang}\n${code}\n\`\`\`\n\n`;
+    }
 
     case "a":
       return `[${children}](${node.url})`;
 
-    case "img":
+    case "img": {
       const alt = node.caption?.[0]?.text || "";
       return `![${alt}](${node.url})`;
+    }
 
     case "hr":
       return "---\n\n";
+
+    case "date": {
+      if (!node.date) return "[Date non définie]";
+      const date = new Date(node.date);
+      const today = new Date();
+      const isToday =
+        date.getDate() === today.getDate() &&
+        date.getMonth() === today.getMonth() &&
+        date.getFullYear() === today.getFullYear();
+
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const isYesterday = date.toDateString() === yesterday.toDateString();
+
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const isTomorrow = date.toDateString() === tomorrow.toDateString();
+
+      if (isToday) return "Aujourd'hui";
+      if (isYesterday) return "Hier";
+      if (isTomorrow) return "Demain";
+
+      return date.toLocaleDateString("fr-FR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    }
 
     case "table":
       return serializeTable(node);

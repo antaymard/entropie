@@ -61,6 +61,7 @@ function FloatingTextNode(xyNode: Node) {
 
       <NodeFrame xyNode={xyNode} headerless>
         <InlineEditableText
+          multiline
           value={(xyNode.data?.text as string) || ""}
           onSave={handleTextSave}
           className={textClassName}

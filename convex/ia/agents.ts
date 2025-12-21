@@ -16,7 +16,7 @@ import { readNodeConfigsTool } from "./tools/readNodeConfigsTool";
 export const noleAgent = new Agent(components.agent, {
   name: "Nolë",
   maxSteps: 15,
-  languageModel: mistral("ministral-14b-2512"),
+  languageModel: mistral("mistral-large-2512"),
   tools: {
     // read_node_templates: readNodeTemplatesTool,
     // create_canvas_elements: createCanvasElementsTool,

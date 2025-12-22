@@ -1,5 +1,6 @@
-import type { Node } from "@xyflow/react";
+import type { Edge, Node } from "@xyflow/react";
 import type { CanvasNode, NodeColors } from "../../types/node.types";
+import type { CanvasEdge } from "@/types/edge.types";
 
 /**
  * Converts a partial CanvasNode (from DB) to ReactFlow Node format
@@ -94,4 +95,19 @@ export function toXyNodes(canvasNodes: Partial<CanvasNode>[]): Node[] {
  */
 export function toConvexNodes(xyNodes: Node[]): CanvasNode[] {
   return xyNodes.map(toConvexNode);
+}
+
+export function toConvexEdge(xyEdge: Edge): CanvasEdge {
+  return {
+    id: xyEdge.id,
+    source: xyEdge.source,
+    target: xyEdge.target,
+    sourceHandle: xyEdge.sourceHandle || undefined,
+    targetHandle: xyEdge.targetHandle || undefined,
+    data: xyEdge.data || {},
+  };
+}
+
+export function toConvexEdges(xyEdges: Edge[]): CanvasEdge[] {
+  return xyEdges.map(toConvexEdge);
 }

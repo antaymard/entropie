@@ -1,4 +1,4 @@
-import type { Node } from "@xyflow/react";
+import type { Edge, Node } from "@xyflow/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import CanvasContextMenu from "./CanvasContextMenu";
 import EdgeContextMenu from "./EdgeContextMenu";
@@ -91,7 +91,13 @@ export default function ContextMenuWrapper({
           />
         );
       case "edge":
-        return <EdgeContextMenu />;
+        return (
+          <EdgeContextMenu
+            closeMenu={handleClose}
+            position={position}
+            xyEdge={element as Edge}
+          />
+        );
       case "selection":
         return (
           <SelectionContextMenu closeMenu={handleClose} elements={element} />

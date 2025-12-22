@@ -18,6 +18,9 @@ import {
 import { PiPaperPlaneRightBold } from "react-icons/pi";
 import { AttachmentRenderer } from "./AttachmentRenderer";
 import { Message } from "./Message";
+import { useCanvasStore } from "@/stores/canvasStore";
+import { position } from "html2canvas-pro/dist/types/css/property-descriptors/position";
+import type { Canvas } from "@/types";
 
 const ChatInterface = memo(function ChatInterface({
   threadId,
@@ -152,14 +155,29 @@ const ChatInterface = memo(function ChatInterface({
     setIsAtBottom(true);
     scrollingToBottomRef.current = true;
     scrollToBottom("auto");
+    const canvas: Partial<Canvas> = useCanvasStore.getState().canvas;
     const attachementsContext = useAttachments
       ? {
           attachedNodes: toConvexNodes(useNoleStore.getState().attachedNodes),
           attachedPosition: useNoleStore.getState().attachedPosition,
-          canvas: useNoleStore.getState().canvas ?? null,
+          canvas: {
+            _id: canvas?._id || "",
+            name: canvas?.name || "",
+            description: canvas?.description || "",
+            nodes:
+              canvas?.nodes?.map((n) => ({
+                id: n.id,
+                name: n.name,
+                position: n.position,
+                width: n.width,
+                height: n.height,
+              })) || [],
+            edges: canvas?.edges || [],
+          },
         }
       : undefined;
     try {
+      console.log(attachementsContext);
       await sendMessage({
         threadId,
         prompt: currentPrompt,

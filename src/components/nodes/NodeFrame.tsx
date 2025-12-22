@@ -4,6 +4,7 @@ import {
   useReactFlow,
   Position,
   type Node,
+  Handle,
 } from "@xyflow/react";
 import { memo, useState, useMemo, useCallback, type MouseEvent } from "react";
 import type { NodeColors, NodeType } from "../../types/node.types";
@@ -29,12 +30,14 @@ function NodeFrame({
   xyNode,
   headerless = false,
   notResizable = false,
+  disableHandles = false,
   children,
   nodeContentClassName = "",
 }: {
   xyNode: Node;
   headerless?: boolean;
   notResizable?: boolean;
+  disableHandles?: boolean;
   children: React.ReactNode;
   nodeContentClassName?: string;
 }) {
@@ -117,7 +120,7 @@ function NodeFrame({
             console.log("Out", xyNode.id);
           }}
           className={cn(
-            "group rounded-sm h-full flex flex-col overflow-hidden transition-shadow duration-150",
+            "group rounded-sm h-full flex flex-col transition-shadow duration-150",
             nodeColor.border,
             nodeColor.bg,
             !canDrag && "nodrag cursor-crosshair",
@@ -136,6 +139,14 @@ function NodeFrame({
             }
           }}
         >
+          {!disableHandles && (
+            <>
+              <Handle position={Position.Right} id={xyNode.id + "right"} />
+              <Handle position={Position.Left} id={xyNode.id + "left"} />
+              <Handle position={Position.Top} id={xyNode.id + "top"} />
+              <Handle position={Position.Bottom} id={xyNode.id + "bottom"} />
+            </>
+          )}
           {!headerless && (
             <div
               className={`${nodeColor.bg} ${nodeColor.text} px-1 py-[3px] rounded-t-sm flex gap-8 items-center justify-between`}

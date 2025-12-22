@@ -11,6 +11,9 @@ import {
   type EdgeChange,
   Panel,
   SelectionMode,
+  addEdge,
+  type Connection,
+  ConnectionMode,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { api } from "../../../convex/_generated/api";
@@ -20,7 +23,11 @@ import { nodeTypes, nodeList } from "../../components/nodes/nodeTypes";
 import { useCanvasStore } from "../../stores/canvasStore";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ContextMenu from "../../components/canvas/context-menus";
-import { toConvexNodes, toXyNodes } from "../../components/utils/nodeUtils";
+import {
+  toConvexEdges,
+  toConvexNodes,
+  toXyNodes,
+} from "../../components/utils/nodeUtils";
 import {
   Card,
   CardContent,
@@ -129,7 +136,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
         saveCanvas({
           canvasId,
           nodes: toConvexNodes(n),
-          edges: e,
+          edges: toConvexEdges(e),
         })
           .then(() => setCanvasStatus("saved"))
           .catch(() => setCanvasStatus("error"));
@@ -164,6 +171,11 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   const handleNodeContextMenu = useCallback(
     (e: React.MouseEvent | MouseEvent, node: Node) =>
       isAuthenticated && handleRightClick(e, "node", node),
+    [handleRightClick, isAuthenticated]
+  );
+  const handleEdgeContextMenu = useCallback(
+    (e: React.MouseEvent | MouseEvent, edge: Edge) =>
+      isAuthenticated && handleRightClick(e, "edge", edge),
     [handleRightClick, isAuthenticated]
   );
 
@@ -206,6 +218,14 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
       onEdgesChange(changes);
     },
     [onEdgesChange, isAuthenticated]
+  );
+
+  const handleConnect = useCallback(
+    (connection: Connection) => {
+      if (!isAuthenticated) return;
+      setEdges((eds) => addEdge(connection, eds));
+    },
+    [setEdges, isAuthenticated]
   );
 
   // ========== Effects ==========
@@ -344,9 +364,11 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           selectionMode={SelectionMode.Partial}
           nodeTypes={nodeTypes}
           nodes={nodes}
+          connectionMode={ConnectionMode.Loose}
           edges={edges}
           onNodesChange={handleNodesChange}
           onEdgesChange={handleEdgesChange}
+          onConnect={handleConnect}
           onPaneContextMenu={handlePaneContextMenu}
           onPaneClick={(e: React.MouseEvent) => {
             if (e.altKey) {
@@ -357,13 +379,13 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
             }
           }}
           onNodeContextMenu={handleNodeContextMenu}
+          onEdgeContextMenu={handleEdgeContextMenu}
           onSelectionContextMenu={handleSelectionContextMenu}
           onNodeDoubleClick={handleNodeDoubleClick}
           deleteKeyCode={null}
           // snapToGrid
           // snapGrid={[5, 5]}
           nodesDraggable={isAuthenticated}
-          edgesConnectable={isAuthenticated}
           className="rounded-md"
         >
           <Background bgColor="#f9fafb" />

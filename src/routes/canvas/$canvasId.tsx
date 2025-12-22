@@ -359,6 +359,11 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
         <ReactFlow
           panOnScroll
           panOnDrag={[1]}
+          defaultViewport={{
+            x: 0,
+            y: 0,
+            zoom: 0,
+          }}
           selectNodesOnDrag={false}
           selectionOnDrag={deviceType === "desktop"}
           selectionMode={SelectionMode.Partial}

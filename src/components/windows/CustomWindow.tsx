@@ -37,7 +37,7 @@ function CustomWindow({ windowId }: CustomWindowProps) {
   }
 
   return (
-    <WindowFrame windowId={windowId} contentClassName="p-0!">
+    <WindowFrame windowId={windowId} contentClassName="p-0!" floatable={false}>
       <CustomTemplateRenderer
         template={template}
         visualType="window"

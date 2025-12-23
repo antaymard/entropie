@@ -24,24 +24,27 @@ export const useWindowsStore = create<WindowsStore>()(
       openWindows: [],
       openWindow: (window: Window) => {
         set((state) => {
-          const existingWindow = state.openWindows.find(
-            (w) => w.id === window.id
-          );
-          if (existingWindow) {
-            // Si la fenêtre existe et est minimisée, on la déminimise
-            if (existingWindow.isMinimized) {
-              return {
-                openWindows: state.openWindows.map((w) =>
-                  w.id === window.id ? { ...w, isMinimized: false } : w
-                ),
-              };
-            }
-            return state;
-          }
-          return {
-            openWindows: [...state.openWindows, window],
-          };
+          return { openWindows: [window] };
         });
+        // set((state) => {
+        //   const existingWindow = state.openWindows.find(
+        //     (w) => w.id === window.id
+        //   );
+        //   if (existingWindow) {
+        //     // Si la fenêtre existe et est minimisée, on la déminimise
+        //     if (existingWindow.isMinimized) {
+        //       return {
+        //         openWindows: state.openWindows.map((w) =>
+        //           w.id === window.id ? { ...w, isMinimized: false } : w
+        //         ),
+        //       };
+        //     }
+        //     return state;
+        //   }
+        //   return {
+        //     openWindows: [...state.openWindows, window],
+        //   };
+        // });
       },
       toggleMinimizeWindow: (windowId: string, isMinimized?: boolean) => {
         set((state) => ({

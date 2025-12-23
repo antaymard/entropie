@@ -50,6 +50,7 @@ import CanvasToolbar from "@/components/canvas/on-canvas-ui/CanvasToolbar";
 import { cn } from "@/lib/utils";
 import { useNoleStore } from "@/stores/noleStore";
 import { NoleChat } from "@/components/ai/NoleChat";
+import SidePanelWindowsContainer from "@/components/windows/SidePanelWindowsContainer";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -58,16 +59,26 @@ export const Route = createFileRoute("/canvas/$canvasId")({
 function RouteComponent() {
   const { canvasId } = Route.useParams() as { canvasId: Id<"canvases"> };
   const isAiPanelOpen = useCanvasStore((state) => state.isAiPanelOpen);
+  const openWindows = useWindowsStore((state) => state.openWindows);
 
   return (
     <ReactFlowProvider>
       <div
         className={cn(
-          "h-screen w-screen ",
+          "h-screen w-screen",
 
-          isAiPanelOpen ? "grid grid-cols-[1fr_450px]" : "flex"
+          {
+            "grid grid-cols-[1fr_450px]":
+              isAiPanelOpen && openWindows.length === 0,
+            "grid grid-cols-[450px_1fr_450px]":
+              isAiPanelOpen && openWindows.length > 0,
+            "grid grid-cols-[450px_1fr]":
+              !isAiPanelOpen && openWindows.length > 0,
+            flex: !isAiPanelOpen && openWindows.length === 0,
+          }
         )}
       >
+        {openWindows.length > 0 && <SidePanelWindowsContainer />}
         <CanvasContent key={canvasId} canvasId={canvasId} />
         {isAiPanelOpen && <NoleChat />}
       </div>
@@ -409,9 +420,9 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           <Background bgColor="#f9fafb" />
           {/* <Controls /> */}
 
-          <Panel position="center-left">
+          {/* <Panel position="center-left">
             <CanvasToolbar />
-          </Panel>
+          </Panel> */}
 
           <Panel position="top-left">
             <TopLeftToolbar undo={undo} redo={redo} />
@@ -426,7 +437,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
             setContextMenu={setContextMenu}
           />
         )}
-        <WindowsContainer />
+        {/* <WindowsContainer /> */}
       </div>
     </>
   );

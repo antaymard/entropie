@@ -6,34 +6,35 @@ import CustomWindow from "./CustomWindow";
 export default function WindowsContainer() {
   const openWindows = useWindowsStore((state) => state.openWindows);
 
+  const openWindow = openWindows[0];
+  if (!openWindow) return null;
+
+  function renderOpenWindows() {
+    // Pour les nodes custom (avec template), utilise CustomWindow
+    if (openWindow.type === "custom") {
+      return <CustomWindow key={openWindow.id} windowId={openWindow.id} />;
+    }
+
+    // Récupère la config du node prebuilt pour trouver le windowComponent
+    const nodeConfig = prebuiltNodesConfig.find(
+      (config) => config.type === openWindow.type
+    );
+
+    // Si un windowComponent est défini, l'utilise
+    if (nodeConfig?.windowComponent) {
+      const WindowComponent = nodeConfig.windowComponent;
+      return <WindowComponent key={openWindow.id} windowId={openWindow.id} />;
+    }
+
+    // Fallback: WindowFrame vide
+    return (
+      <WindowFrame key={openWindow.id} windowId={openWindow.id}>
+        {/* Contenu par défaut si pas de windowComponent */}
+      </WindowFrame>
+    );
+  }
+
   return (
-    <div className="fixed top-0 left-0 h-screen w-screen pointer-events-none">
-      {openWindows
-        .filter((window) => !window.isMinimized)
-        .map((window) => {
-          // Pour les nodes custom (avec template), utilise CustomWindow
-          if (window.type === "custom") {
-            return <CustomWindow key={window.id} windowId={window.id} />;
-          }
-
-          // Récupère la config du node prebuilt pour trouver le windowComponent
-          const nodeConfig = prebuiltNodesConfig.find(
-            (config) => config.type === window.type
-          );
-
-          // Si un windowComponent est défini, l'utilise
-          if (nodeConfig?.windowComponent) {
-            const WindowComponent = nodeConfig.windowComponent;
-            return <WindowComponent key={window.id} windowId={window.id} />;
-          }
-
-          // Fallback: WindowFrame vide
-          return (
-            <WindowFrame key={window.id} windowId={window.id}>
-              {/* Contenu par défaut si pas de windowComponent */}
-            </WindowFrame>
-          );
-        })}
-    </div>
+    <div className="flex h-screen w-32 bg-primary">{renderOpenWindows()}</div>
   );
 }

@@ -14,9 +14,18 @@ import { Switch } from "@/components/shadcn/switch";
 import { useConvexAuth, useMutation } from "convex/react";
 import { api } from "@/../convex/_generated/api";
 import { toastError } from "@/components/utils/errorUtils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/shadcn/tooltip";
+import { RiRobot2Fill } from "react-icons/ri";
 
 function TopRightToolbar() {
   const { isAuthenticated } = useConvexAuth();
+  const isAiPanelOpen = useCanvasStore((state) => state.isAiPanelOpen);
+  const setIsAiPanelOpen = useCanvasStore((state) => state.setIsAiPanelOpen);
+
   if (!isAuthenticated) return null;
 
   return (
@@ -35,6 +44,21 @@ function TopRightToolbar() {
             <HiOutlineCog size={18} />
           </Link>
         </Button>
+      </div>
+      <div className="bg-white px-2 rounded h-full border border-gray-300 flex items-center gap-2">
+        <Tooltip delayDuration={300}>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              onClick={() => setIsAiPanelOpen(!isAiPanelOpen)}
+              variant={isAiPanelOpen ? "default" : "ghost"}
+              // className={`p-2 rounded hover:bg-slate-100 ${isActive ? "bg-slate-200 border-slate-300" : "border-transparent text-slate-300"}`}
+            >
+              <RiRobot2Fill size={20} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent align="start">Assistant Nolë</TooltipContent>
+        </Tooltip>
       </div>
     </div>
   );

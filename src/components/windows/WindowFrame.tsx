@@ -9,11 +9,13 @@ import type { NodeColors } from "@/types/node.types";
 import nodeColors from "../nodes/nodeColors";
 import { HiMiniXMark } from "react-icons/hi2";
 import prebuiltNodesConfig from "../nodes/prebuilt-nodes/prebuiltNodesConfig";
+import { cn } from "@/lib/utils";
 
 interface WindowFrameProps {
   windowId: string;
   children?: React.ReactNode;
   contentClassName?: string;
+  floatable?: boolean;
 }
 
 function getNodeColorClasses(color: NodeColors) {
@@ -24,20 +26,19 @@ function WindowFrame({
   windowId,
   children,
   contentClassName,
+  floatable = true,
 }: WindowFrameProps) {
   const { handleMouseDown } = useWindowDrag(windowId);
   const { getNode } = useReactFlow();
   const { updateNodeData } = useReactFlow();
 
   // Sélecteur optimisé avec shallow comparison
-  const window = useWindowsStore(
-    useShallow((state) => state.openWindows.find((w) => w.id === windowId))
-  );
+  const window = useWindowsStore(useShallow((state) => state.openWindows));
 
   const closeWindow = useWindowsStore((state) => state.closeWindow);
-  const toggleMinimizeWindow = useWindowsStore(
-    (state) => state.toggleMinimizeWindow
-  );
+  // const toggleMinimizeWindow = useWindowsStore(
+  //   (state) => state.toggleMinimizeWindow
+  // );
   const node = getNode(windowId);
 
   if (!window || !node) return null;
@@ -56,43 +57,61 @@ function WindowFrame({
 
   return (
     <div
-      className="absolute pointer-events-auto rounded-[10px] grid grid-cols-[7px_1fr_7px] grid-rows-[7px_1fr_7px]"
-      style={{
-        transform: `translate(${position.x}px, ${position.y}px)`,
-        width: `${width}px`,
-        height: `${height - 10}px`,
-      }}
+      className={cn(
+        floatable &&
+          "absolute pointer-events-auto rounded-[10px] grid grid-cols-[7px_1fr_7px] grid-rows-[7px_1fr_7px]",
+        !floatable && "h-full"
+      )}
+      style={
+        floatable
+          ? {
+              transform: `translate(${position?.x}px, ${position?.y}px)`,
+              width: `${width}px`,
+              height: `${height - 10}px`,
+            }
+          : {}
+      }
     >
       {/* Top-left corner */}
-      <div
-        className="cursor-nwse-resize"
-        onMouseDown={(e) => handleMouseDown(e, "resize", "tl")}
-      />
-      {/* Top center */}
-      <div
-        className="cursor-ns-resize"
-        onMouseDown={(e) => handleMouseDown(e, "resize", "tc")}
-      />
-      {/* Top-right corner */}
-      <div
-        className="cursor-nesw-resize"
-        onMouseDown={(e) => handleMouseDown(e, "resize", "tr")}
-      />
+      {floatable && (
+        <>
+          <div
+            className="cursor-nwse-resize"
+            onMouseDown={(e) => handleMouseDown(e, "resize", "tl")}
+          />
+          {/* Top center */}
+          <div
+            className="cursor-ns-resize"
+            onMouseDown={(e) => handleMouseDown(e, "resize", "tc")}
+          />
+          {/* Top-right corner */}
+          <div
+            className="cursor-nesw-resize"
+            onMouseDown={(e) => handleMouseDown(e, "resize", "tr")}
+          />
 
-      {/* Middle-left */}
-      <div
-        className="cursor-ew-resize"
-        onMouseDown={(e) => handleMouseDown(e, "resize", "ml")}
-      />
+          {/* Middle-left */}
+          <div
+            className="cursor-ew-resize"
+            onMouseDown={(e) => handleMouseDown(e, "resize", "ml")}
+          />
+        </>
+      )}
 
       {/* WINDOW CONTENT */}
       <div
-        className={`cursor-grab p-0.5 border rounded ${nodeColor.border} inline-flex flex-col h-full w-full shadow backdrop-blur-xs ${nodeColor.transparentBg}`}
+        className={cn(
+          "p-0.5 border rounded inline-flex flex-col h-full w-full shadow backdrop-blur-xs ",
+          floatable && "cursor-grab",
+          nodeColor.border,
+          nodeColor.transparentBg
+        )}
       >
         {/* HEADER */}
         <div
           className="flex items-center justify-between px-1"
           onMouseDown={(e) => {
+            if (!floatable) return;
             e.stopPropagation();
             handleMouseDown(e, "move");
           }}
@@ -107,13 +126,15 @@ function WindowFrame({
             />
           </div>
           <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => toggleMinimizeWindow(windowId, true)}
-              className="text-gray-500 h-6 w-6 flex items-center justify-center rounded hover:bg-white/40"
-            >
-              <TbWindowMinimize size={16} />
-            </button>
+            {floatable && (
+              <button
+                type="button"
+                // onClick={() => toggleMinimizeWindow(windowId, true)}
+                className="text-gray-500 h-6 w-6 flex items-center justify-center rounded hover:bg-white/40"
+              >
+                <TbWindowMinimize size={16} />
+              </button>
+            )}
             <button
               type="button"
               onClick={() => closeWindow(windowId)}
@@ -130,36 +151,44 @@ function WindowFrame({
             "bg-white h-full rounded-md p-3 border border-gray-200 cursor-auto overflow-auto " +
             contentClassName
           }
-          style={{
-            width: width - 16,
-            height: height - 16 - 28 - 8,
-          }}
+          style={
+            floatable
+              ? {}
+              : {
+                  width: width - 16,
+                  height: height - 16 - 28 - 8,
+                }
+          }
         >
           {children}
         </div>
       </div>
 
       {/* Middle-right */}
-      <div
-        className="cursor-ew-resize"
-        onMouseDown={(e) => handleMouseDown(e, "resize", "mr")}
-      />
+      {floatable && (
+        <>
+          <div
+            className="cursor-ew-resize"
+            onMouseDown={(e) => handleMouseDown(e, "resize", "mr")}
+          />
 
-      {/* Bottom-left corner */}
-      <div
-        className="cursor-nesw-resize"
-        onMouseDown={(e) => handleMouseDown(e, "resize", "bl")}
-      />
-      {/* Bottom center */}
-      <div
-        className="cursor-ns-resize"
-        onMouseDown={(e) => handleMouseDown(e, "resize", "bc")}
-      />
-      {/* Bottom-right corner */}
-      <div
-        className="cursor-nwse-resize"
-        onMouseDown={(e) => handleMouseDown(e, "resize", "br")}
-      />
+          {/* Bottom-left corner */}
+          <div
+            className="cursor-nesw-resize"
+            onMouseDown={(e) => handleMouseDown(e, "resize", "bl")}
+          />
+          {/* Bottom center */}
+          <div
+            className="cursor-ns-resize"
+            onMouseDown={(e) => handleMouseDown(e, "resize", "bc")}
+          />
+          {/* Bottom-right corner */}
+          <div
+            className="cursor-nwse-resize"
+            onMouseDown={(e) => handleMouseDown(e, "resize", "br")}
+          />
+        </>
+      )}
     </div>
   );
 }

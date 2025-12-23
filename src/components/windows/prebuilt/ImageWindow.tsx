@@ -16,7 +16,7 @@ function ImageWindow({ windowId }: ImageWindowProps) {
   const value = [{ url: nodeData?.url }];
 
   return (
-    <WindowFrame windowId={windowId} contentClassName="p-0! ">
+    <WindowFrame windowId={windowId} contentClassName="p-0! " floatable={false}>
       <ImageField
         value={value}
         visualType="window"

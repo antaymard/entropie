@@ -47,7 +47,7 @@ function CanvasToolbar() {
 
   return (
     <div className="bg-white p-2 rounded h-full border border-gray-300 flex flex-col gap-1 items-center">
-      <Tooltip delayDuration={300}>
+      {/* <Tooltip delayDuration={300}>
         <TooltipTrigger asChild>
           <Button
             type="button"
@@ -60,7 +60,7 @@ function CanvasToolbar() {
         </TooltipTrigger>
         <TooltipContent align="start">Assistant Nolë</TooltipContent>
       </Tooltip>
-      <Separator />
+      <Separator /> */}
       {tools.map((tool) => {
         const Icon = tool.icon;
         const isActive = currentTool === tool.value;

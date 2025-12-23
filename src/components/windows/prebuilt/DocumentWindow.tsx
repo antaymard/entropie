@@ -19,7 +19,7 @@ function DocumentWindow({ windowId }: DocumentWindowProps) {
   const initialValue: Value = nodeData?.doc as Value;
 
   return (
-    <WindowFrame windowId={windowId} contentClassName="p-0!">
+    <WindowFrame windowId={windowId} contentClassName="p-0!" floatable={false}>
       <DocumentEditorField
         editorId={windowId}
         value={{ doc: initialValue }}

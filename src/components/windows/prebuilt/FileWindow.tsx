@@ -17,7 +17,7 @@ function FileWindow({ windowId }: FileWindowProps) {
   const value = (nodeData?.files as FileFieldType[]) || [];
 
   return (
-    <WindowFrame windowId={windowId} contentClassName="p-0! ">
+    <WindowFrame windowId={windowId} contentClassName="p-0! " floatable={false}>
       <PdfViewerField value={value} />
     </WindowFrame>
   );

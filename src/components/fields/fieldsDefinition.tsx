@@ -2,11 +2,13 @@ import type { FieldDefinition } from "@/types/field.types";
 import TextField from "./TextField";
 import { RiTextBlock, RiAttachment2, RiFileList3Line } from "react-icons/ri";
 import { GoNumber } from "react-icons/go";
-import { HiOutlineCheckCircle } from "react-icons/hi2";
+import { HiMiniCalendarDateRange, HiOutlineCheckCircle } from "react-icons/hi2";
+import { TbSelect } from "react-icons/tb";
 import { CgImage } from "react-icons/cg";
 import { ClassicNumberField, ProgressNumberField } from "./NumberField";
-import { TbNumber123, TbCalendarTime, TbSelect, TbLink } from "react-icons/tb";
+import { TbNumber123 } from "react-icons/tb";
 import { HiOutlineChartBar } from "react-icons/hi";
+import { TbLink } from "react-icons/tb";
 import LinkField from "./LinkField";
 import ImageField from "./ImageField";
 import DocumentEditorField from "./document-fields/DocumentEditorField";
@@ -14,7 +16,6 @@ import DocumentNameField from "./document-fields/DocumentNameField";
 import DocumentStaticField from "./document-fields/DocumentStaticField";
 import FileField from "./file-fields/FileNameField";
 import SelectField from "./SelectField";
-import DateField from "./DateField";
 
 const fieldsDefinition: FieldDefinition[] = [
   {
@@ -69,7 +70,6 @@ const fieldsDefinition: FieldDefinition[] = [
                   { value: "p", label: "Paragraphe" },
                 ],
               },
-              defaultValue: "p",
             },
           ],
         },
@@ -118,7 +118,6 @@ const fieldsDefinition: FieldDefinition[] = [
           key: "showLabel",
           label: "Afficher le label",
           type: "boolean",
-          defaultValue: false,
         },
       ],
       variants: [
@@ -143,7 +142,24 @@ const fieldsDefinition: FieldDefinition[] = [
       ],
     },
   },
-
+  {
+    label: "Date",
+    type: "date",
+    icon: HiMiniCalendarDateRange,
+    description: "Sélecteur de date pour choisir une date spécifique.",
+    visuals: {
+      commonSettingsList: [],
+      variants: [
+        {
+          name: "default",
+          label: "Par défaut",
+          visualType: "both",
+          component: TextField, // Temporaire
+          settingsList: [],
+        },
+      ],
+    },
+  },
   {
     label: "Case à cocher",
     type: "boolean",
@@ -173,7 +189,6 @@ const fieldsDefinition: FieldDefinition[] = [
         key: "isMultipleSelect",
         label: "Autoriser les choix multiples",
         type: "boolean",
-        defaultValue: false,
       },
       {
         key: "selectChoices",
@@ -189,6 +204,32 @@ const fieldsDefinition: FieldDefinition[] = [
           label: "Par défaut",
           visualType: "both",
           component: SelectField, // Temporaire
+          settingsList: [],
+        },
+      ],
+    },
+  },
+  {
+    label: "Image",
+    type: "image",
+    icon: CgImage,
+    description: "Champ pour insérer une image.",
+    fieldOptions: [],
+    visuals: {
+      commonSettingsList: [
+        {
+          key: "enableInImageNavigation",
+          label: "Navigation dans l'image",
+          type: "boolean",
+          defaultValue: false,
+        },
+      ],
+      variants: [
+        {
+          name: "default",
+          label: "Par défaut",
+          visualType: "both",
+          component: ImageField,
           settingsList: [],
         },
       ],
@@ -244,7 +285,19 @@ const fieldsDefinition: FieldDefinition[] = [
     type: "url",
     icon: TbLink,
     description: "Champ pour insérer une URL ou un lien web.",
-    fieldOptions: [],
+    fieldOptions: [
+      {
+        key: "sourceType",
+        label: "Type de source",
+        type: "select",
+        props: {
+          options: [
+            { value: "internal", label: "Interne" },
+            { value: "external", label: "Externe" },
+          ],
+        },
+      },
+    ],
     visuals: {
       commonSettingsList: [],
       variants: [
@@ -294,55 +347,6 @@ const fieldsDefinition: FieldDefinition[] = [
           label: "Affichage en lecture seule",
           visualType: "node",
           component: DocumentStaticField, // Temporaire
-          settingsList: [],
-        },
-      ],
-    },
-  },
-  {
-    label: "Date",
-    type: "date",
-    icon: TbCalendarTime,
-    description: "Champ pour insérer et éditer des dates.",
-    fieldOptions: [
-      {
-        key: "isDateTime",
-        label: "Inclure l'heure",
-        type: "boolean",
-        defaultValue: false,
-      },
-    ],
-    visuals: {
-      commonSettingsList: [],
-      variants: [
-        {
-          name: "relative",
-          label: "Date relative",
-          visualType: "both",
-          component: DateField,
-          componentProps: { isRelative: true },
-          settingsList: [
-            {
-              key: "format",
-              label: "Format d'affichage",
-              type: "select",
-              props: {
-                options: [
-                  { value: "automatic", label: "Automatique" },
-                  { value: "weeks", label: "Semaines" },
-                  { value: "days", label: "Jours" },
-                ],
-              },
-              defaultValue: "automatic",
-            },
-          ],
-        },
-        {
-          name: "absolute",
-          label: "Date absolue",
-          visualType: "both",
-          component: DateField,
-          componentProps: { isRelative: false },
           settingsList: [],
         },
       ],

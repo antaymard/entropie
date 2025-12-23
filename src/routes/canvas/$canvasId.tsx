@@ -133,6 +133,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
       debounce((n: Node[], e: Edge[]) => {
         if (!isAuthenticated) return;
         setCanvasStatus("saving");
+        console.log(n);
         saveCanvas({
           canvasId,
           nodes: toConvexNodes(n),

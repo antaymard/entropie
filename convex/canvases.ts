@@ -165,6 +165,7 @@ export const updateCanvasContent = mutation({
   },
   handler: async (ctx, { canvasId, nodes, edges }) => {
     const authUserId = await requireAuth(ctx);
+    console.log("updateCanvasContent called with canvasId:", canvasId);
 
     // Vérifier si l'utilisateur est le créateur du canvas
     const canvas = await ctx.db.get(canvasId);

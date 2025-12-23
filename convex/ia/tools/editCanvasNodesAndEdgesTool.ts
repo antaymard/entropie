@@ -252,8 +252,55 @@ export const editCanvasNodesAndEdgesTool = createTool({
             `${missingIds.length} node(s) missing required node_id for edit operation.`
           );
         }
-        // TODO: Implement edit logic when canvasHelpers supports it
-        errors.push("Edit operation not yet implemented.");
+
+        const validNodesToEdit = nodesToEdit.filter((n) => n.node_id);
+
+        // Valider les données si un nouveau type est fourni
+        for (const node of validNodesToEdit) {
+          if (node.node_type && node.node_data) {
+            const validation = validateNodeData(
+              node.node_type,
+              node.node_data as Record<string, unknown>
+            );
+            if (!validation.isValid) {
+              const nodeName = node.name || node.node_id!;
+              errors.push(`Node "${nodeName}" validation failed`);
+              detailedValidationErrors.push(
+                `Node: ${nodeName}\n` +
+                  `Errors: ${validation.errors.join("; ")}\n` +
+                  `Expected format: ${JSON.stringify(validation.expectedFormat, null, 2)}`
+              );
+              continue;
+            }
+          }
+
+          try {
+            await ctx.runMutation(
+              internal.ia.helpers.canvasHelpers.editNodeInCanvasInternal,
+              {
+                canvasId: canvas_id as Id<"canvases">,
+                nodeId: node.node_id!,
+                updates: {
+                  ...(node.name && { name: node.name }),
+                  ...(node.node_type && { type: node.node_type }),
+                  ...(node.node_data && { data: node.node_data }),
+                  ...(node.position && { position: node.position }),
+                  ...(node.dimensions?.width && {
+                    width: node.dimensions.width,
+                  }),
+                  ...(node.dimensions?.height && {
+                    height: node.dimensions.height,
+                  }),
+                },
+              }
+            );
+            editedNodeIds.push(node.node_id!);
+          } catch (error: unknown) {
+            errors.push(
+              `Failed to edit node ${node.node_id}: ${error instanceof Error ? error.message : String(error)}`
+            );
+          }
+        }
       }
 
       // Handle DELETE operations

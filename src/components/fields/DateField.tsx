@@ -88,7 +88,6 @@ function DateField({
 
   const handleSave = useCallback(
     (newValue: Date) => {
-      console.log("DateField - handleSave:", newValue);
       if (onChange) {
         // Save as timestamp (number) for Convex compatibility
         onChange(newValue.getTime());

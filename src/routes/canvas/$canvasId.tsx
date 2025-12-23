@@ -100,9 +100,12 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   const setUserTemplates = useTemplateStore((state) => state.setTemplates);
   const deviceType = useDeviceType();
 
-  // ========== React Flow State ==========
+  // ========== React Flow State ===========
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+
+  // Compteur de changements réels (non select)
+  const [contentChangeCount, setContentChangeCount] = useState(0);
 
   // ========== Local State ==========
   const [contextMenu, setContextMenu] = useState<{
@@ -205,10 +208,15 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   );
 
   // ========== Change Handlers ==========
+
   const handleNodesChange = useCallback(
     (changes: NodeChange<Node>[]) => {
       if (!isAuthenticated) return;
       onNodesChange(changes);
+      // Si au moins un change n'est pas de type 'select', incrémente le compteur
+      if (changes.some((c) => c.type !== "select")) {
+        setContentChangeCount((c) => c + 1);
+      }
     },
     [onNodesChange, isAuthenticated]
   );
@@ -217,6 +225,9 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     (changes: EdgeChange<Edge>[]) => {
       if (!isAuthenticated) return;
       onEdgesChange(changes);
+      if (changes.some((c) => c.type !== "select")) {
+        setContentChangeCount((c) => c + 1);
+      }
     },
     [onEdgesChange, isAuthenticated]
   );
@@ -242,7 +253,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     }
   }, [canvas, setNodes, setEdges, setCanvas]);
 
-  // 2️⃣ Auto-save avec debounce
+  // 2️⃣ Auto-save avec debounce (uniquement si contentChangeCount change)
   useEffect(() => {
     if (loadedCanvasIdRef.current === canvasId) {
       // Marque le moment du changement local pour ignorer les updates Convex
@@ -250,7 +261,8 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
       setCanvasStatus("unsynced");
       debouncedSave(nodes, edges);
     }
-  }, [nodes, edges, debouncedSave, canvasId, setCanvasStatus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contentChangeCount]);
 
   // 3️⃣ Record history
   useEffect(() => {

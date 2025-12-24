@@ -217,7 +217,7 @@ export default function NodeEditor({
         {({ values, setFieldValue, handleSubmit }) => {
           return (
             <div className="h-full flex flex-col gap-2">
-              <div className="flex flex-col rounded-md border-gray-300 border flex-1">
+              <div className="flex flex-col rounded-md border-gray-300 border flex-1 overflow-hidden">
                 <DndContext
                   onDragEnd={(e) => handleDragEnd(e, values, setFieldValue)}
                   onDragOver={handleDragOver}

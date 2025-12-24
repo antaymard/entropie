@@ -1,5 +1,6 @@
 import { memo, useCallback, useState, useMemo } from "react";
 import { type Node, useReactFlow } from "@xyflow/react";
+import { TbArrowsSort, TbChevronDown, TbChevronUp } from "react-icons/tb";
 import {
   useReactTable,
   getCoreRowModel,
@@ -130,6 +131,8 @@ function TableNode(xyNode: Node) {
         ? { ...row, [editingCell.colId]: editValue }
         : row
     );
+
+    console.log(newRows);
 
     updateTableData({ ...tableData, rows: newRows });
     setEditingCell(null);
@@ -313,11 +316,11 @@ function TableNode(xyNode: Node) {
               onClick={() => column.toggleSorting()}
             >
               {isSorted === "asc" ? (
-                <LuChevronUp className="h-3 w-3" />
+                <TbChevronUp className="h-3 w-3" />
               ) : isSorted === "desc" ? (
-                <LuChevronDown className="h-3 w-3" />
+                <TbChevronDown className="h-3 w-3" />
               ) : (
-                <LuArrowUpDown className="h-3 w-3" />
+                <TbArrowsSort size={10} />
               )}
             </Button>
             <DropdownMenu>
@@ -379,21 +382,48 @@ function TableNode(xyNode: Node) {
 
         if (isEditing) {
           if (col.type === "date") {
+            let parsedDate: Date | undefined = undefined;
+            let displayText = "Choisir une date";
+            
+            if (value) {
+              try {
+                const tempDate = parseISO(value);
+                if (isValid(tempDate)) {
+                  parsedDate = tempDate;
+                  displayText = format(tempDate, "PPP", { locale: fr });
+                } else {
+                  displayText = "Date invalide";
+                }
+              } catch {
+                displayText = "Date invalide";
+              }
+            }
+            
             return (
-              <Popover open={isEditing} onOpenChange={(open) => !open && saveCell()}>
+              <Popover open={isEditing}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="h-8 w-full justify-start text-left font-normal">
                     <LuCalendar className="mr-2 h-4 w-4" />
-                    {value ? format(parseISO(value), "PPP", { locale: fr }) : "Choisir une date"}
+                    {displayText}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0" align="start" onEscapeKeyDown={() => {
+                  setEditingCell(null);
+                  setEditValue("");
+                }}>
                   <Calendar
                     mode="single"
-                    selected={value ? parseISO(value) : undefined}
+                    selected={parsedDate}
                     onSelect={(date) => {
-                      setEditValue(date ? date.toISOString() : "");
-                      setTimeout(() => saveCell(), 100);
+                      const newValue = date ? date.toISOString() : "";
+                      const newRows = tableData.rows.map((r) =>
+                        r.id === editingCell?.rowId
+                          ? { ...r, [editingCell.colId]: newValue }
+                          : r
+                      );
+                      updateTableData({ ...tableData, rows: newRows });
+                      setEditingCell(null);
+                      setEditValue("");
                     }}
                     initialFocus
                   />

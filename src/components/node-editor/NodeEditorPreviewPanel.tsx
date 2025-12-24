@@ -45,12 +45,14 @@ export default function NodeEditorPreviewPanel() {
         </TabsContent>
         <TabsContent
           value="window"
-          className="flex flex-col items-center justify-center"
+          className="flex flex-col items-center justify-between"
         >
           <p className="text-sm italic">
             Quand vous double-cliquez sur le bloc
           </p>
-          <NodeTemplateRendererEditor />
+          <div className="bg-white rounded-md shadow border border-gray-300 p-4 min-w-96">
+            <NodeTemplateRendererEditor />
+          </div>
           <div />
         </TabsContent>
       </Tabs>

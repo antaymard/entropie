@@ -213,18 +213,14 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
       e.preventDefault();
       if (!isAuthenticated) return;
 
-      const currentLabel = edge.data?.label || "";
-      const newLabel = window.prompt("Label de la connexion:", currentLabel);
-
-      if (newLabel !== null) {
-        setEdges((eds) =>
-          eds.map((ed) =>
-            ed.id === edge.id
-              ? { ...ed, data: { ...ed.data, label: newLabel } }
-              : ed
-          )
-        );
-      }
+      // Trigger edit mode in the CustomEdge component via data update
+      setEdges((eds) =>
+        eds.map((ed) =>
+          ed.id === edge.id
+            ? { ...ed, data: { ...ed.data, _editMode: true } }
+            : ed
+        )
+      );
     },
     [isAuthenticated, setEdges]
   );

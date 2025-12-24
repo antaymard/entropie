@@ -20,6 +20,7 @@ import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { nodeTypes, nodeList } from "../../components/nodes/nodeTypes";
+import { edgeTypes } from "../../components/edges/edgeTypes";
 import { useCanvasStore } from "../../stores/canvasStore";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ContextMenu from "../../components/canvas/context-menus";
@@ -207,6 +208,27 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     [openWindow]
   );
 
+  const handleEdgeDoubleClick = useCallback(
+    (e: React.MouseEvent | MouseEvent, edge: Edge) => {
+      e.preventDefault();
+      if (!isAuthenticated) return;
+
+      const currentLabel = edge.data?.label || "";
+      const newLabel = window.prompt("Label de la connexion:", currentLabel);
+
+      if (newLabel !== null) {
+        setEdges((eds) =>
+          eds.map((ed) =>
+            ed.id === edge.id
+              ? { ...ed, data: { ...ed.data, label: newLabel } }
+              : ed
+          )
+        );
+      }
+    },
+    [isAuthenticated, setEdges]
+  );
+
   // ========== Change Handlers ==========
 
   const handleNodesChange = useCallback(
@@ -381,6 +403,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           selectionOnDrag={deviceType === "desktop"}
           selectionMode={SelectionMode.Partial}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           nodes={nodes}
           connectionMode={ConnectionMode.Loose}
           edges={edges}
@@ -400,6 +423,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           onEdgeContextMenu={handleEdgeContextMenu}
           onSelectionContextMenu={handleSelectionContextMenu}
           onNodeDoubleClick={handleNodeDoubleClick}
+          onEdgeDoubleClick={handleEdgeDoubleClick}
           deleteKeyCode={null}
           // snapToGrid
           // snapGrid={[5, 5]}

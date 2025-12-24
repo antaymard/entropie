@@ -76,7 +76,12 @@ function RouteComponent() {
             width: "100%",
             height: "100%",
           }}
-          modalTitle={editingTemplateId === "new" ? "Nouveau template" : "TODO"}
+          modalTitle={
+            editingTemplateId === "new"
+              ? "Nouveau template"
+              : userTemplates?.find((t) => t._id === editingTemplateId)?.name ||
+                "Modifier le template"
+          }
         >
           <NodeEditor templateId={editingTemplateId} />
         </Modal>

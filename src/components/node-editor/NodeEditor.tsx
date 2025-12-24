@@ -1,6 +1,5 @@
-import { HiOutlineXMark } from "react-icons/hi2";
 import { Formik } from "formik";
-import { get, min } from "lodash";
+import { get } from "lodash";
 
 import type { NodeTemplate } from "../../types";
 import type { LayoutElement } from "../../types/node.types";
@@ -34,6 +33,7 @@ export default function NodeEditor({
   const [selectedElementId, setSelectedElementId] = useState<string | null>(
     null
   );
+  const [isSaving, setIsSaving] = useState<boolean>(false);
   const createOrUpdateTemplate = useMutation(
     api.templates.createOrUpdateTemplate
   );
@@ -115,11 +115,18 @@ export default function NodeEditor({
   };
 
   const handleSaveTemplate = async (values: NodeTemplate) => {
-    // return console.log(values);
-    const { _id, ...data } = values;
+    try {
+      setIsSaving(true);
+      const { _id, ...data } = values;
 
-    await createOrUpdateTemplate({ templateId: _id, data });
-    toast.success("Template sauvegardé avec succès !");
+      await createOrUpdateTemplate({ templateId: _id, data });
+      toast.success("Template sauvegardé avec succès !");
+    } catch (error) {
+      toast.error("Erreur lors de la sauvegarde du template");
+      console.error("Error saving template:", error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // When item is dragged over the tree (TO DO LATER)
@@ -134,15 +141,14 @@ export default function NodeEditor({
   function handleDragEnd(
     event: DragEndEvent,
     values: NodeTemplate,
-    setFieldValue: any
+    setFieldValue: (field: string, value: any) => void
   ) {
     const { active, over } = event;
-    if (!over) return console.log("No over element");
-    console.log("Over ", over?.id);
+    if (!over) return;
 
     // Regarder si le targetElementId est root ou s'il contient div-. Si non, on ne fait rien
     if (over.id !== "root" && !String(over.id).startsWith("div-")) {
-      return console.log("Not a valid drop target");
+      return;
     }
 
     const action = active.data.current?.action;
@@ -163,7 +169,6 @@ export default function NodeEditor({
         (child) => child.id === active.data.current?.element?.id
       );
       if (isDuplicate) {
-        console.log("Element is already in the layout");
         return;
       }
 
@@ -175,9 +180,7 @@ export default function NodeEditor({
         visualType,
         values
       );
-      console.log({ updatedLayout });
       setFieldValue(currentVisualLayoutPath, updatedLayout);
-      console.log("Element added to layout");
     }
 
     // Réorganisation des éléments dans le tree
@@ -189,9 +192,7 @@ export default function NodeEditor({
         visualType,
         values
       );
-      console.log({ updatedLayout });
       setFieldValue(currentVisualLayoutPath, updatedLayout);
-      console.log("Element moved in layout");
     }
   }
 
@@ -216,7 +217,7 @@ export default function NodeEditor({
         {({ values, setFieldValue, handleSubmit }) => {
           return (
             <div className="h-full flex flex-col gap-2">
-              <div className="flex flex-col rounded-md border-gray-300 border flex-1">
+              <div className="flex flex-col rounded-md border-gray-300 border flex-1 overflow-hidden">
                 <DndContext
                   onDragEnd={(e) => handleDragEnd(e, values, setFieldValue)}
                   onDragOver={handleDragOver}
@@ -234,9 +235,10 @@ export default function NodeEditor({
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  className="p-2 bg-green-500 hover:bg-green-600 text-white w-fit rounded-sm"
+                  disabled={isSaving}
+                  className="p-2 bg-green-500 hover:bg-green-600 text-white w-fit rounded-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Sauvegarder
+                  {isSaving ? "Sauvegarde en cours..." : "Sauvegarder"}
                 </button>
               </div>
             </div>

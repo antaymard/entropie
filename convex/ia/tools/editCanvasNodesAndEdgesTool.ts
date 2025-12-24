@@ -110,7 +110,7 @@ function validateNodeData(
 
 export const editCanvasNodesAndEdgesTool = createTool({
   description:
-    "**Before using this tool, you must use read_node_configs to get the correct data structure for the node type you want to create or edit.** Otherwise, the data you pass will be rejected. Edit nodes on a user canvas. This tool allows you to create, edit, or delete nodes on a specified canvas. ",
+    "**Before using this tool, you must use read_node_configs to get the correct data structure for the node type you want to create or edit.** Otherwise, the data you pass will be rejected. Edit nodes on a user canvas. This tool allows you to create or edit nodes on a specified canvas.",
   args: z.object({
     canvas_id: z
       .string()
@@ -118,13 +118,13 @@ export const editCanvasNodesAndEdgesTool = createTool({
     nodes: z.array(
       z.object({
         operation: z
-          .enum(["create", "edit", "delete"])
+          .enum(["create", "edit"])
           .describe("The operation to perform on the node.")
           .default("create"),
         node_id: z
           .string()
           .describe(
-            "ID of the node to edit or delete. Required for edit and delete operations, ignored for create."
+            "ID of the node to edit. Required for edit operation, ignored for create."
           )
           .optional(),
         name: z
@@ -166,7 +166,6 @@ export const editCanvasNodesAndEdgesTool = createTool({
     try {
       const createdNodeIds: string[] = [];
       const editedNodeIds: string[] = [];
-      const deletedNodeIds: string[] = [];
       const errors: string[] = [];
       const detailedValidationErrors: string[] = [];
 
@@ -303,24 +302,8 @@ export const editCanvasNodesAndEdgesTool = createTool({
         }
       }
 
-      // Handle DELETE operations
-      const nodesToDelete = nodes.filter((n) => n.operation === "delete");
-      if (nodesToDelete.length > 0) {
-        const missingIds = nodesToDelete.filter((n) => !n.node_id);
-        if (missingIds.length > 0) {
-          errors.push(
-            `${missingIds.length} node(s) missing required node_id for delete operation.`
-          );
-        }
-        // TODO: Implement delete logic when canvasHelpers supports it
-        errors.push("Delete operation not yet implemented.");
-      }
-
       const hasErrors = errors.length > 0;
-      const hasSuccess =
-        createdNodeIds.length > 0 ||
-        editedNodeIds.length > 0 ||
-        deletedNodeIds.length > 0;
+      const hasSuccess = createdNodeIds.length > 0 || editedNodeIds.length > 0;
       const hasValidationErrors = detailedValidationErrors.length > 0;
 
       const summaryParts = [
@@ -329,9 +312,6 @@ export const editCanvasNodesAndEdgesTool = createTool({
           : null,
         editedNodeIds.length > 0
           ? `Edited ${editedNodeIds.length} node(s)`
-          : null,
-        deletedNodeIds.length > 0
-          ? `Deleted ${deletedNodeIds.length} node(s)`
           : null,
         errors.length > 0 ? `${errors.length} error(s)` : null,
       ].filter(Boolean);
@@ -344,7 +324,6 @@ export const editCanvasNodesAndEdgesTool = createTool({
             : "No operations performed",
         createdNodeIds,
         editedNodeIds,
-        deletedNodeIds,
         errors,
         validationErrors: hasValidationErrors
           ? detailedValidationErrors
@@ -362,7 +341,6 @@ export const editCanvasNodesAndEdgesTool = createTool({
         summary: "Operation failed",
         createdNodeIds: [],
         editedNodeIds: [],
-        deletedNodeIds: [],
         errors: [error instanceof Error ? error.message : String(error)],
         hint: "Check canvas_id validity and node data structure using readNodeConfigsTool.",
       };

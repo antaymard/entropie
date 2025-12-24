@@ -1,0 +1,73 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { api } from "../../convex/_generated/api";
+import { VscGithubProject } from "react-icons/vsc";
+import { useState, useEffect } from "react";
+import CanvasCreationModal from "../components/canvas/CanvasCreationModal";
+import { Dialog } from "@/components/shadcn/dialog";
+import { useConvexAuth, useConvex } from "convex/react";
+
+export const Route = createFileRoute("/app")({
+  component: RouteComponent,
+});
+
+function RouteComponent() {
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isGettingLastCanvas, setIsGettingLastCanvas] = useState<boolean>(true);
+  const { isAuthenticated, isLoading } = useConvexAuth();
+  const convex = useConvex();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Si pas authentifié, rediriger vers signin
+    if (!isLoading && !isAuthenticated) {
+      navigate({ to: "/signin" });
+      return;
+    }
+
+    // Si authentifié, vérifier s'il existe un canvas
+    if (!isLoading && isAuthenticated) {
+      convex.query(api.canvases.getLastModifiedCanvas, {}).then((result) => {
+        if (result?.success && result.canvas) {
+          navigate({
+            to: "/canvas/$canvasId",
+            params: { canvasId: result.canvas._id },
+          });
+        } else {
+          setIsGettingLastCanvas(false);
+        }
+      });
+    }
+  }, [isLoading, isAuthenticated, convex, navigate]);
+
+  // Afficher un loader pendant le chargement ou si une redirection est en cours
+  if (isLoading || !isAuthenticated || isGettingLastCanvas) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-gray-100">
+        <div>Chargement...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-screen w-screen bg-gray-100">
+      <div className="flex flex-col items-center justify-center h-full gap-5">
+        <p className="text-gray-500">
+          Aucun espace trouvé. Créez-en un nouveau !
+        </p>
+        <button
+          type="button"
+          className="flex items-center gap-2 bg-violet-500 px-3 py-2 rounded-md text-white hover:bg-violet-600"
+          onClick={() => {
+            setIsModalOpen(true);
+          }}
+        >
+          <VscGithubProject />
+          Créer un espace
+        </button>
+      </div>
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <CanvasCreationModal />
+      </Dialog>
+    </div>
+  );
+}

@@ -5,7 +5,7 @@ import SidePanelFrame from "../nodes/side-panels/SidePanelFrame";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../shadcn/tabs";
 import { UploadFile } from "./UploadFile";
 import { TbPencil } from "react-icons/tb";
-import { debounce } from "lodash";
+import debounce from "lodash/debounce";
 import {
   TransformComponent,
   TransformWrapper,

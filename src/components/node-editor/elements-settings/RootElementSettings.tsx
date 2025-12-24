@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { get } from "lodash";
+import get from "lodash/get";
 import { BsArrowDownSquare, BsArrowRightSquare } from "react-icons/bs";
 import { LuAlignVerticalSpaceAround } from "react-icons/lu";
 import { MdFlashAuto } from "react-icons/md";

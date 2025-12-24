@@ -9,7 +9,7 @@ import {
 } from "../shadcn/dropdown-menu";
 import { Button } from "../shadcn/button";
 import { HiChevronDown, HiCheck } from "react-icons/hi2";
-import { get } from "lodash";
+import get from "lodash/get";
 
 interface VariantSelectorProps {
   elementPath: string; // path vers l'élément dans le layout

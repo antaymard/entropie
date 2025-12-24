@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { get } from "lodash";
+import get from "lodash/get";
 
 export function StyleClickButton({
   elementPath,

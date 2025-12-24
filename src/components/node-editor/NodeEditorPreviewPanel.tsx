@@ -2,7 +2,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../shadcn/tabs";
 import { NodeTemplateRendererEditor } from "../renderers/CustomTemplateRenderer";
 import { useNodeEditorContext } from "@/hooks/useNodeEditorContext";
 import { useFormikContext } from "formik";
-import { get } from "lodash";
+import get from "lodash/get";
 
 export default function NodeEditorPreviewPanel() {
   const { currentVisualLayoutPath, setCurrentVisualLayoutPath } =

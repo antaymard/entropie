@@ -61,7 +61,7 @@ interface TableColumn {
 
 interface TableRowData {
   id: string;
-  cells: Record<string, any>;
+  [key: string]: any; // Les colonnes dynamiques (col1, col2, etc.)
 }
 
 interface TableData {
@@ -75,8 +75,8 @@ const DEFAULT_TABLE_DATA: TableData = {
     { id: "col2", name: "Colonne 2", type: "number" },
   ],
   rows: [
-    { id: "row1", cells: { col1: "", col2: "" } },
-    { id: "row2", cells: { col1: "", col2: "" } },
+    { id: "row1", col1: "", col2: "" },
+    { id: "row2", col1: "", col2: "" },
   ],
 };
 
@@ -127,7 +127,7 @@ function TableNode(xyNode: Node) {
 
     const newRows = tableData.rows.map((row) =>
       row.id === editingCell.rowId
-        ? { ...row, cells: { ...row.cells, [editingCell.colId]: editValue } }
+        ? { ...row, [editingCell.colId]: editValue }
         : row
     );
 
@@ -143,7 +143,7 @@ function TableNode(xyNode: Node) {
       const newColumn: TableColumn = { id: newColId, name: `Colonne ${tableData.columns.length + 1}`, type };
       const newRows = tableData.rows.map((row) => ({
         ...row,
-        cells: { ...row.cells, [newColId]: "" },
+        [newColId]: "",
       }));
 
       updateTableData({
@@ -159,8 +159,8 @@ function TableNode(xyNode: Node) {
     (colId: string) => {
       const newColumns = tableData.columns.filter((col) => col.id !== colId);
       const newRows = tableData.rows.map((row) => {
-        const { [colId]: _, ...cells } = row.cells;
-        return { ...row, cells };
+        const { [colId]: _, ...rest } = row;
+        return rest;
       });
 
       updateTableData({ columns: newColumns, rows: newRows });
@@ -214,14 +214,14 @@ function TableNode(xyNode: Node) {
   // Ajouter une ligne
   const addRow = useCallback(() => {
     const newRowId = `row${Date.now()}`;
-    const newCells: Record<string, any> = {};
+    const newRow: TableRowData = { id: newRowId };
     tableData.columns.forEach((col) => {
-      newCells[col.id] = "";
+      newRow[col.id] = "";
     });
 
     updateTableData({
       ...tableData,
-      rows: [...tableData.rows, { id: newRowId, cells: newCells }],
+      rows: [...tableData.rows, newRow],
     });
   }, [tableData, updateTableData]);
 
@@ -242,8 +242,8 @@ function TableNode(xyNode: Node) {
 
       const rowToDuplicate = tableData.rows[rowIndex];
       const newRow: TableRowData = {
+        ...rowToDuplicate,
         id: `row${Date.now()}`,
-        cells: { ...rowToDuplicate.cells },
       };
 
       const newRows = [...tableData.rows];
@@ -274,7 +274,7 @@ function TableNode(xyNode: Node) {
   const columns: ColumnDef<TableRowData>[] = useMemo(() => {
     const cols: ColumnDef<TableRowData>[] = tableData.columns.map((col) => ({
       id: col.id,
-      accessorFn: (row) => row.cells[col.id],
+      accessorKey: col.id,
       header: ({ column }) => {
         const isSorted = column.getIsSorted();
         return (
@@ -373,7 +373,7 @@ function TableNode(xyNode: Node) {
         );
       },
       cell: ({ row, column }) => {
-        const value = row.original.cells[col.id];
+        const value = row.original[col.id];
         const isEditing = editingCell?.rowId === row.original.id && editingCell?.colId === col.id;
         const isValid = validateCell(value, col.type);
 

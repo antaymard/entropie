@@ -187,8 +187,8 @@ const prebuiltNodesConfig = [
             { id: "col2", name: "Colonne 2", type: "number" },
           ],
           rows: [
-            { id: "row1", cells: { col1: "", col2: "" } },
-            { id: "row2", cells: { col1: "", col2: "" } },
+            { id: "row1", col1: "", col2: "" },
+            { id: "row2", col1: "", col2: "" },
           ],
         },
       },

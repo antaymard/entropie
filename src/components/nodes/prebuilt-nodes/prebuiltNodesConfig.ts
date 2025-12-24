@@ -4,6 +4,7 @@ import FloatingTextNode from "./FloatingTextNode";
 import ImageNode from "./ImageNode";
 import FileNode from "./FileNode";
 import DocumentNode from "./DocumentNode";
+import TableNode from "./TableNode";
 import DocumentWindow from "@/components/windows/prebuilt/DocumentWindow";
 import ImageWindow from "@/components/windows/prebuilt/ImageWindow";
 import FileWindow from "@/components/windows/prebuilt/FileWindow";
@@ -15,6 +16,7 @@ import {
   RiLink,
   RiAttachment2,
   RiFileList3Line,
+  RiTableLine,
 } from "react-icons/ri";
 import type { Value } from "platejs";
 
@@ -162,6 +164,36 @@ const prebuiltNodesConfig = [
       },
       height: 250,
       width: 200,
+    },
+  },
+  {
+    nodeLabel: "Tableau",
+    nodeIcon: RiTableLine,
+    type: "table",
+    nodeComponent: TableNode,
+    node: {
+      minWidth: 300,
+      minHeight: 200,
+    },
+    disableDoubleClickToOpenWindow: true,
+    initialNodeValues: {
+      ...defaultValues,
+      name: "Bloc Tableau",
+      type: "table",
+      data: {
+        tableData: {
+          columns: [
+            { id: "col1", name: "Colonne 1", type: "text" },
+            { id: "col2", name: "Colonne 2", type: "number" },
+          ],
+          rows: [
+            { id: "row1", col1: "", col2: "" },
+            { id: "row2", col1: "", col2: "" },
+          ],
+        },
+      },
+      height: 300,
+      width: 500,
     },
   },
 ] as NodeConfig[];

@@ -22,6 +22,18 @@ export default function NodeEditorPreviewPanel() {
     }
   };
 
+  // Get default dimensions for node preview
+  const layout = get(values, currentVisualLayoutPath);
+  const rootData = layout?.data as Record<string, unknown> | undefined;
+
+  // Parse default dimensions (stored as "150px" -> 150)
+  const defaultWidth = rootData?.defaultWidth
+    ? parseInt(String(rootData.defaultWidth).replace('px', ''))
+    : undefined;
+  const defaultHeight = rootData?.defaultHeight
+    ? parseInt(String(rootData.defaultHeight).replace('px', ''))
+    : undefined;
+
   return (
     <div className="bg-gray-50 p-10 overflow-auto h-full flex flex-col gap-4">
       <Tabs
@@ -35,7 +47,13 @@ export default function NodeEditorPreviewPanel() {
         </TabsList>
         <TabsContent value="node" className="flex flex-col items-center gap-4">
           <p className="text-sm italic">Ce qui apparaît sur la toile</p>
-          <div className="bg-white rounded-md shadow border border-gray-300">
+          <div
+            className="bg-white rounded-md shadow border border-gray-300"
+            style={{
+              width: defaultWidth ? `${defaultWidth}px` : 'auto',
+              height: defaultHeight ? `${defaultHeight}px` : 'auto',
+            }}
+          >
             <NodeTemplateRendererEditor />
           </div>
           <div />

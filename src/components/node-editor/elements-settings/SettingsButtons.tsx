@@ -31,37 +31,39 @@ export function StyleClickButton({
   );
 }
 
-export function StyleValueInput({
+export function ValueInput({
   elementPath,
-  styleName,
+  propertyName,
   label,
   icon,
   valueType = "number",
   disabled,
   unit = "px",
+  targetType = "style",
 }: {
   elementPath: string;
-  styleName: string | string[];
+  propertyName: string | string[];
   label: string;
   icon: React.ReactNode;
   valueType?: "number" | "text";
   disabled?: boolean;
   unit?: string;
+  targetType?: "style" | "data";
 }) {
   const { values, setFieldValue } = useFormikContext<any>();
 
   // Support both single string and array of strings
-  const styleNames = Array.isArray(styleName) ? styleName : [styleName];
-  const firstStylePath = elementPath + ".style." + styleNames[0];
+  const propertyNames = Array.isArray(propertyName) ? propertyName : [propertyName];
+  const firstPropertyPath = `${elementPath}.${targetType}.${propertyNames[0]}`;
 
-  const currentValue = get(values, firstStylePath) || "0";
+  const currentValue = get(values, firstPropertyPath) || "0";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = String(e.target.value) + unit;
-    // Update all style names with the same value
-    styleNames.forEach((name) => {
-      const stylePath = elementPath + ".style." + name;
-      setFieldValue(stylePath, newValue);
+    // Update all property names with the same value
+    propertyNames.forEach((name) => {
+      const propertyPath = `${elementPath}.${targetType}.${name}`;
+      setFieldValue(propertyPath, newValue);
     });
   };
 
@@ -78,4 +80,13 @@ export function StyleValueInput({
       />
     </div>
   );
+}
+
+// Backward compatibility aliases
+export function StyleValueInput(props: Omit<Parameters<typeof ValueInput>[0], 'propertyName' | 'targetType'> & { styleName: string | string[] }) {
+  return <ValueInput {...props} propertyName={props.styleName} targetType="style" />;
+}
+
+export function DataValueInput(props: Omit<Parameters<typeof ValueInput>[0], 'propertyName' | 'targetType'> & { dataName: string }) {
+  return <ValueInput {...props} propertyName={props.dataName} targetType="data" />;
 }

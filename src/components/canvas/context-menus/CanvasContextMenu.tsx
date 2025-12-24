@@ -85,6 +85,19 @@ export default function ContextMenu({
               }
             });
 
+            // Get default dimensions from the template's node layout
+            const defaultVariantId = template.defaultVisuals.node || "default";
+            const layout = template.visuals.node?.[defaultVariantId]?.layout;
+            const rootData = layout?.data as Record<string, unknown> | undefined;
+
+            // Parse default dimensions (stored as "150px" -> 150)
+            const defaultWidth = rootData?.defaultWidth
+              ? parseInt(String(rootData.defaultWidth).replace('px', ''))
+              : 200;
+            const defaultHeight = rootData?.defaultHeight
+              ? parseInt(String(rootData.defaultHeight).replace('px', ''))
+              : 150;
+
             addNodes({
               id: newNodeId,
               type: "custom",
@@ -95,6 +108,8 @@ export default function ContextMenu({
                 data: defaultData,
               },
               position: newNodePosition,
+              width: defaultWidth,
+              height: defaultHeight,
             });
           }}
         >

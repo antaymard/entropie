@@ -10,7 +10,7 @@ import {
 } from "react-icons/tb";
 import { RiMergeCellsVertical, RiMergeCellsHorizontal } from "react-icons/ri";
 import { AiOutlineColumnWidth, AiOutlineColumnHeight } from "react-icons/ai";
-import { StyleClickButton, StyleValueInput } from "./SettingsButtons";
+import { StyleClickButton, StyleValueInput, ValueInput } from "./SettingsButtons";
 import Toggle from "@/components/form-ui/Toggle";
 
 export default function RootElementSettings({
@@ -37,19 +37,21 @@ export default function RootElementSettings({
             />
           </div>
           <div className="px-5 py-4 space-y-5">
-            <h3 className="font-semibold">Dimensions minimales du bloc</h3>
+            <h3 className="font-semibold">Dimensions par défaut du bloc</h3>
             <div className="grid grid-cols-2 gap-2">
-              <StyleValueInput
+              <ValueInput
                 elementPath={elementPath}
-                styleName="minWidth"
+                propertyName="defaultWidth"
                 label="Largeur"
                 icon={<AiOutlineColumnWidth />}
+                targetType="data"
               />
-              <StyleValueInput
+              <ValueInput
                 elementPath={elementPath}
-                styleName="minHeight"
+                propertyName="defaultHeight"
                 label="Hauteur"
                 icon={<AiOutlineColumnHeight />}
+                targetType="data"
               />
             </div>
             <Toggle

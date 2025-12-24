@@ -136,9 +136,12 @@ function LayoutRenderer({
 
   switch (element.element) {
     case "root":
+      // Filter out minWidth and minHeight from style for root element
+      // (these are now stored in data as defaultWidth/defaultHeight)
+      const { minWidth, minHeight, ...rootStyle } = style || {};
       return (
         <div
-          style={style}
+          style={rootStyle}
           // className="min-w-28 min-h-12 rounded border border-gray-300 bg-white overflow-clip"
           className="h-full"
         >

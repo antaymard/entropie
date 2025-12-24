@@ -25,7 +25,7 @@ function RouteComponent() {
           const formData = new FormData(event.currentTarget);
           signIn("password", formData)
             .then(() => {
-              navigate({ to: "/" });
+              navigate({ to: "/app" });
             })
             .catch((e) => {
               console.error(e);

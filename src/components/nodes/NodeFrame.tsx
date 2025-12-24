@@ -31,6 +31,7 @@ function NodeFrame({
   headerless = false,
   notResizable = false,
   disableHandles = false,
+  disableDoubleClickToOpenWindow = false,
   children,
   nodeContentClassName = "",
 }: {
@@ -38,6 +39,7 @@ function NodeFrame({
   headerless?: boolean;
   notResizable?: boolean;
   disableHandles?: boolean;
+  disableDoubleClickToOpenWindow?: boolean;
   children: React.ReactNode;
   nodeContentClassName?: string;
 }) {

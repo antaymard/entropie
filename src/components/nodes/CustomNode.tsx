@@ -9,8 +9,6 @@ import CanvasNodeToolbar from "./toolbar/CanvasNodeToolbar";
 export default function CustomNode(xyNode: Node) {
   const template = useTemplate(xyNode.data?.templateId as Id<"nodeTemplates">);
 
-  //   const nodeLayout = template?.visuals.node.default;
-
   const { updateNodeData } = useReactFlow();
 
   const handleSaveData = useCallback(
@@ -22,10 +20,26 @@ export default function CustomNode(xyNode: Node) {
 
   if (!template) return null;
 
+  // Get the default variant for node visual
+  const defaultVariantId = template.defaultVisuals.node || "default";
+  const layout = template.visuals.node?.[defaultVariantId]?.layout;
+
+  // Extract settings from the root element's data
+  const rootData = layout?.data as Record<string, unknown> | undefined;
+  const headerless = Boolean(rootData?.headerless);
+  const resizable = Boolean(rootData?.resizable);
+  const disableDoubleClickToOpenWindow = Boolean(rootData?.disableDoubleClickToOpenWindow);
+
   return (
     <>
       <CanvasNodeToolbar xyNode={xyNode} />
-      <NodeFrame xyNode={xyNode} nodeContentClassName="p-0">
+      <NodeFrame
+        xyNode={xyNode}
+        nodeContentClassName="p-0"
+        headerless={headerless}
+        notResizable={!resizable}
+        disableDoubleClickToOpenWindow={disableDoubleClickToOpenWindow}
+      >
         <CustomTemplateRenderer
           template={template}
           visualType="node"

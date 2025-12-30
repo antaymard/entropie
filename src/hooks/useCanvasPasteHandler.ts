@@ -72,12 +72,14 @@ export function useCanvasPasteHandler() {
       }
 
       // Create the node
+      const baseNode = toXyNode(imageNodeConfig.initialNodeValues);
       const newNode = {
-        ...toXyNode(imageNodeConfig.initialNodeValues),
+        ...baseNode,
         id: nodeId,
         type: "image",
         position,
         data: {
+          ...baseNode.data,
           url,
         },
       };
@@ -117,12 +119,14 @@ export function useCanvasPasteHandler() {
       }
 
       // Create the node with temporary data (URL as title)
+      const baseNode = toXyNode(linkNodeConfig.initialNodeValues);
       const newNode = {
-        ...toXyNode(linkNodeConfig.initialNodeValues),
+        ...baseNode,
         id: nodeId,
         type: "link",
         position,
         data: {
+          ...baseNode.data,
           href: url,
           pageTitle: url, // Temporary title
         },

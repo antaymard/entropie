@@ -4,6 +4,8 @@ import { useFileUpload } from "./useFilesUpload";
 import toast from "react-hot-toast";
 import { toXyNode } from "@/components/utils/nodeUtils";
 import prebuiltNodesConfig from "@/components/nodes/prebuilt-nodes/prebuiltNodesConfig";
+import { useAction } from "convex/react";
+import { api } from "@/../convex/_generated/api";
 
 /**
  * Hook to handle paste events on the canvas
@@ -14,6 +16,7 @@ export function useCanvasPasteHandler() {
   const { addNodes, setNodes, updateNodeData } = useReactFlow();
   const { x: canvasX, y: canvasY, zoom: canvasZoom } = useViewport();
   const { uploadFile } = useFileUpload();
+  const fetchLinkMetadata = useAction(api.links.fetchLinkMetadata);
 
   /**
    * Calculate the center position of the current viewport
@@ -97,10 +100,10 @@ export function useCanvasPasteHandler() {
   );
 
   /**
-   * Create a LinkNode with a URL
+   * Create a LinkNode with a URL and fetch metadata
    */
   const createLinkNode = useCallback(
-    (url: string) => {
+    async (url: string) => {
       const nodeId = `node-${crypto.randomUUID()}`;
       const position = getViewportCenter();
 
@@ -113,14 +116,15 @@ export function useCanvasPasteHandler() {
         return null;
       }
 
-      // Create the node
+      // Create the node with temporary data (URL as title)
       const newNode = {
         ...toXyNode(linkNodeConfig.initialNodeValues),
         id: nodeId,
         type: "link",
         position,
         data: {
-          url,
+          href: url,
+          pageTitle: url, // Temporary title
         },
       };
 
@@ -136,9 +140,24 @@ export function useCanvasPasteHandler() {
         );
       }, 0);
 
+      // Fetch metadata in background and update the node
+      try {
+        const metadata = await fetchLinkMetadata({ url });
+        updateNodeData(nodeId, {
+          href: url,
+          pageTitle: metadata.title || url,
+          pageImage: metadata.image || "",
+          pageDescription: metadata.description || "",
+          siteName: metadata.site_name || "",
+        });
+      } catch (error) {
+        console.error("Failed to fetch link metadata:", error);
+        // Keep the node with URL as title
+      }
+
       return nodeId;
     },
-    [addNodes, setNodes, getViewportCenter]
+    [addNodes, setNodes, getViewportCenter, fetchLinkMetadata, updateNodeData]
   );
 
   /**
@@ -172,7 +191,7 @@ export function useCanvasPasteHandler() {
    * Handle URL paste (image URL or web URL)
    */
   const handleUrlPaste = useCallback(
-    (url: string) => {
+    async (url: string) => {
       // Check if it's a valid URL
       try {
         new URL(url);
@@ -186,8 +205,8 @@ export function useCanvasPasteHandler() {
         createImageNode(url);
         toast.success("Image ajoutée au canvas");
       } else {
-        // Create LinkNode
-        createLinkNode(url);
+        // Create LinkNode (async - fetches metadata in background)
+        await createLinkNode(url);
         toast.success("Lien ajouté au canvas");
       }
     },

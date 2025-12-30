@@ -147,7 +147,13 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           edges: toConvexEdges(e),
         })
           .then(() => setCanvasStatus("saved"))
-          .catch(() => setCanvasStatus("error"));
+          .catch((error) => {
+            console.error("❌ Canvas save error:", error);
+            console.error("Failed nodes:", toConvexNodes(n));
+            console.error("Failed edges:", toConvexEdges(e));
+            setCanvasStatus("error");
+            toastError(error, "Erreur lors de la sauvegarde du canvas");
+          });
       }, 1000),
     [canvasId, saveCanvas, isAuthenticated, setCanvasStatus]
   );

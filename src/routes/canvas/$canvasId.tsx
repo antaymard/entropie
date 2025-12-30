@@ -51,6 +51,7 @@ import CanvasToolbar from "@/components/canvas/on-canvas-ui/CanvasToolbar";
 import { cn } from "@/lib/utils";
 import { useNoleStore } from "@/stores/noleStore";
 import { NoleChat } from "@/components/ai/NoleChat";
+import { useCanvasPasteHandler } from "@/hooks/useCanvasPasteHandler";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -130,6 +131,9 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     setEdges,
     loadedCanvasIdRef.current === canvasId
   );
+
+  // ========== Paste Handler ==========
+  useCanvasPasteHandler();
 
   // ========== Auto-save avec debounce ==========
   const debouncedSave = useMemo(

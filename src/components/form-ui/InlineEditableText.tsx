@@ -7,7 +7,7 @@ import {
   type JSX,
 } from "react";
 import { cn } from "@/lib/utils";
-import { get } from "lodash";
+import get from "lodash/get";
 import { useFormikContextSafe } from "@/hooks/useFormikContextSafe";
 
 interface InlineEditableTextProps {

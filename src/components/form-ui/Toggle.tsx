@@ -1,5 +1,5 @@
 import { memo, useCallback, useId } from "react";
-import { get } from "lodash";
+import get from "lodash/get";
 import { useFormikContextSafe } from "@/hooks/useFormikContextSafe";
 import { Label } from "@/components/shadcn/label";
 import { Switch } from "@/components/shadcn/switch";

@@ -15,7 +15,7 @@ import {
   reorderElementAmongSiblings,
 } from "../utils/editorUtils";
 import { useNodeEditorContext } from "../../hooks/useNodeEditorContext";
-import { get } from "lodash";
+import get from "lodash/get";
 import { RxDragHandleDots2 } from "react-icons/rx";
 import {
   HiMiniTrash,

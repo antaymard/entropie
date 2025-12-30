@@ -9,7 +9,7 @@ import {
   useOptionalNodeEditorContext,
 } from "../../hooks/useNodeEditorContext";
 import fieldsDefinition from "../fields/fieldsDefinition";
-import { get } from "lodash";
+import get from "lodash/get";
 import { useFormikContext } from "formik";
 
 // ===========================================================================

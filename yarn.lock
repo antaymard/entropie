@@ -432,7 +432,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/crc64-nvme@npm:3.957.0":
+"@aws-sdk/crc64-nvme@npm:3.957.0, @aws-sdk/crc64-nvme@npm:^3.957.0":
   version: 3.957.0
   resolution: "@aws-sdk/crc64-nvme@npm:3.957.0"
   dependencies:
@@ -6452,6 +6452,7 @@ __metadata:
     "@assistant-ui/react-markdown": "npm:^0.11.8"
     "@auth/core": "npm:0.37.0"
     "@aws-sdk/client-s3": "npm:^3.932.0"
+    "@aws-sdk/crc64-nvme": "npm:^3.957.0"
     "@aws-sdk/s3-request-presigner": "npm:^3.932.0"
     "@convex-dev/agent": "npm:^0.3.2"
     "@convex-dev/auth": "npm:^0.0.90"

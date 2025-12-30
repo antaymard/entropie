@@ -51,10 +51,13 @@ import CanvasToolbar from "@/components/canvas/on-canvas-ui/CanvasToolbar";
 import { cn } from "@/lib/utils";
 import { useNoleStore } from "@/stores/noleStore";
 
+
 // Lazy load NoleChat pour réduire la taille du bundle initial
 const NoleChat = lazy(() =>
   import("@/components/ai/NoleChat").then((mod) => ({ default: mod.NoleChat }))
 );
+import { useCanvasPasteHandler } from "@/hooks/useCanvasPasteHandler";
+
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -145,6 +148,9 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     loadedCanvasIdRef.current === canvasId
   );
 
+  // ========== Paste Handler ==========
+  useCanvasPasteHandler();
+
   // ========== Auto-save avec debounce ==========
   const debouncedSave = useMemo(
     () =>
@@ -157,7 +163,13 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           edges: toConvexEdges(e),
         })
           .then(() => setCanvasStatus("saved"))
-          .catch(() => setCanvasStatus("error"));
+          .catch((error) => {
+            console.error("❌ Canvas save error:", error);
+            console.error("Failed nodes:", toConvexNodes(n));
+            console.error("Failed edges:", toConvexEdges(e));
+            setCanvasStatus("error");
+            toastError(error, "Erreur lors de la sauvegarde du canvas");
+          });
       }, 1000),
     [canvasId, saveCanvas, isAuthenticated, setCanvasStatus]
   );

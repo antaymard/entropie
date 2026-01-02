@@ -1,5 +1,5 @@
 import { memo, useCallback } from "react";
-import { get } from "lodash";
+import get from "lodash/get";
 import { useFormikContextSafe } from "@/hooks/useFormikContextSafe";
 import { ToggleGroup, ToggleGroupItem } from "../shadcn/toggle-group";
 import { cn } from "@/lib/utils";

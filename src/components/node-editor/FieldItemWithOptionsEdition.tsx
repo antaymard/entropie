@@ -18,7 +18,7 @@ import Toggles from "../form-ui/Toggles";
 import { Button } from "../shadcn/button";
 import { deleteElementFromLayout } from "../utils/editorUtils";
 import { useNodeEditorContext } from "@/hooks/useNodeEditorContext";
-import { get } from "lodash";
+import get from "lodash/get";
 import SelectBuilder from "../form-ui/SelectBuilder";
 import Selector from "../form-ui/Selector";
 

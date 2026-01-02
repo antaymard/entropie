@@ -1,5 +1,5 @@
 import { Formik } from "formik";
-import { get } from "lodash";
+import get from "lodash/get";
 
 import type { NodeTemplate } from "../../types";
 import type { LayoutElement } from "../../types/node.types";

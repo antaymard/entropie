@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SigninRouteImport } from './routes/signin'
+import { Route as LandingRouteImport } from './routes/landing'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as SettingsRouteRouteImport } from './routes/settings/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CanvasCanvasIdRouteImport } from './routes/canvas/$canvasId'
@@ -19,6 +21,16 @@ import { Route as SettingsTemplatesTemplateIdRouteImport } from './routes/settin
 const SigninRoute = SigninRouteImport.update({
   id: '/signin',
   path: '/signin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LandingRoute = LandingRouteImport.update({
+  id: '/landing',
+  path: '/landing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRouteRoute = SettingsRouteRouteImport.update({
@@ -51,6 +63,8 @@ const SettingsTemplatesTemplateIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/settings': typeof SettingsRouteRouteWithChildren
+  '/app': typeof AppRoute
+  '/landing': typeof LandingRoute
   '/signin': typeof SigninRoute
   '/canvas/$canvasId': typeof CanvasCanvasIdRoute
   '/settings/templates/$templateId': typeof SettingsTemplatesTemplateIdRoute
@@ -59,6 +73,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/settings': typeof SettingsRouteRouteWithChildren
+  '/app': typeof AppRoute
+  '/landing': typeof LandingRoute
   '/signin': typeof SigninRoute
   '/canvas/$canvasId': typeof CanvasCanvasIdRoute
   '/settings/templates/$templateId': typeof SettingsTemplatesTemplateIdRoute
@@ -68,6 +84,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/settings': typeof SettingsRouteRouteWithChildren
+  '/app': typeof AppRoute
+  '/landing': typeof LandingRoute
   '/signin': typeof SigninRoute
   '/canvas/$canvasId': typeof CanvasCanvasIdRoute
   '/settings/templates/$templateId': typeof SettingsTemplatesTemplateIdRoute
@@ -78,6 +96,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/settings'
+    | '/app'
+    | '/landing'
     | '/signin'
     | '/canvas/$canvasId'
     | '/settings/templates/$templateId'
@@ -86,6 +106,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/settings'
+    | '/app'
+    | '/landing'
     | '/signin'
     | '/canvas/$canvasId'
     | '/settings/templates/$templateId'
@@ -94,6 +116,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/settings'
+    | '/app'
+    | '/landing'
     | '/signin'
     | '/canvas/$canvasId'
     | '/settings/templates/$templateId'
@@ -103,6 +127,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SettingsRouteRoute: typeof SettingsRouteRouteWithChildren
+  AppRoute: typeof AppRoute
+  LandingRoute: typeof LandingRoute
   SigninRoute: typeof SigninRoute
   CanvasCanvasIdRoute: typeof CanvasCanvasIdRoute
 }
@@ -114,6 +140,20 @@ declare module '@tanstack/react-router' {
       path: '/signin'
       fullPath: '/signin'
       preLoaderRoute: typeof SigninRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/landing': {
+      id: '/landing'
+      path: '/landing'
+      fullPath: '/landing'
+      preLoaderRoute: typeof LandingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -171,6 +211,8 @@ const SettingsRouteRouteWithChildren = SettingsRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SettingsRouteRoute: SettingsRouteRouteWithChildren,
+  AppRoute: AppRoute,
+  LandingRoute: LandingRoute,
   SigninRoute: SigninRoute,
   CanvasCanvasIdRoute: CanvasCanvasIdRoute,
 }

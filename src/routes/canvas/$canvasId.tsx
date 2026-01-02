@@ -22,7 +22,7 @@ import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { nodeTypes, nodeList } from "../../components/nodes/nodeTypes";
 import { edgeTypes } from "../../components/edges/edgeTypes";
 import { useCanvasStore } from "../../stores/canvasStore";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import ContextMenu from "../../components/canvas/context-menus";
 import {
   toConvexEdges,
@@ -37,7 +37,7 @@ import {
   CardTitle,
 } from "@/components/shadcn/card";
 import { Button } from "@/components/shadcn/button";
-import { debounce } from "lodash";
+import debounce from "lodash/debounce";
 import { toastError } from "@/components/utils/errorUtils";
 import WindowsContainer from "@/components/windows/WindowsContainer";
 import { useWindowsStore } from "@/stores/windowsStore";
@@ -50,7 +50,14 @@ import { useDeviceType } from "@/hooks/useDeviceType";
 import CanvasToolbar from "@/components/canvas/on-canvas-ui/CanvasToolbar";
 import { cn } from "@/lib/utils";
 import { useNoleStore } from "@/stores/noleStore";
-import { NoleChat } from "@/components/ai/NoleChat";
+
+
+// Lazy load NoleChat pour réduire la taille du bundle initial
+const NoleChat = lazy(() =>
+  import("@/components/ai/NoleChat").then((mod) => ({ default: mod.NoleChat }))
+);
+import { useCanvasPasteHandler } from "@/hooks/useCanvasPasteHandler";
+
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -70,7 +77,17 @@ function RouteComponent() {
         )}
       >
         <CanvasContent key={canvasId} canvasId={canvasId} />
-        {isAiPanelOpen && <NoleChat />}
+        {isAiPanelOpen && (
+          <Suspense
+            fallback={
+              <div className="h-full flex items-center justify-center">
+                <div className="text-gray-500">Chargement...</div>
+              </div>
+            }
+          >
+            <NoleChat />
+          </Suspense>
+        )}
       </div>
     </ReactFlowProvider>
   );
@@ -131,6 +148,9 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     loadedCanvasIdRef.current === canvasId
   );
 
+  // ========== Paste Handler ==========
+  useCanvasPasteHandler();
+
   // ========== Auto-save avec debounce ==========
   const debouncedSave = useMemo(
     () =>
@@ -143,7 +163,13 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           edges: toConvexEdges(e),
         })
           .then(() => setCanvasStatus("saved"))
-          .catch(() => setCanvasStatus("error"));
+          .catch((error) => {
+            console.error("❌ Canvas save error:", error);
+            console.error("Failed nodes:", toConvexNodes(n));
+            console.error("Failed edges:", toConvexEdges(e));
+            setCanvasStatus("error");
+            toastError(error, "Erreur lors de la sauvegarde du canvas");
+          });
       }, 1000),
     [canvasId, saveCanvas, isAuthenticated, setCanvasStatus]
   );

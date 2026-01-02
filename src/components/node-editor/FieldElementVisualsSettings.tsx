@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { get } from "lodash";
+import get from "lodash/get";
 import { getFieldFromId } from "../utils/editorUtils";
 import TextInput from "../form-ui/TextInput";
 import Toggle from "../form-ui/Toggle";

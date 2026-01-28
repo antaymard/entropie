@@ -2,10 +2,45 @@
 // Node Template Types
 // ===========================================================================
 
-import type { Id } from "convex/_generated/dataModel";
+import type { Id } from "@/../convex/_generated/dataModel";
 import type { FieldType } from "./field.types";
 import type { IconType } from "react-icons/lib";
 
+export interface NodeData {
+  _id: Id<"nodeDatas">;
+  _creationTime: number;
+  templateId?: Id<"nodeTemplates">;
+  template?: any; // Override templateId if on the spot template is needed
+  values: Record<string, any>; // Field values
+  type: string;
+  updatedAt: number;
+  removedFromCanvasAt?: number;
+}
+
+// Convex format
+export interface CanvasNode {
+  id: string; // Pas _id car sous objet de canvas, qui lui un _id
+  nodeDataId: Id<"nodeDatas">;
+  type: string;
+  position: {
+    x: number;
+    y: number;
+  };
+  width: number;
+  height: number;
+  locked: boolean;
+  hidden: boolean;
+  zIndex: number;
+
+  data: Record<string, unknown>; // Normalement vide
+
+  parentId?: string;
+  extent?: any | null; //  "parent" | [[number, number], [number, number]]
+  extendParent?: boolean;
+}
+
+// ==========================================================================
+// OLD SHIT - to be removed later
 export interface NodeTemplate {
   _id: Id<"nodeTemplates"> | "new";
   _creationTime: number;
@@ -66,29 +101,6 @@ export interface LayoutElement {
 export type NodeType = "default" | "floatingText" | "custom";
 
 // Convex format
-export interface CanvasNode {
-  id: string; // Pas _id car sous objet de canvas, qui lui un _id
-  name: string;
-  type: string;
-  templateId?: string;
-  position: {
-    x: number;
-    y: number;
-  };
-  width: number;
-  height: number;
-  zIndex: number;
-  color: NodeColors;
-  locked: boolean;
-  hidden: boolean;
-  headerless?: boolean;
-
-  data: Record<string, unknown>; // Données du node, qu'on pourra un jour sortir sur une table dédiée
-
-  parentId?: string;
-  extent?: any | null; //  "parent" | [[number, number], [number, number]]
-  extendParent?: boolean;
-}
 
 export type NodeColors =
   | "blue"

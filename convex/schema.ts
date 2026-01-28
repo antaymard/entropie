@@ -1,8 +1,8 @@
 import { defineSchema, defineTable } from "convex/server";
 import { authTables } from "@convex-dev/auth/server";
 import { v } from "convex/values";
-import canvasesSchema from "./schemas-and-validators/canvasesSchema";
-import nodeDatasSchema from "./schemas-and-validators/nodeDatasSchema";
+import canvasesSchema from "./schemas_and_validators/canvasesSchema";
+import nodeDatasSchema from "./schemas_and_validators/nodeDatasSchema";
 
 const schema = defineSchema({
   ...authTables,

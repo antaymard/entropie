@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 
 const canvasNodesSchema = v.object({
+  id: v.string(), // Pas _id
   nodeDataId: v.id("nodeDatas"),
   type: v.string(),
   position: v.object({
@@ -17,27 +18,27 @@ const canvasNodesSchema = v.object({
     v.union(v.literal("parent"), v.array(v.array(v.number()))), // [[x1,y1], [x2,y2]]
   ),
   extendParent: v.optional(v.boolean()),
-  data: v.optional(v.any()),
+  data: v.optional(v.record(v.string(), v.any())),
 });
 
 const edgesSchema = v.object({
-  id: v.string(),
+  id: v.string(), // pas _id
   source: v.string(), // node id
   target: v.string(), // node id
 
   // Handles optionnels
   sourceHandle: v.optional(v.string()),
   targetHandle: v.optional(v.string()),
-  data: v.optional(v.any()),
+  data: v.optional(v.record(v.string(), v.any())),
 });
 
 const canvasesSchema = {
+  // _id et _creationTime sont ajoutés automatiquement par Convex
   creatorId: v.id("users"),
   name: v.string(),
-  icon: v.optional(v.string()),
 
-  nodes: v.array(canvasNodesSchema),
-  edges: v.array(edgesSchema),
+  nodes: v.optional(v.array(canvasNodesSchema)),
+  edges: v.optional(v.array(edgesSchema)),
 
   updatedAt: v.number(),
 };

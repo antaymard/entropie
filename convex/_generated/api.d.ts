@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as canvasNodes from "../canvasNodes.js";
 import type * as canvases from "../canvases.js";
 import type * as http from "../http.js";
 import type * as ia_agents from "../ia/agents.js";
@@ -30,6 +31,9 @@ import type * as lib_auth from "../lib/auth.js";
 import type * as lib_r2 from "../lib/r2.js";
 import type * as links from "../links.js";
 import type * as migrations from "../migrations.js";
+import type * as nodeDatas from "../nodeDatas.js";
+import type * as schemas_and_validators_canvasesSchema from "../schemas_and_validators/canvasesSchema.js";
+import type * as schemas_and_validators_nodeDatasSchema from "../schemas_and_validators/nodeDatasSchema.js";
 import type * as templates from "../templates.js";
 import type * as threads from "../threads.js";
 import type * as uploads from "../uploads.js";
@@ -42,6 +46,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  canvasNodes: typeof canvasNodes;
   canvases: typeof canvases;
   http: typeof http;
   "ia/agents": typeof ia_agents;
@@ -63,6 +68,9 @@ declare const fullApi: ApiFromModules<{
   "lib/r2": typeof lib_r2;
   links: typeof links;
   migrations: typeof migrations;
+  nodeDatas: typeof nodeDatas;
+  "schemas_and_validators/canvasesSchema": typeof schemas_and_validators_canvasesSchema;
+  "schemas_and_validators/nodeDatasSchema": typeof schemas_and_validators_nodeDatasSchema;
   templates: typeof templates;
   threads: typeof threads;
   uploads: typeof uploads;

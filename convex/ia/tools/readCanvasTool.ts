@@ -10,10 +10,10 @@ export const readCanvasTool = createTool({
     canvasId: z.string().describe("ID of the canvas to read."),
     scope: z
       .array(
-        z.enum(["entireCanvas", "nodesOnly", "edgesOnly", "canvasDataOnly"])
+        z.enum(["entireCanvas", "nodesOnly", "edgesOnly", "canvasDataOnly"]),
       )
       .describe(
-        "Scope of the canvas to read, specifying which parts to include.\n`entireCanvas` returns all data (canvas data, nodes, edges, and metadata). `canvasDataOnly` returns only the canvas metadata and properties (name, sharing) without nodes and edges."
+        "Scope of the canvas to read, specifying which parts to include.\n`entireCanvas` returns all data (canvas data, nodes, edges, and metadata). `canvasDataOnly` returns only the canvas metadata and properties (name, sharing) without nodes and edges.",
       ),
   }),
   handler: async (ctx, { canvasId, scope }): Promise<string> => {
@@ -25,7 +25,7 @@ export const readCanvasTool = createTool({
         internal.ia.helpers.canvasHelpers.getCanvasInternal,
         {
           canvasId: canvasId as Id<"canvases">,
-        }
+        },
       );
 
       if (!canvas) {
@@ -38,9 +38,9 @@ export const readCanvasTool = createTool({
           _id: canvas._id,
           _creationTime: canvas._creationTime,
           name: canvas.name,
-          icon: canvas.icon,
-          description: canvas.description,
-          sharingOptions: canvas.sharingOptions,
+          // icon: canvas.icon,
+          // description: canvas.description,
+          // sharingOptions: canvas.sharingOptions,
           creatorId: canvas.creatorId,
           updatedAt: canvas.updatedAt,
         };

@@ -1,6 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { requireAuth, getAuth } from "./lib/auth";
+import { requireAuth } from "./lib/auth";
 
 export const getUserTemplates = query({
   args: {
@@ -22,7 +22,7 @@ export const getUserTemplates = query({
     }
     // Otherwise, get the authenticated user's ID
     else {
-      userId = await getAuth(ctx);
+      userId = await requireAuth(ctx);
     }
 
     if (!userId) {
@@ -46,7 +46,7 @@ export const getTemplateById = query({
   },
   handler: async (ctx, args) => {
     const { templateId } = args;
-    const authUserId = await getAuth(ctx);
+    const authUserId = await requireAuth(ctx);
 
     if (!authUserId) {
       return {

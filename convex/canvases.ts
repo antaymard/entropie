@@ -1,51 +1,11 @@
-import {
-  query,
-  mutation,
-  internalMutation,
-  internalQuery,
-} from "./_generated/server";
-import { v } from "convex/values";
-import { requireAuth, getAuth } from "./lib/auth";
-import { get } from "lodash";
+import { query, mutation, internalMutation } from "./_generated/server";
+import { ConvexError, v } from "convex/values";
+import { requireAuth } from "./lib/auth";
 
-export const getLastModifiedCanvas = query({
+export const listUserCanvases = query({
   args: {},
   handler: async (ctx) => {
-    const authUserId = await getAuth(ctx);
-
-    if (!authUserId) {
-      return {
-        success: false,
-        canvas: null,
-        error: "Utilisateur non authentifié",
-      };
-    }
-
-    // Récupérer le dernier canvas modifié de l'utilisateur
-    const canvas = await ctx.db
-      .query("canvases")
-      .withIndex("by_creator_and_updatedAt", (q) =>
-        q.eq("creatorId", authUserId)
-      )
-      .order("desc")
-      .first();
-
-    return { success: true, canvas };
-  },
-});
-
-export const getUserCanvases = query({
-  args: {},
-  handler: async (ctx) => {
-    const authUserId = await getAuth(ctx);
-
-    if (!authUserId) {
-      return {
-        success: false,
-        canvases: [],
-        error: "Utilisateur non authentifié",
-      };
-    }
+    const authUserId = await requireAuth(ctx);
 
     // Récupérer tous les canvas de l'utilisateur
     const canvases = await ctx.db
@@ -54,17 +14,14 @@ export const getUserCanvases = query({
       .collect();
 
     // Retourner seulement l'id et le nom
-    return {
-      success: true,
-      canvases: canvases.map((canvas) => ({
-        _id: canvas._id,
-        name: canvas.name,
-      })),
-    };
+    return canvases.map((canvas) => ({
+      _id: canvas._id,
+      name: canvas.name,
+    }));
   },
 });
 
-export const getCanvas = query({
+export const readCanvas = query({
   args: {
     canvasId: v.id("canvases"),
   },
@@ -73,30 +30,17 @@ export const getCanvas = query({
     const canvas = await ctx.db.get(canvasId);
 
     if (!canvas) {
-      return null;
-    }
-
-    // If the canvas is public, return it directly
-    if (canvas.sharingOptions?.isPubliclyReadable === true) {
-      return { success: true, canvas };
+      throw new ConvexError("L'espace demandé n'existe pas.");
     }
 
     // Else check if the user is auth and is the creator
-    const authUserId = await getAuth(ctx);
-
-    if (!authUserId) {
-      return {
-        success: false,
-        canvas: null,
-        error: "Utilisateur non authentifié",
-      };
-    }
+    const authUserId = await requireAuth(ctx);
 
     if (canvas.creatorId !== authUserId) {
-      return null;
+      throw new ConvexError("Vous n'avez pas accès à cet espace.");
     }
 
-    return { success: true, canvas };
+    return canvas;
   },
 });
 
@@ -113,92 +57,10 @@ export const createCanvas = mutation({
       name,
       nodes: [],
       edges: [],
-      updatedAt: 0,
-    });
-
-    return { success: true, newCanvasId };
-  },
-});
-
-export const updateCanvasDetails = mutation({
-  args: {
-    canvasId: v.id("canvases"),
-    name: v.optional(v.string()),
-    icon: v.optional(v.string()),
-    description: v.optional(v.string()),
-    sharingOptions: v.optional(v.object({ isPubliclyReadable: v.boolean() })),
-  },
-  handler: async (ctx, { canvasId, ...updates }) => {
-    const authUserId = await requireAuth(ctx);
-
-    // Vérifier si l'utilisateur est le créateur du canvas
-    const canvas = await ctx.db.get(canvasId);
-
-    if (!canvas) {
-      throw new Error("Canvas non trouvé");
-    }
-
-    if (canvas.creatorId !== authUserId) {
-      throw new Error("Vous n'avez pas accès à ce canvas");
-    }
-
-    // Ne garder que les champs définis (non-undefined)
-    const fieldsToUpdate = Object.fromEntries(
-      Object.entries(updates).filter(([, value]) => value !== undefined)
-    );
-
-    // Mettre à jour les métadonnées du canvas
-    await ctx.db.patch(canvasId, {
-      ...fieldsToUpdate,
       updatedAt: Date.now(),
     });
 
-    return { success: true, canvasId };
-  },
-});
-
-export const updateCanvasContent = mutation({
-  args: {
-    canvasId: v.id("canvases"),
-    nodes: v.array(v.any()),
-    edges: v.array(v.any()),
-  },
-  handler: async (ctx, { canvasId, nodes, edges }) => {
-    const authUserId = await requireAuth(ctx);
-
-    // Vérifier si l'utilisateur est le créateur du canvas
-    const canvas = await ctx.db.get(canvasId);
-    if (!canvas) {
-      throw new Error("Canvas non trouvé");
-    }
-    if (canvas.creatorId !== authUserId) {
-      throw new Error("Vous n'avez pas accès à ce canvas");
-    }
-    // Mettre à jour le contenu du canvas
-    await ctx.db.patch(canvasId, {
-      nodes,
-      edges,
-      updatedAt: Date.now(),
-    });
-    return { success: true, canvasId };
-  },
-});
-
-export const updateCanvasContentInternal = internalMutation({
-  args: {
-    canvasId: v.id("canvases"),
-    nodes: v.array(v.any()),
-    edges: v.array(v.any()),
-  },
-  returns: v.object({ success: v.boolean(), canvasId: v.id("canvases") }),
-  handler: async (ctx, { canvasId, nodes, edges }) => {
-    // Mettre à jour le contenu du canvas
-    await ctx.db.patch(canvasId, {
-      nodes,
-      edges,
-      updatedAt: Date.now(),
-    });
-    return { success: true, canvasId };
+    return newCanvasId;
   },
 });
 
@@ -212,47 +74,14 @@ export const deleteCanvas = mutation({
     // Vérifier si l'utilisateur est le créateur du canvas
     const canvas = await ctx.db.get(canvasId);
     if (!canvas) {
-      throw new Error("Canvas non trouvé");
+      throw new ConvexError("Ce canvas n'existe pas.");
     }
     if (canvas.creatorId !== authUserId) {
-      throw new Error("Vous n'avez pas accès à ce canvas");
+      throw new ConvexError("Vous n'avez pas accès à ce canvas");
     }
 
     // Supprimer le canvas
     await ctx.db.delete(canvasId);
-    return { success: true, canvasId };
-  },
-});
-
-export const updateCanvasNodeData = mutation({
-  args: {
-    canvasId: v.id("canvases"),
-    nodeId: v.string(),
-    nodeData: v.any(),
-  },
-  handler: async (ctx, { canvasId, nodeId, nodeData }) => {
-    const authUserId = await requireAuth(ctx);
-
-    // Vérifier si l'utilisateur est le créateur du canvas
-    const canvas = await ctx.db.get(canvasId);
-    if (!canvas) {
-      throw new Error("Canvas non trouvé");
-    }
-    if (canvas.creatorId !== authUserId) {
-      throw new Error("Vous n'avez pas accès à ce canvas");
-    }
-
-    // Mettre à jour les données du noeud spécifique
-    const updatedNodes = canvas.nodes.map((node) => {
-      if (node.id === nodeId) {
-        return { ...node, data: nodeData };
-      }
-      return node;
-    });
-    await ctx.db.patch(canvasId, {
-      nodes: updatedNodes,
-      updatedAt: Date.now(),
-    });
-    return { success: true, canvasId };
+    return canvasId;
   },
 });

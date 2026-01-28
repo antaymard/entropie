@@ -10,10 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SigninRouteImport } from './routes/signin'
-import { Route as LandingRouteImport } from './routes/landing'
-import { Route as AppRouteImport } from './routes/app'
 import { Route as SettingsRouteRouteImport } from './routes/settings/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CanvasCanvasIdcopyRouteImport } from './routes/canvas/$canvasId copy'
 import { Route as CanvasCanvasIdRouteImport } from './routes/canvas/$canvasId'
 import { Route as SettingsTemplatesIndexRouteImport } from './routes/settings/templates/index'
 import { Route as SettingsTemplatesTemplateIdRouteImport } from './routes/settings/templates/$templateId'
@@ -21,16 +20,6 @@ import { Route as SettingsTemplatesTemplateIdRouteImport } from './routes/settin
 const SigninRoute = SigninRouteImport.update({
   id: '/signin',
   path: '/signin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LandingRoute = LandingRouteImport.update({
-  id: '/landing',
-  path: '/landing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AppRoute = AppRouteImport.update({
-  id: '/app',
-  path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRouteRoute = SettingsRouteRouteImport.update({
@@ -41,6 +30,11 @@ const SettingsRouteRoute = SettingsRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CanvasCanvasIdcopyRoute = CanvasCanvasIdcopyRouteImport.update({
+  id: '/canvas/$canvasId copy',
+  path: '/canvas/$canvasId copy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CanvasCanvasIdRoute = CanvasCanvasIdRouteImport.update({
@@ -63,20 +57,18 @@ const SettingsTemplatesTemplateIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/settings': typeof SettingsRouteRouteWithChildren
-  '/app': typeof AppRoute
-  '/landing': typeof LandingRoute
   '/signin': typeof SigninRoute
   '/canvas/$canvasId': typeof CanvasCanvasIdRoute
+  '/canvas/$canvasId copy': typeof CanvasCanvasIdcopyRoute
   '/settings/templates/$templateId': typeof SettingsTemplatesTemplateIdRoute
-  '/settings/templates': typeof SettingsTemplatesIndexRoute
+  '/settings/templates/': typeof SettingsTemplatesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/settings': typeof SettingsRouteRouteWithChildren
-  '/app': typeof AppRoute
-  '/landing': typeof LandingRoute
   '/signin': typeof SigninRoute
   '/canvas/$canvasId': typeof CanvasCanvasIdRoute
+  '/canvas/$canvasId copy': typeof CanvasCanvasIdcopyRoute
   '/settings/templates/$templateId': typeof SettingsTemplatesTemplateIdRoute
   '/settings/templates': typeof SettingsTemplatesIndexRoute
 }
@@ -84,10 +76,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/settings': typeof SettingsRouteRouteWithChildren
-  '/app': typeof AppRoute
-  '/landing': typeof LandingRoute
   '/signin': typeof SigninRoute
   '/canvas/$canvasId': typeof CanvasCanvasIdRoute
+  '/canvas/$canvasId copy': typeof CanvasCanvasIdcopyRoute
   '/settings/templates/$templateId': typeof SettingsTemplatesTemplateIdRoute
   '/settings/templates/': typeof SettingsTemplatesIndexRoute
 }
@@ -96,30 +87,27 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/settings'
-    | '/app'
-    | '/landing'
     | '/signin'
     | '/canvas/$canvasId'
+    | '/canvas/$canvasId copy'
     | '/settings/templates/$templateId'
-    | '/settings/templates'
+    | '/settings/templates/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/settings'
-    | '/app'
-    | '/landing'
     | '/signin'
     | '/canvas/$canvasId'
+    | '/canvas/$canvasId copy'
     | '/settings/templates/$templateId'
     | '/settings/templates'
   id:
     | '__root__'
     | '/'
     | '/settings'
-    | '/app'
-    | '/landing'
     | '/signin'
     | '/canvas/$canvasId'
+    | '/canvas/$canvasId copy'
     | '/settings/templates/$templateId'
     | '/settings/templates/'
   fileRoutesById: FileRoutesById
@@ -127,10 +115,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SettingsRouteRoute: typeof SettingsRouteRouteWithChildren
-  AppRoute: typeof AppRoute
-  LandingRoute: typeof LandingRoute
   SigninRoute: typeof SigninRoute
   CanvasCanvasIdRoute: typeof CanvasCanvasIdRoute
+  CanvasCanvasIdcopyRoute: typeof CanvasCanvasIdcopyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -140,20 +127,6 @@ declare module '@tanstack/react-router' {
       path: '/signin'
       fullPath: '/signin'
       preLoaderRoute: typeof SigninRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/landing': {
-      id: '/landing'
-      path: '/landing'
-      fullPath: '/landing'
-      preLoaderRoute: typeof LandingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app': {
-      id: '/app'
-      path: '/app'
-      fullPath: '/app'
-      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -170,6 +143,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/canvas/$canvasId copy': {
+      id: '/canvas/$canvasId copy'
+      path: '/canvas/$canvasId copy'
+      fullPath: '/canvas/$canvasId copy'
+      preLoaderRoute: typeof CanvasCanvasIdcopyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/canvas/$canvasId': {
       id: '/canvas/$canvasId'
       path: '/canvas/$canvasId'
@@ -180,7 +160,7 @@ declare module '@tanstack/react-router' {
     '/settings/templates/': {
       id: '/settings/templates/'
       path: '/templates'
-      fullPath: '/settings/templates'
+      fullPath: '/settings/templates/'
       preLoaderRoute: typeof SettingsTemplatesIndexRouteImport
       parentRoute: typeof SettingsRouteRoute
     }
@@ -211,10 +191,9 @@ const SettingsRouteRouteWithChildren = SettingsRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SettingsRouteRoute: SettingsRouteRouteWithChildren,
-  AppRoute: AppRoute,
-  LandingRoute: LandingRoute,
   SigninRoute: SigninRoute,
   CanvasCanvasIdRoute: CanvasCanvasIdRoute,
+  CanvasCanvasIdcopyRoute: CanvasCanvasIdcopyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

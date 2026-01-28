@@ -5,9 +5,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/shadcn/dropdown-menu";
-import { toXyNode } from "@/components/utils/nodeUtils";
 import { useTemplateStore } from "@/stores/templateStore";
 import type { Id } from "convex/_generated/dataModel";
+import { useMutation } from "convex/react";
+import { api } from "@/../convex/_generated/api";
 
 export default function ContextMenu({
   closeMenu,
@@ -19,6 +20,8 @@ export default function ContextMenu({
   const { setNodes, addNodes } = useReactFlow();
   const templates = useTemplateStore((state) => state.templates);
   const { x: canvasX, y: canvasY, zoom: canvasZoom } = useViewport();
+
+  const createNodeData = useMutation(api.nodeDatas.create);
 
   const newNodePosition = {
     x: (-canvasX + position.x) / canvasZoom,
@@ -32,21 +35,29 @@ export default function ContextMenu({
       <DropdownMenuLabel className="whitespace-nowrap">
         Ajouter un bloc
       </DropdownMenuLabel>
-      {prebuiltNodesConfig.map((nodeType) => {
-        const Icon = nodeType.nodeIcon;
+      {prebuiltNodesConfig.map((nodeConfig, i) => {
+        const Icon = nodeConfig.nodeIcon;
         return (
           <DropdownMenuItem
-            key={nodeType.type}
+            key={i}
             className="w-48"
-            onClick={() => {
-              const newNodeId = `node-${crypto.randomUUID()}`;
+            onClick={async () => {
+              const newNodeId = `${crypto.randomUUID()}`;
 
-              // Ajouter le nouveau node dans le state Zustand (DB)
+              const nodeDataId = await createNodeData({
+                type: nodeConfig.node.type,
+                values: {},
+                updatedAt: Date.now(),
+              });
+
               addNodes({
-                ...toXyNode(nodeType.initialNodeValues),
+                ...nodeConfig.node,
                 id: newNodeId,
-                type: nodeType.type,
                 position: newNodePosition,
+                data: {
+                  ...nodeConfig.node.data,
+                  nodeDataId,
+                },
               });
 
               // Sélectionner uniquement le nouveau node dans le state React Flow
@@ -56,14 +67,14 @@ export default function ContextMenu({
                   nodes.map((n) => ({
                     ...n,
                     selected: n.id === newNodeId,
-                  }))
+                  })),
                 );
               }, 0);
 
               closeMenu();
             }}
           >
-            <Icon /> {nodeType.nodeLabel}
+            <Icon /> {nodeConfig.nodeLabel}
           </DropdownMenuItem>
         );
       })}
@@ -75,7 +86,7 @@ export default function ContextMenu({
           key={i}
           className="w-48"
           onClick={() => {
-            const newNodeId = `node-${crypto.randomUUID()}`;
+            const newNodeId = `${crypto.randomUUID()}`;
 
             // Créer l'objet data avec les valeurs par défaut de chaque field
             const defaultData: Record<string, unknown> = {};
@@ -88,14 +99,16 @@ export default function ContextMenu({
             // Get default dimensions from the template's node layout
             const defaultVariantId = template.defaultVisuals.node || "default";
             const layout = template.visuals.node?.[defaultVariantId]?.layout;
-            const rootData = layout?.data as Record<string, unknown> | undefined;
+            const rootData = layout?.data as
+              | Record<string, unknown>
+              | undefined;
 
             // Parse default dimensions (stored as "150px" -> 150)
             const defaultWidth = rootData?.defaultWidth
-              ? parseInt(String(rootData.defaultWidth).replace('px', ''))
+              ? parseInt(String(rootData.defaultWidth).replace("px", ""))
               : 200;
             const defaultHeight = rootData?.defaultHeight
-              ? parseInt(String(rootData.defaultHeight).replace('px', ''))
+              ? parseInt(String(rootData.defaultHeight).replace("px", ""))
               : 150;
 
             addNodes({

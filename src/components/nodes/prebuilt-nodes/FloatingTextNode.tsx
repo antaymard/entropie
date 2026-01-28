@@ -17,7 +17,7 @@ function FloatingTextNode(xyNode: Node) {
     (newText: string) => {
       updateNodeData(xyNode.id, { text: newText });
     },
-    [updateNodeData, xyNode.id]
+    [updateNodeData, xyNode.id],
   );
 
   const levels = [
@@ -35,7 +35,7 @@ function FloatingTextNode(xyNode: Node) {
     (value: string) => {
       updateNodeData(xyNode.id, { level: value });
     },
-    [updateNodeData, xyNode.id]
+    [updateNodeData, xyNode.id],
   );
 
   if (!xyNode) return null;
@@ -60,13 +60,14 @@ function FloatingTextNode(xyNode: Node) {
       </CanvasNodeToolbar>
 
       <NodeFrame xyNode={xyNode} headerless disableHandles>
-        <InlineEditableText
+        {/* <InlineEditableText
           multiline
           value={(xyNode.data?.text as string) || ""}
           onSave={handleTextSave}
           className={textClassName}
           placeholder="Double-cliquez pour éditer..."
-        />
+        /> */}
+        {xyNode?.data?.nodeDataId}
       </NodeFrame>
     </>
   );

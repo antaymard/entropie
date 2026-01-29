@@ -2,11 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
   ReactFlow,
   ReactFlowProvider,
-  useNodes,
   useNodesState,
-  useReactFlow,
   type Node,
+  type NodeAddChange,
   type NodeChange,
+  type NodeDimensionChange,
+  type NodePositionChange,
+  type NodeRemoveChange,
 } from "@xyflow/react";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { api } from "@/../convex/_generated/api";
@@ -15,9 +17,14 @@ import useRichQuery from "@/components/utils/useRichQuery";
 import ErrorDisplay from "@/components/ui/ErrorDisplay";
 import ContextMenu from "@/components/canvas/context-menus";
 import { useContextMenu } from "@/hooks/useContextMenu";
-import { useCallback } from "react";
+import { useCallback, useEffect, useMemo } from "react";
+import { throttle } from "lodash";
 import { useMutation } from "convex/react";
-import { fromXyNodesToCanvasNodes } from "@/lib/node-types-converter";
+import {
+  fromCanvasNodesToXyNodes,
+  fromXyNodesToCanvasNodes,
+} from "@/lib/node-types-converter";
+import type { CanvasNode } from "@/types";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -45,45 +52,125 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   });
 
   const addCanvasNodesToConvex = useMutation(api.canvasNodes.add);
+  const updateCanvasNodesInConvex = useMutation(api.canvasNodes.update);
+  const removeCanvasNodesToConvex = useMutation(api.canvasNodes.remove);
 
   const { contextMenu, setContextMenu, onPaneContextMenu } = useContextMenu();
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
 
-  const handleNodeChange = useCallback((changes: NodeChange[]) => {
-    console.log("Node changes:", changes);
-    onNodesChange(changes);
+  const throttledUpdatePositions = useMemo(
+    () =>
+      throttle((changes: NodePositionChange[]) => {
+        updateCanvasNodesInConvex({
+          canvasId,
+          nodeChanges: changes,
+        });
+      }, 300),
+    [canvasId, updateCanvasNodesInConvex],
+  );
 
-    const addedChanges = changes
-      .filter((change: NodeChange) => change.type === "add")
-      .map((change) => change.item as Node) as Node[];
-    const positionOrDimensionChanges = changes.filter(
-      (change: NodeChange) =>
-        change.type === "position" || change.type === "dimensions",
-    );
+  useEffect(() => {
+    if (canvas && canvas.nodes) {
+      setNodes((currentNodes) => {
+        // Identifier les nodes en cours de drag
+        const draggingIds = new Set(
+          currentNodes.filter((n) => n.dragging).map((n) => n.id),
+        );
 
-    if (addedChanges.length > 0) {
-      console.log("Nodes added:", addedChanges);
-      // Envoi direct à Convex
-      addCanvasNodesToConvex({
-        canvasNodes: fromXyNodesToCanvasNodes(addedChanges),
-        canvasId,
+        const newNodes = fromCanvasNodesToXyNodes(canvas.nodes as CanvasNode[]);
+
+        return newNodes.map((newNode) => {
+          if (draggingIds.has(newNode.id)) {
+            const currentNode = currentNodes.find((n) => n.id === newNode.id);
+            return currentNode ?? newNode;
+          }
+          return newNode;
+        });
       });
     }
-    if (positionOrDimensionChanges.length > 0) {
-      console.log(
-        "Nodes position or dimensions changed:",
-        positionOrDimensionChanges,
-      );
-      // Envoi debounced à Convex
-    }
-  }, []);
+  }, [canvas]);
+
+  const handleNodeChange = useCallback(
+    (changes: NodeChange[]) => {
+      console.log("Node changes:", changes);
+      onNodesChange(changes);
+
+      const addedChanges = changes.filter(
+        (change: NodeChange) => change.type === "add",
+      ) as NodeAddChange[];
+      const positionChanges = changes.filter(
+        (change: NodeChange) => change.type === "position",
+      ) as NodePositionChange[];
+      const dimensionChanges = changes.filter(
+        (change: NodeChange) => change.type === "dimensions",
+      ) as NodeDimensionChange[];
+      const removedChanges = changes.filter(
+        (change: NodeChange) => change.type === "remove",
+      ) as NodeRemoveChange[];
+
+      // ADD NODES
+      if (addedChanges.length > 0) {
+        console.log("Nodes added:", addedChanges);
+        // Envoi direct à Convex
+        addCanvasNodesToConvex({
+          canvasNodes: fromXyNodesToCanvasNodes(
+            addedChanges.map((c) => c.item) as Node[],
+          ),
+          canvasId,
+        });
+      }
+      // UPDATE NODES POSITIONS
+      if (positionChanges.length > 0) {
+        console.log("Nodes position or dimensions changed:", positionChanges);
+        console.log(positionChanges);
+        if (positionChanges.some((change) => change.dragging)) {
+          // Throttle l'envoi à Convex pendant le drag (toutes les 300ms)
+          throttledUpdatePositions(positionChanges);
+        } else {
+          // Envoi direct à Convex quand le drag est fini
+          updateCanvasNodesInConvex({
+            canvasId,
+            nodeChanges: positionChanges,
+          });
+        }
+      }
+      // UPDATE NODES DIMENSIONS
+      if (dimensionChanges.length > 0) {
+        // Envoyer seulement quand le resize est terminé
+        const finishedResizing = dimensionChanges.filter((c) => !c.resizing);
+        if (finishedResizing.length > 0) {
+          updateCanvasNodesInConvex({
+            canvasId,
+            nodeChanges: finishedResizing,
+          });
+        }
+      }
+      // REMOVE NODES
+      if (removedChanges.length > 0) {
+        console.log("Nodes removed:", removedChanges);
+        // Envoi direct à Convex
+        removeCanvasNodesToConvex({
+          nodeCanvasIds: removedChanges.map((c) => c.id),
+          canvasId,
+        });
+      }
+    },
+    [
+      onNodesChange,
+      addCanvasNodesToConvex,
+      updateCanvasNodesInConvex,
+      removeCanvasNodesToConvex,
+      throttledUpdatePositions,
+      canvasId,
+    ],
+  );
 
   if (isCanvasError && canvasError) {
     return <ErrorDisplay error={canvasError} />;
   }
 
-  console.log(nodes);
+  console.log(canvas);
 
   return (
     <div className="flex-1 w-full h-full">

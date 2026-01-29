@@ -2,13 +2,13 @@ import CustomNode from "./CustomNode";
 import prebuiltNodesConfig from "./prebuilt-nodes/prebuiltNodesConfig";
 
 const nodeTypes = {
-  ...prebuiltNodesConfig.reduce<Record<string, React.ComponentType<any>>>(
-    (acc, node) => {
-      acc[node.type] = node.nodeComponent;
-      return acc;
-    },
-    {}
-  ),
+  // ...prebuiltNodesConfig.reduce<Record<string, React.ComponentType<any>>>(
+  //   (acc, node) => {
+  //     acc[node.node.type] = node.nodeComponent;
+  //     return acc;
+  //   },
+  //   {},
+  // ),
   custom: CustomNode,
 };
 

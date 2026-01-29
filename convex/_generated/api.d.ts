@@ -11,6 +11,7 @@
 import type * as auth from "../auth.js";
 import type * as canvasNodes from "../canvasNodes.js";
 import type * as canvases from "../canvases.js";
+import type * as errorsConfig from "../errorsConfig.js";
 import type * as http from "../http.js";
 import type * as ia_agents from "../ia/agents.js";
 import type * as ia_helpers_canvasHelpers from "../ia/helpers/canvasHelpers.js";
@@ -48,6 +49,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   canvasNodes: typeof canvasNodes;
   canvases: typeof canvases;
+  errorsConfig: typeof errorsConfig;
   http: typeof http;
   "ia/agents": typeof ia_agents;
   "ia/helpers/canvasHelpers": typeof ia_helpers_canvasHelpers;

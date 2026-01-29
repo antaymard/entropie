@@ -2,21 +2,22 @@ import { ConvexError, v } from "convex/values";
 import { mutation } from "./_generated/server";
 import { requireAuth } from "./lib/auth";
 import { canvasNodesSchema } from "./schemas_and_validators/canvasesSchema";
+import errors from "./errorsConfig";
 
 export const add = mutation({
   args: {
-    canvasNodes: v.array(canvasNodesSchema),
     canvasId: v.id("canvases"),
+    canvasNodes: v.array(canvasNodesSchema),
   },
   handler: async (ctx, { canvasNodes, canvasId }) => {
     const authUserId = await requireAuth(ctx);
 
     const canvas = await ctx.db.get(canvasId);
     if (!canvas) {
-      throw new ConvexError("Canvas not found");
+      throw new ConvexError(errors.CANVAS_NOT_FOUND);
     }
     if (canvas.creatorId !== authUserId) {
-      throw new ConvexError("Unauthorized");
+      throw new ConvexError(errors.UNAUTHORIZED_USER);
     }
 
     await ctx.db.patch(canvasId, {
@@ -25,6 +26,78 @@ export const add = mutation({
 
     console.log(`✅ Added ${canvasNodes.length} nodes to canvas ${canvasId}`);
 
+    return true;
+  },
+});
+
+export const update = mutation({
+  args: {
+    canvasId: v.id("canvases"),
+    nodeChanges: v.array(v.any()), // NodeChange[] de reactflow
+  },
+  handler: async (ctx, { canvasId, nodeChanges }) => {
+    const authUserId = await requireAuth(ctx);
+
+    const canvas = await ctx.db.get(canvasId);
+    if (!canvas) {
+      throw new ConvexError(errors.CANVAS_NOT_FOUND);
+    }
+    if (canvas.creatorId !== authUserId) {
+      throw new ConvexError(errors.UNAUTHORIZED_USER);
+    }
+
+    const nodes = canvas.nodes || [];
+
+    const updatedNodes = nodes.map((node) => {
+      const change = nodeChanges.find((c) => c.id === node.id);
+      if (!change) return node;
+
+      const updated = { ...node };
+
+      if (change.position) {
+        updated.position = {
+          x: change.position.x,
+          y: change.position.y,
+        };
+      }
+
+      if (change.dimensions) {
+        updated.width = change.dimensions.width;
+        updated.height = change.dimensions.height;
+      }
+
+      return updated;
+    });
+
+    await ctx.db.patch(canvasId, { nodes: updatedNodes });
+
+    return true;
+  },
+});
+
+export const remove = mutation({
+  args: {
+    canvasId: v.id("canvases"),
+    nodeCanvasIds: v.array(v.string()),
+  },
+  handler: async (ctx, { canvasId, nodeCanvasIds }) => {
+    const authUserId = await requireAuth(ctx);
+    const canvas = await ctx.db.get(canvasId);
+    if (!canvas) {
+      throw new ConvexError(errors.CANVAS_NOT_FOUND);
+    }
+    if (canvas.creatorId !== authUserId) {
+      throw new ConvexError(errors.UNAUTHORIZED_USER);
+    }
+    await ctx.db.patch(canvasId, {
+      nodes: (canvas.nodes || []).filter(
+        (node) => !nodeCanvasIds.includes(node.id),
+      ),
+    });
+
+    console.log(
+      `✅ Removed ${nodeCanvasIds.length} nodes from canvas ${canvasId}`,
+    );
     return true;
   },
 });

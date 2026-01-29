@@ -102,6 +102,7 @@ export type NodeType = "default" | "floatingText" | "custom";
 
 // Convex format
 
+// DEP
 export type NodeColors =
   | "blue"
   | "green"
@@ -112,28 +113,3 @@ export type NodeColors =
   | "pink"
   | "orange"
   | "default";
-
-export interface NodeConfig {
-  nodeLabel: string;
-  nodeIcon: IconType;
-  type: NodeType;
-  nodeComponent: React.ComponentType<any>;
-  windowComponent?: React.ComponentType<any>;
-
-  // Proche du format CanvasNode, sans id, position, templateId
-  initialNodeValues: CanvasNode;
-
-  node: {
-    // Pour le resizer
-    minWidth: number;
-    minHeight: number;
-  };
-  window?: {
-    initialWidth: number;
-    initialHeight: number;
-  };
-
-  disableDoubleClickToOpenWindow?: boolean;
-  canSwitchHeaderless?: boolean;
-  canBeTransparent?: boolean;
-}

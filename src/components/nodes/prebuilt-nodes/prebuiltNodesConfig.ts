@@ -1,8 +1,12 @@
 import FloatingTextNode from "./FloatingTextNode";
-import type { Node as XyNode } from "@xyflow/react";
+import type {
+  FloatingTextCanvasNodeData,
+  XyNodeData,
+} from "@/types/canvasNodeData.types";
 
 // Icons
 import { RiTextBlock } from "react-icons/ri";
+import type { Node } from "@xyflow/react";
 
 const prebuiltNodesConfig = [
   {
@@ -20,13 +24,15 @@ const prebuiltNodesConfig = [
       width: 150,
       position: { x: 0, y: 0 },
       data: {
-        nodeDataId: "",
+        // Pas de nodeDataId ici, car les données
+        // restent dans canvas.node.data
         // Plus tard, il y aura locked, color etc
+        color: "transparent",
         // Actual data
         text: "Texte flottant",
         level: "p",
-      },
-    } as XyNode & { type: string },
+      } satisfies Omit<XyNodeData<FloatingTextCanvasNodeData>, "nodeDataId">,
+    } as Node,
   },
 ] as const;
 

@@ -13,6 +13,8 @@ const canvasNodesSchema = v.object({
   locked: v.optional(v.boolean()),
   hidden: v.optional(v.boolean()),
   zIndex: v.optional(v.number()),
+  color: v.optional(v.string()),
+
   parentId: v.optional(v.string()),
   extent: v.optional(
     v.union(v.literal("parent"), v.array(v.array(v.number()))), // [[x1,y1], [x2,y2]]

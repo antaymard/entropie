@@ -1,6 +1,24 @@
-import { query, mutation, internalMutation } from "./_generated/server";
+import { query, mutation } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { requireAuth } from "./lib/auth";
+
+export const getLastModified = query({
+  args: {},
+  handler: async (ctx) => {
+    const authUserId = await requireAuth(ctx);
+
+    // Récupérer le dernier canvas modifié de l'utilisateur
+    const canvas = await ctx.db
+      .query("canvases")
+      .withIndex("by_creator_and_updatedAt", (q) =>
+        q.eq("creatorId", authUserId),
+      )
+      .order("desc")
+      .first();
+
+    return { success: true, canvas };
+  },
+});
 
 export const listUserCanvases = query({
   args: {},

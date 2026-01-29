@@ -30,7 +30,7 @@ export const add = mutation({
   },
 });
 
-export const update = mutation({
+export const updatePositionOrDimensions = mutation({
   args: {
     canvasId: v.id("canvases"),
     nodeChanges: v.array(v.any()), // NodeChange[] de reactflow
@@ -70,6 +70,50 @@ export const update = mutation({
     });
 
     await ctx.db.patch(canvasId, { nodes: updatedNodes });
+
+    return true;
+  },
+});
+
+export const updateDisplayProps = mutation({
+  args: {
+    canvasId: v.id("canvases"),
+    nodeProps: v.array(
+      v.object({
+        id: v.string(),
+        data: v.any(),
+      }),
+    ),
+  },
+  handler: async (ctx, { canvasId, nodeProps }) => {
+    const authUserId = await requireAuth(ctx);
+
+    const canvas = await ctx.db.get(canvasId);
+
+    if (!canvas) {
+      throw new ConvexError(errors.CANVAS_NOT_FOUND);
+    }
+    if (canvas.creatorId !== authUserId) {
+      throw new ConvexError(errors.UNAUTHORIZED_USER);
+    }
+
+    const nodes = canvas.nodes || [];
+
+    const updatedNodes = nodes.map((node) => {
+      const props = nodeProps.find((p) => p.id === node.id);
+      if (!props) return node;
+
+      return {
+        ...node,
+        ...props.data,
+      };
+    });
+
+    await ctx.db.patch(canvasId, { nodes: updatedNodes });
+
+    console.log(
+      `✅ Updated display props for ${nodeProps.length} nodes in canvas ${canvasId}`,
+    );
 
     return true;
   },

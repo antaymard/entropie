@@ -25,6 +25,7 @@ import {
   fromXyNodesToCanvasNodes,
 } from "@/lib/node-types-converter";
 import type { CanvasNode } from "@/types";
+import { nodeTypes } from "@/components/nodes/nodeTypes";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -52,7 +53,9 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   });
 
   const addCanvasNodesToConvex = useMutation(api.canvasNodes.add);
-  const updateCanvasNodesInConvex = useMutation(api.canvasNodes.update);
+  const updateCanvasNodesPositionOrDimensionsInConvex = useMutation(
+    api.canvasNodes.updatePositionOrDimensions,
+  );
   const removeCanvasNodesToConvex = useMutation(api.canvasNodes.remove);
 
   const { contextMenu, setContextMenu, onPaneContextMenu } = useContextMenu();
@@ -62,12 +65,12 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   const throttledUpdatePositions = useMemo(
     () =>
       throttle((changes: NodePositionChange[]) => {
-        updateCanvasNodesInConvex({
+        updateCanvasNodesPositionOrDimensionsInConvex({
           canvasId,
           nodeChanges: changes,
         });
       }, 300),
-    [canvasId, updateCanvasNodesInConvex],
+    [canvasId, updateCanvasNodesPositionOrDimensionsInConvex],
   );
 
   useEffect(() => {
@@ -93,7 +96,6 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
 
   const handleNodeChange = useCallback(
     (changes: NodeChange[]) => {
-      console.log("Node changes:", changes);
       onNodesChange(changes);
 
       const addedChanges = changes.filter(
@@ -111,7 +113,6 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
 
       // ADD NODES
       if (addedChanges.length > 0) {
-        console.log("Nodes added:", addedChanges);
         // Envoi direct à Convex
         addCanvasNodesToConvex({
           canvasNodes: fromXyNodesToCanvasNodes(
@@ -122,14 +123,12 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
       }
       // UPDATE NODES POSITIONS
       if (positionChanges.length > 0) {
-        console.log("Nodes position or dimensions changed:", positionChanges);
-        console.log(positionChanges);
         if (positionChanges.some((change) => change.dragging)) {
           // Throttle l'envoi à Convex pendant le drag (toutes les 300ms)
           throttledUpdatePositions(positionChanges);
         } else {
           // Envoi direct à Convex quand le drag est fini
-          updateCanvasNodesInConvex({
+          updateCanvasNodesPositionOrDimensionsInConvex({
             canvasId,
             nodeChanges: positionChanges,
           });
@@ -140,7 +139,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
         // Envoyer seulement quand le resize est terminé
         const finishedResizing = dimensionChanges.filter((c) => !c.resizing);
         if (finishedResizing.length > 0) {
-          updateCanvasNodesInConvex({
+          updateCanvasNodesPositionOrDimensionsInConvex({
             canvasId,
             nodeChanges: finishedResizing,
           });
@@ -148,7 +147,6 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
       }
       // REMOVE NODES
       if (removedChanges.length > 0) {
-        console.log("Nodes removed:", removedChanges);
         // Envoi direct à Convex
         removeCanvasNodesToConvex({
           nodeCanvasIds: removedChanges.map((c) => c.id),
@@ -159,7 +157,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     [
       onNodesChange,
       addCanvasNodesToConvex,
-      updateCanvasNodesInConvex,
+      updateCanvasNodesPositionOrDimensionsInConvex,
       removeCanvasNodesToConvex,
       throttledUpdatePositions,
       canvasId,
@@ -169,8 +167,6 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   if (isCanvasError && canvasError) {
     return <ErrorDisplay error={canvasError} />;
   }
-
-  console.log(canvas);
 
   return (
     <div className="flex-1 w-full h-full">
@@ -183,6 +179,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           y: 0,
           zoom: 0,
         }}
+        nodeTypes={nodeTypes}
         onPaneContextMenu={onPaneContextMenu}
         nodes={nodes}
         onNodesChange={handleNodeChange}

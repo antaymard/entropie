@@ -1,7 +1,7 @@
 import type { Id } from "@/../convex/_generated/dataModel";
 
 // Miroir parfait de la base convex
-export interface CanvasNode {
+export interface CanvasNode<T = Record<string, any>> {
   id: string; // Pas _id car sous objet de canvas, qui lui un _id
   nodeDataId: Id<"nodeDatas">;
   type: string;
@@ -11,14 +11,15 @@ export interface CanvasNode {
   };
   width: number;
   height: number;
-  locked: boolean;
-  hidden: boolean;
-  zIndex: number;
+  locked?: boolean;
+  hidden?: boolean;
+  zIndex?: number;
+  color?: string;
 
   parentId?: string;
   extent?: any | null; //  "parent" | [[number, number], [number, number]]
   extendParent?: boolean;
-  data?: Record<string, any>;
+  data?: T;
 }
 
 // Miroir parfait de la base convex

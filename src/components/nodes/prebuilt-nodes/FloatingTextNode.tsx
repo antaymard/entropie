@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { type Node, useReactFlow } from "@xyflow/react";
+import { useParams } from "@tanstack/react-router";
 import NodeFrame from "../NodeFrame";
 import { ToggleGroup, ToggleGroupItem } from "@/components/shadcn/toggle-group";
 import { LuHeading1, LuHeading2, LuHeading3 } from "react-icons/lu";
@@ -13,11 +14,17 @@ import type {
 import { colors } from "@/components/ui/styles";
 import type { colorsEnum } from "@/types/style.types";
 import { cn } from "@/lib/utils";
+import { useMutation } from "convex/react";
+import { api } from "@/../convex/_generated/api";
+import type { Id } from "@/../convex/_generated/dataModel";
 
 function FloatingTextNode(
   xyNode: Node<XyNodeData<FloatingTextCanvasNodeData>>,
 ) {
-  const { updateNodeData } = useReactFlow();
+  const { canvasId }: { canvasId: Id<"canvases"> } = useParams({
+    from: "/canvas/$canvasId",
+  });
+  const updateCanvasNode = useMutation(api.canvasNodes.updateCanvasNodes);
 
   const levels = [
     { value: "h1", icon: <LuHeading1 />, className: "text-3xl font-semibold" },
@@ -41,7 +48,12 @@ function FloatingTextNode(
           variant="outline"
           className="bg-card"
           value={xyNode.data.level || "h1"}
-          onValueChange={(value) => updateNodeData(xyNode.id, { level: value })}
+          onValueChange={(value) =>
+            updateCanvasNode({
+              canvasId: canvasId,
+              nodeProps: [{ id: xyNode.id, data: { level: value } }],
+            })
+          }
         >
           {levels.map((level) => (
             <ToggleGroupItem key={level.value} value={level.value}>
@@ -56,7 +68,7 @@ function FloatingTextNode(
           <InlineEditableText
             multiline
             value={xyNode.data.text || ""}
-            onSave={(text) => updateNodeData(xyNode.id, { text })}
+            onSave={(text) => console.log("Save text:", text)}
             placeholder="Double-cliquez pour éditer..."
           />
         </div>

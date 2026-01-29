@@ -73,21 +73,26 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     [canvasId, updateCanvasNodesPositionOrDimensionsInConvex],
   );
 
+  // Sync convex -> reactflow nodes, en préservant les nodes en cours de drag
+  // et la sélection
   useEffect(() => {
     if (canvas && canvas.nodes) {
       setNodes((currentNodes) => {
-        // Identifier les nodes en cours de drag
-        const draggingIds = new Set(
-          currentNodes.filter((n) => n.dragging).map((n) => n.id),
-        );
-
         const newNodes = fromCanvasNodesToXyNodes(canvas.nodes as CanvasNode[]);
 
         return newNodes.map((newNode) => {
-          if (draggingIds.has(newNode.id)) {
-            const currentNode = currentNodes.find((n) => n.id === newNode.id);
-            return currentNode ?? newNode;
+          const currentNode = currentNodes.find((n) => n.id === newNode.id);
+
+          // Si le node est en cours de drag, on garde le currentNode complet
+          if (currentNode?.dragging) {
+            return currentNode;
           }
+
+          // Sinon, on prend le newNode mais on préserve la sélection
+          if (currentNode?.selected) {
+            return { ...newNode, selected: true };
+          }
+
           return newNode;
         });
       });

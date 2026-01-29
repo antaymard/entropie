@@ -75,13 +75,21 @@ export const updatePositionOrDimensions = mutation({
   },
 });
 
-export const updateDisplayProps = mutation({
+export const updateCanvasNodes = mutation({
   args: {
     canvasId: v.id("canvases"),
     nodeProps: v.array(
       v.object({
         id: v.string(),
-        data: v.any(),
+        props: v.optional(
+          v.object({
+            locked: v.optional(v.boolean()),
+            hidden: v.optional(v.boolean()),
+            zIndex: v.optional(v.number()),
+            color: v.optional(v.string()),
+          }),
+        ),
+        data: v.optional(v.any()),
       }),
     ),
   },
@@ -105,7 +113,8 @@ export const updateDisplayProps = mutation({
 
       return {
         ...node,
-        ...props.data,
+        ...props.props,
+        data: { ...node.data, ...props.data },
       };
     });
 

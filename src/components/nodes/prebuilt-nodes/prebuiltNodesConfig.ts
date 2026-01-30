@@ -11,13 +11,23 @@ import { TbFile, TbAbc } from "react-icons/tb";
 import DocumentNode from "./DocumentNode";
 import FloatingTextNode from "./FloatingTextNode";
 
-const prebuiltNodesConfig = [
+type PrebuiltNodeConfig = {
+  nodeLabel: string;
+  nodeIcon: React.ComponentType;
+  nodeComponent: React.ComponentType<any>;
+  skipNodeDataCreation?: boolean;
+  disableDoubleClickToOpenWindow?: boolean;
+  canBeTransparent?: boolean;
+  node: Node;
+};
+
+const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
   {
     nodeLabel: "Texte flottant",
     nodeIcon: TbAbc,
     nodeComponent: FloatingTextNode,
 
-    disableNodeDataCreation: true,
+    skipNodeDataCreation: true,
 
     disableDoubleClickToOpenWindow: true,
     canBeTransparent: true,
@@ -55,6 +65,6 @@ const prebuiltNodesConfig = [
       } satisfies Omit<XyNodeData, "nodeDataId">,
     } as Node,
   },
-] as const;
+];
 
 export default prebuiltNodesConfig;

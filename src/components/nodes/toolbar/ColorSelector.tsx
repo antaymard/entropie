@@ -2,45 +2,49 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/shadcn/dropdown-menu";
 import { ButtonGroup } from "@/components/shadcn/button-group";
 import { Button } from "@/components/shadcn/button";
-import type { NodeColors } from "@/types";
-import { TbPalette } from "react-icons/tb";
-import nodeColors from "../nodeColors";
+import { TbPalette, TbCheck } from "react-icons/tb";
 import { memo, useCallback } from "react";
-
-import { type Node, useReactFlow } from "@xyflow/react";
+import { type Node } from "@xyflow/react";
 import prebuiltNodesConfig from "../prebuilt-nodes/prebuiltNodesConfig";
+import { useUpdateCanvasNode } from "@/hooks/useUpdateCanvasNode";
+import type { colorsEnum } from "@/types/style.types";
+import type { XyNodeData } from "@/types/canvasNodeData.types";
+import { colors } from "@/components/ui/styles";
+import { cn } from "@/lib/utils";
 
 const ColorSelector = memo(function ColorSelector({
   xyNode,
 }: {
-  xyNode: Node;
+  xyNode: Node<XyNodeData>;
 }) {
-  const { updateNodeData } = useReactFlow();
-  const nodeConfig = prebuiltNodesConfig.find((n) => n.type === xyNode.type);
+  const { updateCanvasNode } = useUpdateCanvasNode();
+  const nodeConfig = prebuiltNodesConfig.find(
+    (n) => n.node.type === xyNode.type,
+  );
 
-  // OPTIMISATION: useCallback empêche la recréation de la fonction à chaque render
-  // - Stable la référence de la fonction passée en prop au DropdownMenu
-  // - Évite les rerenders des enfants qui dépendent de cette fonction
   const handleColorChange = useCallback(
     (value: string) => {
-      updateNodeData(xyNode.id, { color: value as NodeColors });
+      updateCanvasNode({
+        nodeId: xyNode.id,
+        props: { color: value as colorsEnum },
+      });
     },
-    [xyNode.id, updateNodeData]
+    [xyNode.id, updateCanvasNode],
   );
 
   // Filtrer les couleurs disponibles selon la config du nœud
-  const availableColors = Object.entries(nodeColors).filter(([key]) => {
+  const availableColors = Object.entries(colors).filter(([key]) => {
     if (key === "transparent") {
       return nodeConfig?.canBeTransparent === true;
     }
     return true;
   });
+
+  const currentColor = (xyNode.data.color as colorsEnum) || "default";
 
   return (
     <ButtonGroup>
@@ -50,26 +54,34 @@ const ColorSelector = memo(function ColorSelector({
             <TbPalette />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
+        <DropdownMenuContent align="start" className="w-[240px]">
           <DropdownMenuLabel>Couleur du bloc</DropdownMenuLabel>
-          <DropdownMenuRadioGroup
-            value={xyNode.data.color || "default"}
-            onValueChange={handleColorChange}
-          >
+          <div className="grid grid-cols-5 gap-2 p-2">
             {availableColors.map(([key, value]) => (
-              <DropdownMenuRadioItem
-                value={key}
+              <button
                 key={key}
-                onClick={() => handleColorChange(key)}
+                type="button"
+                onClick={() => handleColorChange(key as colorsEnum)}
+                className={cn(
+                  "relative w-10 h-10 rounded-full border-2 transition-all hover:scale-110",
+                  value.nodeBg,
+                  currentColor === key
+                    ? "border-primary shadow-md"
+                    : "border-border hover:border-primary/50",
+                )}
+                title={value.label}
               >
-                <div
-                  className={`border ${value.border} ${value.bg} rounded-sm p-1 ${value.text} `}
-                >
-                  {value.label}
-                </div>
-              </DropdownMenuRadioItem>
+                {currentColor === key && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <TbCheck
+                      className="w-5 h-5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
+                      strokeWidth={3}
+                    />
+                  </div>
+                )}
+              </button>
             ))}
-          </DropdownMenuRadioGroup>
+          </div>
         </DropdownMenuContent>
       </DropdownMenu>
     </ButtonGroup>

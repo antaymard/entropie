@@ -17,28 +17,6 @@ export interface NodeData {
   removedFromCanvasAt?: number;
 }
 
-// Convex format
-export interface CanvasNode {
-  id: string; // Pas _id car sous objet de canvas, qui lui un _id
-  nodeDataId: Id<"nodeDatas">;
-  type: string;
-  position: {
-    x: number;
-    y: number;
-  };
-  width: number;
-  height: number;
-  locked: boolean;
-  hidden: boolean;
-  zIndex: number;
-
-  data: Record<string, unknown>; // Normalement vide
-
-  parentId?: string;
-  extent?: any | null; //  "parent" | [[number, number], [number, number]]
-  extendParent?: boolean;
-}
-
 // ==========================================================================
 // OLD SHIT - to be removed later
 export interface NodeTemplate {

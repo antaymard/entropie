@@ -14,9 +14,8 @@ import type {
 import { colors } from "@/components/ui/styles";
 import type { colorsEnum } from "@/types/style.types";
 import { cn } from "@/lib/utils";
-import { useMutation } from "convex/react";
-import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
+import { useUpdateCanvasNode } from "@/hooks/useUpdateCanvasNode";
 
 function FloatingTextNode(
   xyNode: Node<XyNodeData<FloatingTextCanvasNodeData>>,
@@ -24,7 +23,7 @@ function FloatingTextNode(
   const { canvasId }: { canvasId: Id<"canvases"> } = useParams({
     from: "/canvas/$canvasId",
   });
-  const updateCanvasNode = useMutation(api.canvasNodes.updateCanvasNodes);
+  const { updateCanvasNode } = useUpdateCanvasNode();
 
   const levels = [
     { value: "h1", icon: <LuHeading1 />, className: "text-3xl font-semibold" },
@@ -49,10 +48,7 @@ function FloatingTextNode(
           className="bg-card"
           value={xyNode.data.level || "h1"}
           onValueChange={(value) =>
-            updateCanvasNode({
-              canvasId: canvasId,
-              nodeProps: [{ id: xyNode.id, data: { level: value } }],
-            })
+            updateCanvasNode({ nodeId: xyNode.id, data: { level: value } })
           }
         >
           {levels.map((level) => (
@@ -68,7 +64,9 @@ function FloatingTextNode(
           <InlineEditableText
             multiline
             value={xyNode.data.text || ""}
-            onSave={(text) => console.log("Save text:", text)}
+            onSave={(text) =>
+              updateCanvasNode({ nodeId: xyNode.id, data: { text } })
+            }
             placeholder="Double-cliquez pour éditer..."
           />
         </div>

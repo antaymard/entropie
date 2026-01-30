@@ -1,4 +1,5 @@
 import type { Id } from "@/../convex/_generated/dataModel";
+import type { colorsEnum } from "./style.types";
 
 // Miroir parfait de la base convex
 export interface CanvasNode<T = Record<string, any>> {
@@ -14,7 +15,7 @@ export interface CanvasNode<T = Record<string, any>> {
   locked?: boolean;
   hidden?: boolean;
   zIndex?: number;
-  color?: string;
+  color?: colorsEnum;
 
   parentId?: string;
   extent?: any | null; //  "parent" | [[number, number], [number, number]]

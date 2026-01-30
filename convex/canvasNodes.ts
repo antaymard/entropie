@@ -111,11 +111,25 @@ export const updateCanvasNodes = mutation({
       const props = nodeProps.find((p) => p.id === node.id);
       if (!props) return node;
 
-      return {
-        ...node,
-        ...props.props,
-        data: { ...node.data, ...props.data },
-      };
+      const updated = { ...node };
+
+      // Appliquer les props structurelles (locked, hidden, zIndex, color)
+      if (props.props) {
+        if (props.props.locked !== undefined)
+          updated.locked = props.props.locked;
+        if (props.props.hidden !== undefined)
+          updated.hidden = props.props.hidden;
+        if (props.props.zIndex !== undefined)
+          updated.zIndex = props.props.zIndex;
+        if (props.props.color !== undefined) updated.color = props.props.color;
+      }
+
+      // Appliquer les data custom
+      if (props.data) {
+        updated.data = { ...node.data, ...props.data };
+      }
+
+      return updated;
     });
 
     await ctx.db.patch(canvasId, { nodes: updatedNodes });

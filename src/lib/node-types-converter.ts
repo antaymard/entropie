@@ -1,10 +1,12 @@
 import type { CanvasNode } from "@/types";
+import type { colorsEnum } from "@/types/style.types";
 import type { Node } from "@xyflow/react";
 import type { Id } from "@/../convex/_generated/dataModel";
 
 export function fromXyNodeToCanvasNode(xyNode: Node): CanvasNode {
-  const { nodeDataId, ...restData } = (xyNode.data ?? {}) as {
+  const { nodeDataId, color, ...restData } = (xyNode.data ?? {}) as {
     nodeDataId?: Id<"nodeDatas">;
+    color?: colorsEnum;
     [key: string]: unknown;
   };
 
@@ -19,12 +21,13 @@ export function fromXyNodeToCanvasNode(xyNode: Node): CanvasNode {
     position: xyNode.position,
     width: xyNode.measured?.width ?? xyNode.width ?? 0,
     height: xyNode.measured?.height ?? xyNode.height ?? 0,
-    locked: xyNode.draggable === false,
-    hidden: xyNode.hidden ?? false,
-    zIndex: xyNode.zIndex ?? 0,
-    data: restData,
+    ...(xyNode.draggable === false && { locked: true }),
+    ...(xyNode.hidden === true && { hidden: true }),
+    ...(xyNode.zIndex != null && { zIndex: xyNode.zIndex }),
+    ...(color && { color }),
+    ...(Object.keys(restData).length > 0 && { data: restData }),
     ...(xyNode.parentId && { parentId: xyNode.parentId }),
-    ...(xyNode.extent && { extent: xyNode.extent }),
+    ...(xyNode.extent && { extent: xyNode.extent as CanvasNode["extent"] }),
     ...(xyNode.expandParent && { extendParent: xyNode.expandParent }),
   };
 }
@@ -40,11 +43,12 @@ export function fromCanvasNodeToXyNode(canvasNode: CanvasNode): Node {
     position: canvasNode.position,
     width: canvasNode.width,
     height: canvasNode.height,
-    draggable: !canvasNode.locked,
-    hidden: canvasNode.hidden,
-    zIndex: canvasNode.zIndex,
+    ...(canvasNode.locked === true && { draggable: false }),
+    ...(canvasNode.hidden === true && { hidden: true }),
+    ...(canvasNode.zIndex != null && { zIndex: canvasNode.zIndex }),
     data: {
       nodeDataId: canvasNode.nodeDataId,
+      ...(canvasNode.color && { color: canvasNode.color }),
       ...canvasNode.data,
     },
     ...(canvasNode.parentId && { parentId: canvasNode.parentId }),

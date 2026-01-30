@@ -41,16 +41,16 @@ const colors = {
     nodeBorder: "border-purple-600",
     textColor: "text-purple-600",
   },
-  transparent: {
-    label: "Transparent",
-    nodeBg: "bg-transparent",
-    nodeBorder: "border-transparent",
-    textColor: "text-slate-600",
-  },
   default: {
     label: "Défaut",
     nodeBg: "bg-white",
     nodeBorder: "border-slate-300",
+    textColor: "text-slate-600",
+  },
+  transparent: {
+    label: "Transparent",
+    nodeBg: "bg-transparent",
+    nodeBorder: "border-transparent",
     textColor: "text-slate-600",
   },
 } as const;

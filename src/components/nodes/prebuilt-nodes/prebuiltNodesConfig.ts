@@ -41,7 +41,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
       data: {
         // Pas de nodeDataId ici, car les données
         // restent dans canvas.node.data
-        color: "default",
+        color: "transparent",
         // Actual data
         text: "Texte flottant",
         level: "p",

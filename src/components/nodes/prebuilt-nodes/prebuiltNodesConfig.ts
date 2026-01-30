@@ -41,7 +41,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
       data: {
         // Pas de nodeDataId ici, car les données
         // restent dans canvas.node.data
-        color: "transparent",
+        color: "default",
         // Actual data
         text: "Texte flottant",
         level: "p",
@@ -60,7 +60,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
       width: 220,
       position: { x: 0, y: 0 },
       data: {
-        color: "transparent",
+        color: "default",
         // Actual data
       } satisfies Omit<XyNodeData, "nodeDataId">,
     } as Node,

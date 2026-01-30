@@ -49,8 +49,8 @@ const colors = {
   },
   default: {
     label: "Défaut",
-    nodeBg: "bg-slate-300",
-    nodeBorder: "border-slate-600",
+    nodeBg: "bg-white",
+    nodeBorder: "border-slate-300",
     textColor: "text-slate-600",
   },
 } as const;

@@ -14,6 +14,7 @@ import type { Id } from "@/../convex/_generated/dataModel";
 import { api } from "@/../convex/_generated/api";
 import { cn } from "@/lib/utils";
 import useRichQuery from "@/components/utils/useRichQuery";
+import { useNodeDataStore } from "@/stores/nodeDataStore";
 import ErrorDisplay from "@/components/ui/ErrorDisplay";
 import ContextMenu from "@/components/canvas/context-menus";
 import { useContextMenu } from "@/hooks/useContextMenu";
@@ -44,6 +45,8 @@ function RouteComponent() {
 }
 
 function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
+  const setNodeDatas = useNodeDataStore((state) => state.setNodeDatas);
+
   const {
     isError: isCanvasError,
     data: canvas,
@@ -51,6 +54,17 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   } = useRichQuery(api.canvases.readCanvas, {
     canvasId,
   });
+
+  // Fetch nodeDatas et sync dans le store Zustand
+  const { data: nodeDatas } = useRichQuery(api.nodeDatas.listByCanvasId, {
+    canvasId,
+  });
+
+  useEffect(() => {
+    if (nodeDatas) {
+      setNodeDatas(nodeDatas);
+    }
+  }, [nodeDatas, setNodeDatas]);
 
   const addCanvasNodesToConvex = useMutation(api.canvasNodes.add);
   const updateCanvasNodesPositionOrDimensionsInConvex = useMutation(

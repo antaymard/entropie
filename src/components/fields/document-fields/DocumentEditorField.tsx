@@ -1,4 +1,10 @@
-import { memo, useCallback, useRef } from "react";
+import {
+  memo,
+  useCallback,
+  useRef,
+  useImperativeHandle,
+  forwardRef,
+} from "react";
 import type { Value } from "platejs";
 import { Editor, EditorContainer } from "@/components/plate/editor";
 import { EditorKit } from "@/components/plate/editor-kit";
@@ -7,42 +13,66 @@ import type { BaseFieldProps } from "@/types/field.types";
 import { useCanvasStore } from "@/stores/canvasStore";
 import { cn } from "@/lib/utils";
 
-interface DocumentEditorFieldProps extends BaseFieldProps<{ doc: Value }> {
-  editorId?: string;
+export interface DocumentEditorFieldHandle {
+  flushChanges: () => void;
 }
 
-function DocumentEditorField({
-  editorId,
-  value,
-  visualType,
-  onChange,
-}: DocumentEditorFieldProps) {
+interface DocumentEditorFieldProps extends BaseFieldProps<{ doc: Value }> {
+  editorId?: string;
+  plugins?: typeof EditorKit;
+}
+
+const DocumentEditorField = forwardRef<
+  DocumentEditorFieldHandle,
+  DocumentEditorFieldProps
+>(function DocumentEditorField(
+  { editorId, value, visualType, onChange, plugins = EditorKit },
+  ref,
+) {
   const initialValue: Value = value?.doc as Value;
   const setEnableCanvasUndoRedo = useCanvasStore(
-    (s) => s.setEnableCanvasUndoRedo
+    (s) => s.setEnableCanvasUndoRedo,
   );
 
   const editor = usePlateEditor({
     id: editorId ? `doc-${editorId}` : undefined,
-    plugins: EditorKit,
+    plugins,
     value: initialValue,
   });
 
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingValueRef = useRef<Value | null>(null);
+
+  const flushChanges = useCallback(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+    if (pendingValueRef.current !== null) {
+      onChange?.({ doc: pendingValueRef.current });
+      pendingValueRef.current = null;
+    }
+  }, [onChange]);
+
+  useImperativeHandle(ref, () => ({ flushChanges }), [flushChanges]);
 
   const handleChange = useCallback(
     ({ value }: { value: Value }) => {
+      // Stocke la valeur en attente
+      pendingValueRef.current = value;
+
       // Annule le timer précédent si existant
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
       }
 
-      // Crée un nouveau timer pour mettre à jour après 300ms
+      // Crée un nouveau timer pour mettre à jour après 750ms
       debounceTimerRef.current = setTimeout(() => {
         onChange?.({ doc: value });
+        pendingValueRef.current = null;
       }, 750);
     },
-    [onChange]
+    [onChange],
   );
 
   // Désactive l'undo/redo du canvas lors de la focalisation de l'éditeur
@@ -52,15 +82,17 @@ function DocumentEditorField({
 
   const handleBlur = useCallback(() => {
     setEnableCanvasUndoRedo(true);
-  }, [setEnableCanvasUndoRedo]);
+    // Flush les changements en attente immédiatement au blur
+    flushChanges();
+  }, [setEnableCanvasUndoRedo, flushChanges]);
 
   return (
     <Plate editor={editor} onValueChange={handleChange}>
       <EditorContainer
         variant="default"
         className={cn(
-          "nodrag h-full rounded-md",
-          visualType === "window" && "border border-slate-300"
+          "nodrag h-full rounded-md overflow-visible",
+          visualType === "window" && "border border-slate-300",
         )}
         onFocus={handleFocus}
         onBlur={handleBlur}
@@ -74,6 +106,6 @@ function DocumentEditorField({
       </EditorContainer>
     </Plate>
   );
-}
+});
 
 export default memo(DocumentEditorField);

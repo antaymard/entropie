@@ -1,10 +1,12 @@
 import { v } from "convex/values";
+import { ConvexError } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { requireAuth } from "./lib/auth";
 import nodeDatasSchema from "./schemas_and_validators/nodeDatasSchema";
 
 export const create = mutation({
-  args: nodeDatasSchema,
+  args: nodeDatasSchema.omit("_id"),
   handler: async (ctx, args) => {
     await requireAuth(ctx);
 
@@ -14,23 +16,64 @@ export const create = mutation({
 
     return nodeDataId;
   },
+  returns: v.id("nodeDatas"),
 });
 
-export const listNodeDatasFromIds = query({
-  args: { nodeDataIds: v.array(v.id("nodeDatas")) },
-  handler: async (ctx, { nodeDataIds }) => {
+export const listByCanvasId = query({
+  args: { canvasId: v.id("canvases") },
+  handler: async (ctx, { canvasId }) => {
     await requireAuth(ctx);
-    console.log("Fetching nodeDatas for IDs:", nodeDataIds);
 
-    // Créer les promises pour chaque nodeDataId
-    // const nodeDataPromises = nodeDataIds.map((id) =>
-    //   ctx.db.get("nodeDatas", id),
-    // );
+    const canvas = await ctx.db.get(canvasId);
+    if (!canvas) return [];
 
-    // const nodeDatas = await Promise.all(nodeDataPromises);
+    // Extraire les nodeDataIds des nodes du canvas
+    const nodeDataIds = (canvas.nodes || [])
+      .map((node) => node.nodeDataId)
+      .filter((id): id is Id<"nodeDatas"> => id !== undefined);
 
-    const nodeDatas = await ctx.db.query("nodeDatas").collect();
+    if (nodeDataIds.length === 0) return [];
 
-    return nodeDatas;
+    // Fetch les nodeDatas en parallèle
+    const nodeDatas = await Promise.all(
+      nodeDataIds.map((id) => ctx.db.get(id))
+    );
+
+    // Filtrer les nulls (au cas où un nodeData aurait été supprimé)
+    return nodeDatas.filter((nd) => nd !== null);
   },
+});
+
+// export const update = mutation({
+//   args: {
+//     updates: v.array(nodeDatasSchema),
+//   },
+//   handler: async (ctx, { updates }) => {
+//     await requireAuth(ctx);
+//     const updatePromises = updates.map(({ _id, ...data }) =>
+//       ctx.db.patch("nodeDatas", _id, data),
+//     );
+//     await Promise.all(updatePromises);
+//     return true;
+//   },
+//   returns: v.boolean(),
+// });
+
+export const updateValues = mutation({
+  args: {
+    _id: v.id("nodeDatas"),
+    values: v.record(v.string(), v.any()),
+  },
+  handler: async (ctx, { _id, values }) => {
+    await requireAuth(ctx);
+    const existing = await ctx.db.get(_id);
+    if (!existing) throw new ConvexError("NodeData non trouvé");
+
+    await ctx.db.patch(_id, {
+      values: { ...existing.values, ...values },
+      updatedAt: Date.now(),
+    });
+    return true;
+  },
+  returns: v.boolean(),
 });

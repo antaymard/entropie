@@ -9,6 +9,7 @@ import {
   type NodeDimensionChange,
   type NodePositionChange,
   type NodeRemoveChange,
+  SelectionMode,
 } from "@xyflow/react";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { api } from "@/../convex/_generated/api";
@@ -47,6 +48,7 @@ function RouteComponent() {
 function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   const setNodeDatas = useNodeDataStore((state) => state.setNodeDatas);
 
+  // Fetch canvas
   const {
     isError: isCanvasError,
     data: canvas,
@@ -55,16 +57,11 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     canvasId,
   });
 
-  // Fetch nodeDatas et sync dans le store Zustand
-  const { data: nodeDatas } = useRichQuery(api.nodeDatas.listByCanvasId, {
-    canvasId,
-  });
-
-  useEffect(() => {
-    if (nodeDatas) {
-      setNodeDatas(nodeDatas);
-    }
-  }, [nodeDatas, setNodeDatas]);
+  // Fetch nodeDatas for this canvas
+  const { data: nodeDatas } = useRichQuery(
+    api.nodeDatas.listByCanvasId,
+    canvasId ? { canvasId } : "skip",
+  );
 
   const addCanvasNodesToConvex = useMutation(api.canvasNodes.add);
   const updateCanvasNodesPositionOrDimensionsInConvex = useMutation(
@@ -112,6 +109,13 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
       });
     }
   }, [canvas]);
+
+  // Sync convex nodeDatas -> zustand store
+  useEffect(() => {
+    if (nodeDatas) {
+      setNodeDatas(nodeDatas);
+    }
+  }, [nodeDatas, setNodeDatas]);
 
   const handleNodeChange = useCallback(
     (changes: NodeChange[]) => {
@@ -187,10 +191,15 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     return <ErrorDisplay error={canvasError} />;
   }
 
+  if (!canvas) {
+    return <div>Loading canvas...</div>;
+  }
+
+  document.title = `${canvas.name}`;
+
   return (
     <div className="flex-1 w-full h-full">
       <ReactFlow
-        selectNodesOnDrag={false}
         panOnScroll
         panOnDrag={[1]}
         defaultViewport={{
@@ -198,6 +207,9 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           y: 0,
           zoom: 0,
         }}
+        selectNodesOnDrag={false}
+        selectionMode={SelectionMode.Partial}
+        selectionOnDrag={true}
         nodeTypes={nodeTypes}
         onPaneContextMenu={onPaneContextMenu}
         nodes={nodes}

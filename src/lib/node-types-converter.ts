@@ -41,6 +41,15 @@ export function fromCanvasNodeToXyNode(canvasNode: CanvasNode): Node {
     position: canvasNode.position,
     width: canvasNode.width,
     height: canvasNode.height,
+    // Provide measured dimensions to prevent React Flow from re-measuring
+    // nodes that already have known dimensions from the database
+    ...(canvasNode.width > 0 &&
+      canvasNode.height > 0 && {
+        measured: {
+          width: canvasNode.width,
+          height: canvasNode.height,
+        },
+      }),
     ...(canvasNode.locked === true && { draggable: false }),
     ...(canvasNode.hidden === true && { hidden: true }),
     ...(canvasNode.zIndex != null && { zIndex: canvasNode.zIndex }),

@@ -36,9 +36,12 @@ function FloatingTextNode(xyNode: Node) {
           variant="outline"
           className="bg-card"
           value={(xyNode.data.level as string) || "h1"}
-          onValueChange={(value) =>
-            updateCanvasNode({ nodeId: xyNode.id, data: { level: value } })
-          }
+          onValueChange={(value) => {
+            // Only update if value is not null (prevent unclicking)
+            if (value) {
+              updateCanvasNode({ nodeId: xyNode.id, data: { level: value } });
+            }
+          }}
         >
           {levels.map((level) => (
             <ToggleGroupItem key={level.value} value={level.value}>

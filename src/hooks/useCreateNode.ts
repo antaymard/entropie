@@ -36,6 +36,12 @@ export function useCreateNode() {
       id: newNodeId,
       position,
       selected: true,
+      // Add measured dimensions if width/height are known to prevent
+      // React Flow from triggering a dimension change event after adding
+      ...(node.width &&
+        node.height && {
+          measured: { width: node.width, height: node.height },
+        }),
       data: {
         ...node.data,
         ...(nodeDataId ? { nodeDataId } : {}),

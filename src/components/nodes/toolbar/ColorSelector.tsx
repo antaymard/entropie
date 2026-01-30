@@ -12,14 +12,13 @@ import { type Node } from "@xyflow/react";
 import prebuiltNodesConfig from "../prebuilt-nodes/prebuiltNodesConfig";
 import { useUpdateCanvasNode } from "@/hooks/useUpdateCanvasNode";
 import type { colorsEnum } from "@/types/style.types";
-import type { XyNodeData } from "@/types/canvasNodeData.types";
 import { colors } from "@/components/ui/styles";
 import { cn } from "@/lib/utils";
 
 const ColorSelector = memo(function ColorSelector({
   xyNode,
 }: {
-  xyNode: Node<XyNodeData>;
+  xyNode: Node;
 }) {
   const { updateCanvasNode } = useUpdateCanvasNode();
   const nodeConfig = prebuiltNodesConfig.find(

@@ -71,6 +71,10 @@ export const updatePositionOrDimensions = mutation({
 
     await ctx.db.patch(canvasId, { nodes: updatedNodes });
 
+    console.log(
+      `✅ Updated position or dimensions for ${nodeChanges.length} nodes in canvas ${canvasId}`,
+    );
+
     return true;
   },
 });

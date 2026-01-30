@@ -4,7 +4,7 @@ import type { colorsEnum } from "./style.types";
 // Miroir parfait de la base convex
 export interface CanvasNode<T = Record<string, any>> {
   id: string; // Pas _id car sous objet de canvas, qui lui un _id
-  nodeDataId: Id<"nodeDatas">;
+  nodeDataId?: Id<"nodeDatas">;
   type: string;
   position: {
     x: number;
@@ -30,7 +30,7 @@ export interface CanvasEdge {
   target: string; // node id
   sourceHandle?: string;
   targetHandle?: string;
-  data: Record<string, any>;
+  data?: Record<string, any>;
 }
 
 // Miroir parfait de la base convex

@@ -2,7 +2,7 @@ import { v } from "convex/values";
 
 const canvasNodesSchema = v.object({
   id: v.string(), // Pas _id
-  nodeDataId: v.id("nodeDatas"),
+  nodeDataId: v.optional(v.id("nodeDatas")),
   type: v.string(),
   position: v.object({
     x: v.number(),

@@ -1,18 +1,23 @@
-import FloatingTextNode from "./FloatingTextNode";
 import type {
   FloatingTextCanvasNodeData,
   XyNodeData,
 } from "@/types/canvasNodeData.types";
+import type { Node } from "@xyflow/react";
 
 // Icons
-import { RiTextBlock } from "react-icons/ri";
-import type { Node } from "@xyflow/react";
+import { TbFile, TbAbc } from "react-icons/tb";
+
+// Node Components
+import DocumentNode from "./DocumentNode";
+import FloatingTextNode from "./FloatingTextNode";
 
 const prebuiltNodesConfig = [
   {
     nodeLabel: "Texte flottant",
-    nodeIcon: RiTextBlock,
+    nodeIcon: TbAbc,
     nodeComponent: FloatingTextNode,
+
+    disableNodeDataCreation: true,
 
     disableDoubleClickToOpenWindow: true,
     canBeTransparent: true,
@@ -26,12 +31,28 @@ const prebuiltNodesConfig = [
       data: {
         // Pas de nodeDataId ici, car les données
         // restent dans canvas.node.data
-        // Plus tard, il y aura locked, color etc
         color: "transparent",
         // Actual data
         text: "Texte flottant",
         level: "p",
       } satisfies Omit<XyNodeData<FloatingTextCanvasNodeData>, "nodeDataId">,
+    } as Node,
+  },
+  {
+    nodeLabel: "Document",
+    nodeIcon: TbFile,
+    nodeComponent: DocumentNode,
+
+    node: {
+      id: "",
+      type: "document",
+      height: 220,
+      width: 220,
+      position: { x: 0, y: 0 },
+      data: {
+        color: "transparent",
+        // Actual data
+      } satisfies Omit<XyNodeData, "nodeDataId">,
     } as Node,
   },
 ] as const;

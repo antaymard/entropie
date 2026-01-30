@@ -13,5 +13,5 @@ export interface DisplayPropsThatGoInXyData {
   zIndex?: number;
 }
 
-export type XyNodeData<T = Record<string, never>> = DisplayPropsThatGoInXyData &
+export type XyNodeData<T = unknown> = DisplayPropsThatGoInXyData &
   T & { nodeDataId: Id<"nodeDatas"> };

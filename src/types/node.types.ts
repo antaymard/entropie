@@ -76,18 +76,7 @@ export interface LayoutElement {
 // Nodes on the canvas
 // ===========================================================================
 
+// TO DEP => cf nodeData.types.ts
 export type NodeType = "default" | "floatingText" | "custom";
 
 // Convex format
-
-// DEP
-export type NodeColors =
-  | "blue"
-  | "green"
-  | "red"
-  | "yellow"
-  | "purple"
-  | "transparent"
-  | "pink"
-  | "orange"
-  | "default";

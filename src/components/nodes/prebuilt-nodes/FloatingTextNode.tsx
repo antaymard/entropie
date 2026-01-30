@@ -1,28 +1,17 @@
 import { memo } from "react";
-import { type Node, useReactFlow } from "@xyflow/react";
-import { useParams } from "@tanstack/react-router";
+import { type Node } from "@xyflow/react";
 import NodeFrame from "../NodeFrame";
 import { ToggleGroup, ToggleGroupItem } from "@/components/shadcn/toggle-group";
 import { LuHeading1, LuHeading2, LuHeading3 } from "react-icons/lu";
 import { BiParagraph } from "react-icons/bi";
 import InlineEditableText from "../../form-ui/InlineEditableText";
 import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
-import type {
-  XyNodeData,
-  FloatingTextCanvasNodeData,
-} from "@/types/canvasNodeData.types";
 import { colors } from "@/components/ui/styles";
 import type { colorsEnum } from "@/types/style.types";
 import { cn } from "@/lib/utils";
-import type { Id } from "@/../convex/_generated/dataModel";
 import { useUpdateCanvasNode } from "@/hooks/useUpdateCanvasNode";
 
-function FloatingTextNode(
-  xyNode: Node<XyNodeData<FloatingTextCanvasNodeData>>,
-) {
-  const { canvasId }: { canvasId: Id<"canvases"> } = useParams({
-    from: "/canvas/$canvasId",
-  });
+function FloatingTextNode(xyNode: Node) {
   const { updateCanvasNode } = useUpdateCanvasNode();
 
   const levels = [
@@ -46,7 +35,7 @@ function FloatingTextNode(
           type="single"
           variant="outline"
           className="bg-card"
-          value={xyNode.data.level || "h1"}
+          value={(xyNode.data.level as string) || "h1"}
           onValueChange={(value) =>
             updateCanvasNode({ nodeId: xyNode.id, data: { level: value } })
           }
@@ -63,7 +52,7 @@ function FloatingTextNode(
         <div className={cn(textClassName, textColor, "p-1 px-2")}>
           <InlineEditableText
             multiline
-            value={xyNode.data.text || ""}
+            value={(xyNode.data.text as string) || ""}
             onSave={(text) =>
               updateCanvasNode({ nodeId: xyNode.id, data: { text } })
             }

@@ -10,13 +10,9 @@ export function fromXyNodeToCanvasNode(xyNode: Node): CanvasNode {
     [key: string]: unknown;
   };
 
-  if (!nodeDataId) {
-    throw new Error(`Node ${xyNode.id} is missing nodeDataId in data`);
-  }
-
   return {
     id: xyNode.id,
-    nodeDataId,
+    ...(nodeDataId && { nodeDataId }),
     type: xyNode.type ?? "default",
     position: xyNode.position,
     width: xyNode.measured?.width ?? xyNode.width ?? 0,
@@ -37,6 +33,8 @@ export function fromXyNodesToCanvasNodes(xyNodes: Node[]): CanvasNode[] {
 }
 
 export function fromCanvasNodeToXyNode(canvasNode: CanvasNode): Node {
+  const restData = canvasNode.data ?? {};
+
   return {
     id: canvasNode.id,
     type: canvasNode.type,
@@ -47,9 +45,11 @@ export function fromCanvasNodeToXyNode(canvasNode: CanvasNode): Node {
     ...(canvasNode.hidden === true && { hidden: true }),
     ...(canvasNode.zIndex != null && { zIndex: canvasNode.zIndex }),
     data: {
-      nodeDataId: canvasNode.nodeDataId,
+      ...(canvasNode.nodeDataId != null && {
+        nodeDataId: canvasNode.nodeDataId,
+      }),
       ...(canvasNode.color && { color: canvasNode.color }),
-      ...canvasNode.data,
+      ...restData,
     },
     ...(canvasNode.parentId && { parentId: canvasNode.parentId }),
     ...(canvasNode.extent && { extent: canvasNode.extent }),

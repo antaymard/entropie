@@ -31,12 +31,7 @@ export function useUpdateCanvasNode(): UseUpdateCanvasNodeReturn {
     from: "/canvas/$canvasId",
   });
 
-  const {
-    getNode,
-    updateNode: rfUpdateNode,
-    updateNodeData,
-    setNodes,
-  } = useReactFlow();
+  const { getNode, setNodes } = useReactFlow();
 
   const updateCanvasNodesMutation = useMutation(
     api.canvasNodes.updateCanvasNodes,
@@ -52,55 +47,69 @@ export function useUpdateCanvasNode(): UseUpdateCanvasNodeReturn {
         console.warn(`[useUpdateCanvasNode] Node ${nodeId} not found`);
         return false;
       }
-      snapshotsRef.current.set(nodeId, JSON.parse(JSON.stringify(node)));
+      snapshotsRef.current.set(nodeId, structuredClone(node));
       return true;
     },
     [getNode],
   );
 
-  const clearSnapshot = useCallback((nodeId: string) => {
-    snapshotsRef.current.delete(nodeId);
-  }, []);
-
   const revertNodes = useCallback(
     (nodeIds: string[]) => {
-      setNodes((currentNodes) =>
-        currentNodes.map((node) => {
+      setNodes((currentNodes) => {
+        const result = currentNodes.map((node) => {
           if (!nodeIds.includes(node.id)) return node;
           const snapshot = snapshotsRef.current.get(node.id);
           return snapshot ?? node;
-        }),
-      );
-      nodeIds.forEach((id) => snapshotsRef.current.delete(id));
+        });
+        // Supprimer les snapshots après les avoir utilisés, à l'intérieur du callback
+        nodeIds.forEach((id) => snapshotsRef.current.delete(id));
+        return result;
+      });
     },
     [setNodes],
   );
 
-  const applyLocalUpdate = useCallback(
-    (input: UpdateNodeInput) => {
-      const { nodeId, props, data } = input;
+  const applyLocalUpdates = useCallback(
+    (inputs: UpdateNodeInput[]) => {
+      const inputsMap = new Map(inputs.map((i) => [i.nodeId, i]));
 
-      if (props) {
-        const structuralUpdate: Partial<Node> = {};
-        if (props.locked !== undefined)
-          structuralUpdate.draggable = !props.locked;
-        if (props.hidden !== undefined) structuralUpdate.hidden = props.hidden;
-        if (props.zIndex !== undefined) structuralUpdate.zIndex = props.zIndex;
+      setNodes((currentNodes) =>
+        currentNodes.map((node) => {
+          const input = inputsMap.get(node.id);
+          if (!input) return node;
 
-        if (Object.keys(structuralUpdate).length > 0) {
-          rfUpdateNode(nodeId, structuralUpdate);
-        }
-      }
+          const { props, data } = input;
 
-      const dataUpdate: Record<string, unknown> = {};
-      if (props?.color !== undefined) dataUpdate.color = props.color;
-      if (data) Object.assign(dataUpdate, data);
+          // Props structurelles
+          const structuralUpdates: Partial<Node> = {};
+          if (props) {
+            if (props.locked !== undefined)
+              structuralUpdates.draggable = !props.locked;
+            if (props.hidden !== undefined)
+              structuralUpdates.hidden = props.hidden;
+            if (props.zIndex !== undefined)
+              structuralUpdates.zIndex = props.zIndex;
+          }
 
-      if (Object.keys(dataUpdate).length > 0) {
-        updateNodeData(nodeId, dataUpdate);
-      }
+          // Data (color + custom data)
+          const dataUpdate: Record<string, unknown> = {};
+          if (props?.color !== undefined) dataUpdate.color = props.color;
+          if (data) Object.assign(dataUpdate, data);
+
+          const hasDataUpdate = Object.keys(dataUpdate).length > 0;
+          const hasStructuralUpdate = Object.keys(structuralUpdates).length > 0;
+
+          if (!hasDataUpdate && !hasStructuralUpdate) return node;
+
+          return {
+            ...node,
+            ...structuralUpdates,
+            ...(hasDataUpdate && { data: { ...node.data, ...dataUpdate } }),
+          };
+        }),
+      );
     },
-    [rfUpdateNode, updateNodeData],
+    [setNodes],
   );
 
   const executeServerUpdate = useCallback(
@@ -127,11 +136,13 @@ export function useUpdateCanvasNode(): UseUpdateCanvasNodeReturn {
       if (validInputs.length === 0) return;
 
       isUpdatingRef.current = true;
-      validInputs.forEach(applyLocalUpdate);
+      applyLocalUpdates(validInputs);
 
       try {
         await executeServerUpdate(validInputs);
-        validInputs.forEach((input) => clearSnapshot(input.nodeId));
+        validInputs.forEach((input) =>
+          snapshotsRef.current.delete(input.nodeId),
+        );
       } catch (error) {
         revertNodes(validInputs.map((i) => i.nodeId));
         toastError(error, "Erreur lors de la mise à jour");
@@ -139,13 +150,7 @@ export function useUpdateCanvasNode(): UseUpdateCanvasNodeReturn {
         isUpdatingRef.current = false;
       }
     },
-    [
-      saveSnapshot,
-      applyLocalUpdate,
-      executeServerUpdate,
-      clearSnapshot,
-      revertNodes,
-    ],
+    [saveSnapshot, applyLocalUpdates, executeServerUpdate, revertNodes],
   );
 
   const updateNode = useCallback(
@@ -158,8 +163,6 @@ export function useUpdateCanvasNode(): UseUpdateCanvasNodeReturn {
   return {
     updateCanvasNode: updateNode,
     updateCanvasNodes: updateNodes,
-    get isUpdating() {
-      return isUpdatingRef.current;
-    },
+    isUpdating: isUpdatingRef.current,
   };
 }

@@ -22,7 +22,7 @@ export default function NodeContextMenu({
   position: { x: number; y: number };
   xyNode: Node;
 }) {
-  const { setNodes, addNodes, deleteElements } = useReactFlow();
+  const { deleteElements } = useReactFlow();
   const { createNode } = useCreateNode();
 
   const nodeOptions = [
@@ -32,13 +32,6 @@ export default function NodeContextMenu({
       onClick: () => {
         const nodeToDuplicate = xyNode;
         if (nodeToDuplicate) {
-          // Déselectionner le node original dans le state React Flow
-          setNodes((nodes) =>
-            nodes.map((n) =>
-              n.id === xyNode.id ? { ...n, selected: false } : n,
-            ),
-          );
-
           const nodeConfig = prebuiltNodesConfig.find(
             (config) => config.node.type === nodeToDuplicate.type,
           );
@@ -60,12 +53,6 @@ export default function NodeContextMenu({
       onClick: () => {
         const nodeToDuplicate = xyNode;
         if (nodeToDuplicate) {
-          // Déselectionner le node original dans le state React Flow
-          setNodes((nodes) =>
-            nodes.map((n) =>
-              n.id === xyNode.id ? { ...n, selected: false } : n,
-            ),
-          );
           createNode({
             node: nodeToDuplicate,
             position: {

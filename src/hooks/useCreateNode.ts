@@ -11,7 +11,7 @@ type CreateNodeOptions = {
 };
 
 export function useCreateNode() {
-  const { addNodes } = useReactFlow();
+  const { addNodes, setNodes } = useReactFlow();
   const createNodeData = useMutation(api.nodeDatas.create);
 
   const createNode = async ({
@@ -30,6 +30,9 @@ export function useCreateNode() {
         updatedAt: Date.now(),
       });
     }
+
+    // Déselectionner tous les nodes
+    setNodes((nodes) => nodes.map((n) => ({ ...n, selected: false })));
 
     addNodes({
       ...node,

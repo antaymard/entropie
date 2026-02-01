@@ -36,7 +36,7 @@ function NodeFrame({
           "group h-full flex flex-col duration-150 border",
           nodeColor.nodeBg,
           nodeColor.nodeBorder,
-          !canDrag && "nodrag cursor-crosshair",
+          !canDrag && "nodrag",
           xyNode.selected
             ? "ring-2 ring-blue-500/70"
             : "hover:ring-1 hover:ring-blue-400/60",

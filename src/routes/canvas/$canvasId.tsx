@@ -19,7 +19,7 @@ import { useNodeDataStore } from "@/stores/nodeDataStore";
 import ErrorDisplay from "@/components/ui/ErrorDisplay";
 import ContextMenu from "@/components/canvas/context-menus";
 import { useContextMenu } from "@/hooks/useContextMenu";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { throttle } from "lodash";
 import { useMutation } from "convex/react";
 import {
@@ -72,6 +72,9 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   const { contextMenu, setContextMenu, onPaneContextMenu } = useContextMenu();
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const lastPositionChangesWhenResizing = useRef<NodePositionChange[] | null>(
+    null,
+  );
 
   const throttledUpdatePositions = useMemo(
     () =>
@@ -84,7 +87,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     [canvasId, updateCanvasNodesPositionOrDimensionsInConvex],
   );
 
-  // Sync convex -> reactflow nodes, en préservant les nodes en cours de drag
+  // Sync convex -> reactflow nodes, en préservant les nodes en cours de drag/resize
   // et la sélection
   useEffect(() => {
     if (canvas && canvas.nodes) {
@@ -94,8 +97,8 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
         return newNodes.map((newNode) => {
           const currentNode = currentNodes.find((n) => n.id === newNode.id);
 
-          // Si le node est en cours de drag, on garde le currentNode complet
-          if (currentNode?.dragging) {
+          // Si le node est en cours de drag ou resize, on garde le currentNode complet
+          if (currentNode?.dragging || (currentNode as any)?.resizing) {
             return currentNode;
           }
 
@@ -137,56 +140,68 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
       // ADD NODES
       if (addedChanges.length > 0) {
         // Envoi direct à Convex
-        addCanvasNodesToConvex({
+        return addCanvasNodesToConvex({
           canvasNodes: fromXyNodesToCanvasNodes(
             addedChanges.map((c) => c.item) as Node[],
           ),
           canvasId,
         });
-      }
-      // UPDATE NODES POSITIONS
-      if (positionChanges.length > 0) {
-        if (positionChanges.some((change) => change.dragging)) {
-          // Throttle l'envoi à Convex pendant le drag (toutes les 300ms)
-          throttledUpdatePositions(positionChanges);
-        } else {
-          // Envoi direct à Convex quand le drag est fini
-          updateCanvasNodesPositionOrDimensionsInConvex({
-            canvasId,
-            nodeChanges: positionChanges,
-          });
-        }
-      }
-      // UPDATE NODES DIMENSIONS
-      if (dimensionChanges.length > 0) {
-        // Envoyer seulement quand le resize est terminé
-        const finishedResizing = dimensionChanges.filter((c) => !c.resizing);
-        if (finishedResizing.length > 0) {
-          updateCanvasNodesPositionOrDimensionsInConvex({
-            canvasId,
-            nodeChanges: finishedResizing,
-          });
-        }
-      }
-      // REMOVE NODES
-      if (removedChanges.length > 0) {
+      } else if (removedChanges.length > 0) {
+        // REMOVE NODES
         // Envoi direct à Convex
         removeCanvasNodesToConvex({
           nodeCanvasIds: removedChanges.map((c) => c.id),
           canvasId,
         });
+      } else if (dimensionChanges.length > 0) {
+        // UPDATE NODES DIMENSIONS
+        if (dimensionChanges.some((change) => (change as any).resizing)) {
+          if (positionChanges.length > 0) {
+            // Sauvegarder les positionChanges pendant le resize
+            lastPositionChangesWhenResizing.current = positionChanges;
+          }
+        } else {
+          // Fusionner les dimensionChanges et positionChanges par node ID
+          const savedPositionChanges =
+            lastPositionChangesWhenResizing.current || [];
+          const mergedChanges = dimensionChanges.map((dimChange) => {
+            const posChange = savedPositionChanges.find(
+              (p) => p.id === dimChange.id,
+            );
+            return {
+              type: "dimensions" as const,
+              id: dimChange.id,
+              dimensions: dimChange.dimensions,
+              position: posChange?.position,
+            };
+          });
+
+          console.log(mergedChanges);
+          updateCanvasNodesPositionOrDimensionsInConvex({
+            canvasId,
+            nodeChanges: mergedChanges,
+          });
+          lastPositionChangesWhenResizing.current = null;
+        }
+      } else if (positionChanges.length > 0) {
+        // UPDATE NODES POSITIONS
+        if (
+          positionChanges.some((change) => change.dragging) &&
+          dimensionChanges.length === 0
+        ) {
+          // Throttle l'envoi à Convex pendant le drag (toutes les 300ms)
+          throttledUpdatePositions(positionChanges);
+        } else {
+          // Envoi direct à Convex quand le drag est fini
+          return updateCanvasNodesPositionOrDimensionsInConvex({
+            canvasId,
+            nodeChanges: positionChanges,
+          });
+        }
       }
     },
-    [
-      onNodesChange,
-      addCanvasNodesToConvex,
-      updateCanvasNodesPositionOrDimensionsInConvex,
-      removeCanvasNodesToConvex,
-      throttledUpdatePositions,
-      canvasId,
-    ],
+    [canvasId],
   );
-
   if (isCanvasError && canvasError) {
     return <ErrorDisplay error={canvasError} />;
   }

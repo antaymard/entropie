@@ -21,7 +21,7 @@ const DocumentNode = memo(
   function DocumentNode(xyNode: Node) {
     const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
     const values = useNodeDataValues(nodeDataId);
-    const { updateNodeData } = useUpdateNodeDataValues();
+    const { updateNodeDataValues } = useUpdateNodeDataValues();
     const [isEditing, setIsEditing] = useState(false);
 
     // Récupère la valeur depuis le store NodeData
@@ -37,13 +37,13 @@ const DocumentNode = memo(
     const handleChange = useCallback(
       (newValue: { doc: Value }) => {
         if (nodeDataId) {
-          updateNodeData({
+          updateNodeDataValues({
             nodeDataId,
             values: { doc: newValue.doc },
           });
         }
       },
-      [updateNodeData, nodeDataId],
+      [updateNodeDataValues, nodeDataId],
     );
 
     const handleBlur = useCallback(() => {

@@ -12,7 +12,7 @@ interface UpdateNodeDataInput {
 }
 
 interface UseUpdateNodeDataValuesReturn {
-  updateNodeData: (input: UpdateNodeDataInput) => Promise<void>;
+  updateNodeDataValues: (input: UpdateNodeDataInput) => Promise<void>;
   isUpdating: boolean;
 }
 
@@ -54,7 +54,7 @@ export function useUpdateNodeDataValues(): UseUpdateNodeDataValuesReturn {
     [setNodeData],
   );
 
-  const updateNodeData = useCallback(
+  const updateNodeDataValues = useCallback(
     async (input: UpdateNodeDataInput): Promise<void> => {
       const { nodeDataId, values } = input;
 
@@ -87,7 +87,7 @@ export function useUpdateNodeDataValues(): UseUpdateNodeDataValuesReturn {
   );
 
   return {
-    updateNodeData,
+    updateNodeDataValues,
     isUpdating: isUpdatingRef.current,
   };
 }

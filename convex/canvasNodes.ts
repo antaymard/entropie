@@ -55,6 +55,7 @@ export const updatePositionOrDimensions = mutation({
       const updated = { ...node };
 
       if (change.position) {
+        console.log("Updating position for node", node.id, change.position);
         updated.position = {
           x: change.position.x,
           y: change.position.y,
@@ -62,6 +63,7 @@ export const updatePositionOrDimensions = mutation({
       }
 
       if (change.dimensions) {
+        console.log("Updating dimensions for node", node.id, change.dimensions);
         updated.width = change.dimensions.width;
         updated.height = change.dimensions.height;
       }
@@ -70,10 +72,6 @@ export const updatePositionOrDimensions = mutation({
     });
 
     await ctx.db.patch(canvasId, { nodes: updatedNodes });
-
-    console.log(
-      `✅ Updated position or dimensions for ${nodeChanges.length} nodes in canvas ${canvasId}`,
-    );
 
     return true;
   },

@@ -5,19 +5,18 @@ import type {
 import type { Node } from "@xyflow/react";
 
 // Icons
-import { TbFile, TbAbc } from "react-icons/tb";
+import { TbFile, TbAbc, TbPhoto } from "react-icons/tb";
 
 // Node Components
 import DocumentNode from "./DocumentNode";
 import FloatingTextNode from "./FloatingTextNode";
+import ImageNode from "./ImageNode";
 
 type PrebuiltNodeConfig = {
   nodeLabel: string;
   nodeIcon: React.ComponentType;
   nodeComponent: React.ComponentType<any>;
   skipNodeDataCreation?: boolean;
-  disableDoubleClickToOpenWindow?: boolean;
-  canBeTransparent?: boolean;
   node: Node;
 };
 
@@ -26,11 +25,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
     nodeLabel: "Texte flottant",
     nodeIcon: TbAbc,
     nodeComponent: FloatingTextNode,
-
     skipNodeDataCreation: true,
-
-    disableDoubleClickToOpenWindow: true,
-    canBeTransparent: true,
 
     node: {
       id: "",
@@ -56,8 +51,25 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
     node: {
       id: "",
       type: "document",
-      height: 220,
-      width: 220,
+      height: 320,
+      width: 320,
+      position: { x: 0, y: 0 },
+      data: {
+        color: "default",
+        // Actual data
+      } satisfies Omit<XyNodeData, "nodeDataId">,
+    } as Node,
+  },
+  {
+    nodeLabel: "Image",
+    nodeIcon: TbPhoto,
+    nodeComponent: ImageNode,
+
+    node: {
+      id: "",
+      type: "image",
+      height: 320,
+      width: 320,
       position: { x: 0, y: 0 },
       data: {
         color: "default",

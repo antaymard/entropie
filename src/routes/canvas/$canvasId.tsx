@@ -69,7 +69,13 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   );
   const removeCanvasNodesToConvex = useMutation(api.canvasNodes.remove);
 
-  const { contextMenu, setContextMenu, onPaneContextMenu } = useContextMenu();
+  const {
+    contextMenu,
+    setContextMenu,
+    onPaneContextMenu,
+    onNodeContextMenu,
+    onSelectionContextMenu,
+  } = useContextMenu();
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const lastPositionChangesWhenResizing = useRef<NodePositionChange[] | null>(
@@ -227,6 +233,8 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
         selectionOnDrag={true}
         nodeTypes={nodeTypes}
         onPaneContextMenu={onPaneContextMenu}
+        onNodeContextMenu={onNodeContextMenu}
+        onSelectionContextMenu={onSelectionContextMenu}
         nodes={nodes}
         onNodesChange={handleNodeChange}
       >

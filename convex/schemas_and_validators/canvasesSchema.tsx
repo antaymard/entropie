@@ -31,6 +31,7 @@ const edgesSchema = v.object({
   // Handles optionnels
   sourceHandle: v.optional(v.string()),
   targetHandle: v.optional(v.string()),
+  markerEnd: v.optional(v.any()),
   data: v.optional(v.record(v.string(), v.any())),
 });
 

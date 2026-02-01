@@ -5,12 +5,13 @@ import type {
 import type { Node } from "@xyflow/react";
 
 // Icons
-import { TbFile, TbAbc, TbPhoto } from "react-icons/tb";
+import { TbFile, TbAbc, TbPhoto, TbLink } from "react-icons/tb";
 
 // Node Components
 import DocumentNode from "./DocumentNode";
 import FloatingTextNode from "./FloatingTextNode";
 import ImageNode from "./ImageNode";
+import LinkNode from "./LinkNode";
 
 type PrebuiltNodeConfig = {
   nodeLabel: string;
@@ -70,6 +71,23 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
       type: "image",
       height: 320,
       width: 320,
+      position: { x: 0, y: 0 },
+      data: {
+        color: "default",
+        // Actual data
+      } satisfies Omit<XyNodeData, "nodeDataId">,
+    } as Node,
+  },
+  {
+    nodeLabel: "Link",
+    nodeIcon: TbLink,
+    nodeComponent: LinkNode,
+
+    node: {
+      id: "",
+      type: "link",
+      height: 33,
+      width: 220,
       position: { x: 0, y: 0 },
       data: {
         color: "default",

@@ -7,9 +7,11 @@ import type { colorsEnum } from "@/types/style.types";
 function NodeFrame({
   xyNode,
   children,
+  resizable = true,
 }: {
   xyNode: Node<any>;
   children: React.ReactNode;
+  resizable?: boolean;
 }) {
   if (!xyNode) return null;
 
@@ -19,7 +21,7 @@ function NodeFrame({
   return (
     <>
       <NodeResizer
-        isVisible={xyNode?.selected}
+        isVisible={resizable && xyNode?.selected}
         lineStyle={{
           borderWidth: 2,
         }}

@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as canvasEdges from "../canvasEdges.js";
 import type * as canvasNodes from "../canvasNodes.js";
 import type * as canvases from "../canvases.js";
 import type * as errorsConfig from "../errorsConfig.js";
@@ -47,6 +48,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  canvasEdges: typeof canvasEdges;
   canvasNodes: typeof canvasNodes;
   canvases: typeof canvases;
   errorsConfig: typeof errorsConfig;

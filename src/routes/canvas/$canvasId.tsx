@@ -10,6 +10,13 @@ import {
   type NodePositionChange,
   type NodeRemoveChange,
   SelectionMode,
+  addEdge,
+  useEdgesState,
+  type Edge,
+  type EdgeChange,
+  type EdgeAddChange,
+  type EdgeRemoveChange,
+  MarkerType,
 } from "@xyflow/react";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { api } from "@/../convex/_generated/api";
@@ -63,11 +70,17 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     canvasId ? { canvasId } : "skip",
   );
 
+  // CONVEX MUTATIONS
+  // Nodes
   const addCanvasNodesToConvex = useMutation(api.canvasNodes.add);
   const updateCanvasNodesPositionOrDimensionsInConvex = useMutation(
     api.canvasNodes.updatePositionOrDimensions,
   );
   const removeCanvasNodesToConvex = useMutation(api.canvasNodes.remove);
+  // Edges
+  const addCanvasEdgesToConvex = useMutation(api.canvasEdges.add);
+  // const updateCanvasEdgesInConvex = useMutation(api.canvasEdges.update);
+  const removeCanvasEdgesInConvex = useMutation(api.canvasEdges.remove);
 
   const {
     contextMenu,
@@ -78,6 +91,8 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   } = useContextMenu();
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+
   const lastPositionChangesWhenResizing = useRef<NodePositionChange[] | null>(
     null,
   );
@@ -93,29 +108,36 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     [canvasId, updateCanvasNodesPositionOrDimensionsInConvex],
   );
 
-  // Sync convex -> reactflow nodes, en préservant les nodes en cours de drag/resize
-  // et la sélection
+  // Sync convex -> reactflow nodes, en préservant les nodes en cours
+  // de drag/resize et la sélection
   useEffect(() => {
-    if (canvas && canvas.nodes) {
-      setNodes((currentNodes) => {
-        const newNodes = fromCanvasNodesToXyNodes(canvas.nodes as CanvasNode[]);
+    if (canvas) {
+      if (canvas.nodes?.length) {
+        setNodes((currentNodes: Node[]) => {
+          const newNodes = fromCanvasNodesToXyNodes(
+            canvas.nodes as CanvasNode[],
+          );
 
-        return newNodes.map((newNode) => {
-          const currentNode = currentNodes.find((n) => n.id === newNode.id);
+          return newNodes.map((newNode) => {
+            const currentNode = currentNodes.find((n) => n.id === newNode.id);
 
-          // Si le node est en cours de drag ou resize, on garde le currentNode complet
-          if (currentNode?.dragging || (currentNode as any)?.resizing) {
-            return currentNode;
-          }
+            // Si le node est en cours de drag ou resize, on garde le currentNode complet
+            if (currentNode?.dragging || (currentNode as Node)?.resizing) {
+              return currentNode as Node;
+            }
 
-          // Sinon, on prend le newNode mais on préserve la sélection
-          if (currentNode?.selected) {
-            return { ...newNode, selected: true };
-          }
+            // Sinon, on prend le newNode mais on préserve la sélection
+            if (currentNode?.selected) {
+              return { ...newNode, selected: true } as Node;
+            }
 
-          return newNode;
+            return newNode as Node;
+          });
         });
-      });
+      }
+      if (canvas.edges?.length) {
+        setEdges(canvas.edges as Edge[]);
+      }
     }
   }, [canvas]);
 
@@ -161,7 +183,11 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
         });
       } else if (dimensionChanges.length > 0) {
         // UPDATE NODES DIMENSIONS
-        if (dimensionChanges.some((change) => (change as any).resizing)) {
+        if (
+          dimensionChanges.some(
+            (change) => (change as NodeDimensionChange).resizing,
+          )
+        ) {
           if (positionChanges.length > 0) {
             // Sauvegarder les positionChanges pendant le resize
             lastPositionChangesWhenResizing.current = positionChanges;
@@ -182,7 +208,6 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
             };
           });
 
-          console.log(mergedChanges);
           updateCanvasNodesPositionOrDimensionsInConvex({
             canvasId,
             nodeChanges: mergedChanges,
@@ -208,6 +233,43 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     },
     [canvasId],
   );
+
+  const handleEdgeChange = useCallback(
+    (changes: EdgeChange[]) => {
+      onEdgesChange(changes);
+
+      console.log("Edge changes:", changes);
+
+      const addedChanges = changes.filter(
+        (change: EdgeChange) => change.type === "add",
+      ) as EdgeAddChange[];
+      const removedChanges = changes.filter(
+        (change: EdgeChange) => change.type === "remove",
+      ) as EdgeRemoveChange[];
+
+      // ADD EDGES
+      if (addedChanges.length > 0) {
+        // Envoi direct à Convex
+        return addCanvasEdgesToConvex({
+          edges: addedChanges.map((c) => ({
+            ...c.item,
+            sourceHandle: c.item.sourceHandle ?? undefined,
+            targetHandle: c.item.targetHandle ?? undefined,
+          })),
+          canvasId,
+        });
+      } else if (removedChanges.length > 0) {
+        // REMOVE EDGES
+        // Envoi direct à Convex
+        removeCanvasEdgesInConvex({
+          edgeIds: removedChanges.map((c) => c.id),
+          canvasId,
+        });
+      }
+    },
+    [canvasId],
+  );
+
   if (isCanvasError && canvasError) {
     return <ErrorDisplay error={canvasError} />;
   }
@@ -226,7 +288,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
         defaultViewport={{
           x: 0,
           y: 0,
-          zoom: 0,
+          zoom: 10,
         }}
         selectNodesOnDrag={false}
         selectionMode={SelectionMode.Partial}
@@ -236,7 +298,35 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
         onNodeContextMenu={onNodeContextMenu}
         onSelectionContextMenu={onSelectionContextMenu}
         nodes={nodes}
+        edges={edges}
+        onEdgesChange={handleEdgeChange}
         onNodesChange={handleNodeChange}
+        // edgesReconnectable={true}
+        onConnectStart={console.log}
+        onConnect={(params) => {
+          handleEdgeChange([
+            {
+              type: "add" as const,
+              item: {
+                id: crypto.randomUUID(),
+                source: params.source,
+                target: params.target,
+                sourceHandle: params.sourceHandle ?? undefined,
+                targetHandle: params.targetHandle ?? undefined,
+                markerEnd: {
+                  type: MarkerType.Arrow,
+                  width: 30,
+                  height: 30,
+                  strokeWidth: 1,
+                },
+              },
+            },
+          ]);
+        }}
+        onConnectEnd={console.log}
+        onReconnectStart={console.log}
+        onReconnect={console.log}
+        onReconnectEnd={console.log}
       >
         {contextMenu.type && (
           <ContextMenu

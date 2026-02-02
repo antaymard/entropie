@@ -65,7 +65,7 @@ function ImageNode(xyNode: Node) {
           <img
             src={currentValue[0].url}
             alt="Node Image"
-            className="w-full h-full object-contain"
+            className="w-full h-full object-contain rounded-[4px]"
           />
         ) : (
           <div className="h-full w-full flex flex-col gap-2 items-center justify-center">

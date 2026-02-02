@@ -13,6 +13,7 @@ import FloatingTextNode from "./FloatingTextNode";
 import ImageNode from "./ImageNode";
 import LinkNode from "./LinkNode";
 import ValueNode from "./ValueNode";
+import z from "zod";
 
 type PrebuiltNodeConfig = {
   nodeLabel: string;
@@ -20,6 +21,7 @@ type PrebuiltNodeConfig = {
   nodeComponent: React.ComponentType<any>;
   skipNodeDataCreation?: boolean;
   node: Node;
+  nodeDataValuesSchema?: object | null;
 };
 
 const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
@@ -44,6 +46,8 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
         level: "p",
       } satisfies Omit<XyNodeData<FloatingTextCanvasNodeData>, "nodeDataId">,
     } as Node,
+
+    nodeDataValuesSchema: null,
   },
   {
     nodeLabel: "Document",
@@ -61,6 +65,10 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
         // Actual data
       } satisfies Omit<XyNodeData, "nodeDataId">,
     } as Node,
+
+    nodeDataValuesSchema: {
+      doc: z.array(z.object()),
+    },
   },
   {
     nodeLabel: "Image",
@@ -78,6 +86,14 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
         // Actual data
       } satisfies Omit<XyNodeData, "nodeDataId">,
     } as Node,
+
+    nodeDataValuesSchema: {
+      images: z.array(
+        z.object({
+          url: z.string(),
+        }),
+      ),
+    },
   },
   {
     nodeLabel: "Lien",
@@ -95,6 +111,16 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
         // Actual data
       } satisfies Omit<XyNodeData, "nodeDataId">,
     } as Node,
+
+    nodeDataValuesSchema: {
+      link: z.object({
+        href: z.string(),
+        pageDescription: z.optional(z.string()),
+        pageImage: z.optional(z.string()),
+        pageTitle: z.optional(z.string()),
+        siteName: z.optional(z.string()),
+      }),
+    },
   },
   {
     nodeLabel: "Valeur",
@@ -112,6 +138,15 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
         // Actual data
       } satisfies Omit<XyNodeData, "nodeDataId">,
     } as Node,
+
+    nodeDataValuesSchema: {
+      value: z.object({
+        label: z.optional(z.string()),
+        type: z.string(),
+        unit: z.optional(z.string()),
+        value: z.boolean(),
+      }),
+    },
   },
 ];
 

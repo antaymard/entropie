@@ -5,14 +5,14 @@ import type {
 import type { Node } from "@xyflow/react";
 
 // Icons
-import { TbFile, TbAbc, TbPhoto, TbLink, TbNumbers } from "react-icons/tb";
+import { TbFile, TbAbc, TbPhoto, TbLink, TbTag } from "react-icons/tb";
 
 // Node Components
 import DocumentNode from "./DocumentNode";
 import FloatingTextNode from "./FloatingTextNode";
 import ImageNode from "./ImageNode";
 import LinkNode from "./LinkNode";
-import NumberNode from "./NumberNode";
+import ValueNode from "./ValueNode";
 
 type PrebuiltNodeConfig = {
   nodeLabel: string;
@@ -97,13 +97,13 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
     } as Node,
   },
   {
-    nodeLabel: "Nombre",
-    nodeIcon: TbNumbers,
-    nodeComponent: NumberNode,
+    nodeLabel: "Valeur",
+    nodeIcon: TbTag,
+    nodeComponent: ValueNode,
 
     node: {
       id: "",
-      type: "number",
+      type: "value",
       height: 120,
       width: 220,
       position: { x: 0, y: 0 },

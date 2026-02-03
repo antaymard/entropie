@@ -9,7 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/shadcn/dialog";
 import type { Node } from "@xyflow/react";
-import { TbBolt } from "react-icons/tb";
+import { TbBolt, TbBoltFilled } from "react-icons/tb";
 import { useForm } from "@tanstack/react-form";
 import Selector from "@/components/ts-form/Selector";
 import { cn } from "@/lib/utils";
@@ -74,6 +74,8 @@ export default function AutomationSettingsButton({ xyNode }: { xyNode: Node }) {
     },
   });
 
+  const hasAutomationEnabled = nodeData && nodeData.automationMode !== "off";
+
   return (
     <Dialog
       open={open}
@@ -82,8 +84,12 @@ export default function AutomationSettingsButton({ xyNode }: { xyNode: Node }) {
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="outline" size="icon">
-          <TbBolt />
+        <Button
+          variant="outline"
+          size="icon"
+          className={cn(hasAutomationEnabled && "text-amber-500")}
+        >
+          {hasAutomationEnabled ? <TbBoltFilled /> : <TbBolt />}
         </Button>
       </DialogTrigger>
 

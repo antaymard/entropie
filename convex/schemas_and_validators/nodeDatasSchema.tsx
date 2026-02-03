@@ -12,6 +12,7 @@ const nodeDatasSchema = v.object({
   status: v.optional(
     v.union(v.literal("idle"), v.literal("working"), v.literal("error")),
   ),
+
   agent: v.optional(
     v.object({
       model: v.string(),
@@ -29,7 +30,18 @@ const nodeDatasSchema = v.object({
     ),
   ),
   automationMode: v.optional(
-    v.union(v.literal("agent"), v.literal("dataProcessing"), v.literal("none")),
+    v.union(v.literal("agent"), v.literal("dataProcessing"), v.literal("off")),
+  ),
+  dependencies: v.optional(
+    v.array(
+      v.object({
+        nodeDataId: v.id("nodeDatas"),
+        field: v.optional(v.string()),
+        type: v.union(v.literal("input"), v.literal("output")),
+        degree: v.number(),
+        shouldTriggerUpdate: v.boolean(),
+      }),
+    ),
   ),
 });
 

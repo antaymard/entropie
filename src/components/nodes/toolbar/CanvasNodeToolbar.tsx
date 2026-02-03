@@ -25,6 +25,7 @@ function CanvasNodeToolbar({
 
   return (
     <NodeToolbar
+      onContextMenu={(e) => e.stopPropagation()}
       isVisible={isVisible}
       className={`flex gap-2 ${className || ""}`}
       onDoubleClick={(e) => e.stopPropagation()}

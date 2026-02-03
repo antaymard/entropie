@@ -288,7 +288,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
         defaultViewport={{
           x: 0,
           y: 0,
-          zoom: 10,
+          zoom: 1,
         }}
         selectNodesOnDrag={false}
         selectionMode={SelectionMode.Partial}

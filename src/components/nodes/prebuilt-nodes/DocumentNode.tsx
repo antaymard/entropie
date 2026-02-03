@@ -9,6 +9,7 @@ import NodeFrame from "../NodeFrame";
 import DocumentStaticField from "@/components/fields/document-fields/DocumentStaticField";
 import DocumentEditorField from "@/components/fields/document-fields/DocumentEditorField";
 import { CanvasEditorKit } from "@/components/plate/canvas-editor-kit";
+import AutomationSettingsButton from "../toolbar/AutomationSettingsButton";
 
 const defaultValue: Value = normalizeNodeId([
   {
@@ -52,7 +53,9 @@ const DocumentNode = memo(
 
     return (
       <>
-        <CanvasNodeToolbar xyNode={xyNode}></CanvasNodeToolbar>
+        <CanvasNodeToolbar xyNode={xyNode}>
+          <AutomationSettingsButton xyNode={xyNode} />
+        </CanvasNodeToolbar>
         <NodeFrame xyNode={xyNode}>
           {isEditing ? (
             <div className="h-full" onBlur={handleBlur}>

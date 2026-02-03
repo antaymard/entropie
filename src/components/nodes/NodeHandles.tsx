@@ -77,6 +77,10 @@ export default function NodeHandles({
           id={handle.id}
           position={handle.position}
           className={cn(handle.visible ? "opacity-100 z-10" : "opacity-0")}
+          style={{
+            height: 10,
+            width: 10,
+          }}
         />
       ))}
     </>

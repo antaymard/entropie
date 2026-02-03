@@ -1,7 +1,7 @@
 import { memo, useState, useCallback } from "react";
 import { type Node } from "@xyflow/react";
 import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
-import { useNodeDataValues } from "@/hooks/useNodeDataValues";
+import { useNodeDataValues } from "@/hooks/useNodeData";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { normalizeNodeId, type Value } from "platejs";
 import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";

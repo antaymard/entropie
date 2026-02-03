@@ -36,28 +36,13 @@ export const listByCanvasId = query({
 
     // Fetch les nodeDatas en parallèle
     const nodeDatas = await Promise.all(
-      nodeDataIds.map((id) => ctx.db.get(id))
+      nodeDataIds.map((id) => ctx.db.get(id)),
     );
 
     // Filtrer les nulls (au cas où un nodeData aurait été supprimé)
     return nodeDatas.filter((nd) => nd !== null);
   },
 });
-
-// export const update = mutation({
-//   args: {
-//     updates: v.array(nodeDatasSchema),
-//   },
-//   handler: async (ctx, { updates }) => {
-//     await requireAuth(ctx);
-//     const updatePromises = updates.map(({ _id, ...data }) =>
-//       ctx.db.patch("nodeDatas", _id, data),
-//     );
-//     await Promise.all(updatePromises);
-//     return true;
-//   },
-//   returns: v.boolean(),
-// });
 
 export const updateValues = mutation({
   args: {
@@ -76,4 +61,27 @@ export const updateValues = mutation({
     return true;
   },
   returns: v.boolean(),
+});
+
+export const updateAutomationSettings = mutation({
+  args: nodeDatasSchema.pick(
+    "_id",
+    "automationMode",
+    "agent",
+    "dataProcessing",
+    "dependencies",
+  ),
+  handler: async (ctx, args) => {
+    await requireAuth(ctx);
+    const existing = await ctx.db.get(args._id);
+    if (!existing) throw new ConvexError("NodeData non trouvé");
+
+    await ctx.db.patch(args._id, {
+      automationMode: args.automationMode,
+      agent: args.agent,
+      dataProcessing: args.dataProcessing,
+      dependencies: args.dependencies,
+    });
+    return true;
+  },
 });

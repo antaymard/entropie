@@ -11,7 +11,7 @@ import { Button } from "@/components/shadcn/button";
 import { Input } from "@/components/shadcn/input";
 import { TbLink, TbExternalLink } from "react-icons/tb";
 import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
-import { useNodeDataValues } from "@/hooks/useNodeDataValues";
+import { useNodeDataValues } from "@/hooks/useNodeData";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { useAction } from "convex/react";
 import { api } from "@/../convex/_generated/api";

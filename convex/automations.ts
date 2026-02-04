@@ -4,6 +4,8 @@ import { components, internal } from "./_generated/api";
 import { createAutomationAgent } from "./automation/automationAgent";
 import { createThread } from "@convex-dev/agent";
 import { requireAuth } from "./lib/auth";
+import { nodeDataConfig } from "./schemas_and_validators/nodeDataConfig";
+import updateNodeDataValuesTool from "./ia/tools/updateNodeDataValuesTool";
 
 export const trigger = action({
   args: {
@@ -34,17 +36,37 @@ export const trigger = action({
         },
       );
 
+      const inputSchema = nodeDataConfig.find(
+        (ndc) => ndc.type === currentNodeData.type,
+      )?.toolInputSchema;
+      if (!inputSchema) {
+        throw new ConvexError(
+          "Schéma d'entrée non trouvé pour le type de nodeData.",
+        );
+      }
+
       // 3. Exécuter l'agent associé au noeud courant
-      const automationAgent = createAutomationAgent();
+      const automationAgent = createAutomationAgent({
+        updateNodeDataValuesTool: updateNodeDataValuesTool({
+          ctx,
+          nodeData: currentNodeData,
+          inputSchema,
+        }),
+      });
       const threadId = await createThread(ctx, components.agent, {
         userId,
       });
       const response = await automationAgent.generateText(
-        ctx,
+        { ...ctx, currentNodeData } as any,
         { threadId },
         {
-          prompt: "Peux tu faire une recherche sur les actus de tibo inshape ?",
-          toolChoice: "required",
+          prompt: `Voici les données d'entrée disponibles pour le noeud actuel : ${inputNodeDatas
+            .map(
+              (nd) =>
+                `\n- NodeData ID: ${nd._id}, Type: ${nd.type}, Values: ${JSON.stringify(nd.values)}`,
+            )
+            .join("")}  
+          ${currentNodeData?.agent?.instructions}`,
         },
       );
 

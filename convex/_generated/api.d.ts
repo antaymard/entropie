@@ -11,7 +11,6 @@
 import type * as auth from "../auth.js";
 import type * as automation_automationAgent from "../automation/automationAgent.js";
 import type * as automation_helpers from "../automation/helpers.js";
-import type * as automation_updateNodeDataTool from "../automation/updateNodeDataTool.js";
 import type * as automations from "../automations.js";
 import type * as canvasEdges from "../canvasEdges.js";
 import type * as canvasNodes from "../canvasNodes.js";
@@ -31,6 +30,7 @@ import type * as ia_tools_readCanvasTool from "../ia/tools/readCanvasTool.js";
 import type * as ia_tools_readNodeConfigsTool from "../ia/tools/readNodeConfigsTool.js";
 import type * as ia_tools_readNodeTemplatesTool from "../ia/tools/readNodeTemplatesTool.js";
 import type * as ia_tools_readPdfTool from "../ia/tools/readPdfTool.js";
+import type * as ia_tools_updateNodeDataValuesTool from "../ia/tools/updateNodeDataValuesTool.js";
 import type * as ia_tools_viewImageTool from "../ia/tools/viewImageTool.js";
 import type * as ia_tools_websearchTool from "../ia/tools/websearchTool.js";
 import type * as lib_auth from "../lib/auth.js";
@@ -55,7 +55,6 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   "automation/automationAgent": typeof automation_automationAgent;
   "automation/helpers": typeof automation_helpers;
-  "automation/updateNodeDataTool": typeof automation_updateNodeDataTool;
   automations: typeof automations;
   canvasEdges: typeof canvasEdges;
   canvasNodes: typeof canvasNodes;
@@ -75,6 +74,7 @@ declare const fullApi: ApiFromModules<{
   "ia/tools/readNodeConfigsTool": typeof ia_tools_readNodeConfigsTool;
   "ia/tools/readNodeTemplatesTool": typeof ia_tools_readNodeTemplatesTool;
   "ia/tools/readPdfTool": typeof ia_tools_readPdfTool;
+  "ia/tools/updateNodeDataValuesTool": typeof ia_tools_updateNodeDataValuesTool;
   "ia/tools/viewImageTool": typeof ia_tools_viewImageTool;
   "ia/tools/websearchTool": typeof ia_tools_websearchTool;
   "lib/auth": typeof lib_auth;

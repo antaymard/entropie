@@ -10,6 +10,7 @@ import DocumentStaticField from "@/components/fields/document-fields/DocumentSta
 import DocumentEditorField from "@/components/fields/document-fields/DocumentEditorField";
 import { CanvasEditorKit } from "@/components/plate/canvas-editor-kit";
 import AutomationSettingsButton from "../toolbar/AutomationSettingsButton";
+import { cn } from "@/lib/utils";
 
 const defaultValue: Value = normalizeNodeId([
   {
@@ -67,8 +68,14 @@ const DocumentNode = memo(
               />
             </div>
           ) : (
-            <div className="h-full" onDoubleClick={handleDoubleClick}>
-              <DocumentStaticField value={{ doc: currentValue }} />
+            <div
+              className="h-full overflow-auto"
+              onDoubleClick={handleDoubleClick}
+            >
+              <DocumentStaticField
+                value={{ doc: currentValue }}
+                allowDrag={!xyNode.selected}
+              />
             </div>
           )}
         </NodeFrame>

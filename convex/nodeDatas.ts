@@ -44,6 +44,7 @@ export const listByCanvasId = query({
   },
 });
 
+// TODO : use NodeConfiig to validate values schema based on type
 export const updateValues = mutation({
   args: {
     _id: v.id("nodeDatas"),

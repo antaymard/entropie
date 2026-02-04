@@ -1,13 +1,9 @@
 import { Button } from "@/components/shadcn/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/shadcn/dialog";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/shadcn/popover";
 import type { Node } from "@xyflow/react";
 import {
   TbBolt,
@@ -86,13 +82,13 @@ export default function AutomationSettingsButton({ xyNode }: { xyNode: Node }) {
 
   return (
     <ButtonGroup>
-      <Dialog
+      <Popover
         open={open}
         onOpenChange={(e) => {
           setOpen(e);
         }}
       >
-        <DialogTrigger asChild>
+        <PopoverTrigger asChild>
           <Button
             variant="outline"
             size="icon"
@@ -101,35 +97,35 @@ export default function AutomationSettingsButton({ xyNode }: { xyNode: Node }) {
           >
             {hasAutomationEnabled ? <TbBoltFilled /> : <TbBolt />}
           </Button>
-        </DialogTrigger>
+        </PopoverTrigger>
 
-        <DialogContent
-          showCloseButton={false}
+        <PopoverContent
+          className="w-96"
           onInteractOutside={(e) => e.preventDefault()}
         >
-          <DialogHeader className="flex flex-row items-center justify-between ">
-            <DialogTitle>Automation</DialogTitle>
-            <Selector
-              form={form}
-              name="automationMode"
-              options={[
-                {
-                  value: "off",
-                  label: "Off",
-                },
-                {
-                  value: "agent",
-                  label: "Agent",
-                },
-                {
-                  value: "dataProcessing",
-                  label: "Data Processing",
-                },
-              ]}
-            />
-          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-row items-center justify-between">
+              <h3 className="font-semibold">Automation</h3>
+              <Selector
+                form={form}
+                name="automationMode"
+                options={[
+                  {
+                    value: "off",
+                    label: "Off",
+                  },
+                  {
+                    value: "agent",
+                    label: "Agent",
+                  },
+                  {
+                    value: "dataProcessing",
+                    label: "Data Processing",
+                  },
+                ]}
+              />
+            </div>
 
-          <>
             <form.Subscribe
               selector={(state) => state.values.automationMode}
               children={(automationMode) =>
@@ -148,16 +144,16 @@ export default function AutomationSettingsButton({ xyNode }: { xyNode: Node }) {
                 )
               }
             />
-          </>
 
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="ghost">Annuler</Button>
-            </DialogClose>
-            <Button onClick={form.handleSubmit}>OK</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setOpen(false)}>
+                Annuler
+              </Button>
+              <Button onClick={form.handleSubmit}>OK</Button>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
       {hasAutomationEnabled && (
         <Button
           disabled={automationStatus === "working"}

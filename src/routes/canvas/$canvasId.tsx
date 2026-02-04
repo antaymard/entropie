@@ -117,6 +117,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   // de drag/resize et la sélection
   useEffect(() => {
     if (canvas) {
+      console.log("Canvas updated, syncing nodes and edges...");
       if (canvas.nodes?.length) {
         setNodes((currentNodes: Node[]) => {
           const newNodes = fromCanvasNodesToXyNodes(

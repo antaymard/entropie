@@ -5,7 +5,7 @@ import type {
 import type { Node } from "@xyflow/react";
 
 // Icons
-import { TbFile, TbAbc, TbPhoto, TbLink, TbTag } from "react-icons/tb";
+import { TbFile, TbAbc, TbPhoto, TbLink, TbTag, TbApi } from "react-icons/tb";
 
 // Node Components
 import DocumentNode from "./DocumentNode";
@@ -13,6 +13,7 @@ import FloatingTextNode from "./FloatingTextNode";
 import ImageNode from "./ImageNode";
 import LinkNode from "./LinkNode";
 import ValueNode from "./ValueNode";
+import FetchNode from "./FetchNode";
 import z from "zod";
 
 type PrebuiltNodeConfig = {
@@ -150,6 +151,44 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
         type: z.string(),
         unit: z.optional(z.string()),
         value: z.boolean(),
+      }),
+    },
+  },
+  {
+    nodeLabel: "Fetch",
+    nodeIcon: TbApi,
+    nodeComponent: FetchNode,
+    canHaveAutomation: false,
+
+    node: {
+      id: "",
+      type: "fetch",
+      height: 120,
+      width: 220,
+      position: { x: 0, y: 0 },
+      data: {
+        color: "default",
+        // Actual data
+      } satisfies Omit<XyNodeData, "nodeDataId">,
+    } as Node,
+
+    nodeDataValuesSchema: {
+      fetch: z.object({
+        params: z.object({
+          url: z.string().default(""),
+          method: z.enum(["GET", "POST", "PUT", "DELETE"]).default("GET"),
+          headers: z
+            .array(z.object({ key: z.string(), value: z.string() }))
+            .optional()
+            .default([]),
+          queryParams: z.array(
+            z.object({ key: z.string(), value: z.string() }),
+          ),
+          body: z.optional(z.string()),
+        }),
+        result: z.optional(z.any()),
+        lastFetchedAt: z.optional(z.string()),
+        error: z.optional(z.string()),
       }),
     },
   },

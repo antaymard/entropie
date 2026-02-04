@@ -109,7 +109,7 @@ function LinkNode(xyNode: Node) {
       <CanvasNodeToolbar xyNode={xyNode}>
         <Popover open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
           <PopoverTrigger asChild>
-            <Button variant="outline">
+            <Button variant="outline" size="icon" title="Editer le lien">
               <TbLink />
             </Button>
           </PopoverTrigger>
@@ -144,15 +144,17 @@ function LinkNode(xyNode: Node) {
               <p className="truncate flex-1 min-w-0">
                 {linkValue.pageTitle || <i>Pas de titre</i>}
               </p>
-              <a
-                href={linkValue.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover/linknode:opacity-100 transition-opacity bg-background hover:bg-muted rounded-sm p-1 cursor-pointer"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <TbExternalLink size={16} />
-              </a>
+              {xyNode.selected && (
+                <a
+                  href={linkValue.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-background hover:bg-muted rounded-sm p-1 cursor-pointer"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <TbExternalLink size={16} />
+                </a>
+              )}
             </>
           ) : (
             <span className="text-muted-foreground flex items-center gap-2">

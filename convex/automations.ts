@@ -65,7 +65,13 @@ export const trigger = action({
               (nd) =>
                 `\n- NodeData ID: ${nd._id}, Type: ${nd.type}, Values: ${JSON.stringify(nd.values)}`,
             )
-            .join("")}  
+            .join("")}
+
+          Voici les données actuelles du noeud (saisies par l'utilisateur, ou par toi lors d'une exécution précédente) : ${JSON.stringify(currentNodeData.values)}
+
+          ------
+
+          Instructions de l'utilisateur pour ce noeud :
           ${currentNodeData?.agent?.instructions}`,
         },
       );

@@ -22,6 +22,7 @@ type PrebuiltNodeConfig = {
   skipNodeDataCreation?: boolean;
   node: Node;
   nodeDataValuesSchema?: object | null;
+  canHaveAutomation?: boolean;
 };
 
 const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
@@ -53,6 +54,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
     nodeLabel: "Document",
     nodeIcon: TbFile,
     nodeComponent: DocumentNode,
+    canHaveAutomation: true,
 
     node: {
       id: "",
@@ -74,6 +76,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
     nodeLabel: "Image",
     nodeIcon: TbPhoto,
     nodeComponent: ImageNode,
+    canHaveAutomation: true,
 
     node: {
       id: "",
@@ -99,6 +102,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
     nodeLabel: "Lien",
     nodeIcon: TbLink,
     nodeComponent: LinkNode,
+    canHaveAutomation: true,
 
     node: {
       id: "",
@@ -126,6 +130,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
     nodeLabel: "Valeur",
     nodeIcon: TbTag,
     nodeComponent: ValueNode,
+    canHaveAutomation: true,
 
     node: {
       id: "",

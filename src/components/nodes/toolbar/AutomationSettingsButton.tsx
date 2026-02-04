@@ -12,15 +12,12 @@ import type { Node } from "@xyflow/react";
 import {
   TbBolt,
   TbBoltFilled,
-  TbPlayerPlay,
+  TbExclamationMark,
   TbPlayerPlayFilled,
-  TbProgress,
-  TbProgressAlert,
 } from "react-icons/tb";
 import { useForm } from "@tanstack/react-form";
 import Selector from "@/components/ts-form/Selector";
 import { cn } from "@/lib/utils";
-import { useConnectedNodes } from "@/hooks/useConnectedNodes";
 import TextArea from "@/components/ts-form/TextArea";
 import { useAction, useMutation } from "convex/react";
 import { api } from "@/../convex/_generated/api";
@@ -30,6 +27,7 @@ import { useState } from "react";
 import type { NodeData } from "@/types/nodeData.types";
 import { useNodeData } from "@/hooks/useNodeData";
 import { ButtonGroup } from "@/components/shadcn/button-group";
+import { Spinner } from "@/components/shadcn/spinner";
 
 const sectionClassName = "flex flex-col gap-2";
 
@@ -99,6 +97,7 @@ export default function AutomationSettingsButton({ xyNode }: { xyNode: Node }) {
             variant="outline"
             size="icon"
             className={cn(hasAutomationEnabled && "text-amber-500")}
+            title="Paramètres d'automation"
           >
             {hasAutomationEnabled ? <TbBoltFilled /> : <TbBolt />}
           </Button>
@@ -161,16 +160,18 @@ export default function AutomationSettingsButton({ xyNode }: { xyNode: Node }) {
       </Dialog>
       {hasAutomationEnabled && (
         <Button
+          disabled={automationStatus === "working"}
           variant="outline"
           size="icon"
-          className={cn("text-green-500")}
+          className={cn("text-green-500 disabled:opacity-100")}
           onClick={handleTriggerAutomation}
+          title="Lancer l'automation"
         >
           {(automationStatus === "idle" || !automationStatus) && (
             <TbPlayerPlayFilled />
           )}
-          {automationStatus === "working" && <TbProgress />}
-          {automationStatus === "error" && <TbProgressAlert />}
+          {automationStatus === "working" && <Spinner />}
+          {automationStatus === "error" && <TbExclamationMark />}
         </Button>
       )}
     </ButtonGroup>

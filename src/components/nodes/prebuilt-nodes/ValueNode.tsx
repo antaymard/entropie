@@ -110,9 +110,9 @@ function ValueNode(xyNode: Node) {
     }
   };
 
-  const hasContent = valueData.value !== null;
-  const hasUnit = valueData.unit.length > 0;
-  const hasLabel = valueData.label.length > 0;
+  const hasContent = valueData?.value !== null;
+  const hasUnit = valueData.unit?.length > 0;
+  const hasLabel = valueData.label?.length > 0;
 
   const renderValue = () => {
     if (valueData.type === "boolean") {
@@ -130,7 +130,7 @@ function ValueNode(xyNode: Node) {
       <CanvasNodeToolbar xyNode={xyNode}>
         <Popover open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
           <PopoverTrigger asChild>
-            <Button variant="outline">
+            <Button variant="outline" size="icon" title="Éditer la valeur">
               <TbTag />
             </Button>
           </PopoverTrigger>

@@ -1,6 +1,8 @@
 import { NodeToolbar, type Node, useStore } from "@xyflow/react";
 import { memo } from "react";
 import ColorSelector from "./ColorSelector";
+import prebuiltNodesConfig from "../prebuilt-nodes/prebuiltNodesConfig";
+import AutomationSettingsButton from "./AutomationSettingsButton";
 
 const selectedNodesCountSelector = (state: { nodes: Node[] }) =>
   state.nodes.filter((node) => node.selected).length;
@@ -22,6 +24,9 @@ function CanvasNodeToolbar({
   }
 
   const isVisible = !xyNode.dragging && selectedNodesCount === 1;
+  const nodeConfig = prebuiltNodesConfig.find(
+    (config) => config.node.type === xyNode.type,
+  );
 
   return (
     <NodeToolbar
@@ -31,6 +36,9 @@ function CanvasNodeToolbar({
       onDoubleClick={(e) => e.stopPropagation()}
     >
       {children}
+      {nodeConfig?.canHaveAutomation && (
+        <AutomationSettingsButton xyNode={xyNode} />
+      )}
       <ColorSelector xyNode={xyNode} />
     </NodeToolbar>
   );

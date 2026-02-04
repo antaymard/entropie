@@ -68,6 +68,7 @@ export const trigger = action({
             .join("")}
 
           Voici les données actuelles du noeud (saisies par l'utilisateur, ou par toi lors d'une exécution précédente) : ${JSON.stringify(currentNodeData.values)}
+          Si c'est pertinent, garde ces données à l'esprit pour produire ta réponse (structure, format, contraintes). Si les résultats de ton travail sont très différents, privilégie la qualité de ta réponse plutôt que la conformité aux données précédentes.
 
           ------
 

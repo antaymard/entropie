@@ -69,7 +69,6 @@ export const updateAutomationSettings = mutation({
     "automationMode",
     "agent",
     "dataProcessing",
-    "dependencies",
   ),
   handler: async (ctx, args) => {
     await requireAuth(ctx);
@@ -80,7 +79,6 @@ export const updateAutomationSettings = mutation({
       automationMode: args.automationMode,
       agent: args.agent,
       dataProcessing: args.dataProcessing,
-      dependencies: args.dependencies,
     });
     return true;
   },

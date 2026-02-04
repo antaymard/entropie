@@ -43,6 +43,15 @@ const nodeDatasSchema = v.object({
       }),
     ),
   ),
+  // history: v.optional(
+  //   v.array(
+  //     v.object({
+  //       timestamp: v.number(),
+  //       action: v.string(),
+  //       details: v.optional(v.any()),
+  //     }),
+  //   ),
+  // ),
 });
 
 export default nodeDatasSchema;

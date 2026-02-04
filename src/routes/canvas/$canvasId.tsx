@@ -88,6 +88,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     onPaneContextMenu,
     onNodeContextMenu,
     onSelectionContextMenu,
+    onEdgeContextMenu,
   } = useContextMenu();
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
@@ -297,6 +298,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
         onPaneContextMenu={onPaneContextMenu}
         onNodeContextMenu={onNodeContextMenu}
         onSelectionContextMenu={onSelectionContextMenu}
+        onEdgeContextMenu={onEdgeContextMenu}
         nodes={nodes}
         edges={edges}
         onEdgesChange={handleEdgeChange}
@@ -324,9 +326,9 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           ]);
         }}
         onConnectEnd={console.log}
-        onReconnectStart={console.log}
-        onReconnect={console.log}
-        onReconnectEnd={console.log}
+        // onReconnectStart={console.log}
+        // onReconnect={console.log}
+        // onReconnectEnd={console.log}
       >
         {contextMenu.type && (
           <ContextMenu

@@ -9,6 +9,10 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as automation_automationAgent from "../automation/automationAgent.js";
+import type * as automation_helpers from "../automation/helpers.js";
+import type * as automation_updateNodeDataTool from "../automation/updateNodeDataTool.js";
+import type * as automations from "../automations.js";
 import type * as canvasEdges from "../canvasEdges.js";
 import type * as canvasNodes from "../canvasNodes.js";
 import type * as canvases from "../canvases.js";
@@ -35,6 +39,7 @@ import type * as links from "../links.js";
 import type * as migrations from "../migrations.js";
 import type * as nodeDatas from "../nodeDatas.js";
 import type * as schemas_and_validators_canvasesSchema from "../schemas_and_validators/canvasesSchema.js";
+import type * as schemas_and_validators_nodeDataConfig from "../schemas_and_validators/nodeDataConfig.js";
 import type * as schemas_and_validators_nodeDatasSchema from "../schemas_and_validators/nodeDatasSchema.js";
 import type * as templates from "../templates.js";
 import type * as threads from "../threads.js";
@@ -48,6 +53,10 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  "automation/automationAgent": typeof automation_automationAgent;
+  "automation/helpers": typeof automation_helpers;
+  "automation/updateNodeDataTool": typeof automation_updateNodeDataTool;
+  automations: typeof automations;
   canvasEdges: typeof canvasEdges;
   canvasNodes: typeof canvasNodes;
   canvases: typeof canvases;
@@ -74,6 +83,7 @@ declare const fullApi: ApiFromModules<{
   migrations: typeof migrations;
   nodeDatas: typeof nodeDatas;
   "schemas_and_validators/canvasesSchema": typeof schemas_and_validators_canvasesSchema;
+  "schemas_and_validators/nodeDataConfig": typeof schemas_and_validators_nodeDataConfig;
   "schemas_and_validators/nodeDatasSchema": typeof schemas_and_validators_nodeDatasSchema;
   templates: typeof templates;
   threads: typeof threads;

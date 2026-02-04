@@ -35,6 +35,7 @@ import {
 } from "@/lib/node-types-converter";
 import type { CanvasNode } from "@/types";
 import { nodeTypes } from "@/components/nodes/nodeTypes";
+import { useCanvasPasteHandler } from "@/hooks/useCanvasPasteHandler";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -54,6 +55,9 @@ function RouteComponent() {
 
 function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   const setNodeDatas = useNodeDataStore((state) => state.setNodeDatas);
+
+  // Handle paste events (images, URLs)
+  useCanvasPasteHandler();
 
   // Fetch canvas
   const {

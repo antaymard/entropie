@@ -1,6 +1,6 @@
 import { Id } from "../../convex/_generated/dataModel";
 
-export type nodeTypes = "document" | "floatingText";
+export type nodeTypes = "document" | "floatingText" | "image" | "link" | "value";
 
 export interface NodeData {
   _id: Id<"nodeDatas">;

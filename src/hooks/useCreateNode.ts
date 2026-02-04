@@ -2,12 +2,19 @@ import { useReactFlow } from "@xyflow/react";
 import { useMutation } from "convex/react";
 import { api } from "@/../convex/_generated/api";
 import type { Node } from "@xyflow/react";
+import type { Id } from "@/../convex/_generated/dataModel";
 import type { nodeTypes } from "@/types/nodeData.types";
 
 type CreateNodeOptions = {
   node: Node;
   position: { x: number; y: number };
-  skipNodeDataCreation?: boolean | undefined;
+  skipNodeDataCreation?: boolean;
+  initialValues?: Record<string, unknown>;
+};
+
+type CreateNodeResult = {
+  nodeId: string;
+  nodeDataId: Id<"nodeDatas"> | undefined;
 };
 
 export function useCreateNode() {
@@ -18,15 +25,16 @@ export function useCreateNode() {
     node,
     position,
     skipNodeDataCreation = false,
-  }: CreateNodeOptions) => {
-    const newNodeId = crypto.randomUUID();
+    initialValues = {},
+  }: CreateNodeOptions): Promise<CreateNodeResult> => {
+    const nodeId = crypto.randomUUID();
 
-    let nodeDataId: string | undefined;
+    let nodeDataId: Id<"nodeDatas"> | undefined;
 
     if (!skipNodeDataCreation) {
       nodeDataId = await createNodeData({
         type: node.type as nodeTypes,
-        values: {},
+        values: initialValues,
         updatedAt: Date.now(),
       });
     }
@@ -36,7 +44,7 @@ export function useCreateNode() {
 
     addNodes({
       ...node,
-      id: newNodeId,
+      id: nodeId,
       position,
       selected: true,
       // Add measured dimensions if width/height are known to prevent
@@ -51,7 +59,7 @@ export function useCreateNode() {
       },
     });
 
-    return newNodeId;
+    return { nodeId, nodeDataId };
   };
 
   return { createNode };

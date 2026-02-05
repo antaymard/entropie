@@ -8,7 +8,16 @@ import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
 import NodeFrame from "../NodeFrame";
 import DocumentStaticField from "@/components/fields/document-fields/DocumentStaticField";
 import DocumentEditorField from "@/components/fields/document-fields/DocumentEditorField";
-import { CanvasEditorKit } from "@/components/plate/canvas-editor-kit";
+import { EditorKit } from "@/components/plate/editor-kit";
+import { Button } from "@/components/shadcn/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/shadcn/dialog";
+import { TbPencil } from "react-icons/tb";
 
 const defaultValue: Value = normalizeNodeId([
   {
@@ -22,59 +31,82 @@ const DocumentNode = memo(
     const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
     const values = useNodeDataValues(nodeDataId);
     const { updateNodeDataValues } = useUpdateNodeDataValues();
-    const [isEditing, setIsEditing] = useState(false);
+
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [localValue, setLocalValue] = useState<Value | null>(null);
 
     // Récupère la valeur depuis le store NodeData
     const currentValue: Value =
       (values?.doc as Value | undefined) ?? defaultValue;
 
-    const handleDoubleClick = useCallback(() => {
-      if (xyNode.selected) {
-        setIsEditing(true);
-      }
-    }, [xyNode.selected]);
+    const handleOpenDialog = useCallback(() => {
+      setLocalValue(currentValue);
+      setIsDialogOpen(true);
+    }, [currentValue]);
 
-    const handleChange = useCallback(
-      (newValue: { doc: Value }) => {
-        if (nodeDataId) {
-          updateNodeDataValues({
-            nodeDataId,
-            values: { doc: newValue.doc },
-          });
-        }
-      },
-      [updateNodeDataValues, nodeDataId],
-    );
-
-    const handleBlur = useCallback(() => {
-      setIsEditing(false);
+    const handleLocalChange = useCallback((newValue: { doc: Value }) => {
+      setLocalValue(newValue.doc);
     }, []);
+
+    const handleCancel = useCallback(() => {
+      setLocalValue(null);
+      setIsDialogOpen(false);
+    }, []);
+
+    const handleSave = useCallback(() => {
+      if (nodeDataId && localValue) {
+        updateNodeDataValues({
+          nodeDataId,
+          values: { doc: localValue },
+        });
+      }
+      setLocalValue(null);
+      setIsDialogOpen(false);
+    }, [nodeDataId, localValue, updateNodeDataValues]);
 
     return (
       <>
-        <CanvasNodeToolbar xyNode={xyNode} />
+        <CanvasNodeToolbar xyNode={xyNode}>
+          <Button size="icon" variant="outline" onClick={handleOpenDialog}>
+            <TbPencil />
+          </Button>
+        </CanvasNodeToolbar>
         <NodeFrame xyNode={xyNode}>
-          {isEditing ? (
-            <div className="h-full" onBlur={handleBlur}>
-              <DocumentEditorField
-                editorId={xyNode.id}
-                value={{ doc: currentValue }}
-                onChange={handleChange}
-                plugins={CanvasEditorKit}
-              />
-            </div>
-          ) : (
-            <div
-              className="h-full overflow-auto"
-              onDoubleClick={handleDoubleClick}
-            >
-              <DocumentStaticField
-                value={{ doc: currentValue }}
-                allowDrag={!xyNode.selected}
-              />
-            </div>
-          )}
+          <div className="h-full overflow-auto">
+            <DocumentStaticField
+              value={{ doc: currentValue }}
+              allowDrag={!xyNode.selected}
+            />
+          </div>
         </NodeFrame>
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent
+            showCloseButton={false}
+            className="max-w-5xl w-[90vw] h-[80vh] flex flex-col"
+            onInteractOutside={(e) => e.preventDefault()}
+          >
+            <DialogHeader>
+              <DialogTitle>Éditer le document</DialogTitle>
+            </DialogHeader>
+            <div className="overflow-y-auto flex-1 min-h-0 h-full border rounded-md">
+              {isDialogOpen && localValue && (
+                <DocumentEditorField
+                  editorId={`${xyNode.id}-dialog`}
+                  value={{ doc: localValue }}
+                  onChange={handleLocalChange}
+                  plugins={EditorKit}
+                />
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={handleCancel}>
+                Annuler
+              </Button>
+              <Button onClick={handleSave}>Valider</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </>
     );
   },

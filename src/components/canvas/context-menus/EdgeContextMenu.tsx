@@ -16,9 +16,14 @@ import {
   TbArrowRight,
   TbCircle,
   TbTagOff,
+  TbTrash,
 } from "react-icons/tb";
 import nodeColors from "@/components/nodes/nodeColors";
-import type { EdgeCustomData, EdgeStrokeWidth, EdgeMarker } from "@/types/edge.types";
+import type {
+  EdgeCustomData,
+  EdgeStrokeWidth,
+  EdgeMarker,
+} from "@/types/edge.types";
 import type { NodeColors } from "@/types/node.types";
 
 export default function EdgeContextMenu({
@@ -79,7 +84,7 @@ export default function EdgeContextMenu({
 
   // Filtrer les couleurs disponibles (sans transparent)
   const availableColors = Object.entries(nodeColors).filter(
-    ([key]) => key !== "transparent"
+    ([key]) => key !== "transparent",
   );
 
   return (
@@ -103,7 +108,7 @@ export default function EdgeContextMenu({
       )}
 
       {/* Couleur */}
-      <DropdownMenuSub>
+      {/* <DropdownMenuSub>
         <DropdownMenuSubTrigger className="whitespace-nowrap">
           <TbPalette size={16} /> Couleur
         </DropdownMenuSubTrigger>
@@ -127,10 +132,10 @@ export default function EdgeContextMenu({
             ))}
           </DropdownMenuRadioGroup>
         </DropdownMenuSubContent>
-      </DropdownMenuSub>
+      </DropdownMenuSub> */}
 
       {/* Épaisseur */}
-      <DropdownMenuSub>
+      {/* <DropdownMenuSub>
         <DropdownMenuSubTrigger className="whitespace-nowrap">
           <TbLineHeight size={16} /> Épaisseur
         </DropdownMenuSubTrigger>
@@ -152,10 +157,10 @@ export default function EdgeContextMenu({
             ))}
           </DropdownMenuRadioGroup>
         </DropdownMenuSubContent>
-      </DropdownMenuSub>
+      </DropdownMenuSub> */}
 
       {/* Marker Début */}
-      <DropdownMenuSub>
+      {/* <DropdownMenuSub>
         <DropdownMenuSubTrigger className="whitespace-nowrap">
           <TbCircle size={16} /> Début
         </DropdownMenuSubTrigger>
@@ -177,10 +182,10 @@ export default function EdgeContextMenu({
             ))}
           </DropdownMenuRadioGroup>
         </DropdownMenuSubContent>
-      </DropdownMenuSub>
+      </DropdownMenuSub> */}
 
       {/* Marker Fin */}
-      <DropdownMenuSub>
+      {/* <DropdownMenuSub>
         <DropdownMenuSubTrigger className="whitespace-nowrap">
           <TbArrowRight size={16} /> Fin
         </DropdownMenuSubTrigger>
@@ -202,17 +207,17 @@ export default function EdgeContextMenu({
         </DropdownMenuSubContent>
       </DropdownMenuSub>
 
-      <DropdownMenuSeparator />
+      <DropdownMenuSeparator /> */}
 
       {/* Supprimer */}
       <DropdownMenuItem
-        className="whitespace-nowrap text-red-600"
+        className="whitespace-nowrap "
         onClick={() => {
           deleteElements({ edges: [xyEdge] });
           closeMenu();
         }}
       >
-        <HiOutlineTrash size={16} /> Supprimer
+        <TbTrash className="text-red-500" /> Supprimer
       </DropdownMenuItem>
     </>
   );

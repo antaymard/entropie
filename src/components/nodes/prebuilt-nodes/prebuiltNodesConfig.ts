@@ -5,7 +5,7 @@ import type {
 import type { Node } from "@xyflow/react";
 
 // Icons
-import { TbFile, TbAbc, TbPhoto, TbLink, TbTag } from "react-icons/tb";
+import { TbFile, TbAbc, TbPhoto, TbLink, TbTag, TbApi } from "react-icons/tb";
 
 // Node Components
 import DocumentNode from "./DocumentNode";
@@ -13,6 +13,8 @@ import FloatingTextNode from "./FloatingTextNode";
 import ImageNode from "./ImageNode";
 import LinkNode from "./LinkNode";
 import ValueNode from "./ValueNode";
+import FetchNode from "./FetchNode";
+import z from "zod";
 
 type PrebuiltNodeConfig = {
   nodeLabel: string;
@@ -20,6 +22,8 @@ type PrebuiltNodeConfig = {
   nodeComponent: React.ComponentType<any>;
   skipNodeDataCreation?: boolean;
   node: Node;
+  nodeDataValuesSchema?: object | null;
+  canHaveAutomation?: boolean;
 };
 
 const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
@@ -44,11 +48,14 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
         level: "p",
       } satisfies Omit<XyNodeData<FloatingTextCanvasNodeData>, "nodeDataId">,
     } as Node,
+
+    nodeDataValuesSchema: null,
   },
   {
     nodeLabel: "Document",
     nodeIcon: TbFile,
     nodeComponent: DocumentNode,
+    canHaveAutomation: true,
 
     node: {
       id: "",
@@ -61,11 +68,16 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
         // Actual data
       } satisfies Omit<XyNodeData, "nodeDataId">,
     } as Node,
+
+    nodeDataValuesSchema: {
+      doc: z.array(z.object()),
+    },
   },
   {
     nodeLabel: "Image",
     nodeIcon: TbPhoto,
     nodeComponent: ImageNode,
+    canHaveAutomation: true,
 
     node: {
       id: "",
@@ -78,11 +90,20 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
         // Actual data
       } satisfies Omit<XyNodeData, "nodeDataId">,
     } as Node,
+
+    nodeDataValuesSchema: {
+      images: z.array(
+        z.object({
+          url: z.string(),
+        }),
+      ),
+    },
   },
   {
     nodeLabel: "Lien",
     nodeIcon: TbLink,
     nodeComponent: LinkNode,
+    canHaveAutomation: true,
 
     node: {
       id: "",
@@ -95,11 +116,22 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
         // Actual data
       } satisfies Omit<XyNodeData, "nodeDataId">,
     } as Node,
+
+    nodeDataValuesSchema: {
+      link: z.object({
+        href: z.string(),
+        pageDescription: z.optional(z.string()),
+        pageImage: z.optional(z.string()),
+        pageTitle: z.optional(z.string()),
+        siteName: z.optional(z.string()),
+      }),
+    },
   },
   {
     nodeLabel: "Valeur",
     nodeIcon: TbTag,
     nodeComponent: ValueNode,
+    canHaveAutomation: true,
 
     node: {
       id: "",
@@ -112,6 +144,53 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
         // Actual data
       } satisfies Omit<XyNodeData, "nodeDataId">,
     } as Node,
+
+    nodeDataValuesSchema: {
+      value: z.object({
+        label: z.optional(z.string()),
+        type: z.string(),
+        unit: z.optional(z.string()),
+        value: z.boolean(),
+      }),
+    },
+  },
+  {
+    nodeLabel: "Fetch",
+    nodeIcon: TbApi,
+    nodeComponent: FetchNode,
+    canHaveAutomation: false,
+
+    node: {
+      id: "",
+      type: "fetch",
+      height: 120,
+      width: 220,
+      position: { x: 0, y: 0 },
+      data: {
+        color: "default",
+        // Actual data
+      } satisfies Omit<XyNodeData, "nodeDataId">,
+    } as Node,
+
+    nodeDataValuesSchema: {
+      fetch: z.object({
+        params: z.object({
+          url: z.string().default(""),
+          method: z.enum(["GET", "POST", "PUT", "DELETE"]).default("GET"),
+          headers: z
+            .array(z.object({ key: z.string(), value: z.string() }))
+            .optional()
+            .default([]),
+          queryParams: z.array(
+            z.object({ key: z.string(), value: z.string() }),
+          ),
+          body: z.optional(z.string()),
+        }),
+        result: z.optional(z.any()),
+        lastFetchedAt: z.optional(z.string()),
+        error: z.optional(z.string()),
+      }),
+    },
   },
 ];
 

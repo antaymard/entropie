@@ -1,7 +1,7 @@
 import { memo } from "react";
 import type { Node } from "@xyflow/react";
 import NodeFrame from "../NodeFrame";
-import { useNodeDataValues } from "@/hooks/useNodeDataValues";
+import { useNodeDataValues } from "@/hooks/useNodeData";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { TbPhoto, TbPhotoEdit } from "react-icons/tb";
 import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
@@ -48,7 +48,7 @@ function ImageNode(xyNode: Node) {
       <CanvasNodeToolbar xyNode={xyNode}>
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline">
+            <Button variant="outline" size="icon" title="Télécharger une image">
               <TbPhotoEdit />
             </Button>
           </PopoverTrigger>

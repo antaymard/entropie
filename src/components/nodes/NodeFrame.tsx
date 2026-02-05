@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { colors } from "../ui/styles";
 import type { colorsEnum } from "@/types/style.types";
 import NodeHandles from "./NodeHandles";
+import AutomationIndicator from "./toolbar/AutomationIndicator";
 
 function NodeFrame({
   xyNode,
@@ -14,14 +15,14 @@ function NodeFrame({
   children: React.ReactNode;
   resizable?: boolean;
 }) {
-  if (!xyNode) return null;
-
   const nodeColor = colors[(xyNode?.data?.color as colorsEnum) || "default"];
   const canDrag = true;
 
+  if (!xyNode) return null;
   return (
     <>
       <NodeHandles showSourceHandles={xyNode?.selected} nodeId={xyNode.id} />
+      <AutomationIndicator xyNode={xyNode} />
       <NodeResizer
         isVisible={resizable && xyNode?.selected}
         lineStyle={{

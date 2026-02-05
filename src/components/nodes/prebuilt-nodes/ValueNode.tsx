@@ -10,13 +10,10 @@ import {
 import { Button } from "@/components/shadcn/button";
 import { Input } from "@/components/shadcn/input";
 import { Switch } from "@/components/shadcn/switch";
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/shadcn/toggle-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/shadcn/toggle-group";
 import { TbTag, TbCheck, TbX } from "react-icons/tb";
 import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
-import { useNodeDataValues } from "@/hooks/useNodeDataValues";
+import { useNodeDataValues } from "@/hooks/useNodeData";
 import type { Id } from "@/../convex/_generated/dataModel";
 
 export type ValueDataType = "text" | "number" | "boolean";
@@ -98,7 +95,10 @@ function ValueNode(xyNode: Node) {
   };
 
   const handleTypeChange = (newType: string) => {
-    if (newType && (newType === "text" || newType === "number" || newType === "boolean")) {
+    if (
+      newType &&
+      (newType === "text" || newType === "number" || newType === "boolean")
+    ) {
       setInputType(newType);
       if (newType === "boolean") {
         setInputBoolean(false);
@@ -110,9 +110,9 @@ function ValueNode(xyNode: Node) {
     }
   };
 
-  const hasContent = valueData.value !== null;
-  const hasUnit = valueData.unit.length > 0;
-  const hasLabel = valueData.label.length > 0;
+  const hasContent = valueData?.value !== null;
+  const hasUnit = valueData.unit?.length > 0;
+  const hasLabel = valueData.label?.length > 0;
 
   const renderValue = () => {
     if (valueData.type === "boolean") {
@@ -130,7 +130,7 @@ function ValueNode(xyNode: Node) {
       <CanvasNodeToolbar xyNode={xyNode}>
         <Popover open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
           <PopoverTrigger asChild>
-            <Button variant="outline">
+            <Button variant="outline" size="icon" title="Éditer la valeur">
               <TbTag />
             </Button>
           </PopoverTrigger>

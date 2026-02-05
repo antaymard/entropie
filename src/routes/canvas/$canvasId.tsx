@@ -35,6 +35,7 @@ import {
 } from "@/lib/node-types-converter";
 import type { CanvasNode } from "@/types";
 import { nodeTypes } from "@/components/nodes/nodeTypes";
+import { useCanvasPasteHandler } from "@/hooks/useCanvasPasteHandler";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -54,6 +55,9 @@ function RouteComponent() {
 
 function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   const setNodeDatas = useNodeDataStore((state) => state.setNodeDatas);
+
+  // Handle paste events (images, URLs)
+  useCanvasPasteHandler();
 
   // Fetch canvas
   const {
@@ -88,6 +92,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     onPaneContextMenu,
     onNodeContextMenu,
     onSelectionContextMenu,
+    onEdgeContextMenu,
   } = useContextMenu();
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
@@ -112,6 +117,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   // de drag/resize et la sélection
   useEffect(() => {
     if (canvas) {
+      console.log("Canvas updated, syncing nodes and edges...");
       if (canvas.nodes?.length) {
         setNodes((currentNodes: Node[]) => {
           const newNodes = fromCanvasNodesToXyNodes(
@@ -288,7 +294,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
         defaultViewport={{
           x: 0,
           y: 0,
-          zoom: 10,
+          zoom: 1,
         }}
         selectNodesOnDrag={false}
         selectionMode={SelectionMode.Partial}
@@ -297,6 +303,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
         onPaneContextMenu={onPaneContextMenu}
         onNodeContextMenu={onNodeContextMenu}
         onSelectionContextMenu={onSelectionContextMenu}
+        onEdgeContextMenu={onEdgeContextMenu}
         nodes={nodes}
         edges={edges}
         onEdgesChange={handleEdgeChange}
@@ -324,9 +331,9 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           ]);
         }}
         onConnectEnd={console.log}
-        onReconnectStart={console.log}
-        onReconnect={console.log}
-        onReconnectEnd={console.log}
+        // onReconnectStart={console.log}
+        // onReconnect={console.log}
+        // onReconnectEnd={console.log}
       >
         {contextMenu.type && (
           <ContextMenu

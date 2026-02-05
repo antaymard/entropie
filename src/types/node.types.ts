@@ -6,17 +6,6 @@ import type { Id } from "@/../convex/_generated/dataModel";
 import type { FieldType } from "./field.types";
 import type { IconType } from "react-icons/lib";
 
-export interface NodeData {
-  _id: Id<"nodeDatas">;
-  _creationTime: number;
-  templateId?: Id<"nodeTemplates">;
-  template?: any; // Override templateId if on the spot template is needed
-  values: Record<string, any>; // Field values
-  type: string;
-  updatedAt: number;
-  removedFromCanvasAt?: number;
-}
-
 // ==========================================================================
 // OLD SHIT - to be removed later
 export interface NodeTemplate {

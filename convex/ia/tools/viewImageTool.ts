@@ -14,7 +14,7 @@ export const viewImageTool = createTool({
     objective: z
       .string()
       .describe(
-        "THIS MUST BE IN ENGLISH. Natural-language description of what information you're looking for concerning the image. The AI will analyze the image and provide a response focused on this objective."
+        "THIS MUST BE IN ENGLISH. Natural-language description of what information you're looking for concerning the image. The AI will analyze the image and provide a response focused on this objective.",
       ),
   }),
   handler: async (ctx, args): Promise<string> => {
@@ -25,7 +25,7 @@ export const viewImageTool = createTool({
       // Analyser l'image avec Anthropic (supporte les URLs directement)
       console.log(`🤖 Sending image for analysis...`);
       const result = await generateText({
-        model: mistral("mistral-medium-latest"),
+        model: anthropic("claude-haiku-4-5"),
         messages: [
           {
             role: "user",
@@ -48,7 +48,7 @@ export const viewImageTool = createTool({
     } catch (error) {
       console.error("View image error:", error);
       throw new Error(
-        `Failed to analyze image: ${error instanceof Error ? error.message : "Unknown error"}. Please verify the URL and try again.`
+        `Failed to analyze image: ${error instanceof Error ? error.message : "Unknown error"}. Please verify the URL and try again.`,
       );
     }
   },

@@ -49,7 +49,7 @@ const ColorSelector = memo(function ColorSelector({
     <ButtonGroup>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline">
+          <Button variant="outline" size="icon">
             <TbPalette />
           </Button>
         </DropdownMenuTrigger>

@@ -4,8 +4,7 @@ export type {
   NodeField,
   LayoutElement,
   NodeVisual,
-  CanvasNode,
   NodeColors,
 } from "./node.types";
 
-export type { Canvas } from "./canvas.types";
+export type { Canvas, CanvasEdge, CanvasNode } from "./canvas.types";

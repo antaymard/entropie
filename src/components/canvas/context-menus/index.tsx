@@ -9,22 +9,14 @@ import {
 } from "@/components/shadcn/dropdown-menu";
 import SelectionContextMenu from "./SelectionContextMenu";
 
-type ContextMenuType = "node" | "edge" | "canvas" | "selection" | null;
+import type { ContextMenuState } from "@/types/context-menu.types";
 
 export default function ContextMenuWrapper({
   contextMenu,
   setContextMenu,
 }: {
-  contextMenu: {
-    type: ContextMenuType;
-    position: { x: number; y: number };
-    element: object | null;
-  };
-  setContextMenu: (contextMenu: {
-    type: ContextMenuType;
-    position: { x: number; y: number };
-    element: object | null | Node | Node[];
-  }) => void;
+  contextMenu: ContextMenuState;
+  setContextMenu: (contextMenu: ContextMenuState) => void;
 }) {
   const { type, position, element } = contextMenu;
   const [adjustedPosition, setAdjustedPosition] = useState(position);
@@ -73,7 +65,7 @@ export default function ContextMenuWrapper({
         hasAdjustedRef.current = true;
       }
     },
-    [position, type]
+    [position, type],
   );
 
   function renderContextMenu() {

@@ -1,4 +1,4 @@
-import type { Edge, Node } from "@xyflow/react";
+import type { Edge, Node as XyNode } from "@xyflow/react";
 import type { CanvasNode, NodeColors } from "../../types/node.types";
 import type { CanvasEdge } from "@/types/edge.types";
 
@@ -8,7 +8,7 @@ import type { CanvasEdge } from "@/types/edge.types";
  * - locked -> draggable, connectable, deletable, focusable (native ReactFlow props)
  * - color -> data.color (ReactFlow doesn't support color directly)
  */
-export function toXyNode(canvasNode: Partial<CanvasNode>): Node {
+export function toXyNode(canvasNode: Partial<CanvasNode>): XyNode {
   // const locked = canvasNode.locked ?? false;
   const locked = false;
   const color = canvasNode.color ?? ("default" as NodeColors);
@@ -46,7 +46,7 @@ export function toXyNode(canvasNode: Partial<CanvasNode>): Node {
  * - Converts native props back to custom props (draggable/connectable -> locked)
  * - Retrieves color from data.color
  */
-export function toConvexNode(xyNode: Node): CanvasNode {
+export function toConvexNode(xyNode: XyNode): CanvasNode {
   // Récupération de la color depuis data
   const { color, name, headerless, ...otherData } = (xyNode.data ?? {}) as {
     color?: NodeColors;
@@ -86,7 +86,7 @@ export function toConvexNode(xyNode: Node): CanvasNode {
 /**
  * Converts an array of partial CanvasNodes to ReactFlow Node format
  */
-export function toXyNodes(canvasNodes: Partial<CanvasNode>[]): Node[] {
+export function toXyNodes(canvasNodes: Partial<CanvasNode>[]): XyNode[] {
   return canvasNodes.map(toXyNode);
 }
 

@@ -1,10 +1,8 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import type { BaseFieldProps } from "@/types/field.types";
-import { TbPencil, TbLink } from "react-icons/tb";
+import { TbLink } from "react-icons/tb";
 import { Input } from "../shadcn/input";
-import { useNodeSidePanel } from "../nodes/side-panels/NodeSidePanelContext";
 import { Button } from "../shadcn/button";
-import SidePanelFrame from "../nodes/side-panels/SidePanelFrame";
 import toast from "react-hot-toast";
 import { useAction } from "convex/react";
 import { api } from "@/../convex/_generated/api";
@@ -17,16 +15,14 @@ export type LinkValueType = {
   pageDescription?: string;
   siteName?: string;
 };
-const sidePanelId = "linkEdition";
 
-function LinkEditionContent({
+// Composant pour édition dans un Popover (utilisé par LinkNode)
+export function LinkEditionPopover({
   initialValue,
   onSave,
-  onClose,
 }: {
   initialValue: string;
   onSave: (value: LinkValueType) => void;
-  onClose: () => void;
 }) {
   const [linkUrl, setLinkUrl] = useState(initialValue);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,21 +54,19 @@ function LinkEditionContent({
         pageTitle: metadata.title || url,
         pageImage: metadata.image || "",
         pageDescription: metadata.description || "",
-        siteName: metadata.site_name || "",
+        siteName: "",
       });
-      onClose();
-    } catch (error) {
+    } catch {
       toast.error("Impossible de récupérer le titre de la page");
       // Sauvegarder quand même avec l'URL comme titre
       onSave({ href: url, pageTitle: url });
-      onClose();
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <SidePanelFrame id={sidePanelId} title="Options du lien">
+    <div className="flex flex-col gap-2">
       <Input
         onDoubleClick={(e) => e.stopPropagation()}
         type="text"
@@ -80,10 +74,10 @@ function LinkEditionContent({
         value={linkUrl}
         onChange={(e) => setLinkUrl(e.target.value)}
       />
-      <Button onClick={handleSave} disabled={isLoading}>
+      <Button onClick={handleSave} disabled={isLoading} size="sm">
         {isLoading ? "Chargement..." : "Valider"}
       </Button>
-    </SidePanelFrame>
+    </div>
   );
 }
 
@@ -91,23 +85,8 @@ interface LinkFieldProps extends BaseFieldProps<LinkValueType> {
   className?: string;
 }
 
-function LinkField({
-  value,
-  onChange,
-  className = "",
-  componentProps,
-}: LinkFieldProps) {
-  const { closeSidePanel, openSidePanel } = useNodeSidePanel();
+function LinkField({ value, className = "", componentProps }: LinkFieldProps) {
   const { iconOnly } = componentProps || {};
-
-  const handleSave = useCallback(
-    (newValue: LinkValueType) => {
-      if (onChange) {
-        onChange(newValue);
-      }
-    },
-    [onChange]
-  );
 
   const linkValue: LinkValueType = (value as LinkValueType) || {
     href: "",
@@ -119,45 +98,25 @@ function LinkField({
       className={cn(
         "relative bg-slate-100 hover:bg-slate-200 h-8 rounded-md flex items-center group/linkfield px-2 gap-2 min-w-0 ",
         iconOnly ? "w-8" : "flex-1 w-full",
-        className
+        className,
       )}
     >
-      <a
-        href={value?.href}
-        target="_blank"
-        className={`flex items-center gap-2 min-w-0 flex-1 cursor-pointer ${linkValue?.href ? "" : "opacity-50"} ${
-          iconOnly ? "justify-center" : ""
-        }`}
-      >
-        <TbLink size={18} className="shrink-0" />
-        {!iconOnly && (
-          <p className="truncate hover:underline flex-1 min-w-0">
-            {linkValue?.href ? (
-              linkValue.pageTitle || <i>Pas de titre</i>
-            ) : (
-              <i>Pas de lien</i>
-            )}
-          </p>
-        )}
-      </a>
-
-      {!iconOnly && (
-        <button
-          type="button"
-          className="absolute right-2 cursor-default bg-inherit hover:bg-black/5 rounded-sm items-center justify-center h-6 w-6 shrink-0 group-hover/linkfield:flex hidden"
-          onClick={() =>
-            openSidePanel(
-              sidePanelId,
-              <LinkEditionContent
-                initialValue={value?.href || ""}
-                onSave={handleSave}
-                onClose={() => closeSidePanel(sidePanelId)}
-              />
-            )
-          }
+      {linkValue?.href ? (
+        <a
+          href={value?.href}
+          target="_blank"
+          className={`flex items-center gap-2 min-w-0 flex-1 cursor-pointer ${linkValue?.href ? "" : "opacity-50"} ${
+            iconOnly ? "justify-center" : ""
+          }`}
         >
-          <TbPencil />
-        </button>
+          <TbLink size={18} className="shrink-0" />
+
+          <p className="truncate hover:underline flex-1 min-w-0">
+            {linkValue.pageTitle || <i>Pas de titre</i>}
+          </p>
+        </a>
+      ) : (
+        "Pas de lien"
       )}
     </div>
   );

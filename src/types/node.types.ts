@@ -2,10 +2,12 @@
 // Node Template Types
 // ===========================================================================
 
-import type { Id } from "convex/_generated/dataModel";
+import type { Id } from "@/../convex/_generated/dataModel";
 import type { FieldType } from "./field.types";
 import type { IconType } from "react-icons/lib";
 
+// ==========================================================================
+// OLD SHIT - to be removed later
 export interface NodeTemplate {
   _id: Id<"nodeTemplates"> | "new";
   _creationTime: number;
@@ -63,65 +65,6 @@ export interface LayoutElement {
 // Nodes on the canvas
 // ===========================================================================
 
-export type NodeType = "default" | "floatingText" | "custom";
+// TO DEP => cf nodeData.types.ts
 
 // Convex format
-export interface CanvasNode {
-  id: string; // Pas _id car sous objet de canvas, qui lui un _id
-  name: string;
-  type: string;
-  templateId?: string;
-  position: {
-    x: number;
-    y: number;
-  };
-  width: number;
-  height: number;
-  zIndex: number;
-  color: NodeColors;
-  locked: boolean;
-  hidden: boolean;
-  headerless?: boolean;
-
-  data: Record<string, unknown>; // Données du node, qu'on pourra un jour sortir sur une table dédiée
-
-  parentId?: string;
-  extent?: any | null; //  "parent" | [[number, number], [number, number]]
-  extendParent?: boolean;
-}
-
-export type NodeColors =
-  | "blue"
-  | "green"
-  | "red"
-  | "yellow"
-  | "purple"
-  | "transparent"
-  | "pink"
-  | "orange"
-  | "default";
-
-export interface NodeConfig {
-  nodeLabel: string;
-  nodeIcon: IconType;
-  type: NodeType;
-  nodeComponent: React.ComponentType<any>;
-  windowComponent?: React.ComponentType<any>;
-
-  // Proche du format CanvasNode, sans id, position, templateId
-  initialNodeValues: CanvasNode;
-
-  node: {
-    // Pour le resizer
-    minWidth: number;
-    minHeight: number;
-  };
-  window?: {
-    initialWidth: number;
-    initialHeight: number;
-  };
-
-  disableDoubleClickToOpenWindow?: boolean;
-  canSwitchHeaderless?: boolean;
-  canBeTransparent?: boolean;
-}

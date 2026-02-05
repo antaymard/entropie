@@ -1,11 +1,12 @@
 import { useEffect, useCallback } from "react";
 import { useReactFlow, useViewport } from "@xyflow/react";
 import { useFileUpload } from "./useFilesUpload";
+import { useCreateNode } from "./useCreateNode";
 import toast from "react-hot-toast";
-import { toXyNode } from "@/components/utils/nodeUtils";
 import prebuiltNodesConfig from "@/components/nodes/prebuilt-nodes/prebuiltNodesConfig";
-import { useAction } from "convex/react";
+import { useAction, useMutation } from "convex/react";
 import { api } from "@/../convex/_generated/api";
+import type { Id } from "@/../convex/_generated/dataModel";
 
 /**
  * Hook to handle paste events on the canvas
@@ -13,10 +14,12 @@ import { api } from "@/../convex/_generated/api";
  * - Detects URLs and creates ImageNode (if image URL) or LinkNode (if web URL)
  */
 export function useCanvasPasteHandler() {
-  const { addNodes, setNodes, updateNodeData } = useReactFlow();
+  const { setNodes } = useReactFlow();
   const { x: canvasX, y: canvasY, zoom: canvasZoom } = useViewport();
   const { uploadFile } = useFileUpload();
+  const { createNode } = useCreateNode();
   const fetchLinkMetadata = useAction(api.links.fetchLinkMetadata);
+  const updateNodeDataValues = useMutation(api.nodeDatas.updateValues);
 
   /**
    * Calculate the center position of the current viewport
@@ -56,49 +59,31 @@ export function useCanvasPasteHandler() {
 
   /**
    * Create an ImageNode with optional initial URL
+   * Returns nodeId and nodeDataId for later updates
    */
   const createImageNode = useCallback(
-    (url: string = "") => {
-      const nodeId = `node-${crypto.randomUUID()}`;
+    async (url: string = ""): Promise<{ nodeId: string; nodeDataId: Id<"nodeDatas"> } | null> => {
       const position = getViewportCenter();
 
       // Get ImageNode config from prebuilt nodes
       const imageNodeConfig = prebuiltNodesConfig.find(
-        (config) => config.type === "image"
+        (config) => config.node.type === "image"
       );
       if (!imageNodeConfig) {
         toast.error("Erreur: Configuration ImageNode introuvable");
         return null;
       }
 
-      // Create the node
-      const baseNode = toXyNode(imageNodeConfig.initialNodeValues);
-      const newNode = {
-        ...baseNode,
-        id: nodeId,
-        type: "image",
+      // Use createNode hook - it handles nodeData creation and node selection
+      const { nodeId, nodeDataId } = await createNode({
+        node: imageNodeConfig.node,
         position,
-        data: {
-          ...baseNode.data,
-          url,
-        },
-      };
+        initialValues: { images: url ? [{ url }] : [] },
+      });
 
-      addNodes(newNode);
-
-      // Select only this node
-      setTimeout(() => {
-        setNodes((nodes) =>
-          nodes.map((n) => ({
-            ...n,
-            selected: n.id === nodeId,
-          }))
-        );
-      }, 0);
-
-      return nodeId;
+      return { nodeId, nodeDataId: nodeDataId! };
     },
-    [addNodes, setNodes, getViewportCenter]
+    [getViewportCenter, createNode]
   );
 
   /**
@@ -106,62 +91,53 @@ export function useCanvasPasteHandler() {
    */
   const createLinkNode = useCallback(
     async (url: string) => {
-      const nodeId = `node-${crypto.randomUUID()}`;
       const position = getViewportCenter();
 
       // Get LinkNode config from prebuilt nodes
       const linkNodeConfig = prebuiltNodesConfig.find(
-        (config) => config.type === "link"
+        (config) => config.node.type === "link"
       );
       if (!linkNodeConfig) {
         toast.error("Erreur: Configuration LinkNode introuvable");
         return null;
       }
 
-      // Create the node with temporary data (URL as title)
-      const baseNode = toXyNode(linkNodeConfig.initialNodeValues);
-      const newNode = {
-        ...baseNode,
-        id: nodeId,
-        type: "link",
+      // Use createNode hook - it handles nodeData creation and node selection
+      const { nodeId, nodeDataId } = await createNode({
+        node: linkNodeConfig.node,
         position,
-        data: {
-          ...baseNode.data,
-          href: url,
-          pageTitle: url, // Temporary title
+        initialValues: {
+          link: {
+            href: url,
+            pageTitle: url, // Temporary title
+          },
         },
-      };
+      });
 
-      addNodes(newNode);
-
-      // Select only this node
-      setTimeout(() => {
-        setNodes((nodes) =>
-          nodes.map((n) => ({
-            ...n,
-            selected: n.id === nodeId,
-          }))
-        );
-      }, 0);
-
-      // Fetch metadata in background and update the node
-      try {
-        const metadata = await fetchLinkMetadata({ url });
-        updateNodeData(nodeId, {
-          href: url,
-          pageTitle: metadata.title || url,
-          pageImage: metadata.image || "",
-          pageDescription: metadata.description || "",
-          siteName: metadata.site_name || "",
-        });
-      } catch (error) {
-        console.error("Failed to fetch link metadata:", error);
-        // Keep the node with URL as title
+      // Fetch metadata in background and update the nodeData
+      if (nodeDataId) {
+        try {
+          const metadata = await fetchLinkMetadata({ url });
+          await updateNodeDataValues({
+            _id: nodeDataId,
+            values: {
+              link: {
+                href: url,
+                pageTitle: metadata.title || url,
+                pageImage: metadata.image || "",
+                pageDescription: metadata.description || "",
+              },
+            },
+          });
+        } catch (error) {
+          console.error("Failed to fetch link metadata:", error);
+          // Keep the nodeData with URL as title
+        }
       }
 
       return nodeId;
     },
-    [addNodes, setNodes, getViewportCenter, fetchLinkMetadata, updateNodeData]
+    [getViewportCenter, createNode, fetchLinkMetadata, updateNodeDataValues]
   );
 
   /**
@@ -170,15 +146,20 @@ export function useCanvasPasteHandler() {
   const handleImageFilePaste = useCallback(
     async (file: File) => {
       // Create the node first (with empty URL)
-      const nodeId = createImageNode("");
-      if (!nodeId) return;
+      const result = await createImageNode("");
+      if (!result) return;
+
+      const { nodeId, nodeDataId } = result;
 
       try {
         // Upload to R2
         const fileData = await uploadFile(file);
 
-        // Update the node with the uploaded URL
-        updateNodeData(nodeId, { url: fileData.url });
+        // Update the nodeData with the uploaded URL
+        await updateNodeDataValues({
+          _id: nodeDataId,
+          values: { images: [{ url: fileData.url }] },
+        });
         toast.success("Image ajoutée au canvas");
       } catch (error) {
         console.error("Upload failed:", error);
@@ -188,7 +169,7 @@ export function useCanvasPasteHandler() {
         setNodes((nodes) => nodes.filter((n) => n.id !== nodeId));
       }
     },
-    [createImageNode, uploadFile, updateNodeData, setNodes]
+    [createImageNode, uploadFile, updateNodeDataValues, setNodes]
   );
 
   /**
@@ -206,7 +187,7 @@ export function useCanvasPasteHandler() {
 
       if (isImageUrl(url)) {
         // Create ImageNode with the URL
-        createImageNode(url);
+        await createImageNode(url);
         toast.success("Image ajoutée au canvas");
       } else {
         // Create LinkNode (async - fetches metadata in background)

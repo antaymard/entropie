@@ -10,7 +10,7 @@ import {
 } from "@convex-dev/agent";
 import { components } from "../_generated/api";
 import { paginationOptsValidator } from "convex/server";
-import { getAuth, requireAuth } from "../lib/auth";
+import { requireAuth } from "../lib/auth";
 import { encode } from "@toon-format/toon";
 import z from "zod";
 import { mistral } from "@ai-sdk/mistral";
@@ -22,10 +22,10 @@ export const getLatestThread = query({
     v.object({
       threadId: v.string(),
     }),
-    v.null()
+    v.null(),
   ),
   handler: async (ctx) => {
-    const authUserId = await getAuth(ctx);
+    const authUserId = await requireAuth(ctx);
     if (!authUserId) {
       return null;
     }
@@ -37,7 +37,7 @@ export const getLatestThread = query({
         userId: authUserId,
         order: "desc",
         paginationOpts: { numItems: 1, cursor: null },
-      }
+      },
     );
 
     if (!result || result.page.length === 0) {
@@ -58,10 +58,10 @@ export const startThread = action({
     v.object({
       success: v.boolean(),
       error: v.string(),
-    })
+    }),
   ),
   handler: async (ctx) => {
-    const authUserId = await getAuth(ctx);
+    const authUserId = await requireAuth(ctx);
     if (!authUserId) {
       return {
         success: false,
@@ -89,10 +89,10 @@ export const sendMessage = mutation({
     v.object({
       success: v.boolean(),
       error: v.string(),
-    })
+    }),
   ),
   handler: async (ctx, { threadId, prompt, context }) => {
-    const authUserId = await getAuth(ctx);
+    const authUserId = await requireAuth(ctx);
     if (!authUserId) {
       return {
         success: false,
@@ -130,7 +130,7 @@ export const streamResponse = internalAction({
     metadata: v.optional(
       v.object({
         context: v.optional(v.any()),
-      })
+      }),
     ),
   },
   handler: async (ctx, { authUserId, promptMessageId, threadId, metadata }) => {
@@ -174,7 +174,7 @@ export const streamResponse = internalAction({
           chunking: "word", // Stream word by word
           throttleMs: 100, // 50ms between each update
         },
-      }
+      },
     );
 
     // Consume the stream to ensure it finishes
@@ -242,7 +242,7 @@ export const updateThreadTitle = action({
         }),
         prompt: "Generate a title for this thread.",
       },
-      { storageOptions: { saveMessages: "none" } }
+      { storageOptions: { saveMessages: "none" } },
     );
     await thread.updateMetadata({ title });
   },

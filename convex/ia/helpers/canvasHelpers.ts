@@ -74,7 +74,7 @@ export const addNodesToCanvasInternal = internalMutation({
     } catch (error) {
       console.error("❌ Add nodes to canvas error:", error);
       throw new Error(
-        `Adding nodes to canvas failed: ${error}. Please try again.`
+        `Adding nodes to canvas failed: ${error}. Please try again.`,
       );
     }
   },
@@ -102,7 +102,7 @@ export const editNodeInCanvasInternal = internalMutation({
       }
 
       const nodeIndex = (canvas.nodes || []).findIndex(
-        (node: any) => node.id === nodeId
+        (node: any) => node.id === nodeId,
       );
 
       if (nodeIndex === -1) {
@@ -113,7 +113,7 @@ export const editNodeInCanvasInternal = internalMutation({
       const updatedNode = { ...existingNode };
 
       // Mettre à jour les propriétés si elles sont fournies
-      if (updates.name !== undefined) updatedNode.name = updates.name;
+      // if (updates.name !== undefined) updatedNode.name = updates.name;
       if (updates.type !== undefined) updatedNode.type = updates.type;
       if (updates.position !== undefined)
         updatedNode.position = updates.position;
@@ -150,7 +150,7 @@ export const editNodeInCanvasInternal = internalMutation({
     } catch (error) {
       console.error("❌ Edit node in canvas error:", error);
       throw new Error(
-        `Editing node in canvas failed: ${error}. Please try again.`
+        `Editing node in canvas failed: ${error}. Please try again.`,
       );
     }
   },

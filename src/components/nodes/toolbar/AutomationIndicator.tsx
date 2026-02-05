@@ -60,7 +60,7 @@ export default function AutomationIndicator({ xyNode }: { xyNode: Node<any> }) {
       <NodeToolbar isVisible={!xyNode?.selected && isWorking}>
         <span className="text-slate-500 flex gap-2 items-center">
           <Spinner />
-          Mise à jour
+          En cours de traitement...
         </span>
       </NodeToolbar>
 
@@ -69,7 +69,7 @@ export default function AutomationIndicator({ xyNode }: { xyNode: Node<any> }) {
         {transitionState === "success" && (
           <span className="text-green-500 flex gap-2 items-center">
             <TbCheck />
-            Terminé
+            Terminé !
           </span>
         )}
         {transitionState === "error" && (

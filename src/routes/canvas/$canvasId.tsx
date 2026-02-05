@@ -37,6 +37,7 @@ import { nodeTypes } from "@/components/nodes/nodeTypes";
 import { useCanvasPasteHandler } from "@/hooks/useCanvasPasteHandler";
 import WindowPanelsContainer from "@/components/windows/WindowPanelsContainer";
 import "@xyflow/react/dist/style.css";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -95,6 +96,8 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     onSelectionContextMenu,
     onEdgeContextMenu,
   } = useContextMenu();
+
+  const isMobile = useIsMobile();
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -290,7 +293,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     <WindowPanelsContainer/>
       <ReactFlow
         panOnScroll
-        panOnDrag={[1]}
+        panOnDrag={isMobile ? true : [1]}
         defaultViewport={{
           x: 0,
           y: 0,
@@ -298,7 +301,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
         }}
         selectNodesOnDrag={false}
         selectionMode={SelectionMode.Partial}
-        selectionOnDrag={true}
+        selectionOnDrag={!isMobile}
         nodeTypes={nodeTypes}
         onPaneContextMenu={onPaneContextMenu}
         onNodeContextMenu={onNodeContextMenu}

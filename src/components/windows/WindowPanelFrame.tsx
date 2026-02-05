@@ -23,7 +23,7 @@ export default function WindowPanelFrame({
   return (
     <div
       className={cn(
-        "h-full w-full rounded-lg border shadow-2xl",
+        "h-full w-full md:rounded-lg border shadow-2xl",
         nodeColor.nodeBg,
         nodeColor.nodeBorder
       )}

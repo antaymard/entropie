@@ -21,7 +21,11 @@ export default function WindowPanelsContainer() {
   }
 
   return (
-    <div className={cn("fixed top-0 left-0 bottom-0 p-3 w-1/3 z-10")}>
+    <div
+      className={cn(
+        "fixed top-0 left-0 bottom-0 md:p-3 w-full md:max-w-[650px] z-10"
+      )}
+    >
       {renderWindowPanel()}
     </div>
   );

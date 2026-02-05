@@ -1,11 +1,12 @@
 import type { Id } from "@/../convex/_generated/dataModel";
 import type { colorsEnum } from "./style.types";
+import type { nodeTypes } from "./nodeData.types";
 
 // Miroir parfait de la base convex
 export interface CanvasNode<T = Record<string, any>> {
   id: string; // Pas _id car sous objet de canvas, qui lui un _id
   nodeDataId?: Id<"nodeDatas">;
-  type: string;
+  type: nodeTypes;
   position: {
     x: number;
     y: number;

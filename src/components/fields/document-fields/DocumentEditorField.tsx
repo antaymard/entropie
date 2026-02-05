@@ -91,8 +91,8 @@ const DocumentEditorField = forwardRef<
       <EditorContainer
         variant="default"
         className={cn(
-          "nodrag h-full rounded-md overflow-auto",
-          visualType === "window" && "border border-slate-300",
+          "nodrag h-full overflow-auto",
+          visualType === "window" && "border border-slate-300"
         )}
         onFocus={handleFocus}
         onBlur={handleBlur}

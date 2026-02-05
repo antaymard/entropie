@@ -48,7 +48,7 @@ function WindowFrame({
     updateNodeData(node.id, { name: newName });
   };
 
-  const { position, width, height, isMinimized, isExpanded } = window;
+  const { position, width, height, isMinimized } = window;
 
   if (isMinimized) return null;
 
@@ -102,7 +102,7 @@ function WindowFrame({
             <InlineEditableText
               value={String(node?.data.name) || "Sans nom"}
               onSave={handleNameSave}
-              className="font-semibold text-sm w-full truncate mt-[1px]"
+              className="font-semibold text-sm w-full truncate mt-px"
               placeholder="Nom du bloc"
             />
           </div>

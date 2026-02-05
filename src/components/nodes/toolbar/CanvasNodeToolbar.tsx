@@ -10,11 +10,13 @@ const selectedNodesCountSelector = (state: { nodes: Node[] }) =>
 function CanvasNodeToolbar({
   children,
   xyNode,
-  className,
+  className = "",
+  asSimpleDiv = false,
 }: {
   children?: React.ReactNode;
   xyNode: Node;
   className?: string;
+  asSimpleDiv: boolean
 }) {
   const selectedNodesCount = useStore(selectedNodesCountSelector);
 
@@ -28,18 +30,25 @@ function CanvasNodeToolbar({
     (config) => config.node.type === xyNode.type,
   );
 
-  return (
-    <NodeToolbar
-      onContextMenu={(e) => e.stopPropagation()}
-      isVisible={isVisible}
-      className={`flex gap-2 ${className || ""}`}
-      onDoubleClick={(e) => e.stopPropagation()}
-    >
-      {children}
+  const content = <>{children}
       {nodeConfig?.canHaveAutomation && (
         <AutomationSettingsButton xyNode={xyNode} />
       )}
       <ColorSelector xyNode={xyNode} />
+    </>
+
+   if (asSimpleDiv) return <div className="flex gap-2">
+      {content}
+   </div> 
+
+  return (
+    <NodeToolbar
+      onContextMenu={(e) => e.stopPropagation()}
+      isVisible={isVisible}
+      className={`flex gap-2 ${className}`}
+      onDoubleClick={(e) => e.stopPropagation()}
+    >
+      {content}
     </NodeToolbar>
   );
 }

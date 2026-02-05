@@ -66,6 +66,5 @@ export interface LayoutElement {
 // ===========================================================================
 
 // TO DEP => cf nodeData.types.ts
-export type NodeType = "default" | "floatingText" | "custom";
 
 // Convex format

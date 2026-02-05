@@ -1,15 +1,15 @@
-import type { NodeType } from "./node.types";
+import type { Id } from "@/../convex/_generated/dataModel";
+import type { nodeTypes } from "./nodeData.types";
 
 export interface Window {
-  id: string; // Node Id (not _id)
-  type: NodeType;
-  position: { x: number; y: number };
-  width: number;
-  height: number;
-  isMinimized: boolean;
+  nodeId: string; // Node Id (not _id)
+  nodeDataId?: Id<"nodeDatas">
+  type: nodeTypes;
+  isMinimized?: boolean;
   isExpanded?: boolean;
 }
 
+// TO REMOVE
 export type ResizeDirection =
   | "tl"
   | "tc"

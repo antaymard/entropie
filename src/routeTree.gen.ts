@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as SettingsRouteRouteImport } from './routes/settings/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as CanvasCanvasIdcopyRouteImport } from './routes/canvas/$canvasId copy'
 import { Route as CanvasCanvasIdRouteImport } from './routes/canvas/$canvasId'
 import { Route as SettingsTemplatesIndexRouteImport } from './routes/settings/templates/index'
 import { Route as SettingsTemplatesTemplateIdRouteImport } from './routes/settings/templates/$templateId'
@@ -30,11 +29,6 @@ const SettingsRouteRoute = SettingsRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CanvasCanvasIdcopyRoute = CanvasCanvasIdcopyRouteImport.update({
-  id: '/canvas/$canvasId copy',
-  path: '/canvas/$canvasId copy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CanvasCanvasIdRoute = CanvasCanvasIdRouteImport.update({
@@ -59,7 +53,6 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRouteRouteWithChildren
   '/signin': typeof SigninRoute
   '/canvas/$canvasId': typeof CanvasCanvasIdRoute
-  '/canvas/$canvasId copy': typeof CanvasCanvasIdcopyRoute
   '/settings/templates/$templateId': typeof SettingsTemplatesTemplateIdRoute
   '/settings/templates/': typeof SettingsTemplatesIndexRoute
 }
@@ -68,7 +61,6 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRouteRouteWithChildren
   '/signin': typeof SigninRoute
   '/canvas/$canvasId': typeof CanvasCanvasIdRoute
-  '/canvas/$canvasId copy': typeof CanvasCanvasIdcopyRoute
   '/settings/templates/$templateId': typeof SettingsTemplatesTemplateIdRoute
   '/settings/templates': typeof SettingsTemplatesIndexRoute
 }
@@ -78,7 +70,6 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRouteRouteWithChildren
   '/signin': typeof SigninRoute
   '/canvas/$canvasId': typeof CanvasCanvasIdRoute
-  '/canvas/$canvasId copy': typeof CanvasCanvasIdcopyRoute
   '/settings/templates/$templateId': typeof SettingsTemplatesTemplateIdRoute
   '/settings/templates/': typeof SettingsTemplatesIndexRoute
 }
@@ -89,7 +80,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signin'
     | '/canvas/$canvasId'
-    | '/canvas/$canvasId copy'
     | '/settings/templates/$templateId'
     | '/settings/templates/'
   fileRoutesByTo: FileRoutesByTo
@@ -98,7 +88,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signin'
     | '/canvas/$canvasId'
-    | '/canvas/$canvasId copy'
     | '/settings/templates/$templateId'
     | '/settings/templates'
   id:
@@ -107,7 +96,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signin'
     | '/canvas/$canvasId'
-    | '/canvas/$canvasId copy'
     | '/settings/templates/$templateId'
     | '/settings/templates/'
   fileRoutesById: FileRoutesById
@@ -117,7 +105,6 @@ export interface RootRouteChildren {
   SettingsRouteRoute: typeof SettingsRouteRouteWithChildren
   SigninRoute: typeof SigninRoute
   CanvasCanvasIdRoute: typeof CanvasCanvasIdRoute
-  CanvasCanvasIdcopyRoute: typeof CanvasCanvasIdcopyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -141,13 +128,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/canvas/$canvasId copy': {
-      id: '/canvas/$canvasId copy'
-      path: '/canvas/$canvasId copy'
-      fullPath: '/canvas/$canvasId copy'
-      preLoaderRoute: typeof CanvasCanvasIdcopyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/canvas/$canvasId': {
@@ -193,7 +173,6 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRouteRoute: SettingsRouteRouteWithChildren,
   SigninRoute: SigninRoute,
   CanvasCanvasIdRoute: CanvasCanvasIdRoute,
-  CanvasCanvasIdcopyRoute: CanvasCanvasIdcopyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

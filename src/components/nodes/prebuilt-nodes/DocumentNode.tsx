@@ -18,6 +18,8 @@ import {
   DialogTitle,
 } from "@/components/shadcn/dialog";
 import { TbPencil } from "react-icons/tb";
+import { useWindowsStore } from "@/stores/windowsStore";
+import type { nodeTypes } from "@/types/nodeData.types";
 
 const defaultValue: Value = normalizeNodeId([
   {
@@ -32,42 +34,18 @@ const DocumentNode = memo(
     const values = useNodeDataValues(nodeDataId);
     const { updateNodeDataValues } = useUpdateNodeDataValues();
 
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [localValue, setLocalValue] = useState<Value | null>(null);
+    const openWindow = useWindowsStore(s => s.openWindow);
 
     // Récupère la valeur depuis le store NodeData
     const currentValue: Value =
       (values?.doc as Value | undefined) ?? defaultValue;
 
-    const handleOpenDialog = useCallback(() => {
-      setLocalValue(currentValue);
-      setIsDialogOpen(true);
-    }, [currentValue]);
-
-    const handleLocalChange = useCallback((newValue: { doc: Value }) => {
-      setLocalValue(newValue.doc);
-    }, []);
-
-    const handleCancel = useCallback(() => {
-      setLocalValue(null);
-      setIsDialogOpen(false);
-    }, []);
-
-    const handleSave = useCallback(() => {
-      if (nodeDataId && localValue) {
-        updateNodeDataValues({
-          nodeDataId,
-          values: { doc: localValue },
-        });
-      }
-      setLocalValue(null);
-      setIsDialogOpen(false);
-    }, [nodeDataId, localValue, updateNodeDataValues]);
-
     return (
       <>
         <CanvasNodeToolbar xyNode={xyNode}>
-          <Button size="icon" variant="outline" onClick={handleOpenDialog}>
+          <Button size="icon" variant="outline" onClick={() => openWindow(
+            xyNode.id
+          ) }>
             <TbPencil />
           </Button>
         </CanvasNodeToolbar>
@@ -79,34 +57,6 @@ const DocumentNode = memo(
             />
           </div>
         </NodeFrame>
-
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent
-            showCloseButton={false}
-            className="max-w-5xl w-[90vw] h-[80vh] flex flex-col"
-            onInteractOutside={(e) => e.preventDefault()}
-          >
-            <DialogHeader>
-              <DialogTitle>Éditer le document</DialogTitle>
-            </DialogHeader>
-            <div className="overflow-y-auto flex-1 min-h-0 h-full border rounded-md">
-              {isDialogOpen && localValue && (
-                <DocumentEditorField
-                  editorId={`${xyNode.id}-dialog`}
-                  value={{ doc: localValue }}
-                  onChange={handleLocalChange}
-                  plugins={EditorKit}
-                />
-              )}
-            </div>
-            <DialogFooter>
-              <Button variant="ghost" onClick={handleCancel}>
-                Annuler
-              </Button>
-              <Button onClick={handleSave}>Valider</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </>
     );
   },

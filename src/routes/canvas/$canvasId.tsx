@@ -10,7 +10,6 @@ import {
   type NodePositionChange,
   type NodeRemoveChange,
   SelectionMode,
-  addEdge,
   useEdgesState,
   type Edge,
   type EdgeChange,
@@ -36,6 +35,8 @@ import {
 import type { CanvasNode } from "@/types";
 import { nodeTypes } from "@/components/nodes/nodeTypes";
 import { useCanvasPasteHandler } from "@/hooks/useCanvasPasteHandler";
+import WindowPanelsContainer from "@/components/windows/WindowPanelsContainer";
+import "@xyflow/react/dist/style.css";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -244,8 +245,6 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     (changes: EdgeChange[]) => {
       onEdgesChange(changes);
 
-      console.log("Edge changes:", changes);
-
       const addedChanges = changes.filter(
         (change: EdgeChange) => change.type === "add",
       ) as EdgeAddChange[];
@@ -288,6 +287,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
 
   return (
     <div className="flex-1 w-full h-full">
+    <WindowPanelsContainer/>
       <ReactFlow
         panOnScroll
         panOnDrag={[1]}

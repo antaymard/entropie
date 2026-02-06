@@ -1,13 +1,13 @@
-import { useViewport, useReactFlow } from "@xyflow/react";
+import { useViewport } from "@xyflow/react";
 import prebuiltNodesConfig from "../../nodes/prebuilt-nodes/prebuiltNodesConfig";
 import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/shadcn/dropdown-menu";
-import { toXyNode } from "@/components/utils/nodeUtils";
 import { useTemplateStore } from "@/stores/templateStore";
 import type { Id } from "convex/_generated/dataModel";
+import { useCreateNode } from "@/hooks/useCreateNode";
 
 export default function ContextMenu({
   closeMenu,
@@ -16,7 +16,7 @@ export default function ContextMenu({
   closeMenu: () => void;
   position: { x: number; y: number };
 }) {
-  const { setNodes, addNodes } = useReactFlow();
+  const { createNode } = useCreateNode();
   const templates = useTemplateStore((state) => state.templates);
   const { x: canvasX, y: canvasY, zoom: canvasZoom } = useViewport();
 
@@ -32,75 +32,80 @@ export default function ContextMenu({
       <DropdownMenuLabel className="whitespace-nowrap">
         Ajouter un bloc
       </DropdownMenuLabel>
-      {prebuiltNodesConfig.map((nodeType) => {
-        const Icon = nodeType.nodeIcon;
+      <DropdownMenuSeparator />
+      {prebuiltNodesConfig.map((nodeConfig, i) => {
+        const Icon = nodeConfig.nodeIcon;
         return (
           <DropdownMenuItem
-            key={nodeType.type}
+            key={i}
             className="w-48"
-            onClick={() => {
-              const newNodeId = `node-${crypto.randomUUID()}`;
-
-              // Ajouter le nouveau node dans le state Zustand (DB)
-              addNodes({
-                ...toXyNode(nodeType.initialNodeValues),
-                id: newNodeId,
-                type: nodeType.type,
+            onClick={async () => {
+              await createNode({
+                node: nodeConfig.node,
                 position: newNodePosition,
+                skipNodeDataCreation: nodeConfig.skipNodeDataCreation,
               });
-
-              // Sélectionner uniquement le nouveau node dans le state React Flow
-              // setTimeout pour laisser React Flow se synchroniser avec Zustand
-              setTimeout(() => {
-                setNodes((nodes) =>
-                  nodes.map((n) => ({
-                    ...n,
-                    selected: n.id === newNodeId,
-                  }))
-                );
-              }, 0);
-
               closeMenu();
             }}
           >
-            <Icon /> {nodeType.nodeLabel}
+            <Icon /> {nodeConfig.nodeLabel}
           </DropdownMenuItem>
         );
       })}
-      <DropdownMenuSeparator />
+      {/* <DropdownMenuSeparator /> */}
 
-      <DropdownMenuLabel>Blocs personnalisés</DropdownMenuLabel>
-      {templates.map((template, i) => (
-        <DropdownMenuItem
-          key={i}
-          className="w-48"
-          onClick={() => {
-            const newNodeId = `node-${crypto.randomUUID()}`;
+      {/* <DropdownMenuLabel>Blocs personnalisés</DropdownMenuLabel>
+      {templates.map((template, i) => {
+        // Créer l'objet data avec les valeurs par défaut de chaque field
+        const defaultData: Record<string, unknown> = {};
+        template.fields.forEach((field) => {
+          if (field.options?.defaultValue !== undefined) {
+            defaultData[field.id] = field.options.defaultValue;
+          }
+        });
 
-            // Créer l'objet data avec les valeurs par défaut de chaque field
-            const defaultData: Record<string, unknown> = {};
-            template.fields.forEach((field) => {
-              if (field.options?.defaultValue !== undefined) {
-                defaultData[field.id] = field.options.defaultValue;
-              }
-            });
+        // Get default dimensions from the template's node layout
+        const defaultVariantId = template.defaultVisuals.node || "default";
+        const layout = template.visuals.node?.[defaultVariantId]?.layout;
+        const rootData = layout?.data as Record<string, unknown> | undefined;
 
-            addNodes({
-              id: newNodeId,
-              type: "custom",
-              data: {
-                name: template.name,
-                templateId: template._id as Id<"nodeTemplates">,
-                color: "default",
-                data: defaultData,
-              },
-              position: newNodePosition,
-            });
-          }}
-        >
-          {template.name}
-        </DropdownMenuItem>
-      ))}
+        // Parse default dimensions (stored as "150px" -> 150)
+        const defaultWidth = rootData?.defaultWidth
+          ? parseInt(String(rootData.defaultWidth).replace("px", ""))
+          : 200;
+        const defaultHeight = rootData?.defaultHeight
+          ? parseInt(String(rootData.defaultHeight).replace("px", ""))
+          : 150;
+
+        return (
+          <DropdownMenuItem
+            key={i}
+            className="w-48"
+            onClick={async () => {
+              await createNode({
+                node: {
+                  id: "",
+                  type: "custom",
+                  position: { x: 0, y: 0 },
+                  data: {
+                    name: template.name,
+                    templateId: template._id as Id<"nodeTemplates">,
+                    color: "default",
+                    data: defaultData,
+                  },
+                  width: defaultWidth,
+                  height: defaultHeight,
+                },
+                position: newNodePosition,
+                skipNodeData: true,
+              });
+              closeMenu();
+            }}
+          >
+            {template.name}
+          </DropdownMenuItem>
+        );
+      })} */}
     </>
   );
 }

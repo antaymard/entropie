@@ -26,7 +26,7 @@ function RouteComponent() {
 
     // Si authentifié, vérifier s'il existe un canvas
     if (!isLoading && isAuthenticated) {
-      convex.query(api.canvases.getLastModifiedCanvas, {}).then((result) => {
+      convex.query(api.canvases.getLastModified, {}).then((result) => {
         if (result?.success && result.canvas) {
           navigate({
             to: "/canvas/$canvasId",

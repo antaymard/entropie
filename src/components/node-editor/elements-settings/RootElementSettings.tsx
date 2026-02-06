@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { get } from "lodash";
+import get from "lodash/get";
 import { BsArrowDownSquare, BsArrowRightSquare } from "react-icons/bs";
 import { LuAlignVerticalSpaceAround } from "react-icons/lu";
 import { MdFlashAuto } from "react-icons/md";
@@ -10,50 +10,57 @@ import {
 } from "react-icons/tb";
 import { RiMergeCellsVertical, RiMergeCellsHorizontal } from "react-icons/ri";
 import { AiOutlineColumnWidth, AiOutlineColumnHeight } from "react-icons/ai";
-import { StyleClickButton, StyleValueInput } from "./SettingsButtons";
+import { StyleClickButton, StyleValueInput, ValueInput } from "./SettingsButtons";
 import Toggle from "@/components/form-ui/Toggle";
 
-export default function DivElementSettings({
+export default function RootElementSettings({
   elementPath,
 }: {
   elementPath: string;
 }) {
   const { values } = useFormikContext<any>();
+  const visualType = elementPath.includes("visuals.window") ? "window" : "node";
 
   return (
     <div className="divide-y divide-gray-300">
-      <div className="px-5 py-4 space-y-5">
-        <h3 className="font-semibold">Apparence du bloc</h3>
-        <Toggle
-          label="Afficher le nom du bloc"
-          name={`${elementPath}.data.headerless`}
-        />
-        <Toggle
-          label="Désactiver l'ouverture de la fenêtre au double-clic"
-          name={`${elementPath}.data.disableDoubleClickToOpenWindow`}
-        />
-      </div>
-      <div className="px-5 py-4 space-y-5">
-        <h3 className="font-semibold">Dimensions minimales du bloc</h3>
-        <div className="grid grid-cols-2 gap-2">
-          <StyleValueInput
-            elementPath={elementPath}
-            styleName="minWidth"
-            label="Largeur"
-            icon={<AiOutlineColumnWidth />}
-          />
-          <StyleValueInput
-            elementPath={elementPath}
-            styleName="minHeight"
-            label="Hauteur"
-            icon={<AiOutlineColumnHeight />}
-          />
-        </div>
-        <Toggle
-          label="Redimensionnable"
-          name={`${elementPath}.data.resizable`}
-        />
-      </div>
+      {visualType === "node" && (
+        <>
+          <div className="px-5 py-4 space-y-5">
+            <h3 className="font-semibold">Apparence du bloc</h3>
+            <Toggle
+              label="Afficher le nom du bloc"
+              name={`${elementPath}.data.headerless`}
+            />
+            <Toggle
+              label="Désactiver l'ouverture de la fenêtre au double-clic"
+              name={`${elementPath}.data.disableDoubleClickToOpenWindow`}
+            />
+          </div>
+          <div className="px-5 py-4 space-y-5">
+            <h3 className="font-semibold">Dimensions par défaut du bloc</h3>
+            <div className="grid grid-cols-2 gap-2">
+              <ValueInput
+                elementPath={elementPath}
+                propertyName="defaultWidth"
+                label="Largeur"
+                icon={<AiOutlineColumnWidth />}
+                targetType="data"
+              />
+              <ValueInput
+                elementPath={elementPath}
+                propertyName="defaultHeight"
+                label="Hauteur"
+                icon={<AiOutlineColumnHeight />}
+                targetType="data"
+              />
+            </div>
+            <Toggle
+              label="Redimensionnable"
+              name={`${elementPath}.data.resizable`}
+            />
+          </div>
+        </>
+      )}
       <div className="px-5 py-4 space-y-5">
         <h3 className="font-semibold">Disposition</h3>
         <div className="grid grid-cols-2 gap-2">

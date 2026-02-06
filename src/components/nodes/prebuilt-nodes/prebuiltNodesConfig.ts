@@ -1,169 +1,197 @@
-import type { CanvasNode, NodeConfig } from "../../../types/node.types";
-import LinkNode from "./LinkNode";
-import FloatingTextNode from "./FloatingTextNode";
-import ImageNode from "./ImageNode";
-import FileNode from "./FileNode";
-import DocumentNode from "./DocumentNode";
-import DocumentWindow from "@/components/windows/prebuilt/DocumentWindow";
-import ImageWindow from "@/components/windows/prebuilt/ImageWindow";
-import FileWindow from "@/components/windows/prebuilt/FileWindow";
+import type {
+  FloatingTextCanvasNodeData,
+  XyNodeData,
+} from "@/types/canvasNodeData.types";
+import type { Node } from "@xyflow/react";
 
 // Icons
-import {
-  RiTextBlock,
-  RiImageLine,
-  RiLink,
-  RiAttachment2,
-  RiFileList3Line,
-} from "react-icons/ri";
-import type { Value } from "platejs";
+import { TbFile, TbAbc, TbPhoto, TbLink, TbTag, TbApi } from "react-icons/tb";
 
-const defaultValues: CanvasNode = {
-  id: "",
-  name: "",
-  type: "default",
-  position: { x: 0, y: 0 },
-  width: 150,
-  height: 100,
-  hidden: false,
-  zIndex: 0,
-  locked: false,
-  color: "default",
-  data: {},
-}; // On omet position, type, id, templateId
+// Node Components
+import DocumentNode from "./DocumentNode";
+import FloatingTextNode from "./FloatingTextNode";
+import ImageNode from "./ImageNode";
+import LinkNode from "./LinkNode";
+import ValueNode from "./ValueNode";
+import FetchNode from "./FetchNode";
+import z from "zod";
 
-const prebuiltNodesConfig = [
+type PrebuiltNodeConfig = {
+  nodeLabel: string;
+  nodeIcon: React.ComponentType;
+  nodeComponent: React.ComponentType<any>;
+  skipNodeDataCreation?: boolean;
+  node: Node;
+  nodeDataValuesSchema?: object | null;
+  canHaveAutomation?: boolean;
+};
+
+const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
   {
     nodeLabel: "Texte flottant",
-    nodeIcon: RiTextBlock,
-    type: "floatingText",
+    nodeIcon: TbAbc,
     nodeComponent: FloatingTextNode,
-    node: {
-      minWidth: 100,
-      minHeight: 28,
-    },
-    disableDoubleClickToOpenWindow: true,
-    canBeTransparent: true,
+    skipNodeDataCreation: true,
 
-    initialNodeValues: {
-      ...defaultValues,
-      name: "Bloc de texte",
+    node: {
+      id: "",
       type: "floatingText",
-      color: "transparent",
-      headerless: true,
       height: 28,
       width: 150,
+      position: { x: 0, y: 0 },
       data: {
+        // Pas de nodeDataId ici, car les données
+        // restent dans canvas.node.data
+        color: "transparent",
         // Actual data
         text: "Texte flottant",
         level: "p",
-      },
+      } satisfies Omit<XyNodeData<FloatingTextCanvasNodeData>, "nodeDataId">,
+    } as Node,
+
+    nodeDataValuesSchema: null,
+  },
+  {
+    nodeLabel: "Document",
+    nodeIcon: TbFile,
+    nodeComponent: DocumentNode,
+    canHaveAutomation: true,
+
+    node: {
+      id: "",
+      type: "document",
+      height: 320,
+      width: 320,
+      position: { x: 0, y: 0 },
+      data: {
+        color: "default",
+        // Actual data
+      } satisfies Omit<XyNodeData, "nodeDataId">,
+    } as Node,
+
+    nodeDataValuesSchema: {
+      doc: z.array(z.object()),
     },
   },
   {
     nodeLabel: "Image",
-    nodeIcon: RiImageLine,
-    type: "image",
+    nodeIcon: TbPhoto,
     nodeComponent: ImageNode,
-    windowComponent: ImageWindow,
+    canHaveAutomation: true,
+
     node: {
-      minWidth: 100,
-      minHeight: 100,
-    },
-    canSwitchHeaderless: true,
-    initialNodeValues: {
-      ...defaultValues,
-      name: "Bloc image",
+      id: "",
       type: "image",
+      height: 320,
+      width: 320,
+      position: { x: 0, y: 0 },
       data: {
+        color: "default",
         // Actual data
-        url: "",
-      },
-      height: 200,
-      width: 250,
+      } satisfies Omit<XyNodeData, "nodeDataId">,
+    } as Node,
+
+    nodeDataValuesSchema: {
+      images: z.array(
+        z.object({
+          url: z.string(),
+        }),
+      ),
     },
   },
   {
-    nodeLabel: "Lien web",
-    nodeIcon: RiLink,
-    type: "link",
+    nodeLabel: "Lien",
+    nodeIcon: TbLink,
     nodeComponent: LinkNode,
+    canHaveAutomation: true,
+
     node: {
-      // minWidth: 150,
-      // minHeight: 150, // notResizable
-    },
-    initialNodeValues: {
-      ...defaultValues,
-      name: "Bloc Lien",
+      id: "",
       type: "link",
+      height: 33,
+      width: 220,
+      position: { x: 0, y: 0 },
       data: {
+        color: "default",
         // Actual data
-        url: "",
-      },
-      height: 40,
-      width: 220,
+      } satisfies Omit<XyNodeData, "nodeDataId">,
+    } as Node,
+
+    nodeDataValuesSchema: {
+      link: z.object({
+        href: z.string(),
+        pageDescription: z.optional(z.string()),
+        pageImage: z.optional(z.string()),
+        pageTitle: z.optional(z.string()),
+        siteName: z.optional(z.string()),
+      }),
     },
   },
   {
-    nodeLabel: "Fichier attaché",
-    nodeIcon: RiAttachment2,
-    type: "file",
-    nodeComponent: FileNode,
-    windowComponent: FileWindow,
+    nodeLabel: "Valeur",
+    nodeIcon: TbTag,
+    nodeComponent: ValueNode,
+    canHaveAutomation: true,
+
     node: {
-      // minWidth: 150,
-      // minHeight: 150, // notResizable
-    },
-    initialNodeValues: {
-      ...defaultValues,
-      name: "Bloc Fichier",
-      type: "file",
-      data: {
-        files: [
-          {
-            url: "",
-            filename: "",
-            mimeType: "",
-            size: 0,
-            uploadedAt: 0,
-            key: "",
-          },
-        ],
-      },
-      height: 40,
+      id: "",
+      type: "value",
+      height: 120,
       width: 220,
+      position: { x: 0, y: 0 },
+      data: {
+        color: "default",
+        // Actual data
+      } satisfies Omit<XyNodeData, "nodeDataId">,
+    } as Node,
+
+    nodeDataValuesSchema: {
+      value: z.object({
+        label: z.optional(z.string()),
+        type: z.string(),
+        unit: z.optional(z.string()),
+        value: z.boolean(),
+      }),
     },
   },
   {
-    nodeLabel: "Document",
-    nodeIcon: RiFileList3Line,
-    type: "document",
-    nodeComponent: DocumentNode,
-    windowComponent: DocumentWindow,
+    nodeLabel: "Fetch",
+    nodeIcon: TbApi,
+    nodeComponent: FetchNode,
+    canHaveAutomation: false,
+
     node: {
-      minWidth: 100,
-      minHeight: 100,
-    },
-    window: {
-      initialWidth: 500,
-      initialHeight: 900,
-    },
-    initialNodeValues: {
-      ...defaultValues,
-      name: "Bloc Document",
-      type: "document",
+      id: "",
+      type: "fetch",
+      height: 120,
+      width: 220,
+      position: { x: 0, y: 0 },
       data: {
-        doc: [
-          {
-            children: [{ text: "" }],
-            type: "p",
-          },
-        ] as Value,
-      },
-      height: 250,
-      width: 200,
+        color: "default",
+        // Actual data
+      } satisfies Omit<XyNodeData, "nodeDataId">,
+    } as Node,
+
+    nodeDataValuesSchema: {
+      fetch: z.object({
+        params: z.object({
+          url: z.string().default(""),
+          method: z.enum(["GET", "POST", "PUT", "DELETE"]).default("GET"),
+          headers: z
+            .array(z.object({ key: z.string(), value: z.string() }))
+            .optional()
+            .default([]),
+          queryParams: z.array(
+            z.object({ key: z.string(), value: z.string() }),
+          ),
+          body: z.optional(z.string()),
+        }),
+        result: z.optional(z.any()),
+        lastFetchedAt: z.optional(z.string()),
+        error: z.optional(z.string()),
+      }),
     },
   },
-] as NodeConfig[];
+];
 
 export default prebuiltNodesConfig;

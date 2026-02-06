@@ -33,7 +33,7 @@ export default function SelectionContextMenu({
   const { deleteElements, updateNode } = useReactFlow();
 
   async function alignSelectedNodes(
-    alignment: "left" | "right" | "top" | "bottom"
+    alignment: "left" | "right" | "top" | "bottom",
   ) {
     if (!Array.isArray(elements)) return;
 
@@ -56,7 +56,7 @@ export default function SelectionContextMenu({
           ...elements.map((node) => {
             const height = node.measured?.height || node.height || 0;
             return node.position.y + height;
-          })
+          }),
         );
         elements.forEach((node) => {
           const height = node.measured?.height || node.height || 0;
@@ -72,7 +72,7 @@ export default function SelectionContextMenu({
           ...elements.map((node) => {
             const width = node.measured?.width || node.width || 0;
             return node.position.x + width;
-          })
+          }),
         );
         elements.forEach((node) => {
           const width = node.measured?.width || node.width || 0;
@@ -102,19 +102,19 @@ export default function SelectionContextMenu({
     switch (axis) {
       case "width":
         targetValue = Math.max(
-          ...elements.map((node) => node.measured?.width || node.width || 0)
+          ...elements.map((node) => node.measured?.width || node.width || 0),
         );
         break;
       case "height":
         targetValue = Math.max(
-          ...elements.map((node) => node.measured?.height || node.height || 0)
+          ...elements.map((node) => node.measured?.height || node.height || 0),
         );
         break;
     }
     elements.forEach((node) => {
       updateNode(
         node.id,
-        axis === "width" ? { width: targetValue } : { height: targetValue }
+        axis === "width" ? { width: targetValue } : { height: targetValue },
       );
     });
   }
@@ -162,7 +162,7 @@ export default function SelectionContextMenu({
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
 
-      {/* Alignement */}
+      {/* Alignement
       <DropdownMenuSub>
         <DropdownMenuSubTrigger>
           <TbKeyframeAlignCenter /> Aligner
@@ -205,7 +205,7 @@ export default function SelectionContextMenu({
             ))}
           </DropdownMenuSubContent>
         </DropdownMenuPortal>
-      </DropdownMenuSub>
+      </DropdownMenuSub> */}
 
       {/* Suppression */}
       <DropdownMenuItem

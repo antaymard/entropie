@@ -1,5 +1,5 @@
 import { useCallback, useMemo, memo } from "react";
-import { get } from "lodash";
+import get from "lodash/get";
 import { useFormikContext } from "formik";
 import { Button } from "@/components/shadcn/button";
 import { Input } from "@/components/shadcn/input";

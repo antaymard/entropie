@@ -9,7 +9,13 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as automation_automationAgent from "../automation/automationAgent.js";
+import type * as automation_helpers from "../automation/helpers.js";
+import type * as automations from "../automations.js";
+import type * as canvasEdges from "../canvasEdges.js";
+import type * as canvasNodes from "../canvasNodes.js";
 import type * as canvases from "../canvases.js";
+import type * as errorsConfig from "../errorsConfig.js";
 import type * as http from "../http.js";
 import type * as ia_agents from "../ia/agents.js";
 import type * as ia_helpers_canvasHelpers from "../ia/helpers/canvasHelpers.js";
@@ -18,20 +24,25 @@ import type * as ia_helpers_nodeFieldsAndTypesHelper from "../ia/helpers/nodeFie
 import type * as ia_helpers_plateToMarkdownHelper from "../ia/helpers/plateToMarkdownHelper.js";
 import type * as ia_nole from "../ia/nole.js";
 import type * as ia_prompts_noleSystemPrompt from "../ia/prompts/noleSystemPrompt.js";
-import type * as ia_tools_createCanvasElementsTool from "../ia/tools/createCanvasElementsTool.js";
 import type * as ia_tools_editCanvasNodesAndEdgesTool from "../ia/tools/editCanvasNodesAndEdgesTool.js";
 import type * as ia_tools_openWebPageTool from "../ia/tools/openWebPageTool.js";
 import type * as ia_tools_readCanvasTool from "../ia/tools/readCanvasTool.js";
 import type * as ia_tools_readNodeConfigsTool from "../ia/tools/readNodeConfigsTool.js";
 import type * as ia_tools_readNodeTemplatesTool from "../ia/tools/readNodeTemplatesTool.js";
 import type * as ia_tools_readPdfTool from "../ia/tools/readPdfTool.js";
+import type * as ia_tools_updateNodeDataValuesTool from "../ia/tools/updateNodeDataValuesTool.js";
 import type * as ia_tools_viewImageTool from "../ia/tools/viewImageTool.js";
 import type * as ia_tools_websearchTool from "../ia/tools/websearchTool.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_r2 from "../lib/r2.js";
 import type * as links from "../links.js";
 import type * as migrations from "../migrations.js";
+import type * as nodeDatas from "../nodeDatas.js";
+import type * as schemas_and_validators_canvasesSchema from "../schemas_and_validators/canvasesSchema.js";
+import type * as schemas_and_validators_nodeDataConfig from "../schemas_and_validators/nodeDataConfig.js";
+import type * as schemas_and_validators_nodeDatasSchema from "../schemas_and_validators/nodeDatasSchema.js";
 import type * as templates from "../templates.js";
+import type * as threads from "../threads.js";
 import type * as uploads from "../uploads.js";
 
 import type {
@@ -42,7 +53,13 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  "automation/automationAgent": typeof automation_automationAgent;
+  "automation/helpers": typeof automation_helpers;
+  automations: typeof automations;
+  canvasEdges: typeof canvasEdges;
+  canvasNodes: typeof canvasNodes;
   canvases: typeof canvases;
+  errorsConfig: typeof errorsConfig;
   http: typeof http;
   "ia/agents": typeof ia_agents;
   "ia/helpers/canvasHelpers": typeof ia_helpers_canvasHelpers;
@@ -51,20 +68,25 @@ declare const fullApi: ApiFromModules<{
   "ia/helpers/plateToMarkdownHelper": typeof ia_helpers_plateToMarkdownHelper;
   "ia/nole": typeof ia_nole;
   "ia/prompts/noleSystemPrompt": typeof ia_prompts_noleSystemPrompt;
-  "ia/tools/createCanvasElementsTool": typeof ia_tools_createCanvasElementsTool;
   "ia/tools/editCanvasNodesAndEdgesTool": typeof ia_tools_editCanvasNodesAndEdgesTool;
   "ia/tools/openWebPageTool": typeof ia_tools_openWebPageTool;
   "ia/tools/readCanvasTool": typeof ia_tools_readCanvasTool;
   "ia/tools/readNodeConfigsTool": typeof ia_tools_readNodeConfigsTool;
   "ia/tools/readNodeTemplatesTool": typeof ia_tools_readNodeTemplatesTool;
   "ia/tools/readPdfTool": typeof ia_tools_readPdfTool;
+  "ia/tools/updateNodeDataValuesTool": typeof ia_tools_updateNodeDataValuesTool;
   "ia/tools/viewImageTool": typeof ia_tools_viewImageTool;
   "ia/tools/websearchTool": typeof ia_tools_websearchTool;
   "lib/auth": typeof lib_auth;
   "lib/r2": typeof lib_r2;
   links: typeof links;
   migrations: typeof migrations;
+  nodeDatas: typeof nodeDatas;
+  "schemas_and_validators/canvasesSchema": typeof schemas_and_validators_canvasesSchema;
+  "schemas_and_validators/nodeDataConfig": typeof schemas_and_validators_nodeDataConfig;
+  "schemas_and_validators/nodeDatasSchema": typeof schemas_and_validators_nodeDatasSchema;
   templates: typeof templates;
+  threads: typeof threads;
   uploads: typeof uploads;
 }>;
 

@@ -1,14 +1,17 @@
+import prebuiltNodesConfig from "@/components/nodes/prebuilt-nodes/prebuiltNodesConfig";
 import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/shadcn/dropdown-menu";
+import { useCreateNode } from "@/hooks/useCreateNode";
 import type { Node } from "@xyflow/react";
 import { useReactFlow } from "@xyflow/react";
 
 // Icons
 import { BiSolidDuplicate } from "react-icons/bi";
 import { HiOutlineTrash } from "react-icons/hi";
+import { TbCopyPlus, TbCopyPlusFilled } from "react-icons/tb";
 
 export default function NodeContextMenu({
   closeMenu,
@@ -19,30 +22,44 @@ export default function NodeContextMenu({
   position: { x: number; y: number };
   xyNode: Node;
 }) {
-  const { setNodes, addNodes, deleteElements } = useReactFlow();
+  const { deleteElements } = useReactFlow();
+  const { createNode } = useCreateNode();
 
   const nodeOptions = [
     {
       label: "Dupliquer",
-      icon: BiSolidDuplicate,
+      icon: TbCopyPlus,
       onClick: () => {
         const nodeToDuplicate = xyNode;
         if (nodeToDuplicate) {
-          // Déselectionner le node original dans le state React Flow
-          setNodes((nodes) =>
-            nodes.map((n) =>
-              n.id === xyNode.id ? { ...n, selected: false } : n
-            )
+          const nodeConfig = prebuiltNodesConfig.find(
+            (config) => config.node.type === nodeToDuplicate.type,
           );
 
-          // Ajouter le nouveau node dans le state Zustand (DB)
-          addNodes({
-            ...nodeToDuplicate,
-            id: `node-${Date.now()}`,
+          createNode({
+            node: nodeToDuplicate,
             position: {
-              x: nodeToDuplicate.position.x + 20,
-              y: nodeToDuplicate.position.y + 20,
+              x: nodeToDuplicate.position.x + 50,
+              y: nodeToDuplicate.position.y + 50,
             },
+            skipNodeDataCreation: nodeConfig?.skipNodeDataCreation || false,
+          });
+        }
+      },
+    },
+    {
+      label: "Dupliquer Synchro",
+      icon: TbCopyPlusFilled,
+      onClick: () => {
+        const nodeToDuplicate = xyNode;
+        if (nodeToDuplicate) {
+          createNode({
+            node: nodeToDuplicate,
+            position: {
+              x: nodeToDuplicate.position.x + 50,
+              y: nodeToDuplicate.position.y + 50,
+            },
+            skipNodeDataCreation: true,
           });
         }
       },

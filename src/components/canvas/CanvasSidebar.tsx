@@ -7,19 +7,16 @@ import {
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
 } from "@/components/shadcn/sidebar";
 import { Button } from "@/components/shadcn/button";
 import { api } from "@/../convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import type { Id } from "@/../convex/_generated/dataModel";
+import useRichQuery from "@/components/utils/useRichQuery";
+import ErrorDisplay from "@/components/ui/ErrorDisplay";
 import { Link } from "@tanstack/react-router";
 import { Dialog, DialogTrigger } from "@/components/shadcn/dialog";
 import CanvasCreationModal from "./CanvasCreationModal";
-import { useCanvasStore } from "@/stores/canvasStore";
-import { useShallow } from "zustand/shallow";
-import { AiOutlinePlusCircle } from "react-icons/ai";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,15 +24,36 @@ import {
   DropdownMenuTrigger,
 } from "@/components/shadcn/dropdown-menu";
 import { HiDotsVertical } from "react-icons/hi";
+import type { Canvas } from "@/types";
+import { TbPlus } from "react-icons/tb";
+import { cn } from "@/lib/utils";
 
 export default function CanvasSidebar({
   children,
+  canvasId,
 }: {
   children: React.ReactNode;
+  canvasId: Id<"canvases">;
 }) {
-  const canvas = useCanvasStore(useShallow((state) => state.canvas));
   const deleteCanvas = useMutation(api.canvases.deleteCanvas);
   const userCanvases = useQuery(api.canvases.listUserCanvases);
+
+  // Fetch canvas
+  const {
+    isError: isCanvasError,
+    data: canvas,
+    error: canvasError,
+  } = useRichQuery(api.canvases.readCanvas, {
+    canvasId,
+  });
+
+  if (isCanvasError && canvasError) {
+    return <ErrorDisplay error={canvasError} />;
+  }
+
+  if (!canvas) {
+    return <div>Loading canvas...</div>;
+  }
 
   const handleDeleteCanvas = async (canvasId: Id<"canvases">) => {
     if (confirm("Supprimer cet espace ?")) {
@@ -53,17 +71,20 @@ export default function CanvasSidebar({
     return (
       <SidebarMenu>
         {userCanvases.map((c) => (
-          <SidebarMenuItem key={c._id}>
-            <div className="flex items-center justify-between w-full group">
-              <SidebarMenuButton asChild isActive={c._id === canvas?._id}>
-                <Link
-                  to="/canvas/$canvasId"
-                  params={{ canvasId: c._id }}
-                  className=""
-                >
-                  {c.name}
-                </Link>
-              </SidebarMenuButton>
+          <div key={c._id}>
+            <div className="flex items-center justify-between w-full group px-2">
+              <Link
+                to="/canvas/$canvasId"
+                params={{ canvasId: c._id }}
+                className={cn(
+                  "text-base! font-medium px-2 py-1 flex-1",
+                  c._id === canvas._id
+                    ? "bg-slate-200 rounded-md"
+                    : "hover:bg-slate-100",
+                )}
+              >
+                {c.name}
+              </Link>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -85,31 +106,33 @@ export default function CanvasSidebar({
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-          </SidebarMenuItem>
+          </div>
         ))}
       </SidebarMenu>
     );
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <Sidebar variant="sidebar">
-        <SidebarHeader className="flex flex-row items-center justify-between">
+        <SidebarHeader className="flex flex-row items-center justify-between p-4">
           <div className="flex items-center gap-2">
-            <img src="/favicon.svg" alt="Logo" className="h-5" />
-            <span className="font-semibold">Espaces</span>
+            <span className="font-semibold text-lg">{canvas.name}</span>
           </div>
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="ghost" size="icon" className="h-6 w-6">
-                <AiOutlinePlusCircle size={16} />
+                <TbPlus size={16} />
               </Button>
             </DialogTrigger>
             <CanvasCreationModal />
           </Dialog>
         </SidebarHeader>
-        <SidebarContent>{renderUserCanvases()}</SidebarContent>
-        <SidebarFooter />
+        <SidebarContent className="py-4">
+          <h3 className="px-4">Espaces</h3>
+          {renderUserCanvases()}
+        </SidebarContent>
+        <SidebarFooter></SidebarFooter>
       </Sidebar>
 
       <SidebarInset className="flex-1">

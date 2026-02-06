@@ -5,7 +5,15 @@ import type {
 import type { Node } from "@xyflow/react";
 
 // Icons
-import { TbFile, TbAbc, TbPhoto, TbLink, TbTag, TbApi } from "react-icons/tb";
+import {
+  TbFileTypePdf,
+  TbAbc,
+  TbPhoto,
+  TbLink,
+  TbTag,
+  TbApi,
+  TbNews,
+} from "react-icons/tb";
 
 // Node Components
 import DocumentNode from "./DocumentNode";
@@ -15,6 +23,7 @@ import LinkNode from "./LinkNode";
 import ValueNode from "./ValueNode";
 import FetchNode from "./FetchNode";
 import z from "zod";
+import FileNode from "./FileNode";
 
 type PrebuiltNodeConfig = {
   nodeLabel: string;
@@ -53,7 +62,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
   },
   {
     nodeLabel: "Document",
-    nodeIcon: TbFile,
+    nodeIcon: TbNews,
     nodeComponent: DocumentNode,
     canHaveAutomation: true,
 
@@ -125,6 +134,37 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
         pageTitle: z.optional(z.string()),
         siteName: z.optional(z.string()),
       }),
+    },
+  },
+  {
+    nodeLabel: "Fichier",
+    nodeIcon: TbFileTypePdf,
+    nodeComponent: FileNode,
+    canHaveAutomation: true,
+
+    node: {
+      id: "",
+      type: "file",
+      height: 33,
+      width: 220,
+      position: { x: 0, y: 0 },
+      data: {
+        color: "default",
+        // Actual data
+      } satisfies Omit<XyNodeData, "nodeDataId">,
+    } as Node,
+
+    nodeDataValuesSchema: {
+      files: z.array(
+        z.object({
+          url: z.string(),
+          filename: z.string(),
+          mimeType: z.string(),
+          size: z.number(),
+          uploadedAt: z.number(),
+          key: z.string(),
+        }),
+      ),
     },
   },
   {

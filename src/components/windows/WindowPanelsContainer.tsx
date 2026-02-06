@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { useWindowsStore } from "@/stores/windowsStore";
 import DocumentWindow from "./prebuilt/DocumentWindow";
+import PdfWindow from "./prebuilt/PdfWindow";
 import { useReactFlow, type Node } from "@xyflow/react";
 
 export default function WindowPanelsContainer() {
@@ -17,13 +18,15 @@ export default function WindowPanelsContainer() {
     switch (node.type) {
       case "document":
         return <DocumentWindow xyNode={node} />;
+      case "file":
+        return <PdfWindow xyNode={node} />;
     }
   }
 
   return (
     <div
       className={cn(
-        "fixed top-0 left-0 bottom-0 md:p-3 w-full md:max-w-[650px] z-10"
+        "fixed top-0 left-0 bottom-0 md:p-3 w-full md:max-w-[650px] z-10",
       )}
     >
       {renderWindowPanel()}

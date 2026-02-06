@@ -11,7 +11,7 @@ import { Button } from "@/components/shadcn/button";
 import { Input } from "@/components/shadcn/input";
 import { Switch } from "@/components/shadcn/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/shadcn/toggle-group";
-import { TbTag, TbCheck, TbX } from "react-icons/tb";
+import { TbTag, TbCheck, TbX, TbPencil } from "react-icons/tb";
 import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
 import { useNodeDataValues } from "@/hooks/useNodeData";
 import type { Id } from "@/../convex/_generated/dataModel";
@@ -131,7 +131,7 @@ function ValueNode(xyNode: Node) {
         <Popover open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
           <PopoverTrigger asChild>
             <Button variant="outline" size="icon" title="Éditer la valeur">
-              <TbTag />
+              <TbPencil />
             </Button>
           </PopoverTrigger>
           <PopoverContent>

@@ -8,7 +8,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/shadcn/popover";
-import { TbApi } from "react-icons/tb";
+import { TbPencil } from "react-icons/tb";
 import { Button } from "@/components/shadcn/button";
 import { useState } from "react";
 
@@ -25,7 +25,7 @@ export default function FetchNode(xyNode: Node) {
         <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
           <PopoverTrigger asChild>
             <Button variant="outline" size="icon" title="Editer le lien">
-              <TbApi />
+              <TbPencil />
             </Button>
           </PopoverTrigger>
           <PopoverContent>

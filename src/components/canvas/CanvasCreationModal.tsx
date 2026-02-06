@@ -31,10 +31,10 @@ export default function CanvasCreationModal() {
       onSubmit={async (values) => {
         try {
           console.log("omf");
-          const { newCanvasId, success } = await createCanvas({
+          const newCanvasId = await createCanvas({
             name: values.name,
           });
-          if (success) {
+          if (newCanvasId) {
             toast.success(`Espace "${values.name}" créé avec succès !`);
             navigate({
               to: `/canvas/${newCanvasId}`,

@@ -49,7 +49,11 @@ export function useCanvasNodes(
   // Sync convex -> reactflow nodes, en préservant les nodes en cours
   // de drag/resize et la sélection
   useEffect(() => {
-    if (canvasNodes?.length) {
+    if (canvasNodes !== undefined) {
+      if (canvasNodes.length === 0) {
+        setNodes([]);
+        return;
+      }
       console.log("Canvas nodes updated, syncing...");
       setNodes((currentNodes: Node[]) => {
         const newNodes = fromCanvasNodesToXyNodes(canvasNodes);

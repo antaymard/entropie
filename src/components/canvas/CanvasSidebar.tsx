@@ -77,7 +77,7 @@ export default function CanvasSidebar({
                 to="/canvas/$canvasId"
                 params={{ canvasId: c._id }}
                 className={cn(
-                  "text-base! font-medium px-2 py-1 flex-1",
+                  "text-base! font-medium px-2 py-1 flex-1 min-w-0 truncate",
                   c._id === canvas._id
                     ? "bg-slate-200 rounded-md"
                     : "hover:bg-slate-100",
@@ -116,8 +116,10 @@ export default function CanvasSidebar({
     <SidebarProvider defaultOpen={false}>
       <Sidebar variant="sidebar">
         <SidebarHeader className="flex flex-row items-center justify-between p-4">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-lg">{canvas.name}</span>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <span className="font-semibold text-lg truncate">
+              {canvas.name}
+            </span>
           </div>
           <Dialog>
             <DialogTrigger asChild>

@@ -19,7 +19,11 @@ export function useCanvasEdges(canvasId: Id<"canvases">, canvasEdges?: Edge[]) {
 
   // Sync convex -> reactflow edges
   useEffect(() => {
-    if (canvasEdges?.length) {
+    if (canvasEdges !== undefined) {
+      if (canvasEdges.length === 0) {
+        setEdges([]);
+        return;
+      }
       console.log("Canvas edges updated, syncing...");
       setEdges(canvasEdges);
     }

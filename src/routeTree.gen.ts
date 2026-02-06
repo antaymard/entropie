@@ -54,7 +54,7 @@ export interface FileRoutesByFullPath {
   '/signin': typeof SigninRoute
   '/canvas/$canvasId': typeof CanvasCanvasIdRoute
   '/settings/templates/$templateId': typeof SettingsTemplatesTemplateIdRoute
-  '/settings/templates': typeof SettingsTemplatesIndexRoute
+  '/settings/templates/': typeof SettingsTemplatesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -81,7 +81,7 @@ export interface FileRouteTypes {
     | '/signin'
     | '/canvas/$canvasId'
     | '/settings/templates/$templateId'
-    | '/settings/templates'
+    | '/settings/templates/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -140,7 +140,7 @@ declare module '@tanstack/react-router' {
     '/settings/templates/': {
       id: '/settings/templates/'
       path: '/templates'
-      fullPath: '/settings/templates'
+      fullPath: '/settings/templates/'
       preLoaderRoute: typeof SettingsTemplatesIndexRouteImport
       parentRoute: typeof SettingsRouteRoute
     }

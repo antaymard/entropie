@@ -38,6 +38,7 @@ import { useCanvasPasteHandler } from "@/hooks/useCanvasPasteHandler";
 import WindowPanelsContainer from "@/components/windows/WindowPanelsContainer";
 import "@xyflow/react/dist/style.css";
 import { useIsMobile } from "@/hooks/use-mobile";
+import CanvasSidebar from "@/components/canvas/CanvasSidebar";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -47,11 +48,15 @@ function RouteComponent() {
   const { canvasId } = Route.useParams() as { canvasId: Id<"canvases"> };
 
   return (
-    <ReactFlowProvider>
-      <div className={cn("h-screen w-screen bg-slate-50")}>
-        <CanvasContent canvasId={canvasId} />
-      </div>
-    </ReactFlowProvider>
+    <div className="bg-white">
+      <ReactFlowProvider>
+        <CanvasSidebar>
+          <div className={cn("h-screen w-full bg-slate-50")}>
+            <CanvasContent canvasId={canvasId} />
+          </div>
+        </CanvasSidebar>
+      </ReactFlowProvider>
+    </div>
   );
 }
 
@@ -290,7 +295,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
 
   return (
     <div className="flex-1 w-full h-full">
-    <WindowPanelsContainer/>
+      <WindowPanelsContainer />
       <ReactFlow
         panOnScroll
         panOnDrag={isMobile ? true : [1]}

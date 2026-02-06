@@ -1,25 +1,14 @@
-import { memo, useState, useCallback } from "react";
+import { memo } from "react";
 import { type Node } from "@xyflow/react";
-import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
 import { useNodeDataValues } from "@/hooks/useNodeData";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { normalizeNodeId, type Value } from "platejs";
 import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
 import NodeFrame from "../NodeFrame";
 import DocumentStaticField from "@/components/fields/document-fields/DocumentStaticField";
-import DocumentEditorField from "@/components/fields/document-fields/DocumentEditorField";
-import { EditorKit } from "@/components/plate/editor-kit";
 import { Button } from "@/components/shadcn/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/shadcn/dialog";
 import { TbMaximize } from "react-icons/tb";
 import { useWindowsStore } from "@/stores/windowsStore";
-import type { nodeTypes } from "@/types/nodeData.types";
 
 const defaultValue: Value = normalizeNodeId([
   {
@@ -32,7 +21,6 @@ const DocumentNode = memo(
   function DocumentNode(xyNode: Node) {
     const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
     const values = useNodeDataValues(nodeDataId);
-    const { updateNodeDataValues } = useUpdateNodeDataValues();
 
     const openWindow = useWindowsStore((s) => s.openWindow);
 

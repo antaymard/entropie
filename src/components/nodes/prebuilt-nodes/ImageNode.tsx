@@ -3,7 +3,7 @@ import type { Node } from "@xyflow/react";
 import NodeFrame from "../NodeFrame";
 import { useNodeDataValues } from "@/hooks/useNodeData";
 import type { Id } from "@/../convex/_generated/dataModel";
-import { TbPhoto, TbPhotoEdit } from "react-icons/tb";
+import { TbPencil, TbPhoto } from "react-icons/tb";
 import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
 import { Button } from "@/components/shadcn/button";
 import {
@@ -49,7 +49,7 @@ function ImageNode(xyNode: Node) {
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" size="icon" title="Télécharger une image">
-              <TbPhotoEdit />
+              <TbPencil />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="">

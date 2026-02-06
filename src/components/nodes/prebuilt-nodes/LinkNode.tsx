@@ -9,7 +9,7 @@ import {
 } from "@/components/shadcn/popover";
 import { Button } from "@/components/shadcn/button";
 import { Input } from "@/components/shadcn/input";
-import { TbLink, TbExternalLink } from "react-icons/tb";
+import { TbLink, TbExternalLink, TbPencil } from "react-icons/tb";
 import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
 import { useNodeDataValues } from "@/hooks/useNodeData";
 import type { Id } from "@/../convex/_generated/dataModel";
@@ -110,7 +110,7 @@ function LinkNode(xyNode: Node) {
         <Popover open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
           <PopoverTrigger asChild>
             <Button variant="outline" size="icon" title="Editer le lien">
-              <TbLink />
+              <TbPencil />
             </Button>
           </PopoverTrigger>
           <PopoverContent>

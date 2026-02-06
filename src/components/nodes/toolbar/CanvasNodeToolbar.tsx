@@ -16,7 +16,7 @@ function CanvasNodeToolbar({
   children?: React.ReactNode;
   xyNode: Node;
   className?: string;
-  asSimpleDiv: boolean
+  asSimpleDiv?: boolean;
 }) {
   const selectedNodesCount = useStore(selectedNodesCountSelector);
 
@@ -30,16 +30,17 @@ function CanvasNodeToolbar({
     (config) => config.node.type === xyNode.type,
   );
 
-  const content = <>{children}
+  const content = (
+    <>
+      {children}
       {nodeConfig?.canHaveAutomation && (
         <AutomationSettingsButton xyNode={xyNode} />
       )}
       <ColorSelector xyNode={xyNode} />
     </>
+  );
 
-   if (asSimpleDiv) return <div className="flex gap-2">
-      {content}
-   </div> 
+  if (asSimpleDiv) return <div className="flex gap-2">{content}</div>;
 
   return (
     <NodeToolbar

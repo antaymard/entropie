@@ -11,30 +11,29 @@ function DocumentWindow({ xyNode }: { xyNode: Node }) {
   // Récupère uniquement la data du node, re-render uniquement quand elle change
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas">;
   const nodeDataValues = useNodeDataValues(nodeDataId);
-  const {updateNodeDataValues} = useUpdateNodeDataValues();
+  const { updateNodeDataValues } = useUpdateNodeDataValues();
 
-  const handleSave = useCallback((newValue: any) => {
+  const handleSave = useCallback(
+    (newValue: any) => {
       if (nodeDataId) {
-        console.log(newValue)
+        console.log(newValue);
         updateNodeDataValues({
           nodeDataId,
-          values: newValue
+          values: newValue,
         });
       }
-    }, [nodeDataId, updateNodeDataValues]);
+    },
+    [nodeDataId, updateNodeDataValues],
+  );
 
   if (!nodeDataValues) return null;
 
-  const initialValue: Value = (nodeDataValues.doc as Value) || {
-    children: [{ text: "" }],
-    type: "p",
-  };
-
+  const initialValue: Value = (nodeDataValues.doc as Value) || [];
 
   return (
     <WindowPanelFrame xyNode={xyNode} title="Document">
       <DocumentEditorField
-      className="bg-white"
+        className="bg-white"
         editorId={xyNode.id}
         value={{ doc: initialValue }}
         onChange={(newValue) => handleSave(newValue)}

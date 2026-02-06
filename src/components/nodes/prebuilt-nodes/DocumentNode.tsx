@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/shadcn/dialog";
-import { TbPencil } from "react-icons/tb";
+import { TbMaximize } from "react-icons/tb";
 import { useWindowsStore } from "@/stores/windowsStore";
 import type { nodeTypes } from "@/types/nodeData.types";
 
@@ -34,7 +34,7 @@ const DocumentNode = memo(
     const values = useNodeDataValues(nodeDataId);
     const { updateNodeDataValues } = useUpdateNodeDataValues();
 
-    const openWindow = useWindowsStore(s => s.openWindow);
+    const openWindow = useWindowsStore((s) => s.openWindow);
 
     // Récupère la valeur depuis le store NodeData
     const currentValue: Value =
@@ -43,10 +43,12 @@ const DocumentNode = memo(
     return (
       <>
         <CanvasNodeToolbar xyNode={xyNode}>
-          <Button size="icon" variant="outline" onClick={() => openWindow(
-            xyNode.id
-          ) }>
-            <TbPencil />
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={() => openWindow(xyNode.id)}
+          >
+            <TbMaximize />
           </Button>
         </CanvasNodeToolbar>
         <NodeFrame xyNode={xyNode}>

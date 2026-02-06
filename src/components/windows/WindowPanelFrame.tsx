@@ -25,11 +25,11 @@ export default function WindowPanelFrame({
       className={cn(
         "h-full w-full md:rounded-lg border shadow-2xl",
         nodeColor.nodeBg,
-        nodeColor.nodeBorder
+        nodeColor.nodeBorder,
       )}
     >
-      <div className={cn("bg-white", "h-full rounded-[8px]")}>
-        <div className="p-3 flex items-center justify-between">
+      <div className={cn("bg-white", "h-full rounded-[8px] p-3 space-y-3")}>
+        <div className="flex items-center justify-between">
           <CanvasNodeToolbar xyNode={xyNode} asSimpleDiv />
           <Button variant="outline" size="icon" onClick={closeAllWindows}>
             <TbX />

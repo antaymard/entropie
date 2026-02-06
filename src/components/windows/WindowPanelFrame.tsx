@@ -28,14 +28,19 @@ export default function WindowPanelFrame({
         nodeColor.nodeBorder,
       )}
     >
-      <div className={cn("bg-white", "h-full rounded-[8px] p-3 space-y-3")}>
-        <div className="flex items-center justify-between">
+      <div
+        className={cn(
+          "bg-white",
+          "h-full rounded-[8px] p-3 flex flex-col gap-3",
+        )}
+      >
+        <div className="flex items-center justify-between shrink-0">
           <CanvasNodeToolbar xyNode={xyNode} asSimpleDiv />
           <Button variant="outline" size="icon" onClick={closeAllWindows}>
             <TbX />
           </Button>
         </div>
-        <div className={cn("h-full")}>{children}</div>
+        <div className={cn("flex-1 overflow-auto")}>{children}</div>
       </div>
     </div>
   );

@@ -7,7 +7,7 @@ import { useNodeDataValues } from "@/hooks/useNodeData";
 import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
 import type { Id } from "@/../convex/_generated/dataModel";
 
-function DocumentWindow({ xyNode }: { xyNode: Node }) {
+export default function DocumentWindow({ xyNode }: { xyNode: Node }) {
   // Récupère uniquement la data du node, re-render uniquement quand elle change
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas">;
   const nodeDataValues = useNodeDataValues(nodeDataId);
@@ -33,7 +33,7 @@ function DocumentWindow({ xyNode }: { xyNode: Node }) {
   return (
     <WindowPanelFrame xyNode={xyNode} title="Document">
       <DocumentEditorField
-        className="bg-white"
+        // className="bg-white"
         editorId={xyNode.id}
         value={{ doc: initialValue }}
         onChange={(newValue) => handleSave(newValue)}
@@ -42,4 +42,3 @@ function DocumentWindow({ xyNode }: { xyNode: Node }) {
   );
 }
 
-export default memo(DocumentWindow);

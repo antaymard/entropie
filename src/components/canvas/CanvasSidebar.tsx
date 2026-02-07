@@ -77,10 +77,8 @@ export default function CanvasSidebar({
                 to="/canvas/$canvasId"
                 params={{ canvasId: c._id }}
                 className={cn(
-                  "text-base! font-medium px-2 py-1 flex-1 min-w-0 truncate",
-                  c._id === canvas._id
-                    ? "bg-slate-200 rounded-md"
-                    : "hover:bg-slate-100",
+                  "text-base! font-medium px-2 py-1 flex-1 min-w-0 truncate  rounded-md",
+                  c._id === canvas._id ? "bg-slate-200" : "hover:bg-slate-100",
                 )}
               >
                 {c.name}

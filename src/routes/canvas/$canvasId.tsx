@@ -26,6 +26,7 @@ import CanvasSidebar from "@/components/canvas/CanvasSidebar";
 import { useCanvasNodes } from "@/hooks/useCanvasNodes";
 import { useCanvasEdges } from "@/hooks/useCanvasEdges";
 import type { Canvas } from "@/types";
+import { Spinner } from "@/components/shadcn/spinner";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -115,7 +116,11 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   }
 
   if (!canvas) {
-    return <div>Loading canvas...</div>;
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Spinner className="size-6 text-muted-foreground" />
+      </div>
+    );
   }
 
   return (

@@ -12,8 +12,6 @@ import { Button } from "@/components/shadcn/button";
 import { api } from "@/../convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import type { Id } from "@/../convex/_generated/dataModel";
-import useRichQuery from "@/components/utils/useRichQuery";
-import ErrorDisplay from "@/components/ui/ErrorDisplay";
 import { Link } from "@tanstack/react-router";
 import { Dialog, DialogTrigger } from "@/components/shadcn/dialog";
 import CanvasCreationModal from "./CanvasCreationModal";
@@ -24,7 +22,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/shadcn/dropdown-menu";
 import { HiDotsVertical } from "react-icons/hi";
-import type { Canvas } from "@/types";
 import { TbPlus } from "react-icons/tb";
 import { cn } from "@/lib/utils";
 
@@ -38,22 +35,7 @@ export default function CanvasSidebar({
   const deleteCanvas = useMutation(api.canvases.deleteCanvas);
   const userCanvases = useQuery(api.canvases.listUserCanvases);
 
-  // Fetch canvas
-  const {
-    isError: isCanvasError,
-    data: canvas,
-    error: canvasError,
-  } = useRichQuery(api.canvases.readCanvas, {
-    canvasId,
-  });
-
-  if (isCanvasError && canvasError) {
-    return <ErrorDisplay error={canvasError} />;
-  }
-
-  if (!canvas) {
-    return <div>Loading canvas...</div>;
-  }
+  const currentCanvasName = userCanvases?.find((c) => c._id === canvasId)?.name;
 
   const handleDeleteCanvas = async (canvasId: Id<"canvases">) => {
     if (confirm("Supprimer cet espace ?")) {
@@ -78,7 +60,7 @@ export default function CanvasSidebar({
                 params={{ canvasId: c._id }}
                 className={cn(
                   "text-base! font-medium px-2 py-1 flex-1 min-w-0 truncate  rounded-md",
-                  c._id === canvas._id ? "bg-slate-200" : "hover:bg-slate-100",
+                  c._id === canvasId ? "bg-slate-200" : "hover:bg-slate-100",
                 )}
               >
                 {c.name}
@@ -116,7 +98,7 @@ export default function CanvasSidebar({
         <SidebarHeader className="flex flex-row items-center justify-between p-4">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <span className="font-semibold text-lg truncate">
-              {canvas.name}
+              {currentCanvasName ?? "..."}
             </span>
           </div>
           <Dialog>

@@ -10,6 +10,8 @@ import { api } from "@/../convex/_generated/api";
 import { cn } from "@/lib/utils";
 import useRichQuery from "@/components/utils/useRichQuery";
 import { useNodeDataStore } from "@/stores/nodeDataStore";
+import { useWindowsStore } from "@/stores/windowsStore";
+import { useCanvasStore } from "@/stores/canvasStore";
 import ErrorDisplay from "@/components/ui/ErrorDisplay";
 import ContextMenu from "@/components/canvas/context-menus";
 import { useContextMenu } from "@/hooks/useContextMenu";
@@ -34,7 +36,7 @@ function RouteComponent() {
 
   return (
     <div className="bg-white">
-      <ReactFlowProvider>
+      <ReactFlowProvider key={canvasId}>
         <CanvasSidebar canvasId={canvasId}>
           <div className={cn("h-screen w-full bg-slate-50")}>
             <CanvasContent canvasId={canvasId} />
@@ -47,6 +49,13 @@ function RouteComponent() {
 
 function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   const setNodeDatas = useNodeDataStore((state) => state.setNodeDatas);
+
+  // Cleanup stores on canvas switch
+  useEffect(() => {
+    useWindowsStore.getState().closeAllWindows();
+    useCanvasStore.getState().setCurrentCanvasTool("default");
+    useCanvasStore.getState().setStatus("idle");
+  }, [canvasId]);
 
   // Handle paste events (images, URLs)
   useCanvasPasteHandler();
@@ -94,6 +103,13 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     }
   }, [nodeDatas, setNodeDatas]);
 
+  // Sync document title
+  useEffect(() => {
+    if (canvas?.name) {
+      document.title = canvas.name;
+    }
+  }, [canvas?.name]);
+
   if (isCanvasError && canvasError) {
     return <ErrorDisplay error={canvasError} />;
   }
@@ -101,8 +117,6 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   if (!canvas) {
     return <div>Loading canvas...</div>;
   }
-
-  document.title = `${canvas.name}`;
 
   return (
     <div className="flex-1 w-full h-full">
@@ -128,7 +142,6 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           onEdgesChange={handleEdgeChange}
           onNodesChange={handleNodeChange}
           // edgesReconnectable={true}
-          onConnectStart={console.log}
           onConnect={(params) => {
             handleEdgeChange([
               {
@@ -149,7 +162,6 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
               },
             ]);
           }}
-          onConnectEnd={console.log}
           // onReconnectStart={console.log}
           // onReconnect={console.log}
           // onReconnectEnd={console.log}

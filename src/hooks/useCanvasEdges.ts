@@ -24,7 +24,6 @@ export function useCanvasEdges(canvasId: Id<"canvases">, canvasEdges?: Edge[]) {
         setEdges([]);
         return;
       }
-      console.log("Canvas edges updated, syncing...");
       setEdges(canvasEdges);
     }
   }, [canvasEdges, setEdges]);

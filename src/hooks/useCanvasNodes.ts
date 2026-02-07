@@ -54,12 +54,12 @@ export function useCanvasNodes(
         setNodes([]);
         return;
       }
-      console.log("Canvas nodes updated, syncing...");
       setNodes((currentNodes: Node[]) => {
         const newNodes = fromCanvasNodesToXyNodes(canvasNodes);
+        const currentNodesMap = new Map(currentNodes.map((n) => [n.id, n]));
 
         return newNodes.map((newNode) => {
-          const currentNode = currentNodes.find((n) => n.id === newNode.id);
+          const currentNode = currentNodesMap.get(newNode.id);
 
           // Si le node est en cours de drag ou resize, on garde le currentNode complet
           if (currentNode?.dragging || (currentNode as Node)?.resizing) {

@@ -25,7 +25,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import CanvasSidebar from "@/components/canvas/CanvasSidebar";
 import { useCanvasNodes } from "@/hooks/useCanvasNodes";
 import { useCanvasEdges } from "@/hooks/useCanvasEdges";
-import type { Canvas } from "@/types";
 import { Spinner } from "@/components/shadcn/spinner";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
@@ -125,59 +124,56 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
 
   return (
     <div className="flex-1 w-full h-full">
-        <WindowPanelsContainer />
-        <ReactFlow
-          panOnScroll
-          panOnDrag={isMobile ? true : [1]}
-          defaultViewport={{
-            x: 0,
-            y: 0,
-            zoom: 1,
-          }}
-          selectNodesOnDrag={false}
-          selectionMode={SelectionMode.Partial}
-          selectionOnDrag={!isMobile}
-          nodeTypes={nodeTypes}
-          onPaneContextMenu={onPaneContextMenu}
-          onNodeContextMenu={onNodeContextMenu}
-          onSelectionContextMenu={onSelectionContextMenu}
-          onEdgeContextMenu={onEdgeContextMenu}
-          nodes={nodes}
-          edges={edges}
-          onEdgesChange={handleEdgeChange}
-          onNodesChange={handleNodeChange}
-          // edgesReconnectable={true}
-          onConnect={(params) => {
-            handleEdgeChange([
-              {
-                type: "add" as const,
-                item: {
-                  id: crypto.randomUUID(),
-                  source: params.source,
-                  target: params.target,
-                  sourceHandle: params.sourceHandle ?? undefined,
-                  targetHandle: params.targetHandle ?? undefined,
-                  markerEnd: {
-                    type: MarkerType.Arrow,
-                    width: 30,
-                    height: 30,
-                    strokeWidth: 1,
-                  },
+      <WindowPanelsContainer />
+      <ReactFlow
+        panOnScroll
+        panOnDrag={isMobile ? true : [1]}
+        defaultViewport={{
+          x: 0,
+          y: 0,
+          zoom: 1,
+        }}
+        selectNodesOnDrag={false}
+        selectionMode={SelectionMode.Partial}
+        selectionOnDrag={!isMobile}
+        nodeTypes={nodeTypes}
+        onPaneContextMenu={onPaneContextMenu}
+        onNodeContextMenu={onNodeContextMenu}
+        onSelectionContextMenu={onSelectionContextMenu}
+        onEdgeContextMenu={onEdgeContextMenu}
+        nodes={nodes}
+        edges={edges}
+        onEdgesChange={handleEdgeChange}
+        onNodesChange={handleNodeChange}
+        // edgesReconnectable={true}
+        onConnect={(params) => {
+          handleEdgeChange([
+            {
+              type: "add" as const,
+              item: {
+                id: crypto.randomUUID(),
+                source: params.source,
+                target: params.target,
+                sourceHandle: params.sourceHandle ?? undefined,
+                targetHandle: params.targetHandle ?? undefined,
+                markerEnd: {
+                  type: MarkerType.Arrow,
+                  width: 30,
+                  height: 30,
+                  strokeWidth: 1,
                 },
               },
-            ]);
-          }}
-          // onReconnectStart={console.log}
-          // onReconnect={console.log}
-          // onReconnectEnd={console.log}
-        >
-          {contextMenu.type && (
-            <ContextMenu
-              contextMenu={contextMenu}
-              setContextMenu={setContextMenu}
-            />
-          )}
-        </ReactFlow>
+            },
+          ]);
+        }}
+      >
+        {contextMenu.type && (
+          <ContextMenu
+            contextMenu={contextMenu}
+            setContextMenu={setContextMenu}
+          />
+        )}
+      </ReactFlow>
     </div>
   );
 }

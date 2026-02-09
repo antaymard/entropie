@@ -1,9 +1,12 @@
 import { ConvexError, v } from "convex/values";
 import { internalMutation, internalQuery } from "../_generated/server";
-import nodeDatasSchema from "../schemas_and_validators/nodeDatasSchema";
+import { nodeDatasWithIdValidator } from "../schemas/nodeDatasSchema";
 
 export const updateStatus = internalMutation({
-  args: nodeDatasSchema.pick("_id", "status"),
+  args: {
+    _id: nodeDatasWithIdValidator.fields._id,
+    status: nodeDatasWithIdValidator.fields.status,
+  },
   handler: async (ctx, args) => {
     const existing = await ctx.db.get(args._id);
     if (!existing) throw new ConvexError("NodeData non trouvé");
@@ -16,7 +19,7 @@ export const updateStatus = internalMutation({
 });
 
 export const readNodeData = internalQuery({
-  args: nodeDatasSchema.pick("_id"),
+  args: { _id: nodeDatasWithIdValidator.fields._id },
   handler: async (ctx, args) => {
     const nodeData = await ctx.db.get(args._id);
     if (!nodeData) throw new ConvexError("NodeData non trouvé");

@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { zodToConvex } from "convex-helpers/server/zod";
+import { zodToConvex, zid } from "convex-helpers/server/zod4";
 
 const canvasNodesSchema = z.object({
   id: z.string(), // Pas _id
-  nodeDataId: z.string().optional(),
+  nodeDataId: zid("nodeDatas").optional(),
   type: z.string(),
   position: z.object({
     x: z.number(),
@@ -38,7 +38,7 @@ const edgesSchema = z.object({
 
 const canvasesSchema = z.object({
   // _id et _creationTime sont ajoutés automatiquement par Convex
-  creatorId: z.string(),
+  creatorId: zid("users"),
   name: z.string(),
 
   nodes: z.array(canvasNodesSchema).optional(),
@@ -48,9 +48,9 @@ const canvasesSchema = z.object({
 });
 
 // Validators
-const canvasNodesValidator = canvasNodesSchema;
-const edgesValidator = edgesSchema;
-const canvasesValidator = canvasesSchema;
+const canvasNodesValidator = zodToConvex(canvasNodesSchema);
+const edgesValidator = zodToConvex(edgesSchema);
+const canvasesValidator = zodToConvex(canvasesSchema);
 
 // Types TS
 export type CanvasNode = z.infer<typeof canvasNodesSchema>;

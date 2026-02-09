@@ -1,6 +1,6 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { type FC, memo, useState } from "react";
+import { type FC, memo, useState, useEffect, useRef } from "react";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SyntaxHighlighter } from "./shiki-highlighter";
@@ -55,12 +55,31 @@ const useCopyToClipboard = ({
   copiedDuration?: number;
 } = {}) => {
   const [isCopied, setIsCopied] = useState<boolean>(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
 
   const copyToClipboard = (value: string) => {
     if (!value) return;
+
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+
     navigator.clipboard.writeText(value).then(() => {
       setIsCopied(true);
-      setTimeout(() => setIsCopied(false), copiedDuration);
+      timerRef.current = setTimeout(() => {
+        setIsCopied(false);
+        timerRef.current = null;
+      }, copiedDuration);
     });
   };
 

@@ -16,12 +16,12 @@ export const PillPlugin = createPlatePlugin({
 
         // Sortir du pill sur Entrée
         if (event.key === "Enter") {
-          setTimeout(() => {
+          queueMicrotask(() => {
             if (editor.selection) {
               editor.tf.select(editor.selection);
               editor.tf.removeMarks(plugin.key);
             }
-          }, 0);
+          });
           return;
         }
 

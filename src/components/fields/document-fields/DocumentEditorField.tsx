@@ -1,6 +1,7 @@
 import {
   memo,
   useCallback,
+  useEffect,
   useRef,
   useImperativeHandle,
   forwardRef,
@@ -42,6 +43,15 @@ const DocumentEditorField = forwardRef<
 
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const pendingValueRef = useRef<Value | null>(null);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   const flushChanges = useCallback(() => {
     if (debounceTimerRef.current) {

@@ -15,6 +15,7 @@ import {
 import { CodeLeaf } from "@/components/plate/code-node";
 import { HighlightLeaf } from "@/components/plate/highlight-node";
 import { KbdLeaf } from "@/components/plate/kbd-node";
+import { PillPlugin } from "@/components/plate/pill-kit";
 
 export const BasicMarksKit = [
   BoldPlugin,
@@ -38,4 +39,5 @@ export const BasicMarksKit = [
     shortcuts: { toggle: { keys: "mod+shift+h" } },
   }),
   KbdPlugin.withComponent(KbdLeaf),
+  PillPlugin,
 ];

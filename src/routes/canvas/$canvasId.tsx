@@ -141,6 +141,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
         onNodeContextMenu={onNodeContextMenu}
         onSelectionContextMenu={onSelectionContextMenu}
         onEdgeContextMenu={onEdgeContextMenu}
+        deleteKeyCode={null}
         nodes={nodes}
         edges={edges}
         onEdgesChange={handleEdgeChange}

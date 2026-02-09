@@ -1,4 +1,4 @@
-import type { BaseFieldProps } from "@/types/field.types";
+import type { BaseFieldProps } from "@/types/ui";
 import type { Value } from "platejs";
 import { RiFileList3Line } from "react-icons/ri";
 

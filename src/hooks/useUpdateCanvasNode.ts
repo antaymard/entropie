@@ -4,7 +4,7 @@ import { useParams } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
-import type { colorsEnum } from "@/types/style.types";
+import type { colorsEnum } from "@/types/domain";
 import { toastError } from "@/components/utils/errorUtils";
 
 interface ConvexNodeProps {

@@ -3,7 +3,7 @@ import type {
   LayoutElement,
   NodeTemplate,
   NodeField,
-} from "../../types/node.types";
+} from "@/types/domain";
 import {
   useNodeEditorContext,
   useOptionalNodeEditorContext,

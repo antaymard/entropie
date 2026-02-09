@@ -3,8 +3,8 @@ import { HiOutlineSquaresPlus } from "react-icons/hi2";
 import { PiTextAa } from "react-icons/pi";
 import { RiSeparator } from "react-icons/ri";
 
-import type { NodeTemplate } from "../../types";
-import type { LayoutElement } from "../../types/node.types";
+import type { NodeTemplate } from "@/types/domain";
+import type { LayoutElement } from "@/types/domain";
 import TreeRenderer from "./TreeRenderer";
 import { useNodeEditorContext } from "@/hooks/useNodeEditorContext";
 

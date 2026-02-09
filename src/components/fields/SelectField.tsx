@@ -1,10 +1,10 @@
-import type { BaseFieldProps } from "@/types/field.types";
+import type { BaseFieldProps } from "@/types/ui";
 import { useCallback, useState } from "react";
 import { useNodeSidePanel } from "../nodes/side-panels/NodeSidePanelContext";
 import SidePanelFrame from "../nodes/side-panels/SidePanelFrame";
 import { Button } from "@/components/shadcn/button";
 import colors from "@/components/nodes/nodeColors";
-import type { NodeColors } from "@/types/node.types";
+import type { colorsEnum } from "@/types/domain";
 import { cn } from "@/lib/utils";
 import { HiCheck } from "react-icons/hi2";
 
@@ -126,7 +126,7 @@ function SelectSidePanel({
         <div className="flex flex-col gap-1">
           {choices?.map((choice) => {
             const isSelected = selectedOptions.includes(choice.value);
-            const colorKey = (choice.color as NodeColors) || "default";
+            const colorKey = (choice.color as colorsEnum) || "default";
             const colorConfig = colors[colorKey] || colors.default;
 
             return (
@@ -192,7 +192,7 @@ function SelectedOptionsRenderer({
   if (!isMultipleSelect) {
     const choice = choices?.find((c) => c.value === selectedOptions[0]);
     if (!choice) return <p className="text-gray-500">-</p>;
-    const colorKey = (choice.color as NodeColors) || "default";
+    const colorKey = (choice.color as colorsEnum) || "default";
     const colorConfig = colors[colorKey] || colors.default;
 
     return (
@@ -217,7 +217,7 @@ function SelectedOptionsRenderer({
       {selectedOptions.map((optionValue) => {
         const choice = choices?.find((c) => c.value === optionValue);
         if (!choice) return null;
-        const colorKey = (choice.color as NodeColors) || "default";
+        const colorKey = (choice.color as colorsEnum) || "default";
         const colorConfig = colors[colorKey] || colors.default;
 
         return (

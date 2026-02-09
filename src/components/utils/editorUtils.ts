@@ -1,6 +1,6 @@
-import type { LayoutElement, NodeField, NodeTemplate } from "../../types";
+import type { LayoutElement, NodeField, NodeTemplate } from "@/types/domain";
 import fieldsDefinition from "../fields/fieldsDefinition";
-import type { FieldDefinition } from "@/types/field.types";
+import type { FieldDefinition } from "@/types/ui";
 
 /**
  * Helper pour déterminer le nom du variant visuel à utiliser

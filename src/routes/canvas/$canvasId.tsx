@@ -16,7 +16,7 @@ import ErrorDisplay from "@/components/ui/ErrorDisplay";
 import ContextMenu from "@/components/canvas/context-menus";
 import { useContextMenu } from "@/hooks/useContextMenu";
 import { useEffect } from "react";
-import type { CanvasNode } from "@/types";
+import type { CanvasNode } from "@/types/convex";
 import { nodeTypes } from "@/components/nodes/nodeTypes";
 import { useCanvasPasteHandler } from "@/hooks/useCanvasPasteHandler";
 import WindowPanelsContainer from "@/components/windows/WindowPanelsContainer";

@@ -1,6 +1,6 @@
 import { useRef, useCallback } from "react";
 import { useWindowsStore } from "@/stores/windowsStore";
-import type { ResizeDirection } from "@/types/windows.types";
+import type { ResizeDirection } from "@/types/ui";
 
 interface DragAction {
   type: "move" | "resize";

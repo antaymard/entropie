@@ -1,4 +1,6 @@
-// Types pour les parts des messages AI
+/**
+ * Types for AI message parts
+ */
 
 export type PartState =
   | "input-streaming"

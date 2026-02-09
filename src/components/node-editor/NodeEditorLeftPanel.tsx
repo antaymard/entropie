@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useFormikContext } from "formik";
 import TextArea from "../form-ui/TextArea";
 import TextInput from "../form-ui/TextInput";
-import type { NodeTemplate } from "../../types";
+import type { NodeTemplate } from "@/types/domain";
 import { HiMiniPlusCircle } from "react-icons/hi2";
 
 import FieldSelectionDropdown from "./FieldSelectionDropdown";

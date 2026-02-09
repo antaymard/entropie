@@ -1,7 +1,7 @@
 import { useFormikContext } from "formik";
-import type { NodeField, NodeTemplate } from "../../types";
+import type { NodeField, NodeTemplate } from "@/types/domain";
 import fieldsDefinition from "../fields/fieldsDefinition";
-import type { FieldDefinition } from "@/types/field.types";
+import type { FieldDefinition } from "@/types/ui";
 import { DropdownMenuItem } from "../shadcn/dropdown-menu";
 
 interface FieldSelectionDropdownProps {

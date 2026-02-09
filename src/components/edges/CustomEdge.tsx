@@ -7,7 +7,7 @@ import {
 } from "@xyflow/react";
 import { memo, useState, useRef, useEffect } from "react";
 import nodeColors from "../nodes/nodeColors";
-import type { EdgeCustomData } from "@/types/edge.types";
+import type { EdgeCustomData } from "@/types/domain";
 
 const strokeWidthMap = {
   thin: 1,

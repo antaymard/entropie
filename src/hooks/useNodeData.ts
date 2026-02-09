@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useNodeDataStore } from "@/stores/nodeDataStore";
 import type { Id } from "@/../convex/_generated/dataModel";
-import type { NodeData } from "@/types/nodeData.types";
+import type { NodeData } from "@/types/convex";
 
 /**
  * Hook optimisé pour récupérer les values d'un NodeData.

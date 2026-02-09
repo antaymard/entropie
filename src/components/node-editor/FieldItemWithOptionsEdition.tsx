@@ -3,8 +3,8 @@ import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { RxDragHandleDots2 } from "react-icons/rx";
 import { HiMiniTrash } from "react-icons/hi2";
-import type { LayoutElement, NodeField, NodeTemplate } from "../../types";
-import type { FieldDefinition } from "@/types/field.types";
+import type { LayoutElement, NodeField, NodeTemplate } from "@/types/domain";
+import type { FieldDefinition } from "@/types/ui";
 import InlineEditableText from "@/components/form-ui/InlineEditableText";
 import {
   Popover,

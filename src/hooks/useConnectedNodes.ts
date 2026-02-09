@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useEdges, useNodes, useNodeId, type Node } from "@xyflow/react";
 import { useNodeDataStore } from "@/stores/nodeDataStore";
-import type { NodeData } from "@/types/node.types";
+import type { NodeData } from "@/types/convex";
 import type { Id } from "@/../convex/_generated/dataModel";
 
 export type ConnectionType = "source" | "target" | "all";

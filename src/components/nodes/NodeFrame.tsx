@@ -2,7 +2,7 @@ import { NodeResizer, type Node } from "@xyflow/react";
 import { memo } from "react";
 import { cn } from "@/lib/utils";
 import { colors } from "@/components/ui/styles";
-import type { colorsEnum } from "@/types/style.types";
+import type { colorsEnum } from "@/types/domain";
 import NodeHandles from "./NodeHandles";
 import AutomationIndicator from "./toolbar/AutomationIndicator";
 

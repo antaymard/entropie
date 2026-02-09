@@ -1,4 +1,4 @@
-import type { BaseFieldProps } from "@/types/field.types";
+import type { BaseFieldProps } from "@/types/ui";
 
 export function ClassicNumberField({
   field,

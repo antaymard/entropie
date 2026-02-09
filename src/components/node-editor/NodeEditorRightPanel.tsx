@@ -1,7 +1,7 @@
 import { useFormikContext } from "formik";
 import { useNodeEditorContext } from "../../hooks/useNodeEditorContext";
 import { returnElementPathInLayout } from "../utils/editorUtils";
-import type { LayoutElement } from "../../types";
+import type { LayoutElement } from "@/types/domain";
 import get from "lodash/get";
 import FieldElementVisualsSettings from "./FieldElementVisualsSettings";
 import DivElementSettings from "./elements-settings/DivElementSettings";

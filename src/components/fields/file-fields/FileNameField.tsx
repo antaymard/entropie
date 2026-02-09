@@ -1,4 +1,4 @@
-import type { BaseFieldProps } from "@/types/field.types";
+import type { BaseFieldProps } from "@/types/ui";
 import { useCallback } from "react";
 import { useNodeSidePanel } from "../../nodes/side-panels/NodeSidePanelContext";
 import SidePanelFrame from "../../nodes/side-panels/SidePanelFrame";

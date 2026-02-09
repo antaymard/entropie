@@ -1,13 +1,32 @@
-// ===========================================================================
-// Node Template Types
-// ===========================================================================
-
 import type { Id } from "@/../convex/_generated/dataModel";
-import type { FieldType } from "./field.types";
-import type { IconType } from "react-icons/lib";
+import type { FieldType } from "../ui/field.types";
 
-// ==========================================================================
-// OLD SHIT - to be removed later
+/**
+ * Node types enum - represents the different types of nodes available in the canvas
+ */
+export type nodeTypes =
+  | "document"
+  | "floatingText"
+  | "image"
+  | "link"
+  | "value"
+  | "file";
+
+/**
+ * Node field definition
+ */
+export interface NodeField {
+  id: string;
+  name: string;
+  type: FieldType;
+  description?: string;
+  options?: Record<string, unknown>; // currency, placeholder, select options, etc.
+}
+
+// ===========================================================================
+// OLD TYPES - to be removed later when migration is complete
+// ===========================================================================
+
 export interface NodeTemplate {
   _id: Id<"nodeTemplates"> | "new";
   _creationTime: number;
@@ -35,14 +54,6 @@ export interface NodeTemplate {
   updatedAt: number;
 }
 
-export interface NodeField {
-  id: string;
-  name: string;
-  type: FieldType;
-  description?: string;
-  options?: Record<string, unknown>; // currency, placeholder, select options, etc.
-}
-
 export interface NodeVisual {
   name: string;
   description: string;
@@ -60,11 +71,3 @@ export interface LayoutElement {
   style?: Record<string, unknown>;
   children?: LayoutElement[];
 }
-
-// ===========================================================================
-// Nodes on the canvas
-// ===========================================================================
-
-// TO DEP => cf nodeData.types.ts
-
-// Convex format

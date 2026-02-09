@@ -1,6 +1,6 @@
-import type { Edge, Node as XyNode } from "@xyflow/react";
-import type { CanvasNode, NodeColors } from "../../types/node.types";
-import type { CanvasEdge } from "@/types/edge.types";
+import type { Node as XyNode } from "@xyflow/react";
+import type { CanvasNode, Edge } from "@/types/convex";
+import type { colorsEnum } from "@/types/domain";
 
 /**
  * Converts a partial CanvasNode (from DB) to ReactFlow Node format
@@ -11,7 +11,7 @@ import type { CanvasEdge } from "@/types/edge.types";
 export function toXyNode(canvasNode: Partial<CanvasNode>): XyNode {
   // const locked = canvasNode.locked ?? false;
   const locked = false;
-  const color = canvasNode.color ?? ("default" as NodeColors);
+  const color = canvasNode.color ?? ("default" as colorsEnum);
 
   return {
     id: canvasNode.id ?? "",
@@ -49,7 +49,7 @@ export function toXyNode(canvasNode: Partial<CanvasNode>): XyNode {
 export function toConvexNode(xyNode: XyNode): CanvasNode {
   // Récupération de la color depuis data
   const { color, name, headerless, ...otherData } = (xyNode.data ?? {}) as {
-    color?: NodeColors;
+    color?: colorsEnum;
     headerless?: boolean;
     name?: string;
     [key: string]: unknown;

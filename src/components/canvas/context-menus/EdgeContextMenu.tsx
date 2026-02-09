@@ -23,8 +23,8 @@ import type {
   EdgeCustomData,
   EdgeStrokeWidth,
   EdgeMarker,
-} from "@/types/edge.types";
-import type { NodeColors } from "@/types/node.types";
+  colorsEnum,
+} from "@/types/domain";
 
 export default function EdgeContextMenu({
   closeMenu,
@@ -55,7 +55,7 @@ export default function EdgeContextMenu({
     closeMenu();
   };
 
-  const handleColorChange = (color: NodeColors) => {
+  const handleColorChange = (color: colorsEnum) => {
     updateEdgeData({ color });
   };
 
@@ -115,13 +115,13 @@ export default function EdgeContextMenu({
         <DropdownMenuSubContent>
           <DropdownMenuRadioGroup
             value={edgeData.color || "default"}
-            onValueChange={(value) => handleColorChange(value as NodeColors)}
+            onValueChange={(value) => handleColorChange(value as colorsEnum)}
           >
             {availableColors.map(([key, value]) => (
               <DropdownMenuRadioItem
                 value={key}
                 key={key}
-                onClick={() => handleColorChange(key as NodeColors)}
+                onClick={() => handleColorChange(key as colorsEnum)}
               >
                 <div
                   className={`border ${value.border} ${value.bg} rounded-sm p-1 ${value.text}`}

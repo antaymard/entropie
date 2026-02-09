@@ -7,7 +7,7 @@ import { BiParagraph } from "react-icons/bi";
 import InlineEditableText from "../../form-ui/InlineEditableText";
 import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
 import { colors } from "@/components/ui/styles";
-import type { colorsEnum } from "@/types/style.types";
+import type { colorsEnum } from "@/types/domain";
 import { cn } from "@/lib/utils";
 import { useUpdateCanvasNode } from "@/hooks/useUpdateCanvasNode";
 

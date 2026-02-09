@@ -11,7 +11,7 @@ import { memo, useCallback } from "react";
 import { type Node } from "@xyflow/react";
 import prebuiltNodesConfig from "../prebuilt-nodes/prebuiltNodesConfig";
 import { useUpdateCanvasNode } from "@/hooks/useUpdateCanvasNode";
-import type { colorsEnum } from "@/types/style.types";
+import type { colorsEnum } from "@/types/domain";
 import { colors } from "@/components/ui/styles";
 import { cn } from "@/lib/utils";
 

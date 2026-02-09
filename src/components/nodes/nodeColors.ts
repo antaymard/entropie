@@ -1,7 +1,7 @@
-import type { NodeColors } from "../../types/node.types";
+import type { colorsEnum } from "@/types/domain";
 
 const colors: Record<
-  NodeColors,
+  colorsEnum,
   {
     border: string;
     bg: string;

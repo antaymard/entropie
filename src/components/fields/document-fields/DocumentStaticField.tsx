@@ -4,7 +4,7 @@ import { createSlateEditor, type Value } from "platejs";
 
 import { BaseEditorKit } from "@/components/plate/editor-base-kit";
 import { EditorStatic } from "@/components/plate/editor-static";
-import type { BaseFieldProps } from "@/types/field.types";
+import type { BaseFieldProps } from "@/types/ui";
 import { cn } from "@/lib/utils";
 
 interface DocumentStaticFieldProps extends BaseFieldProps<{ doc: Value }> {

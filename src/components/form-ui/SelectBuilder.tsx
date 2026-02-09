@@ -11,7 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/shadcn/popover";
-import type { NodeColors } from "@/types/node.types";
+import type { colorsEnum } from "@/types/domain";
 import colors from "@/components/nodes/nodeColors";
 
 interface SelectBuilderProps {
@@ -34,7 +34,7 @@ interface SelectBuilderProps {
 interface SelectOption {
   value: string;
   label: string;
-  color?: NodeColors;
+  color?: colorsEnum;
 }
 
 /**
@@ -109,7 +109,7 @@ export default function SelectBuilder({
 
   // Mettre à jour la couleur d'une option
   const updateOptionColor = useCallback(
-    (index: number, newColor: NodeColors) => {
+    (index: number, newColor: colorsEnum) => {
       const updatedOptions = [...options];
       updatedOptions[index] = {
         ...updatedOptions[index],
@@ -165,7 +165,7 @@ const OptionRow = memo(
     option: SelectOption;
     index: number;
     onUpdateLabel: (index: number, label: string) => void;
-    onUpdateColor: (index: number, color: NodeColors) => void;
+    onUpdateColor: (index: number, color: colorsEnum) => void;
     onRemove: (index: number) => void;
   }) => {
     return (
@@ -185,7 +185,7 @@ const OptionRow = memo(
           </PopoverTrigger>
           <PopoverContent className="w-auto p-3" align="start">
             <div className="grid grid-cols-4 gap-2">
-              {(Object.keys(colors) as NodeColors[]).map((colorKey) => (
+              {(Object.keys(colors) as colorsEnum[]).map((colorKey) => (
                 <button
                   key={colorKey}
                   type="button"

@@ -143,6 +143,7 @@ export interface MyToggleElement extends MyTextBlockElement {
 
 export interface RichText extends TBasicMarks, TCommentText, TFontMarks, TText {
   kbd?: boolean;
+  pill?: colorsEnum;
 }
 
 export type MyValue = (

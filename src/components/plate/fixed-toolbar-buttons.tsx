@@ -11,6 +11,7 @@ import {
   ItalicIcon,
   PaintBucketIcon,
   StrikethroughIcon,
+  TagIcon,
   UnderlineIcon,
   WandSparklesIcon,
 } from "lucide-react";
@@ -42,6 +43,7 @@ import { MarkToolbarButton } from "./mark-toolbar-button";
 import { MediaToolbarButton } from "./media-toolbar-button";
 import { ModeToolbarButton } from "./mode-toolbar-button";
 import { MoreToolbarButton } from "./more-toolbar-button";
+import { PillToolbarButton } from "./pill-toolbar-button";
 import { TableToolbarButton } from "./table-toolbar-button";
 import { ToggleToolbarButton } from "./toggle-toolbar-button";
 import { ToolbarGroup } from "../shadcn/toolbar";
@@ -110,6 +112,10 @@ export function FixedToolbarButtons() {
             >
               <PaintBucketIcon />
             </FontColorToolbarButton>
+
+            <PillToolbarButton tooltip="Pill (⌘+⇧+P)">
+              <TagIcon />
+            </PillToolbarButton>
           </ToolbarGroup>
 
           <ToolbarGroup>

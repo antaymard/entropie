@@ -46,6 +46,13 @@ export function useCanvasNodes(
     [canvasId, updateCanvasNodesPositionOrDimensionsInConvex],
   );
 
+  // Cleanup throttle on unmount or when dependencies change
+  useEffect(() => {
+    return () => {
+      throttledUpdatePositions.cancel();
+    };
+  }, [throttledUpdatePositions]);
+
   // Sync convex -> reactflow nodes, en préservant les nodes en cours
   // de drag/resize et la sélection
   useEffect(() => {

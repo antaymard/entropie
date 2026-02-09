@@ -161,7 +161,7 @@ function NavigatingImage({
       | undefined;
 
     if (savedTransform) {
-      setTimeout(() => {
+      const timerId = setTimeout(() => {
         transformRef.current?.setTransform(
           savedTransform.positionX,
           savedTransform.positionY,
@@ -170,6 +170,8 @@ function NavigatingImage({
         );
         hasInitialized.current = true;
       }, 0);
+
+      return () => clearTimeout(timerId);
     }
   }, [imageUrl, inImageNavigation]);
 

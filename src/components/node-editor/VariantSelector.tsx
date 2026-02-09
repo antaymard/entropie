@@ -1,6 +1,6 @@
 import { useFormikContext } from "formik";
-import type { NodeTemplate } from "@/types/node.types";
-import type { FieldVisualVariant } from "@/types/field.types";
+import type { NodeTemplate } from "@/types/domain";
+import type { FieldVisualVariant } from "@/types/ui";
 import {
   DropdownMenu,
   DropdownMenuContent,

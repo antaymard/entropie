@@ -7,8 +7,8 @@ import Toggles from "../form-ui/Toggles";
 import SelectBuilder from "../form-ui/SelectBuilder";
 import Selector from "../form-ui/Selector";
 import VariantSelector from "./VariantSelector";
-import type { FieldSettingOption } from "@/types/field.types";
-import type { LayoutElement, NodeTemplate } from "@/types/node.types";
+import type { FieldSettingOption } from "@/types/ui";
+import type { LayoutElement, NodeTemplate } from "@/types/domain";
 
 export default function FieldElementVisualSettings({
   elementPath,

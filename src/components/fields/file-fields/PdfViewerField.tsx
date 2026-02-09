@@ -1,5 +1,5 @@
 import { memo, useRef, useState, useEffect, useCallback } from "react";
-import type { BaseFieldProps } from "@/types/field.types";
+import type { BaseFieldProps } from "@/types/ui";
 import { type FileFieldType } from "./FileNameField";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/TextLayer.css";

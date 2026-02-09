@@ -1,7 +1,7 @@
 import type {
   FloatingTextCanvasNodeData,
   XyNodeData,
-} from "@/types/canvasNodeData.types";
+} from "@/types/domain";
 import type { Node } from "@xyflow/react";
 
 // Icons

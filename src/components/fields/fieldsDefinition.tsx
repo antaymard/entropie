@@ -1,4 +1,4 @@
-import type { FieldDefinition } from "@/types/field.types";
+import type { FieldDefinition } from "@/types/ui";
 import TextField from "./TextField";
 import { RiTextBlock, RiAttachment2, RiFileList3Line } from "react-icons/ri";
 import { GoNumber } from "react-icons/go";

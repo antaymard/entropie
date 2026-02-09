@@ -1,4 +1,4 @@
-import type { BaseFieldProps } from "@/types/field.types";
+import type { BaseFieldProps } from "@/types/ui";
 import { memo, useCallback, useMemo } from "react";
 import { Calendar } from "../shadcn/calendar";
 import { cn } from "@/lib/utils";

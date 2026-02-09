@@ -1,8 +1,8 @@
 import { defineSchema, defineTable } from "convex/server";
 import { authTables } from "@convex-dev/auth/server";
 import { v } from "convex/values";
-import canvasesSchema from "./schemas_and_validators/canvasesSchema";
-import nodeDatasSchema from "./schemas_and_validators/nodeDatasSchema";
+import { canvasesValidator } from "./schemas/canvasesSchema";
+import { nodeDatasValidator } from "./schemas/nodeDatasSchema";
 
 const schema = defineSchema({
   ...authTables,
@@ -10,7 +10,7 @@ const schema = defineSchema({
   // ============================================================================
   // CANVAS
   // ============================================================================
-  canvases: defineTable(canvasesSchema)
+  canvases: defineTable(canvasesValidator)
     .index("by_creator", ["creatorId"])
     .index("by_creator_and_updatedAt", ["creatorId", "updatedAt"])
     .searchIndex("search_name", {
@@ -18,7 +18,7 @@ const schema = defineSchema({
       filterFields: ["creatorId"],
     }),
 
-  nodeDatas: defineTable(nodeDatasSchema),
+  nodeDatas: defineTable(nodeDatasValidator),
 
   // ============================================================================
   // NODE TEMPLATES

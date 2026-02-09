@@ -3,10 +3,13 @@ import { ConvexError } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { requireAuth } from "./lib/auth";
-import nodeDatasSchema from "./schemas_and_validators/nodeDatasSchema";
+import {
+  nodeDatasValidator,
+  nodeDatasWithIdValidator,
+} from "./schemas/nodeDatasSchema";
 
 export const create = mutation({
-  args: nodeDatasSchema.omit("_id"),
+  args: nodeDatasValidator,
   handler: async (ctx, args) => {
     await requireAuth(ctx);
 
@@ -65,12 +68,12 @@ export const updateValues = mutation({
 });
 
 export const updateAutomationSettings = mutation({
-  args: nodeDatasSchema.pick(
-    "_id",
-    "automationMode",
-    "agent",
-    "dataProcessing",
-  ),
+  args: {
+    _id: nodeDatasWithIdValidator.fields._id,
+    automationMode: nodeDatasWithIdValidator.fields.automationMode,
+    agent: nodeDatasWithIdValidator.fields.agent,
+    dataProcessing: nodeDatasWithIdValidator.fields.dataProcessing,
+  },
   handler: async (ctx, args) => {
     await requireAuth(ctx);
     const existing = await ctx.db.get(args._id);

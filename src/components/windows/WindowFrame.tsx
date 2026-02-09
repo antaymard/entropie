@@ -5,7 +5,7 @@ import { useShallow } from "zustand/react/shallow";
 import { TbWindowMinimize } from "react-icons/tb";
 import { useReactFlow } from "@xyflow/react";
 import InlineEditableText from "../form-ui/InlineEditableText";
-import type { NodeColors } from "@/types/node.types";
+import type { colorsEnum } from "@/types/domain";
 import nodeColors from "../nodes/nodeColors";
 import { HiMiniXMark } from "react-icons/hi2";
 import prebuiltNodesConfig from "../nodes/prebuilt-nodes/prebuiltNodesConfig";
@@ -16,7 +16,7 @@ interface WindowFrameProps {
   contentClassName?: string;
 }
 
-function getNodeColorClasses(color: NodeColors) {
+function getNodeColorClasses(color: colorsEnum) {
   return nodeColors[color] || nodeColors["default"];
 }
 
@@ -42,7 +42,7 @@ function WindowFrame({
 
   if (!window || !node) return null;
 
-  const nodeColor = getNodeColorClasses(node.data?.color as NodeColors);
+  const nodeColor = getNodeColorClasses(node.data?.color as colorsEnum);
 
   const handleNameSave = (newName: string) => {
     updateNodeData(node.id, { name: newName });

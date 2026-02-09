@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import type { Id } from "@/../convex/_generated/dataModel";
-import type { NodeData } from "@/types/node.types";
+import type { NodeData } from "@/types/convex";
 
 interface NodeDataStore {
   // Map pour O(1) lookup

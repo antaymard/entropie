@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import type { NodeTemplate } from "../types/node.types";
+import type { NodeTemplate } from "@/types/domain";
 import type { Id } from "convex/_generated/dataModel";
 
 interface TemplateStore {

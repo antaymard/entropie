@@ -4,7 +4,7 @@ import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { toastError } from "@/components/utils/errorUtils";
 import { useNodeDataStore } from "@/stores/nodeDataStore";
-import type { NodeData } from "@/types/nodeData.types";
+import type { NodeData } from "@/types/convex";
 
 
 interface UpdateNodeDataInput {

@@ -20,7 +20,7 @@ import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import toast from "react-hot-toast";
 import { useState } from "react";
-import type { NodeData } from "@/types/nodeData.types";
+import type { NodeData } from "@/types/convex";
 import { useNodeData } from "@/hooks/useNodeData";
 import { ButtonGroup } from "@/components/shadcn/button-group";
 import { Spinner } from "@/components/shadcn/spinner";

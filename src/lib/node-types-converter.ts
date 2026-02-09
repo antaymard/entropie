@@ -1,5 +1,5 @@
-import type { CanvasNode } from "@/types";
-import type { colorsEnum } from "@/types/style.types";
+import type { CanvasNode } from "@/types/convex";
+import type { colorsEnum } from "@/types/domain";
 import type { Node } from "@xyflow/react";
 import type { Id } from "@/../convex/_generated/dataModel";
 

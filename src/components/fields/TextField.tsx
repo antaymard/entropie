@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import type { BaseFieldProps } from "@/types/field.types";
+import type { BaseFieldProps } from "@/types/ui";
 import InlineEditableText from "../form-ui/InlineEditableText";
 import { cn } from "@/lib/utils";
 

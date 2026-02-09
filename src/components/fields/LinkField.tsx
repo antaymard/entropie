@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { BaseFieldProps } from "@/types/field.types";
+import type { BaseFieldProps } from "@/types/ui";
 import { TbLink } from "react-icons/tb";
 import { Input } from "../shadcn/input";
 import { Button } from "../shadcn/button";

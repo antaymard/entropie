@@ -4,7 +4,7 @@ import { components, internal } from "./_generated/api";
 import { createAutomationAgent } from "./automation/automationAgent";
 import { createThread } from "@convex-dev/agent";
 import { requireAuth } from "./lib/auth";
-import { nodeDataConfig } from "./schemas_and_validators/nodeDataConfig";
+import { nodeDataConfig } from "./schemas/nodeDataConfig";
 import updateNodeDataValuesTool from "./ia/tools/updateNodeDataValuesTool";
 
 export const trigger = action({

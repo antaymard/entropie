@@ -1,4 +1,4 @@
-import type { colorsEnum } from "@/types/style.types";
+import type { colorsEnum } from "@/types/domain";
 import { colors } from "@/components/ui/styles";
 import { cn } from "@/lib/utils";
 import { type Node } from "@xyflow/react";

@@ -1,13 +1,13 @@
 import { ConvexError, v } from "convex/values";
 import { mutation } from "./_generated/server";
 import { requireAuth } from "./lib/auth";
-import { canvasNodesSchema } from "./schemas_and_validators/canvasesSchema";
+import { canvasNodesValidator } from "./schemas/canvasesSchema";
 import errors from "./errorsConfig";
 
 export const add = mutation({
   args: {
     canvasId: v.id("canvases"),
-    canvasNodes: v.array(canvasNodesSchema),
+    canvasNodes: v.array(canvasNodesValidator),
   },
   handler: async (ctx, { canvasNodes, canvasId }) => {
     const authUserId = await requireAuth(ctx);

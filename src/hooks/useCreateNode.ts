@@ -3,7 +3,7 @@ import { useMutation } from "convex/react";
 import { api } from "@/../convex/_generated/api";
 import type { Node } from "@xyflow/react";
 import type { Id } from "@/../convex/_generated/dataModel";
-import type { nodeTypes } from "@/types/nodeData.types";
+import type { nodeTypes } from "@/types/domain";
 
 type CreateNodeOptions = {
   node: Node;

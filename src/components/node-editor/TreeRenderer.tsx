@@ -6,8 +6,8 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-import type { NodeTemplate } from "../../types";
-import type { LayoutElement } from "../../types/node.types";
+import type { NodeTemplate } from "@/types/domain";
+import type { LayoutElement } from "@/types/domain";
 import { getFieldFromId } from "../utils/editorUtils";
 import { useFormikContext } from "formik";
 import {

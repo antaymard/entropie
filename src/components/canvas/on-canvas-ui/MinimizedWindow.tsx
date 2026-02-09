@@ -1,8 +1,8 @@
 import { nodeList } from "@/components/nodes/nodeTypes";
-import type { Window } from "@/types/windows.types";
+import type { Window } from "@/types/ui";
 import { useNodesData } from "@xyflow/react";
 import nodeColors from "../../nodes/nodeColors";
-import type { NodeColors, NodeConfig } from "@/types/node.types";
+import type { colorsEnum, NodeConfig } from "@/types/domain";
 import { useWindowsStore } from "@/stores/windowsStore";
 import {
   Tooltip,
@@ -25,7 +25,7 @@ export default function MinimizedWindow({ window }: { window: Window }) {
   const nodeData = useNodesData(window.id);
   const { data } = nodeData || {};
   const nodeColorClassNames =
-    nodeColors[(data?.color as NodeColors) || "default"];
+    nodeColors[(data?.color as colorsEnum) || "default"];
 
   const Icon = nodeConfig?.nodeIcon || TbTemplate;
 

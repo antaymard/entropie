@@ -9,7 +9,7 @@ import type { Value } from "platejs";
 import { Editor, EditorContainer } from "@/components/plate/editor";
 import { EditorKit } from "@/components/plate/editor-kit";
 import { Plate, usePlateEditor } from "platejs/react";
-import type { BaseFieldProps } from "@/types/field.types";
+import type { BaseFieldProps } from "@/types/ui";
 import { useCanvasStore } from "@/stores/canvasStore";
 import { cn } from "@/lib/utils";
 

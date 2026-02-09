@@ -1,10 +1,15 @@
-// Node types
-export type {
-  NodeTemplate,
-  NodeField,
-  LayoutElement,
-  NodeVisual,
-  NodeColors,
-} from "./node.types";
+/**
+ * Central type exports
+ *
+ * Import types from their respective modules:
+ * - Convex types: import { Canvas, NodeData } from "@/types/convex"
+ * - UI types: import { Window, FieldDefinition } from "@/types/ui"
+ * - Domain types: import { nodeTypes, colorsEnum } from "@/types/domain"
+ *
+ * Or use this barrel export for convenience
+ */
 
-export type { Canvas, CanvasEdge, CanvasNode } from "./canvas.types";
+// Re-export all organized types
+export * from "./convex";
+export * from "./ui";
+export * from "./domain";

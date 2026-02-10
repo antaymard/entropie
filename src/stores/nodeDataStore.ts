@@ -24,11 +24,33 @@ export const useNodeDataStore = create<NodeDataStore>()(
       nodeDatas: new Map(),
 
       setNodeDatas: (nodeDatas) => {
-        const map = new Map<Id<"nodeDatas">, NodeData>();
-        for (const nd of nodeDatas) {
-          map.set(nd._id, nd);
-        }
-        set({ nodeDatas: map });
+        set((state) => {
+          const newMap = new Map(state.nodeDatas);
+          let changed = false;
+          const incomingIds = new Set<Id<"nodeDatas">>();
+
+          for (const nd of nodeDatas) {
+            incomingIds.add(nd._id);
+            const existing = newMap.get(nd._id);
+            if (
+              !existing ||
+              existing.updatedAt !== nd.updatedAt ||
+              existing.status !== nd.status
+            ) {
+              newMap.set(nd._id, nd);
+              changed = true;
+            }
+          }
+
+          for (const key of newMap.keys()) {
+            if (!incomingIds.has(key)) {
+              newMap.delete(key);
+              changed = true;
+            }
+          }
+
+          return changed ? { nodeDatas: newMap } : state;
+        });
       },
 
       getNodeData: (id) => get().nodeDatas.get(id),

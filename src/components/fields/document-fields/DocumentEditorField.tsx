@@ -13,6 +13,7 @@ import { Plate, usePlateEditor } from "platejs/react";
 import type { BaseFieldProps } from "@/types/ui";
 import { useCanvasStore } from "@/stores/canvasStore";
 import { cn } from "@/lib/utils";
+import { Spinner } from "@/components/shadcn/spinner";
 
 export interface DocumentEditorFieldHandle {
   flushChanges: () => void;
@@ -21,13 +22,14 @@ export interface DocumentEditorFieldHandle {
 interface DocumentEditorFieldProps extends BaseFieldProps<{ doc: Value }> {
   editorId?: string;
   plugins?: typeof EditorKit;
+  isLocked?: boolean;
 }
 
 const DocumentEditorField = forwardRef<
   DocumentEditorFieldHandle,
   DocumentEditorFieldProps
 >(function DocumentEditorField(
-  { editorId, value, visualType, onChange, plugins = EditorKit },
+  { editorId, value, visualType, onChange, plugins = EditorKit, isLocked },
   ref,
 ) {
   const initialValue: Value = value?.doc as Value;
@@ -43,18 +45,22 @@ const DocumentEditorField = forwardRef<
 
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const pendingValueRef = useRef<Value | null>(null);
-  const lastSentValueRef = useRef<string | null>(null);
+  const isFocusedRef = useRef(false);
+  const pendingRemoteValueRef = useRef<Value | null>(null);
 
-  // Sync external value changes (e.g. server updates) into the editor
-  // Skip if incoming value matches what we last sent (our own echo from Convex)
+  // Sync external value changes into the editor
+  // Only apply when NOT focused (or when locked by AI)
   useEffect(() => {
-    if (initialValue) {
-      const incoming = JSON.stringify(initialValue);
-      if (incoming !== lastSentValueRef.current) {
-        editor.tf.setValue(initialValue);
-      }
+    if (!initialValue) return;
+
+    if (isLocked || !isFocusedRef.current) {
+      editor.tf.setValue(initialValue);
+      pendingRemoteValueRef.current = null;
+    } else {
+      // Focused and not locked: store for later
+      pendingRemoteValueRef.current = initialValue;
     }
-  }, [initialValue, editor]);
+  }, [initialValue, editor, isLocked]);
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -71,7 +77,6 @@ const DocumentEditorField = forwardRef<
       debounceTimerRef.current = null;
     }
     if (pendingValueRef.current !== null) {
-      lastSentValueRef.current = JSON.stringify(pendingValueRef.current);
       onChange?.({ doc: pendingValueRef.current });
       pendingValueRef.current = null;
     }
@@ -81,17 +86,13 @@ const DocumentEditorField = forwardRef<
 
   const handleChange = useCallback(
     ({ value }: { value: Value }) => {
-      // Stocke la valeur en attente
       pendingValueRef.current = value;
 
-      // Annule le timer précédent si existant
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
       }
 
-      // Crée un nouveau timer pour mettre à jour après 750ms
       debounceTimerRef.current = setTimeout(() => {
-        lastSentValueRef.current = JSON.stringify(value);
         onChange?.({ doc: value });
         pendingValueRef.current = null;
       }, 750);
@@ -99,35 +100,55 @@ const DocumentEditorField = forwardRef<
     [onChange],
   );
 
-  // Désactive l'undo/redo du canvas lors de la focalisation de l'éditeur
   const handleFocus = useCallback(() => {
+    if (isLocked) return;
+    isFocusedRef.current = true;
     setEnableCanvasUndoRedo(false);
-  }, [setEnableCanvasUndoRedo]);
+  }, [setEnableCanvasUndoRedo, isLocked]);
 
   const handleBlur = useCallback(() => {
+    isFocusedRef.current = false;
     setEnableCanvasUndoRedo(true);
-    // Flush les changements en attente immédiatement au blur
+
+    const hadPending = pendingValueRef.current !== null;
     flushChanges();
-  }, [setEnableCanvasUndoRedo, flushChanges]);
+
+    // Apply pending remote value only if user didn't have local changes
+    if (!hadPending && pendingRemoteValueRef.current) {
+      editor.tf.setValue(pendingRemoteValueRef.current);
+      pendingRemoteValueRef.current = null;
+    }
+  }, [setEnableCanvasUndoRedo, flushChanges, editor]);
 
   return (
     <Plate editor={editor} onValueChange={handleChange}>
-      <EditorContainer
-        variant="default"
-        className={cn(
-          "nodrag h-full overflow-auto",
-          visualType === "window" && "border border-slate-300",
+      <div className="relative h-full">
+        <EditorContainer
+          variant="default"
+          className={cn(
+            "nodrag h-full overflow-auto",
+            visualType === "window" && "border border-slate-300",
+          )}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+        >
+          <Editor
+            disableDefaultStyles={true}
+            variant="none"
+            placeholder="Commencez à écrire..."
+            className={cn("px-5 py-3")}
+            readOnly={isLocked}
+          />
+        </EditorContainer>
+        {isLocked && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white/60 rounded">
+            <span className="flex items-center gap-2 text-sm text-slate-500">
+              <Spinner className="size-4" />
+              IA en cours...
+            </span>
+          </div>
         )}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-      >
-        <Editor
-          disableDefaultStyles={true}
-          variant="none"
-          placeholder="Commencez à écrire..."
-          className={cn("px-5 py-3")}
-        />
-      </EditorContainer>
+      </div>
     </Plate>
   );
 });

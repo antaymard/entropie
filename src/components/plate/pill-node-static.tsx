@@ -12,7 +12,8 @@ import type { colorsEnum } from "@/types/domain/style.types";
 
 export function PillLeafStatic(props: SlateLeafProps) {
   // Récupérer la clé de couleur depuis le mark, avec fallback vers "default"
-  const colorKey = ((props.leaf.pill as colorsEnum) || "default") as keyof typeof colors;
+  const colorKey = ((props.leaf.pill as colorsEnum) ||
+    "default") as keyof typeof colors;
   const colorClasses = colors[colorKey] || colors.default;
 
   return (
@@ -20,10 +21,10 @@ export function PillLeafStatic(props: SlateLeafProps) {
       {...props}
       as="span"
       className={cn(
-        "inline-flex items-center rounded-md border px-2 py-0.5 text-sm font-medium",
-        colorClasses.nodeBg,
+        "inline-flex items-center rounded-sm border px-2 py-0.5 text-sm font-medium",
+        colorClasses.lightBg,
         colorClasses.textColor,
-        colorClasses.nodeBorder
+        colorClasses.nodeBorder,
       )}
     >
       {props.children}

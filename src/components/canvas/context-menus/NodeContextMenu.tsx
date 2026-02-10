@@ -3,15 +3,18 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from "@/components/shadcn/dropdown-menu";
 import { useCreateNode } from "@/hooks/useCreateNode";
 import type { Node } from "@xyflow/react";
 import { useReactFlow } from "@xyflow/react";
 
 // Icons
-import { BiSolidDuplicate } from "react-icons/bi";
 import { HiOutlineTrash } from "react-icons/hi";
-import { TbCopyPlus, TbCopyPlusFilled } from "react-icons/tb";
+import { TbCopyPlus, TbCopyPlusFilled, TbSpaces } from "react-icons/tb";
+import { useUpdateCanvasNode } from "@/hooks/useUpdateCanvasNode";
 
 export default function NodeContextMenu({
   closeMenu,
@@ -24,8 +27,28 @@ export default function NodeContextMenu({
 }) {
   const { deleteElements } = useReactFlow();
   const { createNode } = useCreateNode();
+  const { updateCanvasNode } = useUpdateCanvasNode();
+
+  const variants = prebuiltNodesConfig.find(
+    (config) => config.node.type === xyNode.type,
+  )?.variants;
 
   const nodeOptions = [
+    {
+      hidden: !variants || variants.length === 0,
+      label: "Apparence",
+      icon: TbSpaces,
+      subMenu:
+        variants?.map((variant) => ({
+          label: { title: "Titre seul", default: "Affichage" }[variant],
+          onClick: () => {
+            updateCanvasNode({
+              nodeId: xyNode.id,
+              props: { variant },
+            });
+          },
+        })) || [],
+    },
     {
       label: "Dupliquer",
       icon: TbCopyPlus,
@@ -80,18 +103,42 @@ export default function NodeContextMenu({
         Actions sur le bloc
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
-      {nodeOptions.map((option, i) => (
-        <DropdownMenuItem
-          className="whitespace-nowrap"
-          key={i}
-          onClick={() => {
-            option.onClick();
-            closeMenu();
-          }}
-        >
-          {option.icon({ size: 16 })} {option.label}
-        </DropdownMenuItem>
-      ))}
+      {nodeOptions
+        .filter((option) => option.hidden !== true)
+        .map((option, i) =>
+          option.subMenu && option.subMenu.length > 0 ? (
+            <DropdownMenuSub key={i}>
+              <DropdownMenuSubTrigger className="whitespace-nowrap">
+                {option.icon({ size: 16 })} {option.label}
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                {option.subMenu.map((sub, j) => (
+                  <DropdownMenuItem
+                    className="whitespace-nowrap"
+                    key={j}
+                    onClick={() => {
+                      sub.onClick();
+                      closeMenu();
+                    }}
+                  >
+                    {sub.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          ) : (
+            <DropdownMenuItem
+              className="whitespace-nowrap"
+              key={i}
+              onClick={() => {
+                option.onClick?.();
+                closeMenu();
+              }}
+            >
+              {option.icon({ size: 16 })} {option.label}
+            </DropdownMenuItem>
+          ),
+        )}
     </>
   );
 }

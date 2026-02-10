@@ -12,6 +12,7 @@ interface ConvexNodeProps {
   hidden?: boolean;
   zIndex?: number;
   color?: colorsEnum;
+  variant?: string;
 }
 
 interface UpdateNodeInput {
@@ -91,9 +92,10 @@ export function useUpdateCanvasNode(): UseUpdateCanvasNodeReturn {
               structuralUpdates.zIndex = props.zIndex;
           }
 
-          // Data (color + custom data)
+          // Data (color, variant + custom data)
           const dataUpdate: Record<string, unknown> = {};
           if (props?.color !== undefined) dataUpdate.color = props.color;
+          if (props?.variant !== undefined) dataUpdate.variant = props.variant;
           if (data) Object.assign(dataUpdate, data);
 
           const hasDataUpdate = Object.keys(dataUpdate).length > 0;

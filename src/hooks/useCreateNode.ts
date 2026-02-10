@@ -42,6 +42,7 @@ export function useCreateNode() {
     // Déselectionner tous les nodes
     setNodes((nodes) => nodes.map((n) => ({ ...n, selected: false })));
 
+    // Au format de React Flow, on ajoute le node avec addNodes
     addNodes({
       ...node,
       id: nodeId,
@@ -55,6 +56,7 @@ export function useCreateNode() {
         }),
       data: {
         ...node.data,
+        variant: node.data?.variant ?? "default",
         ...(nodeDataId ? { nodeDataId } : {}),
       },
     });

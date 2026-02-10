@@ -15,6 +15,7 @@ const canvasNodesSchema = z.object({
   hidden: z.boolean().optional(),
   zIndex: z.number().optional(),
   color: z.string().optional(),
+  variant: z.string().optional(),
 
   parentId: z.string().optional(),
   extent: z

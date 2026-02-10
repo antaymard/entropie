@@ -15,15 +15,11 @@ export const useWindowsStore = create<WindowsStore>()(
       openWindows: [],
       openWindow: (xyNodeId: string) => {
         set((state) => {
-          const existingWindow = state.openWindows.find(
-            (w) => w === xyNodeId
-          );
-          if (existingWindow) {
-            // Si la fenêtre existe et est minimisée, on la déminimise
+          if (state.openWindows[0] === xyNodeId) {
             return state;
           }
           return {
-            openWindows: [...state.openWindows, xyNodeId],
+            openWindows: [xyNodeId],
           };
         });
       },

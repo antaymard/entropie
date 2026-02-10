@@ -1,7 +1,4 @@
-import type {
-  FloatingTextCanvasNodeData,
-  XyNodeData,
-} from "@/types/domain";
+import type { FloatingTextCanvasNodeData, XyNodeData } from "@/types/domain";
 import type { Node } from "@xyflow/react";
 
 // Icons
@@ -29,6 +26,7 @@ type PrebuiltNodeConfig = {
   nodeLabel: string;
   nodeIcon: React.ComponentType;
   nodeComponent: React.ComponentType<any>;
+  variants?: string[];
   skipNodeDataCreation?: boolean;
   node: Node;
   nodeDataValuesSchema?: object | null;
@@ -64,6 +62,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
     nodeLabel: "Document",
     nodeIcon: TbNews,
     nodeComponent: DocumentNode,
+    variants: ["default", "title"],
     canHaveAutomation: true,
 
     node: {

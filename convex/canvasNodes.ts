@@ -89,6 +89,7 @@ export const updateCanvasNodes = mutation({
             hidden: v.optional(v.boolean()),
             zIndex: v.optional(v.number()),
             color: v.optional(v.string()),
+            variant: v.optional(v.string()),
           }),
         ),
         data: v.optional(v.any()),
@@ -124,6 +125,8 @@ export const updateCanvasNodes = mutation({
         if (props.props.zIndex !== undefined)
           updated.zIndex = props.props.zIndex;
         if (props.props.color !== undefined) updated.color = props.props.color;
+        if (props.props.variant !== undefined)
+          updated.variant = props.props.variant;
       }
 
       // Appliquer les data custom

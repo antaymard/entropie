@@ -21,7 +21,7 @@ function CanvasNodeToolbar({
   const selectedNodesCount = useStore(selectedNodesCountSelector);
 
   // Early return si le node n'est pas sélectionné
-  if (!xyNode?.selected) {
+  if (!xyNode?.selected && !asSimpleDiv) {
     return null;
   }
 

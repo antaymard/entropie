@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { mutation } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { requireAuth } from "./lib/auth";
 import { canvasNodesValidator } from "./schemas/canvasesSchema";
 import errors from "./errorsConfig";
@@ -161,11 +162,67 @@ export const remove = mutation({
     if (canvas.creatorId !== authUserId) {
       throw new ConvexError(errors.UNAUTHORIZED_USER);
     }
-    await ctx.db.patch(canvasId, {
-      nodes: (canvas.nodes || []).filter(
-        (node) => !nodeCanvasIds.includes(node.id),
-      ),
-    });
+
+    const currentNodes = canvas.nodes || [];
+    const removedNodes = currentNodes.filter((node) =>
+      nodeCanvasIds.includes(node.id),
+    );
+    const remainingNodes = currentNodes.filter(
+      (node) => !nodeCanvasIds.includes(node.id),
+    );
+
+    // Collect nodeDataIds from removed nodes
+    const removedNodeDataIds = removedNodes
+      .map((node) => node.nodeDataId)
+      .filter((id): id is Id<"nodeDatas"> => id !== undefined);
+
+    await ctx.db.patch(canvasId, { nodes: remainingNodes });
+
+    // Delete orphaned nodeDatas (not referenced by any other canvas node)
+    if (removedNodeDataIds.length > 0) {
+      // Check if any of the remaining nodes in THIS canvas still reference these nodeDataIds
+      const stillUsedInCurrentCanvas = new Set(
+        remainingNodes
+          .map((node) => node.nodeDataId)
+          .filter((id): id is Id<"nodeDatas"> => id !== undefined),
+      );
+
+      const potentialOrphans = removedNodeDataIds.filter(
+        (id) => !stillUsedInCurrentCanvas.has(id),
+      );
+
+      if (potentialOrphans.length > 0) {
+        // Check all other canvases of this user
+        const allCanvases = await ctx.db
+          .query("canvases")
+          .withIndex("by_creator", (q) => q.eq("creatorId", authUserId))
+          .collect();
+
+        const nodeDataIdsInOtherCanvases = new Set<Id<"nodeDatas">>();
+        for (const otherCanvas of allCanvases) {
+          if (otherCanvas._id === canvasId) continue;
+          for (const node of otherCanvas.nodes || []) {
+            if (node.nodeDataId) {
+              nodeDataIdsInOtherCanvases.add(
+                node.nodeDataId as Id<"nodeDatas">,
+              );
+            }
+          }
+        }
+
+        const orphanedIds = potentialOrphans.filter(
+          (id) => !nodeDataIdsInOtherCanvases.has(id),
+        );
+
+        for (const orphanId of orphanedIds) {
+          await ctx.db.delete(orphanId);
+        }
+
+        if (orphanedIds.length > 0) {
+          console.log(`🗑️ Deleted ${orphanedIds.length} orphaned nodeDatas`);
+        }
+      }
+    }
 
     console.log(
       `✅ Removed ${nodeCanvasIds.length} nodes from canvas ${canvasId}`,

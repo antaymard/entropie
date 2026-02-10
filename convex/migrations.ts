@@ -1,35 +1,43 @@
 import { internalMutation } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 
 /**
- * Migration: Rename frameless to headerless in canvases
- * Run once with: npx convex run migrations:renameFramelessToHeaderlessInCanvases
+ * Migration: Clean orphaned nodeDatas not referenced by any canvas node
+ * Run once with: npx convex run migrations:cleanOrphanedNodeDatas
  */
-export const renameFramelessToHeaderlessInCanvases = internalMutation({
+export const cleanOrphanedNodeDatas = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const canvases = await ctx.db.query("canvases").collect();
+    // 1. Collect all nodeDataIds referenced across all canvases
+    const allCanvases = await ctx.db.query("canvases").collect();
+    const referencedIds = new Set<Id<"nodeDatas">>();
 
-    let migrated = 0;
-    for (const canvas of canvases) {
-      if (canvas.nodes && Array.isArray(canvas.nodes)) {
-        let hasFrameless = false;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const updatedNodes = canvas.nodes.map((node: any) => {
-          if (node.frameless !== undefined) {
-            hasFrameless = true;
-            const { frameless, ...rest } = node;
-            return { ...rest, headerless: frameless };
-          }
-          return node;
-        });
-
-        if (hasFrameless) {
-          await ctx.db.patch(canvas._id, { nodes: updatedNodes });
-          migrated++;
+    for (const canvas of allCanvases) {
+      for (const node of canvas.nodes || []) {
+        if (node.nodeDataId) {
+          referencedIds.add(node.nodeDataId as Id<"nodeDatas">);
         }
       }
     }
 
-    return { total: canvases.length, migrated };
+    // 2. Scan all nodeDatas and delete those not referenced
+    const allNodeDatas = await ctx.db.query("nodeDatas").collect();
+    let deleted = 0;
+
+    for (const nodeData of allNodeDatas) {
+      if (!referencedIds.has(nodeData._id)) {
+        await ctx.db.delete(nodeData._id);
+        deleted++;
+      }
+    }
+
+    console.log(
+      `🧹 Cleaned ${deleted} orphaned nodeDatas out of ${allNodeDatas.length} total`,
+    );
+    return {
+      total: allNodeDatas.length,
+      deleted,
+      kept: allNodeDatas.length - deleted,
+    };
   },
 });

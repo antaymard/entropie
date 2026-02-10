@@ -22,9 +22,12 @@ export function PillLeafStatic(props: SlateLeafProps) {
       as="span"
       className={cn(
         "inline-flex items-center rounded-sm border px-2 py-0.5 text-sm font-medium",
-        colorClasses.lightBg,
-        colorClasses.textColor,
-        colorClasses.nodeBorder,
+        colorKey !== "default" && colorKey !== "transparent"
+          ? "text-white"
+          : "text-slate-800",
+        colorClasses.nodeBg,
+        // colorClasses.textColor,
+        // colorClasses.nodeBorder,
       )}
     >
       {props.children}

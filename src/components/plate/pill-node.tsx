@@ -25,7 +25,7 @@ export function PillLeaf(props: PlateLeafProps) {
         colorKey !== "default" && colorKey !== "transparent"
           ? "text-white"
           : "text-slate-800",
-        colorClasses.lightBg,
+        colorClasses.accentBg,
         // colorClasses.textColor,
         // colorClasses.nodeBorder,
       )}

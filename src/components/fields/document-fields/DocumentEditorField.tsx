@@ -43,6 +43,18 @@ const DocumentEditorField = forwardRef<
 
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const pendingValueRef = useRef<Value | null>(null);
+  const lastSentValueRef = useRef<string | null>(null);
+
+  // Sync external value changes (e.g. server updates) into the editor
+  // Skip if incoming value matches what we last sent (our own echo from Convex)
+  useEffect(() => {
+    if (initialValue) {
+      const incoming = JSON.stringify(initialValue);
+      if (incoming !== lastSentValueRef.current) {
+        editor.tf.setValue(initialValue);
+      }
+    }
+  }, [initialValue, editor]);
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -59,6 +71,7 @@ const DocumentEditorField = forwardRef<
       debounceTimerRef.current = null;
     }
     if (pendingValueRef.current !== null) {
+      lastSentValueRef.current = JSON.stringify(pendingValueRef.current);
       onChange?.({ doc: pendingValueRef.current });
       pendingValueRef.current = null;
     }
@@ -78,6 +91,7 @@ const DocumentEditorField = forwardRef<
 
       // Crée un nouveau timer pour mettre à jour après 750ms
       debounceTimerRef.current = setTimeout(() => {
+        lastSentValueRef.current = JSON.stringify(value);
         onChange?.({ doc: value });
         pendingValueRef.current = null;
       }, 750);
@@ -102,7 +116,7 @@ const DocumentEditorField = forwardRef<
         variant="default"
         className={cn(
           "nodrag h-full overflow-auto",
-          visualType === "window" && "border border-slate-300"
+          visualType === "window" && "border border-slate-300",
         )}
         onFocus={handleFocus}
         onBlur={handleBlur}

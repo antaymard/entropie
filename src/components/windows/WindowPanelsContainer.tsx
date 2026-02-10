@@ -17,7 +17,7 @@ export default function WindowPanelsContainer() {
     if (!node?.type) return null;
     switch (node.type) {
       case "document":
-        return <DocumentWindow xyNode={node} />;
+        return <DocumentWindow key={node.id} xyNode={node} />;
       case "file":
         return <PdfWindow xyNode={node} />;
     }

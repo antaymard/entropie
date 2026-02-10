@@ -1,4 +1,4 @@
-import { memo, useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import type { Node } from "@xyflow/react";
 import type { Value } from "platejs";
 import DocumentEditorField from "@/components/fields/document-fields/DocumentEditorField";
@@ -15,9 +15,8 @@ export default function DocumentWindow({ xyNode }: { xyNode: Node }) {
   const { updateNodeDataValues } = useUpdateNodeDataValues();
 
   const handleSave = useCallback(
-    (newValue: any) => {
+    (newValue: { doc: Value }) => {
       if (nodeDataId) {
-        console.log(newValue);
         updateNodeDataValues({
           nodeDataId,
           values: newValue,
@@ -27,16 +26,19 @@ export default function DocumentWindow({ xyNode }: { xyNode: Node }) {
     [nodeDataId, updateNodeDataValues],
   );
 
-  if (!nodeDataValues) return null;
+  const editorValue = useMemo(
+    () => ({ doc: (nodeDataValues?.doc as Value) || [] }),
+    [nodeDataValues?.doc],
+  );
 
-  const initialValue: Value = (nodeDataValues.doc as Value) || [];
+  if (!nodeDataValues) return null;
 
   return (
     <WindowPanelFrame xyNode={xyNode} title="Document">
       <DocumentEditorField
         editorId={xyNode.id}
-        value={{ doc: initialValue }}
-        onChange={(newValue) => handleSave(newValue)}
+        value={editorValue}
+        onChange={handleSave}
         isLocked={isLocked}
       />
     </WindowPanelFrame>

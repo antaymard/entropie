@@ -4,7 +4,8 @@
       "Bash(grep:*)",
       "Bash(npx tsc --noEmit)",
       "Bash(npm run dev:*)",
-      "WebFetch(domain:docs.slatejs.org)"
+      "WebFetch(domain:docs.slatejs.org)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }

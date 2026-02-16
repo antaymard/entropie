@@ -31,6 +31,11 @@ const variantDimensions: Record<string, Record<string, { width: number; height: 
   },
 };
 
+const variantLabels: Record<string, Record<string, string>> = {
+  link: { default: "Lien", preview: "Aperçu" },
+  document: { default: "Affichage", title: "Titre seul" },
+};
+
 export default function NodeContextMenu({
   closeMenu,
   position,
@@ -61,11 +66,9 @@ export default function NodeContextMenu({
       icon: TbSpaces,
       subMenu:
         variants?.map((variant) => ({
-          label: {
-            title: "Titre seul",
-            default: "Affichage",
-            preview: "Aperçu",
-          }[variant],
+          label:
+            (xyNode.type && variantLabels[xyNode.type]?.[variant]) ||
+            variant,
           onClick: () => {
             updateCanvasNode({
               nodeId: xyNode.id,

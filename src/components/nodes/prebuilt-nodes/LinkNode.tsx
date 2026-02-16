@@ -140,7 +140,7 @@ function LinkNode(xyNode: Node) {
       <NodeFrame xyNode={xyNode} resizable={isPreview}>
         {isPreview ? (
           linkValue.href ? (
-            <div className="flex flex-col h-full overflow-hidden">
+            <div className="flex flex-col h-full overflow-hidden" style={{ containerType: "size" }}>
               <div className="relative w-full flex-1 min-h-0 overflow-hidden bg-muted">
                 {linkValue.pageImage ? (
                   <img
@@ -173,11 +173,11 @@ function LinkNode(xyNode: Node) {
                 </a>
               </div>
               <div className="flex flex-col gap-1 px-3 py-2.5 min-w-0 shrink-0">
-                <p className="font-medium text-sm leading-tight line-clamp-3">
+                <p className="font-medium leading-tight line-clamp-3">
                   {linkValue.pageTitle || linkValue.href}
                 </p>
                 {linkValue.pageDescription && (
-                  <p className="text-muted-foreground leading-snug line-clamp-3">
+                  <p className="hidden @[min-height:200px]:block text-muted-foreground leading-snug line-clamp-3">
                     {linkValue.pageDescription}
                   </p>
                 )}

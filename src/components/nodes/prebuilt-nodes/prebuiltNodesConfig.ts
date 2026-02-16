@@ -22,11 +22,16 @@ import FetchNode from "./FetchNode";
 import z from "zod";
 import FileNode from "./FileNode";
 
+type VariantConfig = {
+  label: string;
+  dimensions: { width: number; height: number };
+};
+
 type PrebuiltNodeConfig = {
   nodeLabel: string;
   nodeIcon: React.ComponentType;
   nodeComponent: React.ComponentType<any>;
-  variants?: string[];
+  variants?: Record<string, VariantConfig>;
   skipNodeDataCreation?: boolean;
   node: Node;
   nodeDataValuesSchema?: object | null;
@@ -62,7 +67,10 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
     nodeLabel: "Document",
     nodeIcon: TbNews,
     nodeComponent: DocumentNode,
-    variants: ["default", "title"],
+    variants: {
+      default: { label: "Affichage", dimensions: { width: 320, height: 320 } },
+      title: { label: "Titre seul", dimensions: { width: 220, height: 33 } },
+    },
     canHaveAutomation: true,
 
     node: {
@@ -111,7 +119,10 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
     nodeLabel: "Lien",
     nodeIcon: TbLink,
     nodeComponent: LinkNode,
-    variants: ["default", "preview"],
+    variants: {
+      default: { label: "Lien", dimensions: { width: 220, height: 33 } },
+      preview: { label: "Aperçu", dimensions: { width: 280, height: 260 } },
+    },
     canHaveAutomation: true,
 
     node: {

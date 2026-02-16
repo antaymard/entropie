@@ -20,22 +20,6 @@ import { HiOutlineTrash } from "react-icons/hi";
 import { TbCopyPlus, TbCopyPlusFilled, TbSpaces } from "react-icons/tb";
 import { useUpdateCanvasNode } from "@/hooks/useUpdateCanvasNode";
 
-const variantDimensions: Record<string, Record<string, { width: number; height: number }>> = {
-  link: {
-    default: { width: 220, height: 33 },
-    preview: { width: 280, height: 260 },
-  },
-  document: {
-    default: { width: 320, height: 320 },
-    title: { width: 220, height: 33 },
-  },
-};
-
-const variantLabels: Record<string, Record<string, string>> = {
-  link: { default: "Lien", preview: "Aperçu" },
-  document: { default: "Affichage", title: "Titre seul" },
-};
-
 export default function NodeContextMenu({
   closeMenu,
   position,
@@ -55,67 +39,56 @@ export default function NodeContextMenu({
     api.canvasNodes.updatePositionOrDimensions,
   );
 
-  const variants = prebuiltNodesConfig.find(
+  const nodeConfig = prebuiltNodesConfig.find(
     (config) => config.node.type === xyNode.type,
-  )?.variants;
+  );
+  const variants = nodeConfig?.variants;
+  const variantKeys = variants ? Object.keys(variants) : [];
 
   const nodeOptions = [
     {
-      hidden: !variants || variants.length === 0,
+      hidden: variantKeys.length === 0,
       label: "Apparence",
       icon: TbSpaces,
-      subMenu:
-        variants?.map((variant) => ({
-          label:
-            (xyNode.type && variantLabels[xyNode.type]?.[variant]) ||
-            variant,
-          onClick: () => {
-            updateCanvasNode({
-              nodeId: xyNode.id,
-              props: { variant },
-            });
+      subMenu: variantKeys.map((variant) => ({
+        label: variants![variant].label,
+        onClick: () => {
+          updateCanvasNode({
+            nodeId: xyNode.id,
+            props: { variant },
+          });
 
-            const dimensions =
-              xyNode.type && variantDimensions[xyNode.type]?.[variant];
-            if (dimensions) {
-              setNodes((nodes) =>
-                nodes.map((n) =>
-                  n.id === xyNode.id
-                    ? {
-                        ...n,
-                        width: dimensions.width,
-                        height: dimensions.height,
-                      }
-                    : n,
-                ),
-              );
-              updatePositionOrDimensions({
-                canvasId,
-                nodeChanges: [{ id: xyNode.id, dimensions }],
-              });
-            }
-          },
-        })) || [],
+          const { dimensions } = variants![variant];
+          setNodes((nodes) =>
+            nodes.map((n) =>
+              n.id === xyNode.id
+                ? {
+                    ...n,
+                    width: dimensions.width,
+                    height: dimensions.height,
+                  }
+                : n,
+            ),
+          );
+          updatePositionOrDimensions({
+            canvasId,
+            nodeChanges: [{ id: xyNode.id, dimensions }],
+          });
+        },
+      })),
     },
     {
       label: "Dupliquer",
       icon: TbCopyPlus,
       onClick: () => {
-        const nodeToDuplicate = xyNode;
-        if (nodeToDuplicate) {
-          const nodeConfig = prebuiltNodesConfig.find(
-            (config) => config.node.type === nodeToDuplicate.type,
-          );
-
-          createNode({
-            node: nodeToDuplicate,
-            position: {
-              x: nodeToDuplicate.position.x + 50,
-              y: nodeToDuplicate.position.y + 50,
-            },
-            skipNodeDataCreation: nodeConfig?.skipNodeDataCreation || false,
-          });
-        }
+        createNode({
+          node: xyNode,
+          position: {
+            x: xyNode.position.x + 50,
+            y: xyNode.position.y + 50,
+          },
+          skipNodeDataCreation: nodeConfig?.skipNodeDataCreation || false,
+        });
       },
     },
     {

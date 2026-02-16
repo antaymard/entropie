@@ -10,11 +10,31 @@ import {
 import { useCreateNode } from "@/hooks/useCreateNode";
 import type { Node } from "@xyflow/react";
 import { useReactFlow } from "@xyflow/react";
+import { useMutation } from "convex/react";
+import { api } from "@/../convex/_generated/api";
+import { useParams } from "@tanstack/react-router";
+import type { Id } from "@/../convex/_generated/dataModel";
 
 // Icons
 import { HiOutlineTrash } from "react-icons/hi";
 import { TbCopyPlus, TbCopyPlusFilled, TbSpaces } from "react-icons/tb";
 import { useUpdateCanvasNode } from "@/hooks/useUpdateCanvasNode";
+
+const variantDimensions: Record<string, Record<string, { width: number; height: number }>> = {
+  link: {
+    default: { width: 220, height: 33 },
+    preview: { width: 280, height: 260 },
+  },
+  document: {
+    default: { width: 320, height: 320 },
+    title: { width: 220, height: 33 },
+  },
+};
+
+const variantLabels: Record<string, Record<string, string>> = {
+  link: { default: "Lien", preview: "Aperçu" },
+  document: { default: "Affichage", title: "Titre seul" },
+};
 
 export default function NodeContextMenu({
   closeMenu,
@@ -25,9 +45,15 @@ export default function NodeContextMenu({
   position: { x: number; y: number };
   xyNode: Node;
 }) {
-  const { deleteElements } = useReactFlow();
+  const { deleteElements, setNodes } = useReactFlow();
   const { createNode } = useCreateNode();
   const { updateCanvasNode } = useUpdateCanvasNode();
+  const { canvasId }: { canvasId: Id<"canvases"> } = useParams({
+    from: "/canvas/$canvasId",
+  });
+  const updatePositionOrDimensions = useMutation(
+    api.canvasNodes.updatePositionOrDimensions,
+  );
 
   const variants = prebuiltNodesConfig.find(
     (config) => config.node.type === xyNode.type,
@@ -40,12 +66,34 @@ export default function NodeContextMenu({
       icon: TbSpaces,
       subMenu:
         variants?.map((variant) => ({
-          label: { title: "Titre seul", default: "Affichage" }[variant],
+          label:
+            (xyNode.type && variantLabels[xyNode.type]?.[variant]) ||
+            variant,
           onClick: () => {
             updateCanvasNode({
               nodeId: xyNode.id,
               props: { variant },
             });
+
+            const dimensions =
+              xyNode.type && variantDimensions[xyNode.type]?.[variant];
+            if (dimensions) {
+              setNodes((nodes) =>
+                nodes.map((n) =>
+                  n.id === xyNode.id
+                    ? {
+                        ...n,
+                        width: dimensions.width,
+                        height: dimensions.height,
+                      }
+                    : n,
+                ),
+              );
+              updatePositionOrDimensions({
+                canvasId,
+                nodeChanges: [{ id: xyNode.id, dimensions }],
+              });
+            }
           },
         })) || [],
     },

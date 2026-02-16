@@ -42,6 +42,7 @@ function LinkNode(xyNode: Node) {
   const fetchLinkMetadata = useAction(api.links.fetchLinkMetadata);
 
   const linkValue = (values?.link as LinkValueType | undefined) ?? defaultValue;
+  const isPreview = xyNode.data.variant === "preview";
 
   const handleSave = async () => {
     if (!nodeDataId) return;
@@ -136,33 +137,86 @@ function LinkNode(xyNode: Node) {
           </PopoverContent>
         </Popover>
       </CanvasNodeToolbar>
-      <NodeFrame xyNode={xyNode} resizable={false}>
-        <div className="flex items-center gap-2 px-2 min-w-0 h-full group/linknode relative">
-          {linkValue.href ? (
-            <>
-              <TbLink size={18} className="shrink-0" />
-              <p className="truncate flex-1 min-w-0">
-                {linkValue.pageTitle || <i>Pas de titre</i>}
-              </p>
-              {xyNode.selected && (
+      <NodeFrame xyNode={xyNode} resizable={isPreview}>
+        {isPreview ? (
+          linkValue.href ? (
+            <div className="link-preview-container flex flex-col h-full overflow-hidden">
+              <div className="relative w-full flex-1 min-h-0 overflow-hidden bg-muted">
+                {linkValue.pageImage ? (
+                  <img
+                    src={linkValue.pageImage}
+                    alt=""
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.currentTarget.parentElement as HTMLElement).style.display = "none";
+                    }}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full bg-muted/50">
+                    <TbLink size={32} className="text-muted-foreground" />
+                  </div>
+                )}
                 <a
                   href={linkValue.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-background hover:bg-muted rounded-sm p-1 cursor-pointer"
+                  className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-black/60 hover:bg-black/80 text-white rounded-sm px-2 py-1 text-xs cursor-pointer transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <TbExternalLink size={16} />
+                  <img
+                    src={`https://www.google.com/s2/favicons?domain=${(() => { try { return new URL(linkValue.href).hostname; } catch { return ""; } })()}&sz=16`}
+                    alt=""
+                    className="w-4 h-4"
+                  />
+                  <span>{(() => { try { return new URL(linkValue.href).hostname.replace(/^www\./, ""); } catch { return linkValue.href; } })()}</span>
+                  <TbExternalLink size={12} />
                 </a>
-              )}
-            </>
+              </div>
+              <div className="flex flex-col gap-1 px-3 py-2.5 min-w-0 shrink-0">
+                <p className="font-medium leading-tight line-clamp-3">
+                  {linkValue.pageTitle || linkValue.href}
+                </p>
+                {linkValue.pageDescription && (
+                  <p className="link-preview-description text-muted-foreground leading-snug line-clamp-3">
+                    {linkValue.pageDescription}
+                  </p>
+                )}
+              </div>
+            </div>
           ) : (
-            <span className="text-muted-foreground flex items-center gap-2">
-              <TbLink size={18} className="shrink-0" />
+            <div className="flex items-center justify-center h-full text-muted-foreground">
+              <TbLink size={24} className="mr-2" />
               Pas de lien
-            </span>
-          )}
-        </div>
+            </div>
+          )
+        ) : (
+          <div className="flex items-center gap-2 px-2 min-w-0 h-full group/linknode relative">
+            {linkValue.href ? (
+              <>
+                <TbLink size={18} className="shrink-0" />
+                <p className="truncate flex-1 min-w-0">
+                  {linkValue.pageTitle || <i>Pas de titre</i>}
+                </p>
+                {xyNode.selected && (
+                  <a
+                    href={linkValue.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-background hover:bg-muted rounded-sm p-1 cursor-pointer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <TbExternalLink size={16} />
+                  </a>
+                )}
+              </>
+            ) : (
+              <span className="text-muted-foreground flex items-center gap-2">
+                <TbLink size={18} className="shrink-0" />
+                Pas de lien
+              </span>
+            )}
+          </div>
+        )}
       </NodeFrame>
     </>
   );

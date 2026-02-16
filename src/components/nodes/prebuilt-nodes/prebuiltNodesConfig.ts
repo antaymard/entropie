@@ -111,6 +111,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
     nodeLabel: "Lien",
     nodeIcon: TbLink,
     nodeComponent: LinkNode,
+    variants: ["default", "preview"],
     canHaveAutomation: true,
 
     node: {

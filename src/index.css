@@ -189,6 +189,16 @@
   cursor: default !important;
 }
 
+/* LinkNode preview: masquer la description quand le noeud est petit */
+.link-preview-container {
+  container-type: size;
+}
+@container (max-height: 250px) {
+  .link-preview-description {
+    display: none;
+  }
+}
+
 .slate-h1 {
   margin-top: 0.5em;
   font-size: 2em;

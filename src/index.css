@@ -193,7 +193,7 @@
 .link-preview-container {
   container-type: size;
 }
-@container (max-height: 200px) {
+@container (max-height: 250px) {
   .link-preview-description {
     display: none;
   }

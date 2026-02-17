@@ -20,22 +20,6 @@ import { HiOutlineTrash } from "react-icons/hi";
 import { TbCopyPlus, TbCopyPlusFilled, TbSpaces } from "react-icons/tb";
 import { useUpdateCanvasNode } from "@/hooks/useUpdateCanvasNode";
 
-const variantDimensions: Record<string, Record<string, { width: number; height: number }>> = {
-  link: {
-    default: { width: 220, height: 33 },
-    preview: { width: 280, height: 260 },
-  },
-  document: {
-    default: { width: 320, height: 320 },
-    title: { width: 220, height: 33 },
-  },
-};
-
-const variantLabels: Record<string, Record<string, string>> = {
-  link: { default: "Lien", preview: "Aperçu" },
-  document: { default: "Affichage", title: "Titre seul" },
-};
-
 export default function NodeContextMenu({
   closeMenu,
   position,
@@ -61,41 +45,40 @@ export default function NodeContextMenu({
 
   const nodeOptions = [
     {
-      hidden: !variants || variants.length === 0,
+      hidden: !variants || Object.keys(variants).length === 0,
       label: "Apparence",
       icon: TbSpaces,
-      subMenu:
-        variants?.map((variant) => ({
-          label:
-            (xyNode.type && variantLabels[xyNode.type]?.[variant]) ||
-            variant,
+      subMenu: Object.entries(variants || {}).map(
+        ([variantKey, variantConfig]) => ({
+          label: variantConfig.label,
           onClick: () => {
             updateCanvasNode({
               nodeId: xyNode.id,
-              props: { variant },
+              props: { variant: variantKey },
             });
 
-            const dimensions =
-              xyNode.type && variantDimensions[xyNode.type]?.[variant];
-            if (dimensions) {
-              setNodes((nodes) =>
-                nodes.map((n) =>
-                  n.id === xyNode.id
-                    ? {
-                        ...n,
-                        width: dimensions.width,
-                        height: dimensions.height,
-                      }
-                    : n,
-                ),
-              );
-              updatePositionOrDimensions({
-                canvasId,
-                nodeChanges: [{ id: xyNode.id, dimensions }],
-              });
-            }
+            const dimensions = {
+              width: variantConfig.defaultWidth,
+              height: variantConfig.defaultHeight,
+            };
+            setNodes((nodes) =>
+              nodes.map((n) =>
+                n.id === xyNode.id
+                  ? {
+                      ...n,
+                      width: dimensions.width,
+                      height: dimensions.height,
+                    }
+                  : n,
+              ),
+            );
+            updatePositionOrDimensions({
+              canvasId,
+              nodeChanges: [{ id: xyNode.id, dimensions }],
+            });
           },
-        })) || [],
+        }),
+      ),
     },
     {
       label: "Dupliquer",

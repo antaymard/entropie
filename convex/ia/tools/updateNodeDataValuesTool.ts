@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { dynamicTool } from "ai";
 import { Doc, Id } from "../../_generated/dataModel";
-import { markdownToPlateJson } from "../helpers/markdownToPlateHelper";
+import { markdownToPlateJson } from "../helpers/plateMarkdownConverter";
 import { type ActionCtx } from "../../_generated/server";
 import { api } from "../../_generated/api";
 

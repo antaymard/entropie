@@ -1,7 +1,9 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery } from "../../_generated/server";
-import { markdownToPlateJson } from "./markdownToPlateHelper";
-import { plateJsonToMarkdown } from "./plateToMarkdownHelper";
+import {
+  markdownToPlateJson,
+  plateJsonToMarkdown,
+} from "./plateMarkdownConverter";
 
 export const getCanvasInternal = internalQuery({
   args: {

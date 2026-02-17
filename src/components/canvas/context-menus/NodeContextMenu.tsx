@@ -29,7 +29,7 @@ export default function NodeContextMenu({
   position: { x: number; y: number };
   xyNode: Node;
 }) {
-  const { deleteElements, setNodes } = useReactFlow();
+  const { deleteElements, updateNode } = useReactFlow();
   const { createNode } = useCreateNode();
   const { updateCanvasNode } = useUpdateCanvasNode();
   const { canvasId }: { canvasId: Id<"canvases"> } = useParams({
@@ -51,7 +51,7 @@ export default function NodeContextMenu({
       subMenu: Object.entries(variants || {}).map(
         ([variantKey, variantConfig]) => ({
           label: variantConfig.label,
-          onClick: () => {
+          onClick: async () => {
             updateCanvasNode({
               nodeId: xyNode.id,
               props: { variant: variantKey },
@@ -61,21 +61,21 @@ export default function NodeContextMenu({
               width: variantConfig.defaultWidth,
               height: variantConfig.defaultHeight,
             };
-            setNodes((nodes) =>
-              nodes.map((n) =>
-                n.id === xyNode.id
-                  ? {
-                      ...n,
-                      width: dimensions.width,
-                      height: dimensions.height,
-                    }
-                  : n,
-              ),
-            );
-            updatePositionOrDimensions({
+
+            // Marquer resizing: true pour protéger du sync Convex → ReactFlow
+            updateNode(xyNode.id, {
+              width: dimensions.width,
+              height: dimensions.height,
+              resizing: true,
+            });
+
+            // Envoyer la mutation, puis libérer le flag resizing
+            await updatePositionOrDimensions({
               canvasId,
               nodeChanges: [{ id: xyNode.id, dimensions }],
             });
+
+            updateNode(xyNode.id, { resizing: false });
           },
         }),
       ),

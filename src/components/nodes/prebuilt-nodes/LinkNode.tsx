@@ -148,7 +148,9 @@ function LinkNode(xyNode: Node) {
                     alt=""
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      (e.currentTarget.parentElement as HTMLElement).style.display = "none";
+                      (
+                        e.currentTarget.parentElement as HTMLElement
+                      ).style.display = "none";
                     }}
                   />
                 ) : (
@@ -164,11 +166,28 @@ function LinkNode(xyNode: Node) {
                   onClick={(e) => e.stopPropagation()}
                 >
                   <img
-                    src={`https://www.google.com/s2/favicons?domain=${(() => { try { return new URL(linkValue.href).hostname; } catch { return ""; } })()}&sz=16`}
+                    src={`https://www.google.com/s2/favicons?domain=${(() => {
+                      try {
+                        return new URL(linkValue.href).hostname;
+                      } catch {
+                        return "";
+                      }
+                    })()}&sz=16`}
                     alt=""
                     className="w-4 h-4"
                   />
-                  <span>{(() => { try { return new URL(linkValue.href).hostname.replace(/^www\./, ""); } catch { return linkValue.href; } })()}</span>
+                  <span>
+                    {(() => {
+                      try {
+                        return new URL(linkValue.href).hostname.replace(
+                          /^www\./,
+                          "",
+                        );
+                      } catch {
+                        return linkValue.href;
+                      }
+                    })()}
+                  </span>
                   <TbExternalLink size={12} />
                 </a>
               </div>
@@ -194,7 +213,10 @@ function LinkNode(xyNode: Node) {
             {linkValue.href ? (
               <>
                 <TbLink size={18} className="shrink-0" />
-                <p className="truncate flex-1 min-w-0">
+                <p
+                  className="truncate flex-1 min-w-0"
+                  title={linkValue.pageTitle || linkValue.href}
+                >
                   {linkValue.pageTitle || <i>Pas de titre</i>}
                 </p>
                 {xyNode.selected && (

@@ -38,6 +38,8 @@ export default function DocumentNode(xyNode: Node) {
   const currentValue: Value =
     (values?.doc as Value | undefined) ?? defaultValue;
 
+  const documentTitle = getDocumentTitle(currentValue);
+
   return (
     <>
       <CanvasNodeToolbar xyNode={xyNode}>
@@ -62,8 +64,8 @@ export default function DocumentNode(xyNode: Node) {
         {xyNode.data.variant === "title" && (
           <div className="flex items-center gap-2 px-2 min-w-0 h-full group/linknode relative">
             <TbNews size={18} className="shrink-0" />
-            <p className="truncate flex-1 min-w-0">
-              {getDocumentTitle(currentValue)}
+            <p className="truncate flex-1 min-w-0" title={documentTitle}>
+              {documentTitle}
             </p>
           </div>
         )}

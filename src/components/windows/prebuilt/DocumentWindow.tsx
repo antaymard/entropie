@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import type { Node } from "@xyflow/react";
 import type { Value } from "platejs";
 import DocumentEditorField from "@/components/fields/document-fields/DocumentEditorField";
@@ -7,7 +7,7 @@ import { useNodeData, useNodeDataValues } from "@/hooks/useNodeData";
 import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
 import type { Id } from "@/../convex/_generated/dataModel";
 
-export default function DocumentWindow({ xyNode }: { xyNode: Node }) {
+function DocumentWindow({ xyNode }: { xyNode: Node }) {
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas">;
   const nodeDataValues = useNodeDataValues(nodeDataId);
   const nodeData = useNodeData(nodeDataId);
@@ -44,4 +44,10 @@ export default function DocumentWindow({ xyNode }: { xyNode: Node }) {
     </WindowPanelFrame>
   );
 }
+
+export default memo(DocumentWindow, (prev, next) =>
+  prev.xyNode.id === next.xyNode.id &&
+  prev.xyNode.type === next.xyNode.type &&
+  prev.xyNode.data === next.xyNode.data,
+);
 

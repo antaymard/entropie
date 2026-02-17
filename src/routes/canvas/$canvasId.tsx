@@ -53,7 +53,6 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   // Cleanup stores on canvas switch
   useEffect(() => {
     useWindowsStore.getState().closeAllWindows();
-    useCanvasStore.getState().setCurrentCanvasTool("default");
     useCanvasStore.getState().setStatus("idle");
   }, [canvasId]);
 

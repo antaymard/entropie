@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { type Node } from "@xyflow/react";
+import { areNodePropsEqual } from "../areNodePropsEqual";
 import { useNodeDataValues } from "@/hooks/useNodeData";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { normalizeNodeId, type Value } from "platejs";
@@ -28,7 +29,7 @@ function getDocumentTitle(value: Value): string {
   return "Document";
 }
 
-export default function DocumentNode(xyNode: Node) {
+function DocumentNode(xyNode: Node) {
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
   const values = useNodeDataValues(nodeDataId);
 
@@ -37,6 +38,8 @@ export default function DocumentNode(xyNode: Node) {
   // Récupère la valeur depuis le store NodeData
   const currentValue: Value =
     (values?.doc as Value | undefined) ?? defaultValue;
+
+  const documentTitle = getDocumentTitle(currentValue);
 
   return (
     <>
@@ -62,8 +65,8 @@ export default function DocumentNode(xyNode: Node) {
         {xyNode.data.variant === "title" && (
           <div className="flex items-center gap-2 px-2 min-w-0 h-full group/linknode relative">
             <TbNews size={18} className="shrink-0" />
-            <p className="truncate flex-1 min-w-0">
-              {getDocumentTitle(currentValue)}
+            <p className="truncate flex-1 min-w-0" title={documentTitle}>
+              {documentTitle}
             </p>
           </div>
         )}
@@ -71,3 +74,5 @@ export default function DocumentNode(xyNode: Node) {
     </>
   );
 }
+
+export default memo(DocumentNode, areNodePropsEqual);

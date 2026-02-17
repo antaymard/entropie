@@ -26,7 +26,15 @@ type PrebuiltNodeConfig = {
   nodeLabel: string;
   nodeIcon: React.ComponentType;
   nodeComponent: React.ComponentType<any>;
-  variants?: string[];
+  variants?: Record<
+    string,
+    {
+      label: string;
+      defaultHeight: number;
+      defaultWidth: number;
+      resizable?: boolean;
+    }
+  >;
   skipNodeDataCreation?: boolean;
   node: Node;
   nodeDataValuesSchema?: object | null;
@@ -62,7 +70,19 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
     nodeLabel: "Document",
     nodeIcon: TbNews,
     nodeComponent: DocumentNode,
-    variants: ["default", "title"],
+    variants: {
+      default: {
+        label: "Aperçu",
+        defaultHeight: 320,
+        defaultWidth: 320,
+      },
+      title: {
+        label: "Titre",
+        defaultHeight: 28,
+        defaultWidth: 150,
+        resizable: false,
+      },
+    },
     canHaveAutomation: true,
 
     node: {
@@ -111,7 +131,18 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
     nodeLabel: "Lien",
     nodeIcon: TbLink,
     nodeComponent: LinkNode,
-    variants: ["default", "preview"],
+    variants: {
+      default: {
+        label: "Défaut",
+        defaultHeight: 33,
+        defaultWidth: 220,
+      },
+      preview: {
+        label: "Aperçu",
+        defaultHeight: 120,
+        defaultWidth: 320,
+      },
+    },
     canHaveAutomation: true,
 
     node: {

@@ -33,9 +33,7 @@ const DocumentEditorField = forwardRef<
   ref,
 ) {
   const initialValue: Value = value?.doc as Value;
-  const setEnableCanvasUndoRedo = useCanvasStore(
-    (s) => s.setEnableCanvasUndoRedo,
-  );
+  const setFocus = useCanvasStore((s) => s.setFocus);
 
   const editor = usePlateEditor({
     id: editorId ? `doc-${editorId}` : undefined,
@@ -110,15 +108,15 @@ const DocumentEditorField = forwardRef<
     }
     if (isLocked) return;
     isFocusedRef.current = true;
-    setEnableCanvasUndoRedo(false);
-  }, [setEnableCanvasUndoRedo, isLocked]);
+    setFocus("platejs");
+  }, [setFocus, isLocked]);
 
   const handleBlur = useCallback(() => {
     // Delay blur to handle toolbar/portal clicks that temporarily steal focus
     blurTimeoutRef.current = setTimeout(() => {
       blurTimeoutRef.current = null;
       isFocusedRef.current = false;
-      setEnableCanvasUndoRedo(true);
+      setFocus("canvas");
 
       const hadPending = pendingValueRef.current !== null;
       flushChanges();
@@ -128,14 +126,10 @@ const DocumentEditorField = forwardRef<
         pendingRemoteValueRef.current = null;
       }
     }, 150);
-  }, [setEnableCanvasUndoRedo, flushChanges, editor]);
+  }, [setFocus, flushChanges, editor]);
 
   return (
-    <div
-      className="relative h-full"
-      onFocus={handleFocus}
-      onBlur={handleBlur}
-    >
+    <div className="relative h-full" onFocus={handleFocus} onBlur={handleBlur}>
       <Plate editor={editor} onValueChange={handleChange}>
         <EditorContainer
           variant="default"

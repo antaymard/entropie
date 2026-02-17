@@ -4,7 +4,7 @@ import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
 import { anthropic } from "@ai-sdk/anthropic";
 import { generateText } from "ai";
-import { mistral } from "@ai-sdk/mistral";
+import { reportToolProgress } from "../../automation/progressReporter";
 
 export const viewImageTool = createTool({
   description:
@@ -20,6 +20,10 @@ export const viewImageTool = createTool({
   handler: async (ctx, args): Promise<string> => {
     console.log(`🖼️ Analyzing image from URL: ${args.url}`);
     console.log(`📋 Objective: ${args.objective}`);
+
+    await reportToolProgress(ctx, {
+      stepType: "tool_launched=view_image",
+    });
 
     try {
       // Analyser l'image avec Anthropic (supporte les URLs directement)
@@ -43,6 +47,10 @@ export const viewImageTool = createTool({
         ],
       });
 
+      await reportToolProgress(ctx, {
+        stepType: "tool_completed=view_image",
+        data: {},
+      });
       console.log(`✅ Image analysis complete`);
       return result.text;
     } catch (error) {

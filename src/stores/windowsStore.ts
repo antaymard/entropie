@@ -1,6 +1,6 @@
-import type { Node } from "@xyflow/react";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
+import { useCanvasStore } from "./canvasStore";
 
 interface WindowsStore {
   openWindows: string[];
@@ -24,18 +24,20 @@ export const useWindowsStore = create<WindowsStore>()(
         });
       },
       closeWindow: (xyNodeId: string) => {
+        useCanvasStore.getState().setFocus("canvas");
         set((state) => ({
           openWindows: state.openWindows.filter(
-            (window) => window !== xyNodeId
+            (window) => window !== xyNodeId,
           ),
         }));
       },
       closeAllWindows: () => {
+        useCanvasStore.getState().setFocus("canvas");
         set(() => ({
           openWindows: [],
         }));
       },
     }),
-    { name: "windows-store" }
-  )
+    { name: "windows-store" },
+  ),
 );

@@ -6,6 +6,11 @@ import { createThread } from "@convex-dev/agent";
 import { requireAuth } from "./lib/auth";
 import { nodeDataConfig } from "./schemas/nodeDataConfig";
 import updateNodeDataValuesTool from "./ia/tools/updateNodeDataValuesTool";
+import {
+  generateInputNodesContext,
+  generateNodeContext,
+} from "./ia/helpers/contextGenerator";
+import { createProgressReporter } from "./automation/progressReporter";
 
 export const trigger = action({
   args: {
@@ -21,10 +26,14 @@ export const trigger = action({
         { _id: nodeDataId },
       );
 
-      // 1. Passer le statut en working
+      // 1. Passer le statut en working et initialiser les infos d'automationProgress
+      const reportProgress = createProgressReporter(ctx, nodeDataId);
       await ctx.runMutation(internal.automation.helpers.updateStatus, {
         _id: nodeDataId,
         status: "working",
+      });
+      await reportProgress({
+        stepType: "automation_launched",
       });
 
       // 2. Charger les nodeData input du noeud courant
@@ -36,6 +45,8 @@ export const trigger = action({
         },
       );
 
+      // Get the toolInputSchema for the current nodeData type,
+      // for the model to know how to use the updateNodeDataValuesTool
       const inputSchema = nodeDataConfig.find(
         (ndc) => ndc.type === currentNodeData.type,
       )?.toolInputSchema;
@@ -51,23 +62,21 @@ export const trigger = action({
           ctx,
           nodeData: currentNodeData,
           inputSchema,
+          reportProgress,
         }),
       });
       const threadId = await createThread(ctx, components.agent, {
         userId,
       });
       const response = await automationAgent.generateText(
-        { ...ctx, currentNodeData } as any,
+        { ...ctx, currentNodeData, reportProgress } as any,
         { threadId },
         {
-          prompt: `Voici les données d'entrée disponibles pour le noeud actuel : ${inputNodeDatas
-            .map(
-              (nd) =>
-                `\n- NodeData ID: ${nd._id}, Type: ${nd.type}, Values: ${JSON.stringify(nd.values)}`,
-            )
-            .join("")}
+          prompt: `Voici les données d'entrée disponibles pour le noeud actuel :
+${generateInputNodesContext(inputNodeDatas)}
 
-          Voici les données actuelles du noeud (saisies par l'utilisateur, ou par toi lors d'une exécution précédente) : ${JSON.stringify(currentNodeData.values)}
+          Voici les données actuelles du noeud (saisies par l'utilisateur, ou par toi lors d'une exécution précédente) :
+${generateNodeContext(currentNodeData)}
           Si c'est pertinent, garde ces données à l'esprit pour produire ta réponse (structure, format, contraintes). Si les résultats de ton travail sont très différents, privilégie la qualité de ta réponse plutôt que la conformité aux données précédentes.
 
           ------
@@ -83,6 +92,9 @@ export const trigger = action({
       await ctx.runMutation(internal.automation.helpers.updateStatus, {
         _id: nodeDataId,
         status: "idle",
+      });
+      await reportProgress({
+        stepType: "automation_completed",
       });
 
       // X. Lancer les automations des noeuds suivants (à implémenter)

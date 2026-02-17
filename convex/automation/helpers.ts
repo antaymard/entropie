@@ -12,7 +12,25 @@ export const updateStatus = internalMutation({
     if (!existing) throw new ConvexError("NodeData non trouvé");
     await ctx.db.patch(args._id, {
       status: args.status,
-      updatedAt: Date.now(),
+    });
+    return true;
+  },
+});
+
+export const updateAutomationProgress = internalMutation({
+  args: {
+    _id: nodeDatasWithIdValidator.fields._id,
+    automationProgress: nodeDatasWithIdValidator.fields.automationProgress,
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db.get(args._id);
+    if (!existing) throw new ConvexError("NodeData non trouvé");
+
+    // Merge changes
+    await ctx.db.patch(args._id, {
+      automationProgress: args.automationProgress
+        ? { ...existing.automationProgress, ...args.automationProgress }
+        : args.automationProgress,
     });
     return true;
   },

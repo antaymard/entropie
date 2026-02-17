@@ -40,7 +40,7 @@ export default function WindowPanelFrame({
             <TbX />
           </Button>
         </div>
-        <div className={cn("flex-1 overflow-auto")}>{children}</div>
+        <div className={cn("flex-1 min-h-0 overflow-auto")}>{children}</div>
       </div>
     </div>
   );

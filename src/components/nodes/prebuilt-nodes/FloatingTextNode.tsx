@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { type Node } from "@xyflow/react";
+import { areNodePropsEqual } from "../areNodePropsEqual";
 import NodeFrame from "../NodeFrame";
 import { ToggleGroup, ToggleGroupItem } from "@/components/shadcn/toggle-group";
 import { LuHeading1, LuHeading2, LuHeading3 } from "react-icons/lu";
@@ -67,4 +68,4 @@ function FloatingTextNode(xyNode: Node) {
   );
 }
 
-export default memo(FloatingTextNode);
+export default memo(FloatingTextNode, areNodePropsEqual);

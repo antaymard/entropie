@@ -7,23 +7,39 @@ import AutomationSettingsButton from "./AutomationSettingsButton";
 const selectedNodesCountSelector = (state: { nodes: Node[] }) =>
   state.nodes.filter((node) => node.selected).length;
 
+interface CanvasNodeToolbarProps {
+  children?: React.ReactNode;
+  xyNode: Node;
+  className?: string;
+  asSimpleDiv?: boolean;
+}
+
 function CanvasNodeToolbar({
   children,
   xyNode,
   className = "",
   asSimpleDiv = false,
-}: {
-  children?: React.ReactNode;
-  xyNode: Node;
-  className?: string;
-  asSimpleDiv?: boolean;
-}) {
-  const selectedNodesCount = useStore(selectedNodesCountSelector);
-
-  // Early return si le node n'est pas sélectionné
+}: CanvasNodeToolbarProps) {
+  // Early return si le node n'est pas sélectionné — aucun hook avant ce point
+  // pour éviter que les nodes non-sélectionnés souscrivent au store global
   if (!xyNode?.selected && !asSimpleDiv) {
     return null;
   }
+
+  return (
+    <ToolbarContent xyNode={xyNode} className={className} asSimpleDiv={asSimpleDiv}>
+      {children}
+    </ToolbarContent>
+  );
+}
+
+function ToolbarContent({
+  children,
+  xyNode,
+  className = "",
+  asSimpleDiv = false,
+}: CanvasNodeToolbarProps) {
+  const selectedNodesCount = useStore(selectedNodesCountSelector);
 
   const isVisible = !xyNode.dragging && selectedNodesCount === 1;
   const nodeConfig = prebuiltNodesConfig.find(

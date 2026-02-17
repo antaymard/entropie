@@ -1,5 +1,6 @@
 import { memo, useState } from "react";
 import type { Node } from "@xyflow/react";
+import { areNodePropsEqual } from "../areNodePropsEqual";
 import NodeFrame from "../NodeFrame";
 import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
 import {
@@ -236,4 +237,4 @@ function ValueNode(xyNode: Node) {
   );
 }
 
-export default memo(ValueNode);
+export default memo(ValueNode, areNodePropsEqual);

@@ -10,9 +10,10 @@ import {
 } from "@/components/shadcn/popover";
 import { TbPencil } from "react-icons/tb";
 import { Button } from "@/components/shadcn/button";
-import { useState } from "react";
+import { memo, useState } from "react";
+import { areNodePropsEqual } from "../areNodePropsEqual";
 
-export default function FetchNode(xyNode: Node) {
+function FetchNode(xyNode: Node) {
   const nodeData = useNodeDataValues(
     xyNode.data?.nodeDataId as Id<"nodeDatas">,
   );
@@ -39,3 +40,5 @@ export default function FetchNode(xyNode: Node) {
     </>
   );
 }
+
+export default memo(FetchNode, areNodePropsEqual);

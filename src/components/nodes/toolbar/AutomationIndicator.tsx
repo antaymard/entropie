@@ -1,13 +1,13 @@
 import { useNodeData } from "@/hooks/useNodeData";
 import { Spinner } from "@/components/shadcn/spinner";
 import { NodeToolbar, type Node } from "@xyflow/react";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { CheckCircle, AlertTriangle } from "lucide-react";
 import { TbCheck, TbExclamationMark } from "react-icons/tb";
 
 type TransitionState = "none" | "success" | "error";
 
-export default function AutomationIndicator({ xyNode }: { xyNode: Node<any> }) {
+function AutomationIndicator({ xyNode }: { xyNode: Node<any> }) {
   const nodeData = useNodeData(xyNode.data?.nodeDataId);
   const prevStatusRef = useRef<string | undefined>(nodeData?.status);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -82,3 +82,5 @@ export default function AutomationIndicator({ xyNode }: { xyNode: Node<any> }) {
     </>
   );
 }
+
+export default memo(AutomationIndicator);

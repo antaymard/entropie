@@ -1,5 +1,6 @@
 import { memo, useCallback, useState, useMemo } from "react";
 import { type Node, useReactFlow } from "@xyflow/react";
+import { areNodePropsEqual } from "../areNodePropsEqual";
 import { TbArrowsSort, TbChevronDown, TbChevronUp } from "react-icons/tb";
 import {
   useReactTable,
@@ -726,4 +727,4 @@ function TableNode(xyNode: Node) {
   );
 }
 
-export default memo(TableNode);
+export default memo(TableNode, areNodePropsEqual);

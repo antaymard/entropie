@@ -1,5 +1,6 @@
 import { memo } from "react";
 import type { Node } from "@xyflow/react";
+import { areNodePropsEqual } from "../areNodePropsEqual";
 import NodeFrame from "../NodeFrame";
 import { useNodeDataValues } from "@/hooks/useNodeData";
 import type { Id } from "@/../convex/_generated/dataModel";
@@ -78,4 +79,4 @@ function ImageNode(xyNode: Node) {
   );
 }
 
-export default memo(ImageNode);
+export default memo(ImageNode, areNodePropsEqual);

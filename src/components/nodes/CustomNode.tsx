@@ -3,10 +3,11 @@ import NodeFrame from "./NodeFrame";
 import { useTemplate } from "@/stores/templateStore";
 import type { Id } from "convex/_generated/dataModel";
 import CustomTemplateRenderer from "../renderers/CustomTemplateRenderer";
-import { useCallback } from "react";
+import { memo, useCallback } from "react";
 import CanvasNodeToolbar from "./toolbar/CanvasNodeToolbar";
+import { areNodePropsEqual } from "./areNodePropsEqual";
 
-export default function CustomNode(xyNode: Node) {
+function CustomNode(xyNode: Node) {
   const template = useTemplate(xyNode.data?.templateId as Id<"nodeTemplates">);
 
   const { updateNodeData } = useReactFlow();
@@ -50,3 +51,5 @@ export default function CustomNode(xyNode: Node) {
     </>
   );
 }
+
+export default memo(CustomNode, areNodePropsEqual);

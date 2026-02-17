@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { type Node } from "@xyflow/react";
+import { areNodePropsEqual } from "../areNodePropsEqual";
 import { useNodeDataValues } from "@/hooks/useNodeData";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { normalizeNodeId, type Value } from "platejs";
@@ -28,7 +29,7 @@ function getDocumentTitle(value: Value): string {
   return "Document";
 }
 
-export default function DocumentNode(xyNode: Node) {
+function DocumentNode(xyNode: Node) {
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
   const values = useNodeDataValues(nodeDataId);
 
@@ -73,3 +74,5 @@ export default function DocumentNode(xyNode: Node) {
     </>
   );
 }
+
+export default memo(DocumentNode, areNodePropsEqual);

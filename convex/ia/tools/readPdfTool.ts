@@ -22,7 +22,7 @@ export const readPdfTool = createTool({
     console.log(`📋 Objective: ${args.objective}`);
 
     await reportToolProgress(ctx, {
-      stepType: "pdf_analysis",
+      stepType: "tool_launched=read_pdf",
     });
 
     try {
@@ -48,10 +48,17 @@ export const readPdfTool = createTool({
         ],
       });
 
+      await reportToolProgress(ctx, {
+        stepType: "tool_completed=read_pdf",
+      });
+
       console.log(`✅ PDF analysis complete`);
       return result.text;
     } catch (error) {
       console.error("View PDF error:", error);
+      await reportToolProgress(ctx, {
+        stepType: "tool_error=read_pdf",
+      });
       throw new Error(
         `Failed to analyze PDF: ${error instanceof Error ? error.message : "Unknown error"}. Please verify the URL and try again.`,
       );

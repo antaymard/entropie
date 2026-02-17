@@ -20,14 +20,26 @@ import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import toast from "react-hot-toast";
 import { useState } from "react";
-import type { NodeData } from "@/types/convex";
+import type { AutomationStepType, NodeData } from "@/types/convex";
 import { useNodeData } from "@/hooks/useNodeData";
 import { ButtonGroup } from "@/components/shadcn/button-group";
 import { Spinner } from "@/components/shadcn/spinner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/shadcn/tooltip";
+import { automationMapping } from "./automationTypesToLabelsMapping";
 
 const sectionClassName = "flex flex-col gap-2";
 
-export default function AutomationSettingsButton({ xyNode }: { xyNode: Node }) {
+export default function AutomationSettingsButton({
+  xyNode,
+  automationStepAlwaysVisible,
+}: {
+  xyNode: Node;
+  automationStepAlwaysVisible?: boolean;
+}) {
   const updateAutomationSettings = useMutation(
     api.nodeDatas.updateAutomationSettings,
   );
@@ -80,6 +92,11 @@ export default function AutomationSettingsButton({ xyNode }: { xyNode: Node }) {
     return null;
   }
 
+  const automationStep =
+    automationMapping[
+      nodeData.automationProgress?.currentStepType as AutomationStepType
+    ];
+
   return (
     <ButtonGroup>
       <Popover
@@ -93,9 +110,15 @@ export default function AutomationSettingsButton({ xyNode }: { xyNode: Node }) {
             variant="outline"
             size="icon"
             className={cn(hasAutomationEnabled && "text-amber-500")}
-            title="Paramètres d'automation"
           >
-            {hasAutomationEnabled ? <TbBoltFilled /> : <TbBolt />}
+            <Tooltip>
+              <TooltipTrigger>
+                {hasAutomationEnabled ? <TbBoltFilled /> : <TbBolt />}
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Paramètres d'automation</p>
+              </TooltipContent>
+            </Tooltip>
           </Button>
         </PopoverTrigger>
 
@@ -156,17 +179,44 @@ export default function AutomationSettingsButton({ xyNode }: { xyNode: Node }) {
       </Popover>
       {hasAutomationEnabled && (
         <Button
-          disabled={automationStatus === "working"}
           variant="outline"
-          size="icon"
+          size={
+            automationStatus === "working" && automationStepAlwaysVisible
+              ? "default"
+              : "icon"
+          }
           className={cn("text-green-500 disabled:opacity-100")}
-          onClick={handleTriggerAutomation}
-          title="Lancer l'automation"
+          onClick={() => {
+            if (automationStatus === "working") return;
+            handleTriggerAutomation();
+          }}
         >
           {(automationStatus === "idle" || !automationStatus) && (
-            <TbPlayerPlayFilled />
+            <Tooltip>
+              <TooltipTrigger>
+                <TbPlayerPlayFilled />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Lancer l'automation</p>
+              </TooltipContent>
+            </Tooltip>
           )}
-          {automationStatus === "working" && <Spinner />}
+          {automationStatus === "working" &&
+            (automationStepAlwaysVisible ? (
+              <span className="flex gap-2">
+                <Spinner />
+                <p>{automationStep}</p>
+              </span>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger>
+                  <Spinner />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{automationStep}</p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
           {automationStatus === "error" && <TbExclamationMark />}
         </Button>
       )}

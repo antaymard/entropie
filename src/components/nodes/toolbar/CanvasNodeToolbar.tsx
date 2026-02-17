@@ -27,7 +27,11 @@ function CanvasNodeToolbar({
   }
 
   return (
-    <ToolbarContent xyNode={xyNode} className={className} asSimpleDiv={asSimpleDiv}>
+    <ToolbarContent
+      xyNode={xyNode}
+      className={className}
+      asSimpleDiv={asSimpleDiv}
+    >
       {children}
     </ToolbarContent>
   );
@@ -50,7 +54,7 @@ function ToolbarContent({
     <>
       {children}
       {nodeConfig?.canHaveAutomation && (
-        <AutomationSettingsButton xyNode={xyNode} />
+        <AutomationSettingsButton xyNode={xyNode} automationStepAlwaysVisible />
       )}
       <ColorSelector xyNode={xyNode} />
     </>

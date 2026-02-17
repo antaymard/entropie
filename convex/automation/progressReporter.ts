@@ -6,9 +6,24 @@ import { type ToolCtx } from "@convex-dev/agent";
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
+export type AutomationStepType =
+  | "automation_launched"
+  | "automation_completed"
+  | "automation_error"
+  | "tool_launched=web_search"
+  | "tool_completed=web_search"
+  | "tool_launched=web_extract"
+  | "tool_completed=web_extract"
+  | "tool_launched=view_image"
+  | "tool_completed=view_image"
+  | "tool_launched=read_pdf"
+  | "tool_completed=read_pdf"
+  | "tool_error=read_pdf"
+  | "tool_launched=update_node_data_values"
+  | "tool_completed=update_node_data_values";
 
 export type ProgressReport = {
-  stepType: string;
+  stepType: AutomationStepType;
   data?: Record<string, unknown>;
 };
 
@@ -82,7 +97,10 @@ export async function reportToolProgress(
   ctx: AutomationToolCtx,
   progress: ProgressReport,
 ): Promise<void> {
-  if (typeof (ctx as AutomationToolCtx).reportProgress === "function") {
+  const hasReportProgress =
+    typeof (ctx as AutomationToolCtx).reportProgress === "function";
+
+  if (hasReportProgress) {
     await (ctx as AutomationToolCtx).reportProgress!(progress);
   }
 }

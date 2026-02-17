@@ -28,8 +28,6 @@ export default function updateNodeDataValuesTool({
         });
 
         console.log("updateNodeDataValuesTool args:", args);
-        console.log("Updating nodeDataId:", nodeData._id);
-        console.log("With values:", args);
 
         let updates = args;
 

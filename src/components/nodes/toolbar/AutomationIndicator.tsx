@@ -2,8 +2,9 @@ import { useNodeData } from "@/hooks/useNodeData";
 import { Spinner } from "@/components/shadcn/spinner";
 import { NodeToolbar, type Node } from "@xyflow/react";
 import { useEffect, useRef, useState } from "react";
-import { CheckCircle, AlertTriangle } from "lucide-react";
 import { TbCheck, TbExclamationMark } from "react-icons/tb";
+import { automationMapping } from "./automationTypesToLabelsMapping";
+import type { AutomationStepType } from "@/types";
 
 type TransitionState = "none" | "success" | "error";
 
@@ -60,7 +61,9 @@ function AutomationIndicator({ xyNode }: { xyNode: Node<any> }) {
       <NodeToolbar isVisible={!xyNode?.selected && isWorking}>
         <span className="text-slate-500 flex gap-2 items-center">
           <Spinner />
-          {nodeData?.automationProgress?.currentStepType || "En cours..."}
+          {automationMapping[
+            nodeData?.automationProgress?.currentStepType as AutomationStepType
+          ] || "En cours..."}
         </span>
       </NodeToolbar>
 

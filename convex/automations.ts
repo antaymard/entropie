@@ -33,7 +33,7 @@ export const trigger = action({
         status: "working",
       });
       await reportProgress({
-        stepType: "automation_started",
+        stepType: "automation_launched",
       });
 
       // 2. Charger les nodeData input du noeud courant
@@ -94,7 +94,7 @@ ${generateNodeContext(currentNodeData)}
         status: "idle",
       });
       await reportProgress({
-        stepType: "automation_finished",
+        stepType: "automation_completed",
       });
 
       // X. Lancer les automations des noeuds suivants (à implémenter)

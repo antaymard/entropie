@@ -35,7 +35,10 @@ export const useNodeDataStore = create<NodeDataStore>()(
             if (
               !existing ||
               existing.updatedAt !== nd.updatedAt ||
-              existing.status !== nd.status
+              existing.automationMode !== nd.automationMode ||
+              existing.status !== nd.status ||
+              existing.automationProgress?.currentStepType !==
+                nd.automationProgress?.currentStepType
             ) {
               newMap.set(nd._id, nd);
               changed = true;

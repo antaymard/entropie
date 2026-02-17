@@ -7,6 +7,7 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import type { RouterContext } from "./routes/__root";
 import { Toaster } from "react-hot-toast";
+import { TooltipProvider } from "./components/shadcn/tooltip";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -29,10 +30,12 @@ if (!rootElement.innerHTML) {
   const root = createRoot(rootElement);
   root.render(
     <StrictMode>
-      <Toaster />
-      <ConvexAuthProvider client={convex}>
-        <RouterProvider router={router} />
-      </ConvexAuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <ConvexAuthProvider client={convex}>
+          <RouterProvider router={router} />
+        </ConvexAuthProvider>
+      </TooltipProvider>
     </StrictMode>,
   );
 }

@@ -7,6 +7,7 @@ import prebuiltNodesConfig from "@/components/nodes/prebuilt-nodes/prebuiltNodes
 import { useAction, useMutation } from "convex/react";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
+import { useCanvasStore } from "@/stores/canvasStore";
 
 /**
  * Hook to handle paste events on the canvas
@@ -20,7 +21,7 @@ export function useCanvasPasteHandler() {
   const { createNode } = useCreateNode();
   const fetchLinkMetadata = useAction(api.links.fetchLinkMetadata);
   const updateNodeDataValues = useMutation(api.nodeDatas.updateValues);
-
+  const focus = useCanvasStore((s) => s.focus);
   /**
    * Calculate the center position of the current viewport
    */
@@ -62,12 +63,14 @@ export function useCanvasPasteHandler() {
    * Returns nodeId and nodeDataId for later updates
    */
   const createImageNode = useCallback(
-    async (url: string = ""): Promise<{ nodeId: string; nodeDataId: Id<"nodeDatas"> } | null> => {
+    async (
+      url: string = "",
+    ): Promise<{ nodeId: string; nodeDataId: Id<"nodeDatas"> } | null> => {
       const position = getViewportCenter();
 
       // Get ImageNode config from prebuilt nodes
       const imageNodeConfig = prebuiltNodesConfig.find(
-        (config) => config.node.type === "image"
+        (config) => config.node.type === "image",
       );
       if (!imageNodeConfig) {
         toast.error("Erreur: Configuration ImageNode introuvable");
@@ -83,7 +86,7 @@ export function useCanvasPasteHandler() {
 
       return { nodeId, nodeDataId: nodeDataId! };
     },
-    [getViewportCenter, createNode]
+    [getViewportCenter, createNode],
   );
 
   /**
@@ -95,7 +98,7 @@ export function useCanvasPasteHandler() {
 
       // Get LinkNode config from prebuilt nodes
       const linkNodeConfig = prebuiltNodesConfig.find(
-        (config) => config.node.type === "link"
+        (config) => config.node.type === "link",
       );
       if (!linkNodeConfig) {
         toast.error("Erreur: Configuration LinkNode introuvable");
@@ -137,7 +140,7 @@ export function useCanvasPasteHandler() {
 
       return nodeId;
     },
-    [getViewportCenter, createNode, fetchLinkMetadata, updateNodeDataValues]
+    [getViewportCenter, createNode, fetchLinkMetadata, updateNodeDataValues],
   );
 
   /**
@@ -169,7 +172,7 @@ export function useCanvasPasteHandler() {
         setNodes((nodes) => nodes.filter((n) => n.id !== nodeId));
       }
     },
-    [createImageNode, uploadFile, updateNodeDataValues, setNodes]
+    [createImageNode, uploadFile, updateNodeDataValues, setNodes],
   );
 
   /**
@@ -195,7 +198,7 @@ export function useCanvasPasteHandler() {
         toast.success("Lien ajouté au canvas");
       }
     },
-    [isImageUrl, createImageNode, createLinkNode]
+    [isImageUrl, createImageNode, createLinkNode],
   );
 
   /**
@@ -203,6 +206,10 @@ export function useCanvasPasteHandler() {
    */
   const handlePaste = useCallback(
     (e: ClipboardEvent) => {
+      // blocked when focus is on platejs
+      if (focus === "platejs") {
+        return;
+      }
       // Ignore paste events in input/textarea/contenteditable elements
       const target = e.target as HTMLElement;
       if (
@@ -238,7 +245,7 @@ export function useCanvasPasteHandler() {
         }
       }
     },
-    [handleImageFilePaste, handleUrlPaste]
+    [handleImageFilePaste, handleUrlPaste],
   );
 
   // Register paste event listener

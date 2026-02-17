@@ -1,5 +1,4 @@
 import { Agent } from "@convex-dev/agent";
-import { mistral } from "@ai-sdk/mistral";
 import { components } from "../_generated/api";
 import { openWebPageTool } from "../ia/tools/openWebPageTool";
 import { viewImageTool } from "../ia/tools/viewImageTool";
@@ -14,7 +13,7 @@ export function createAutomationAgent({
 }: {
   model?: LanguageModel;
   updateNodeDataValuesTool?: any;
-}) {
+} = {}) {
   return new Agent(components.agent, {
     name: "automation-agent",
     maxSteps: 5,

@@ -1,7 +1,7 @@
 import { useNodeData } from "@/hooks/useNodeData";
 import { Spinner } from "@/components/shadcn/spinner";
 import { NodeToolbar, type Node } from "@xyflow/react";
-import { memo, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckCircle, AlertTriangle } from "lucide-react";
 import { TbCheck, TbExclamationMark } from "react-icons/tb";
 
@@ -60,7 +60,7 @@ function AutomationIndicator({ xyNode }: { xyNode: Node<any> }) {
       <NodeToolbar isVisible={!xyNode?.selected && isWorking}>
         <span className="text-slate-500 flex gap-2 items-center">
           <Spinner />
-          En cours de traitement...
+          {nodeData?.automationProgress?.currentStepType || "En cours..."}
         </span>
       </NodeToolbar>
 
@@ -83,4 +83,4 @@ function AutomationIndicator({ xyNode }: { xyNode: Node<any> }) {
   );
 }
 
-export default memo(AutomationIndicator);
+export default AutomationIndicator;

@@ -1,6 +1,7 @@
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
 import Parallel from "parallel-web";
+import { reportToolProgress } from "../../automation/progressReporter";
 
 const client = new Parallel({
   apiKey: process.env.PARALLEL_API_KEY!,
@@ -12,26 +13,32 @@ export const websearchTool = createTool({
     objective: z
       .string()
       .describe(
-        "Natural-language description of the web research goal, including source or freshness guidance and broader context from the task. Maximum 5000 characters. Choose the right language, depending on the user's language, and the type of info needed. For example, if local or country specific, use the user language. \nExample:  I want to know when the UN was founded. Prefer UN's websites."
+        "Natural-language description of the web research goal, including source or freshness guidance and broader context from the task. Maximum 5000 characters. Choose the right language, depending on the user's language, and the type of info needed. For example, if local or country specific, use the user language. \nExample:  I want to know when the UN was founded. Prefer UN's websites.",
       ),
     search_queries: z
       .array(z.string())
       .describe(
-        "Optional search queries to supplement the objective. Maximum 200 characters per query. Choose the right language, depending on the user's language, and the type of info needed. For example, if local or country specific, use the user language. \nExample: ['Founding year UN', 'Year of founding United Nations']"
+        "Optional search queries to supplement the objective. Maximum 200 characters per query. Choose the right language, depending on the user's language, and the type of info needed. For example, if local or country specific, use the user language. \nExample: ['Founding year UN', 'Year of founding United Nations']",
       )
       .optional(),
     search_effort: z
       .enum(["low", "medium", "high"])
       .default("low")
       .describe(
-        "Determines the number of search results to retrieve, and the conciseness of the summaries. A high effort is token-intensive, but may yield better results for complex queries. If not specified, defaults to 'low'. For complex, niche or ambiguous queries, consider using 'medium' or 'high'. You can start with 'low' and increase if results are insufficient."
+        "Determines the number of search results to retrieve, and the conciseness of the summaries. A high effort is token-intensive, but may yield better results for complex queries. If not specified, defaults to 'low'. For complex, niche or ambiguous queries, consider using 'medium' or 'high'. You can start with 'low' and increase if results are insufficient.",
       ),
   }),
   handler: async (
     ctx,
-    { objective, search_queries = [], search_effort = "low" }
+    { objective, search_queries = [], search_effort = "low" },
   ) => {
     console.log(`🔍 Web search: ${objective} with effort ${search_effort}`);
+
+    await reportToolProgress(ctx, {
+      stepType: "tool_launched=web_search",
+      data: { objective, search_queries, search_effort },
+    });
+
     try {
       let searchOptions = {};
       switch (search_effort) {
@@ -73,6 +80,11 @@ export const websearchTool = createTool({
       if (!search.results || search.results.length === 0) {
         return `No results found for: "${objective}"`;
       }
+
+      await reportToolProgress(ctx, {
+        stepType: "tool_completed=web_search",
+        data: {},
+      });
 
       return search.results;
     } catch (error: any) {

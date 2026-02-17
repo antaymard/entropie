@@ -22,6 +22,7 @@ const dependencySchema = z.object({
   shouldTriggerUpdate: z.boolean().optional(),
 });
 
+// MAIN SCHEMA
 const nodeDatasSchema = z.object({
   // _id et _creationTime sont ajoutés automatiquement par Convex
   templateId: zid("nodeTemplates").optional(),
@@ -29,10 +30,18 @@ const nodeDatasSchema = z.object({
   type: z.string(),
   updatedAt: z.number(),
   removedFromCanvasAt: z.number().optional(),
-
   values: z.record(z.string(), z.any()), // Field values
+
   status: z
     .union([z.literal("idle"), z.literal("working"), z.literal("error")])
+    .optional(),
+  automationProgress: z
+    .object({
+      currentStepType: z.string().optional(),
+      currentStepData: z.record(z.string(), z.any()).optional(),
+      currentStepStartedAt: z.number().optional(), // When the current step started, to calculate time spent on the step
+      workStartedAt: z.number().optional(), // when the automation started working on this nodeData
+    })
     .optional(),
 
   agent: agentConfigSchema.optional(),

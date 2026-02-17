@@ -10,6 +10,7 @@ import {
   generateInputNodesContext,
   generateNodeContext,
 } from "./ia/helpers/contextGenerator";
+import { createProgressReporter } from "./automation/progressReporter";
 
 export const trigger = action({
   args: {
@@ -25,10 +26,14 @@ export const trigger = action({
         { _id: nodeDataId },
       );
 
-      // 1. Passer le statut en working
+      // 1. Passer le statut en working et initialiser les infos d'automationProgress
+      const reportProgress = createProgressReporter(ctx, nodeDataId);
       await ctx.runMutation(internal.automation.helpers.updateStatus, {
         _id: nodeDataId,
         status: "working",
+      });
+      await reportProgress({
+        stepType: "automation_started",
       });
 
       // 2. Charger les nodeData input du noeud courant
@@ -57,13 +62,14 @@ export const trigger = action({
           ctx,
           nodeData: currentNodeData,
           inputSchema,
+          reportProgress,
         }),
       });
       const threadId = await createThread(ctx, components.agent, {
         userId,
       });
       const response = await automationAgent.generateText(
-        { ...ctx, currentNodeData } as any,
+        { ...ctx, currentNodeData, reportProgress } as any,
         { threadId },
         {
           prompt: `Voici les données d'entrée disponibles pour le noeud actuel :
@@ -86,6 +92,9 @@ ${generateNodeContext(currentNodeData)}
       await ctx.runMutation(internal.automation.helpers.updateStatus, {
         _id: nodeDataId,
         status: "idle",
+      });
+      await reportProgress({
+        stepType: "automation_finished",
       });
 
       // X. Lancer les automations des noeuds suivants (à implémenter)

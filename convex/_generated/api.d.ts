@@ -11,6 +11,7 @@
 import type * as auth from "../auth.js";
 import type * as automation_automationAgent from "../automation/automationAgent.js";
 import type * as automation_helpers from "../automation/helpers.js";
+import type * as automation_progressReporter from "../automation/progressReporter.js";
 import type * as automations from "../automations.js";
 import type * as canvasEdges from "../canvasEdges.js";
 import type * as canvasNodes from "../canvasNodes.js";
@@ -56,6 +57,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   "automation/automationAgent": typeof automation_automationAgent;
   "automation/helpers": typeof automation_helpers;
+  "automation/progressReporter": typeof automation_progressReporter;
   automations: typeof automations;
   canvasEdges: typeof canvasEdges;
   canvasNodes: typeof canvasNodes;

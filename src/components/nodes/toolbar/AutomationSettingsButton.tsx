@@ -94,7 +94,7 @@ export default function AutomationSettingsButton({
 
   const automationStep =
     automationMapping[
-      nodeData.automationProgress?.currentStepType as AutomationStepType
+      nodeData?.automationProgress?.currentStepType as AutomationStepType
     ];
 
   return (

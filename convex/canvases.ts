@@ -1,6 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { requireAuth } from "./lib/auth";
+import { canvasesValidator } from "./schemas/canvasesSchema";
 
 export const getLastModified = query({
   args: {},
@@ -79,6 +80,32 @@ export const createCanvas = mutation({
     });
 
     return newCanvasId;
+  },
+});
+
+export const updateProps = mutation({
+  args: {
+    canvasId: v.id("canvases"),
+    name: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const authUserId = await requireAuth(ctx);
+
+    const canvas = await ctx.db.get(args.canvasId);
+    if (!canvas) {
+      throw new ConvexError("Canvas not found");
+    }
+
+    if (canvas.creatorId !== authUserId) {
+      throw new ConvexError("Unauthorized");
+    }
+
+    await ctx.db.patch(args.canvasId, {
+      name: args.name,
+      updatedAt: Date.now(),
+    });
+
+    return args.canvasId;
   },
 });
 

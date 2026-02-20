@@ -24,6 +24,7 @@ import {
 import { HiDotsVertical } from "react-icons/hi";
 import { TbPlus } from "react-icons/tb";
 import { cn } from "@/lib/utils";
+import InlineEditableText from "@/components/form-ui/InlineEditableText";
 
 export default function CanvasSidebar({
   children,
@@ -33,6 +34,7 @@ export default function CanvasSidebar({
   canvasId: Id<"canvases">;
 }) {
   const deleteCanvas = useMutation(api.canvases.deleteCanvas);
+  const updateCanvasProps = useMutation(api.canvases.updateProps);
   const userCanvases = useQuery(api.canvases.listUserCanvases);
 
   const currentCanvasName = userCanvases?.find((c) => c._id === canvasId)?.name;
@@ -40,6 +42,12 @@ export default function CanvasSidebar({
   const handleDeleteCanvas = async (canvasId: Id<"canvases">) => {
     if (confirm("Delete this workspace?")) {
       await deleteCanvas({ canvasId });
+    }
+  };
+
+  const handleUpdateCanvasName = async (newName: string) => {
+    if (newName.trim() && newName !== currentCanvasName) {
+      await updateCanvasProps({ canvasId, name: newName.trim() });
     }
   };
 
@@ -97,9 +105,13 @@ export default function CanvasSidebar({
       <Sidebar variant="sidebar">
         <SidebarHeader className="flex flex-row items-center justify-between p-4">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <span className="font-semibold text-lg truncate">
-              {currentCanvasName ?? "..."}
-            </span>
+            <InlineEditableText
+              value={currentCanvasName ?? "..."}
+              onSave={handleUpdateCanvasName}
+              className="font-semibold text-lg truncate"
+              placeholder="Workspace name"
+              as="span"
+            />
           </div>
           <Dialog>
             <DialogTrigger asChild>

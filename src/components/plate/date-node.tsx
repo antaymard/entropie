@@ -50,7 +50,7 @@ export function DateElement(props: PlateElementProps<TDateElement>) {
           if (isYesterday) return YESTERDAY;
           if (isTomorrow) return TOMORROW;
 
-          return elementDate.toLocaleDateString(undefined, {
+          return elementDate.toLocaleDateString("en-US", {
             day: "numeric",
             month: "long",
             year: "numeric",

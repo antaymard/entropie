@@ -29,7 +29,7 @@ export function DateElementStatic(props: SlateElementProps<TDateElement>) {
             if (isYesterday) return "Yesterday";
             if (isTomorrow) return "Tomorrow";
 
-            return elementDate.toLocaleDateString(undefined, {
+            return elementDate.toLocaleDateString("en-US", {
               day: "numeric",
               month: "long",
               year: "numeric",

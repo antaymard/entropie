@@ -1,6 +1,6 @@
 const colors = {
   blue: {
-    label: "Bleu",
+    label: "Blue",
     nodeBg: "bg-blue-300",
     lightBg: "bg-blue-100",
     nodeBorder: "border-blue-600",
@@ -8,7 +8,7 @@ const colors = {
     textColor: "text-blue-600",
   },
   red: {
-    label: "Rouge",
+    label: "Red",
     nodeBg: "bg-red-300",
     lightBg: "bg-red-100",
     accentBg: "bg-red-500",
@@ -16,7 +16,7 @@ const colors = {
     textColor: "text-red-600",
   },
   yellow: {
-    label: "Jaune",
+    label: "Yellow",
     nodeBg: "bg-yellow-300",
     lightBg: "bg-yellow-100",
     accentBg: "bg-yellow-500",
@@ -24,7 +24,7 @@ const colors = {
     textColor: "text-yellow-600",
   },
   green: {
-    label: "Vert",
+    label: "Green",
     nodeBg: "bg-green-300",
     lightBg: "bg-green-100",
     nodeBorder: "border-green-600",
@@ -32,7 +32,7 @@ const colors = {
     textColor: "text-green-600",
   },
   pink: {
-    label: "Rose",
+    label: "Pink",
     nodeBg: "bg-pink-300",
     lightBg: "bg-pink-100",
     nodeBorder: "border-pink-600",
@@ -48,7 +48,7 @@ const colors = {
     textColor: "text-orange-600",
   },
   purple: {
-    label: "Violet",
+    label: "Purple",
     nodeBg: "bg-purple-300",
     lightBg: "bg-purple-100",
     nodeBorder: "border-purple-600",
@@ -56,7 +56,7 @@ const colors = {
     textColor: "text-purple-600",
   },
   default: {
-    label: "Défaut",
+    label: "Default",
     nodeBg: "bg-white",
     lightBg: "bg-slate-50",
     nodeBorder: "border-slate-300",

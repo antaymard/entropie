@@ -18,19 +18,19 @@ import DateField from "./DateField";
 
 const fieldsDefinition: FieldDefinition[] = [
   {
-    label: "Texte court",
+    label: "Short text",
     type: "short_text",
     icon: RiTextBlock,
-    description: "Texte court et non formatté. Pratique pour les titres.",
+    description: "Short, unformatted text. Useful for titles.",
     fieldOptions: [
       {
         key: "placeholder",
-        label: "Placeholder (affiché dans le champ vide)",
+        label: "Placeholder (shown in empty field)",
         type: "input",
       },
       {
         key: "defaultValue",
-        label: "Valeur par défaut",
+        label: "Default value",
         type: "input",
       },
     ],
@@ -38,13 +38,13 @@ const fieldsDefinition: FieldDefinition[] = [
       commonSettingsList: [
         {
           key: "showLabel",
-          label: "Afficher le label au dessus du champ",
+          label: "Show label above the field",
           type: "boolean",
           defaultValue: false,
         },
         {
           key: "readOnly",
-          label: "Lecture seule",
+          label: "Read only",
           type: "boolean",
           defaultValue: false,
         },
@@ -52,13 +52,13 @@ const fieldsDefinition: FieldDefinition[] = [
       variants: [
         {
           name: "default",
-          label: "Par défaut",
+          label: "Default",
           visualType: "both",
           component: TextField,
           settingsList: [
             {
               key: "displayAs",
-              label: "Formattage du texte",
+              label: "Text formatting",
               type: "toggleGroup",
               props: {
                 type: "single",
@@ -66,7 +66,7 @@ const fieldsDefinition: FieldDefinition[] = [
                   { value: "h1", label: "h1" },
                   { value: "h2", label: "h2" },
                   { value: "h3", label: "h3" },
-                  { value: "p", label: "Paragraphe" },
+                  { value: "p", label: "Paragraph" },
                 ],
               },
               defaultValue: "p",
@@ -77,19 +77,19 @@ const fieldsDefinition: FieldDefinition[] = [
     },
   },
   {
-    label: "Nombre",
+    label: "Number",
     type: "number",
     icon: GoNumber,
-    description: "Champ pour saisir des valeurs numériques.",
+    description: "Field for entering numeric values.",
     fieldOptions: [
       {
         key: "placeholder",
-        label: "Placeholder (affiché dans le champ vide)",
+        label: "Placeholder (shown in empty field)",
         type: "input",
       },
       {
         key: "defaultValue",
-        label: "Valeur par défaut",
+        label: "Default value",
         type: "input",
         props: {
           type: "number",
@@ -97,7 +97,7 @@ const fieldsDefinition: FieldDefinition[] = [
       },
       {
         key: "minValue",
-        label: "Valeur minimale",
+        label: "Minimum value",
         type: "input",
         props: {
           type: "number",
@@ -105,7 +105,7 @@ const fieldsDefinition: FieldDefinition[] = [
       },
       {
         key: "maxValue",
-        label: "Valeur maximale",
+        label: "Maximum value",
         type: "input",
         props: {
           type: "number",
@@ -116,7 +116,7 @@ const fieldsDefinition: FieldDefinition[] = [
       commonSettingsList: [
         {
           key: "showLabel",
-          label: "Afficher le label",
+          label: "Show label",
           type: "boolean",
           defaultValue: false,
         },
@@ -124,8 +124,8 @@ const fieldsDefinition: FieldDefinition[] = [
       variants: [
         {
           name: "number",
-          label: "Champ numérique",
-          description: "Affichage classique d'un champ de nombre",
+          label: "Number field",
+          description: "Classic number field display",
           icon: TbNumber123,
           visualType: "both",
           component: ClassicNumberField,
@@ -133,8 +133,8 @@ const fieldsDefinition: FieldDefinition[] = [
         },
         {
           name: "progress",
-          label: "Barre de progression",
-          description: "Affiche le nombre sous forme de barre de progression",
+          label: "Progress bar",
+          description: "Displays the number as a progress bar",
           icon: HiOutlineChartBar,
           visualType: "both",
           component: ProgressNumberField,
@@ -145,16 +145,16 @@ const fieldsDefinition: FieldDefinition[] = [
   },
 
   {
-    label: "Case à cocher",
+    label: "Checkbox",
     type: "boolean",
     icon: HiOutlineCheckCircle,
-    description: "Champ booléen pour des réponses oui/non ou vrai/faux.",
+    description: "Boolean field for yes/no or true/false answers.",
     visuals: {
       commonSettingsList: [],
       variants: [
         {
           name: "default",
-          label: "Par défaut",
+          label: "Default",
           visualType: "both",
           component: TextField, // Temporaire
           settingsList: [],
@@ -163,21 +163,21 @@ const fieldsDefinition: FieldDefinition[] = [
     },
   },
   {
-    label: "Sélecteur",
+    label: "Selector",
     type: "select",
     icon: TbSelect,
     description:
-      "Champ pour sélectionner une ou plusieurs options parmi une liste déroulante.",
+      "Field for selecting one or more options from a dropdown list.",
     fieldOptions: [
       {
         key: "isMultipleSelect",
-        label: "Autoriser les choix multiples",
+        label: "Allow multiple choices",
         type: "boolean",
         defaultValue: false,
       },
       {
         key: "selectChoices",
-        label: "Choix disponibles",
+        label: "Available choices",
         type: "selectBuilder",
       },
     ],
@@ -186,7 +186,7 @@ const fieldsDefinition: FieldDefinition[] = [
       variants: [
         {
           name: "default",
-          label: "Par défaut",
+          label: "Default",
           visualType: "both",
           component: SelectField, // Temporaire
           settingsList: [],
@@ -198,13 +198,13 @@ const fieldsDefinition: FieldDefinition[] = [
     label: "Image",
     type: "image",
     icon: CgImage,
-    description: "Champ pour insérer une image.",
+    description: "Field for inserting an image.",
     fieldOptions: [],
     visuals: {
       commonSettingsList: [
         {
           key: "enableInImageNavigation",
-          label: "Navigation dans l'image",
+          label: "In-image navigation",
           type: "boolean",
           defaultValue: false,
         },
@@ -212,7 +212,7 @@ const fieldsDefinition: FieldDefinition[] = [
       variants: [
         {
           name: "default",
-          label: "Par défaut",
+          label: "Default",
           visualType: "both",
           component: ImageField,
           settingsList: [],
@@ -221,17 +221,17 @@ const fieldsDefinition: FieldDefinition[] = [
     },
   },
   {
-    label: "Fichier",
+    label: "File",
     type: "file",
     icon: RiAttachment2,
-    description: "Champ pour insérer un fichier.",
+    description: "Field for inserting a file.",
     fieldOptions: [],
     visuals: {
       commonSettingsList: [],
       variants: [
         {
           name: "default",
-          label: "Par défaut",
+          label: "Default",
           visualType: "both",
           component: FileField,
           settingsList: [],
@@ -240,24 +240,24 @@ const fieldsDefinition: FieldDefinition[] = [
     },
   },
   {
-    label: "Lien",
+    label: "Link",
     type: "url",
     icon: TbLink,
-    description: "Champ pour insérer une URL ou un lien web.",
+    description: "Field for inserting a URL or web link.",
     fieldOptions: [],
     visuals: {
       commonSettingsList: [],
       variants: [
         {
           name: "pageTitle",
-          label: "Titre de la page",
+          label: "Page title",
           visualType: "both",
           component: LinkField,
           settingsList: [],
         },
         {
           name: "icon",
-          label: "Icône",
+          label: "Icon",
           visualType: "both",
           component: LinkField,
           componentProps: { iconOnly: true },
@@ -270,28 +270,28 @@ const fieldsDefinition: FieldDefinition[] = [
     label: "Document",
     type: "document",
     icon: RiFileList3Line,
-    description: "Champ pour insérer et éditer des documents texte formatés.",
+    description: "Field for inserting and editing formatted text documents.",
     fieldOptions: [],
     visuals: {
       commonSettingsList: [],
       variants: [
         {
           name: "editor",
-          label: "Editeur complet",
+          label: "Full editor",
           visualType: "window",
           component: DocumentEditorField, // Temporaire
           settingsList: [],
         },
         {
           name: "nameOnly",
-          label: "Nom du doc uniquement",
+          label: "Document name only",
           visualType: "node",
           component: DocumentNameField, // Temporaire
           settingsList: [],
         },
         {
           name: "staticReader",
-          label: "Affichage en lecture seule",
+          label: "Read-only display",
           visualType: "node",
           component: DocumentStaticField, // Temporaire
           settingsList: [],
@@ -303,11 +303,11 @@ const fieldsDefinition: FieldDefinition[] = [
     label: "Date",
     type: "date",
     icon: TbCalendarTime,
-    description: "Champ pour insérer et éditer des dates.",
+    description: "Field for inserting and editing dates.",
     fieldOptions: [
       {
         key: "isDateTime",
-        label: "Inclure l'heure",
+        label: "Include time",
         type: "boolean",
         defaultValue: false,
       },
@@ -317,20 +317,20 @@ const fieldsDefinition: FieldDefinition[] = [
       variants: [
         {
           name: "relative",
-          label: "Date relative",
+          label: "Relative date",
           visualType: "both",
           component: DateField,
           componentProps: { isRelative: true },
           settingsList: [
             {
               key: "format",
-              label: "Format d'affichage",
+              label: "Display format",
               type: "select",
               props: {
                 options: [
-                  { value: "automatic", label: "Automatique" },
-                  { value: "weeks", label: "Semaines" },
-                  { value: "days", label: "Jours" },
+                  { value: "automatic", label: "Automatic" },
+                  { value: "weeks", label: "Weeks" },
+                  { value: "days", label: "Days" },
                 ],
               },
               defaultValue: "automatic",
@@ -339,7 +339,7 @@ const fieldsDefinition: FieldDefinition[] = [
         },
         {
           name: "absolute",
-          label: "Date absolue",
+          label: "Absolute date",
           visualType: "both",
           component: DateField,
           componentProps: { isRelative: false },

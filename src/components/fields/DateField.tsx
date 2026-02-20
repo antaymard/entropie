@@ -19,7 +19,7 @@ function formatAbsoluteDate(date: Date, includeTime: boolean): string {
   }
 
   if (includeTime) {
-    return format(date, "EEE dd MMM yyyy 'à' HH:mm");
+    return format(date, "EEE dd MMM yyyy 'at' HH:mm");
   }
   return format(date, "EEE dd MMM yyyy");
 }
@@ -42,15 +42,15 @@ function renderRelativeDate(
   // Mode "days" : toujours afficher en jours
   if (formatType === "days") {
     const days = Math.round(absDiffMs / day);
-    const unit = days > 1 ? "jours" : "jour";
-    return diffMs < 0 ? `Il y a ${days} ${unit}` : `Dans ${days} ${unit}`;
+    const unit = days > 1 ? "days" : "day";
+    return diffMs < 0 ? `${days} ${unit} ago` : `In ${days} ${unit}`;
   }
 
   // Mode "weeks" : toujours afficher en semaines
   if (formatType === "weeks") {
     const weeks = Math.round(absDiffMs / week);
-    const unit = weeks > 1 ? "semaines" : "semaine";
-    return diffMs < 0 ? `Il y a ${weeks} ${unit}` : `Dans ${weeks} ${unit}`;
+    const unit = weeks > 1 ? "weeks" : "week";
+    return diffMs < 0 ? `${weeks} ${unit} ago` : `In ${weeks} ${unit}`;
   }
 
   // Mode "automatic" : utiliser formatDistanceToNow avec limite de 90 jours
@@ -196,7 +196,7 @@ function CalendarWithTiem({
       {showTime && (
         <div className="flex flex-col gap-6 border-t !pt-4">
           <div className="flex w-full flex-col gap-3">
-            <Label htmlFor="time-from">Heure</Label>
+            <Label htmlFor="time-from">Time</Label>
             <div className="relative flex w-full items-center gap-2">
               <TbClock className="text-muted-foreground pointer-events-none absolute left-2.5 size-4 select-none" />
               <Input

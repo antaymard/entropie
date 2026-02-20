@@ -43,7 +43,7 @@ function RouteComponent() {
   if (isLoading || !isAuthenticated || isGettingLastCanvas) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-gray-100">
-        <div>Chargement...</div>
+        <div>Loading...</div>
       </div>
     );
   }
@@ -52,7 +52,7 @@ function RouteComponent() {
     <div className="h-screen w-screen bg-gray-100">
       <div className="flex flex-col items-center justify-center h-full gap-5">
         <p className="text-gray-500">
-          Aucun espace trouvé. Créez-en un nouveau !
+          No workspace found. Create a new one!
         </p>
         <button
           type="button"
@@ -62,7 +62,7 @@ function RouteComponent() {
           }}
         >
           <VscGithubProject />
-          Créer un espace
+          Create a workspace
         </button>
       </div>
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>

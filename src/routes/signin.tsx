@@ -42,8 +42,8 @@ function RouteComponent() {
               // Don't navigate here - let the useEffect handle it when auth state updates
               toast.success(
                 step === "signIn"
-                  ? "Connexion réussie !"
-                  : "Compte créé avec succès !"
+                  ? "Successfully signed in!"
+                  : "Account created successfully!"
               );
             })
             .catch((e) => {
@@ -52,20 +52,20 @@ function RouteComponent() {
 
               if (errorMessage.includes("already exists")) {
                 toast.error(
-                  "Ce compte existe déjà. Connectez-vous ou utilisez un autre email."
+                  "This account already exists. Sign in or use a different email."
                 );
               } else if (
                 errorMessage.includes("Invalid password") ||
                 errorMessage.includes("invalid password") ||
                 errorMessage.includes("Invalid secret")
               ) {
-                toast.error("Mot de passe incorrect.");
+                toast.error("Incorrect password.");
               } else if (errorMessage.includes("InvalidAccountId")) {
-                toast.error("Aucun compte trouvé avec cet email.");
+                toast.error("No account found with this email.");
               } else if (errorMessage.includes("Invalid email")) {
-                toast.error("Email invalide.");
+                toast.error("Invalid email.");
               } else {
-                toast.error("Impossible de se connecter. Veuillez réessayer.");
+                toast.error("Unable to sign in. Please try again.");
               }
             })
             .finally(() => {
@@ -85,14 +85,14 @@ function RouteComponent() {
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">Nolenor</h1>
                 <p className="text-sm text-gray-600 italic">
-                  L'app des projets complexes
+                  The app for complex projects
                 </p>
               </div>
             </div>
             <h2 className="text-xl font-semibold text-gray-800 mt-2">
               {step === "signIn"
-                ? "Bon retour parmi nous !"
-                : "Créez votre compte"}
+                ? "Welcome back!"
+                : "Create your account"}
             </h2>
           </div>
 
@@ -109,7 +109,7 @@ function RouteComponent() {
                 id="email"
                 className="border-gray-300 focus:border-violet-500 focus:ring-violet-500 bg-white h-11"
                 name="email"
-                placeholder="vous@exemple.com"
+                placeholder="you@example.com"
                 type="email"
                 required
                 disabled={isSubmitting}
@@ -121,7 +121,7 @@ function RouteComponent() {
                 htmlFor="password"
                 className="text-sm font-medium text-gray-700"
               >
-                Mot de passe
+                Password
               </label>
               <Input
                 id="password"
@@ -148,11 +148,11 @@ function RouteComponent() {
               <div className="flex items-center gap-2">
                 <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 <span>
-                  {step === "signIn" ? "Connexion..." : "Création..."}
+                  {step === "signIn" ? "Signing in..." : "Creating..."}
                 </span>
               </div>
             ) : (
-              <span>{step === "signIn" ? "Se connecter" : "S'inscrire"}</span>
+              <span>{step === "signIn" ? "Sign in" : "Sign up"}</span>
             )}
           </Button>
 
@@ -167,8 +167,8 @@ function RouteComponent() {
               disabled={isSubmitting}
             >
               {step === "signIn"
-                ? "Pas encore de compte ? Créez-en un"
-                : "Déjà un compte ? Connectez-vous"}
+                ? "Don't have an account? Create one"
+                : "Already have an account? Sign in"}
             </button>
           </div>
         </div>

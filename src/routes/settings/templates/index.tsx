@@ -24,16 +24,16 @@ function RouteComponent() {
   >(null);
 
   function renderUserTemplates() {
-    if (userTemplates === undefined) return <i>Chargement des templates...</i>;
+    if (userTemplates === undefined) return <i>Loading templates...</i>;
     if (userTemplates.length === 0)
       return (
         <div className="flex flex-col items-center justify-center h-full">
-          <p>Aucun template de bloc trouvé.</p>
+          <p>No block templates found.</p>
           <button
             className="text-blue-500 underline"
             onClick={() => setEditingTemplateId("new")}
           >
-            Créer un nouveau template
+            Create a new template
           </button>
         </div>
       );
@@ -57,11 +57,11 @@ function RouteComponent() {
         <div>
           <h2 className="text-3xl font-semibold">Templates</h2>
           <p className="italic text-sm">
-            Créez et gérer vos blocs personnalisés ici.
+            Create and manage your custom blocks here.
           </p>
         </div>
         <Button onClick={() => setEditingTemplateId("new")}>
-          Créer un nouveau template
+          Create a new template
         </Button>
       </div>
 
@@ -78,9 +78,9 @@ function RouteComponent() {
           }}
           modalTitle={
             editingTemplateId === "new"
-              ? "Nouveau template"
+              ? "New template"
               : userTemplates?.find((t) => t._id === editingTemplateId)?.name ||
-                "Modifier le template"
+                "Edit template"
           }
         >
           <NodeEditor templateId={editingTemplateId} />

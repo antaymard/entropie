@@ -26,43 +26,43 @@ export default function RootElementSettings({
       {visualType === "node" && (
         <>
           <div className="px-5 py-4 space-y-5">
-            <h3 className="font-semibold">Apparence du bloc</h3>
+            <h3 className="font-semibold">Block appearance</h3>
             <Toggle
-              label="Afficher le nom du bloc"
+              label="Show block name"
               name={`${elementPath}.data.headerless`}
             />
             <Toggle
-              label="Désactiver l'ouverture de la fenêtre au double-clic"
+              label="Disable opening window on double-click"
               name={`${elementPath}.data.disableDoubleClickToOpenWindow`}
             />
           </div>
           <div className="px-5 py-4 space-y-5">
-            <h3 className="font-semibold">Dimensions par défaut du bloc</h3>
+            <h3 className="font-semibold">Default block dimensions</h3>
             <div className="grid grid-cols-2 gap-2">
               <ValueInput
                 elementPath={elementPath}
                 propertyName="defaultWidth"
-                label="Largeur"
+                label="Width"
                 icon={<AiOutlineColumnWidth />}
                 targetType="data"
               />
               <ValueInput
                 elementPath={elementPath}
                 propertyName="defaultHeight"
-                label="Hauteur"
+                label="Height"
                 icon={<AiOutlineColumnHeight />}
                 targetType="data"
               />
             </div>
             <Toggle
-              label="Redimensionnable"
+              label="Resizable"
               name={`${elementPath}.data.resizable`}
             />
           </div>
         </>
       )}
       <div className="px-5 py-4 space-y-5">
-        <h3 className="font-semibold">Disposition</h3>
+        <h3 className="font-semibold">Layout</h3>
         <div className="grid grid-cols-2 gap-2">
           <StyleClickButton
             elementPath={elementPath}
@@ -99,25 +99,25 @@ export default function RootElementSettings({
             }
             elementPath={elementPath}
             styleName="gap"
-            label="Espacement entre éléments"
+            label="Spacing between elements"
             icon={<LuAlignVerticalSpaceAround />}
           />
         </div>
 
         {/* Gestion des paddings */}
         <div className="space-y-2">
-          <h4>Marges intérieures</h4>
+          <h4>Inner margins</h4>
           <div className="grid grid-cols-2 gap-2">
             <StyleValueInput
               elementPath={elementPath}
               styleName={["paddingTop", "paddingBottom"]}
-              label="Marges verticales"
+              label="Vertical margins"
               icon={<RiMergeCellsVertical />}
             />
             <StyleValueInput
               elementPath={elementPath}
               styleName={["paddingLeft", "paddingRight"]}
-              label="Marges horizontales"
+              label="Horizontal margins"
               icon={<RiMergeCellsHorizontal />}
             />
           </div>

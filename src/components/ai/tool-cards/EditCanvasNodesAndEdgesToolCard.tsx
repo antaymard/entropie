@@ -8,7 +8,7 @@ export default function EditCanvasNodesAndEdgesToolCard({
 }: any) {
   return (
     <ToolCardFrame
-      name="Ecriture sur la toile"
+      name="Writing to canvas"
       state={state}
       icon={TbFilePencil}
     >

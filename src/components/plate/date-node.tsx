@@ -13,9 +13,9 @@ import {
 } from "@/components/shadcn/popover";
 import { cn } from "@/lib/utils";
 
-const TODAY = "Aujourd'hui";
-const YESTERDAY = "Hier";
-const TOMORROW = "Demain";
+const TODAY = "Today";
+const YESTERDAY = "Yesterday";
+const TOMORROW = "Tomorrow";
 
 export function DateElement(props: PlateElementProps<TDateElement>) {
   const { editor, element } = props;

@@ -27,7 +27,7 @@ export default function ContextMenu({
   return (
     <>
       <DropdownMenuLabel className="whitespace-nowrap">
-        Ajouter un bloc
+        Add a block
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
       {prebuiltNodesConfig.map((nodeConfig, i) => {

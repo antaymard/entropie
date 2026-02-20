@@ -15,6 +15,6 @@ export default function OpenWebpageToolCard({
   output,
 }: ReadCanvasToolCardProps) {
   return (
-    <ToolCardFrame icon={TbBrowser} name="Lecture du canvas" state={state} />
+    <ToolCardFrame icon={TbBrowser} name="Reading canvas" state={state} />
   );
 }

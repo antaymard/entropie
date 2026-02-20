@@ -61,7 +61,7 @@ export default function FileNameField({
             type="button"
             onClick={() => window.open(value[0].url, "_blank")}
             className="cursor-default hover:bg-black/5 rounded-sm items-center justify-center h-6 w-6 shrink-0 group-hover/linkfield:flex hidden"
-            title="Ouvrir le fichier"
+            title="Open file"
           >
             <TbExternalLink />
           </button>
@@ -95,7 +95,7 @@ function FileUploaderSidePanel({ initialValue, onSave, onClose }) {
   return (
     <SidePanelFrame
       id={sidePanelId}
-      title="Modifier le fichier"
+      title="Edit file"
       className="w-64"
     >
       <UploadFile

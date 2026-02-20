@@ -73,7 +73,7 @@ export function useCanvasPasteHandler() {
         (config) => config.node.type === "image",
       );
       if (!imageNodeConfig) {
-        toast.error("Erreur: Configuration ImageNode introuvable");
+        toast.error("Error: ImageNode configuration not found");
         return null;
       }
 
@@ -101,7 +101,7 @@ export function useCanvasPasteHandler() {
         (config) => config.node.type === "link",
       );
       if (!linkNodeConfig) {
-        toast.error("Erreur: Configuration LinkNode introuvable");
+        toast.error("Error: LinkNode configuration not found");
         return null;
       }
 
@@ -163,10 +163,10 @@ export function useCanvasPasteHandler() {
           _id: nodeDataId,
           values: { images: [{ url: fileData.url }] },
         });
-        toast.success("Image ajoutée au canvas");
+        toast.success("Image added to canvas");
       } catch (error) {
         console.error("Upload failed:", error);
-        toast.error("Erreur lors de l'upload de l'image");
+        toast.error("Error uploading image");
 
         // Remove the node since upload failed
         setNodes((nodes) => nodes.filter((n) => n.id !== nodeId));
@@ -191,11 +191,11 @@ export function useCanvasPasteHandler() {
       if (isImageUrl(url)) {
         // Create ImageNode with the URL
         await createImageNode(url);
-        toast.success("Image ajoutée au canvas");
+        toast.success("Image added to canvas");
       } else {
         // Create LinkNode (async - fetches metadata in background)
         await createLinkNode(url);
-        toast.success("Lien ajouté au canvas");
+        toast.success("Link added to canvas");
       }
     },
     [isImageUrl, createImageNode, createLinkNode],

@@ -147,7 +147,7 @@ export default function SelectBuilder({
         className="self-start"
       >
         <HiPlus size={16} />
-        Ajouter une option
+        Add an option
       </Button>
     </div>
   );
@@ -204,7 +204,7 @@ const OptionRow = memo(
           </PopoverContent>
         </Popover>
         <Input
-          placeholder="Nom de l'option"
+          placeholder="Option name"
           value={option.label}
           onChange={(e) => onUpdateLabel(index, e.target.value)}
           className="flex-1"

@@ -35,7 +35,7 @@ export default function NodeEditorRightPanel() {
       return (
         <div className="px-5 py-4">
           <i className="text-sm opacity-60">
-            Sélectionnez un élément pour modifier ses paramètres.
+            Select an element to edit its settings.
           </i>
         </div>
       );

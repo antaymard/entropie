@@ -27,7 +27,7 @@ type SettingsSidebarSection = {
 
 const settingsSidebarSections: SettingsSidebarSection[] = [
   {
-    label: "Personnalisation",
+    label: "Customization",
     buttons: [
       {
         label: "Templates",
@@ -35,22 +35,22 @@ const settingsSidebarSections: SettingsSidebarSection[] = [
         route: "/settings/templates",
       },
       {
-        label: "Noeuds par défaut",
+        label: "Default nodes",
         icon: "settings",
         route: "/settings/",
       },
     ],
   },
   {
-    label: "Compte",
+    label: "Account",
     buttons: [
       {
-        label: "Informations du compte",
+        label: "Account information",
         icon: "settings",
         route: "/settings/",
       },
       {
-        label: "Se déconnecter",
+        label: "Sign out",
         icon: "logout",
         action: "logout",
         variant: "danger",
@@ -58,10 +58,10 @@ const settingsSidebarSections: SettingsSidebarSection[] = [
     ],
   },
   {
-    label: "Facturation",
+    label: "Billing",
     buttons: [
       {
-        label: "Facturation",
+        label: "Billing",
         icon: "billing",
         route: "/settings/billing",
       },
@@ -76,11 +76,11 @@ function RouteComponent() {
   const handleLogout = async () => {
     try {
       await signOut();
-      toast.success("Vous êtes déconnecté");
+      toast.success("You have been signed out");
       navigate({ to: "/signin" });
     } catch (error) {
       console.error("Logout error:", error);
-      toast.error("Erreur lors de la déconnexion");
+      toast.error("Error signing out");
     }
   };
 
@@ -130,7 +130,7 @@ function RouteComponent() {
           <Link to="/" className="p-1 rounded-md bg-gray-100 hover:bg-gray-200">
             <HiMiniArrowSmallLeft size={24} />
           </Link>
-          <h1 className="text-lg font-bold">Paramètres</h1>
+          <h1 className="text-lg font-bold">Settings</h1>
         </span>
         <div className="space-y-5">{renderSettingsSidebar()}</div>
       </div>

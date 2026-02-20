@@ -25,7 +25,7 @@ function FetchNode(xyNode: Node) {
       <CanvasNodeToolbar xyNode={xyNode}>
         <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="icon" title="Editer le lien">
+            <Button variant="outline" size="icon" title="Edit link">
               <TbPencil />
             </Button>
           </PopoverTrigger>

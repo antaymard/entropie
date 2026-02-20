@@ -49,7 +49,7 @@ function ImageNode(xyNode: Node) {
       <CanvasNodeToolbar xyNode={xyNode}>
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="icon" title="Télécharger une image">
+            <Button variant="outline" size="icon" title="Upload an image">
               <TbPencil />
             </Button>
           </PopoverTrigger>
@@ -71,7 +71,7 @@ function ImageNode(xyNode: Node) {
         ) : (
           <div className="h-full w-full flex flex-col gap-2 items-center justify-center">
             <TbPhoto size={24} />
-            Pas d'image
+            No image
           </div>
         )}
       </NodeFrame>

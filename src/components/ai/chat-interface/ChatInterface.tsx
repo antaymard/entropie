@@ -204,7 +204,7 @@ const ChatInterface = memo(function ChatInterface({
                 onClick={() => loadMore(10)}
                 className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition font-medium mx-auto"
               >
-                Charger plus de messages
+                Load more messages
               </button>
             )}
             {messages.map((m) => (
@@ -213,7 +213,7 @@ const ChatInterface = memo(function ChatInterface({
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-gray-500">
-            Commencez une conversation...
+            Start a conversation...
           </div>
         )}
       </div>
@@ -238,7 +238,7 @@ const ChatInterface = memo(function ChatInterface({
               }
             }}
             className="border-input focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md bg-transparent text-base! shadow-xs transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm placeholder:text-white/60 flex-1 text-white resize-none "
-            placeholder="Posez votre question..."
+            placeholder="Ask your question..."
           />
           <div className="flex justify-end">
             <button

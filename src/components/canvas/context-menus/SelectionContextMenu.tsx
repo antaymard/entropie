@@ -121,22 +121,22 @@ export default function SelectionContextMenu({
 
   const alignements = [
     {
-      label: "En haut",
+      label: "Top",
       icon: RiAlignItemTopLine,
       onClick: () => alignSelectedNodes("top"),
     },
     {
-      label: "A droite",
+      label: "Right",
       icon: RiAlignItemRightLine,
       onClick: () => alignSelectedNodes("right"),
     },
     {
-      label: "En bas",
+      label: "Bottom",
       icon: RiAlignItemBottomLine,
       onClick: () => alignSelectedNodes("bottom"),
     },
     {
-      label: "A gauche",
+      label: "Left",
       icon: RiAlignItemLeftLine,
       onClick: () => alignSelectedNodes("left"),
     },
@@ -144,12 +144,12 @@ export default function SelectionContextMenu({
 
   const uniformizations = [
     {
-      label: "Même largeur",
+      label: "Same width",
       icon: TbArrowAutofitWidth,
       onClick: () => uniformizeSelectedNodes("width"),
     },
     {
-      label: "Même hauteur",
+      label: "Same height",
       icon: TbArrowAutofitHeight,
       onClick: () => uniformizeSelectedNodes("height"),
     },
@@ -158,7 +158,7 @@ export default function SelectionContextMenu({
   return (
     <>
       <DropdownMenuLabel className="whitespace-nowrap">
-        Actions sur la sélection
+        Selection actions
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
 
@@ -215,7 +215,7 @@ export default function SelectionContextMenu({
         }}
       >
         <HiOutlineTrash />
-        Supprimer
+        Delete
       </DropdownMenuItem>
     </>
   );

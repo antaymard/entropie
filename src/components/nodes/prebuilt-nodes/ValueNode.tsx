@@ -131,7 +131,7 @@ function ValueNode(xyNode: Node) {
       <CanvasNodeToolbar xyNode={xyNode}>
         <Popover open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="icon" title="Éditer la valeur">
+            <Button variant="outline" size="icon" title="Edit value">
               <TbPencil />
             </Button>
           </PopoverTrigger>
@@ -148,19 +148,19 @@ function ValueNode(xyNode: Node) {
                   className="w-full"
                 >
                   <ToggleGroupItem value="text" className="flex-1">
-                    Texte
+                    Text
                   </ToggleGroupItem>
                   <ToggleGroupItem value="number" className="flex-1">
-                    Nombre
+                    Number
                   </ToggleGroupItem>
                   <ToggleGroupItem value="boolean" className="flex-1">
-                    Oui/Non
+                    Yes/No
                   </ToggleGroupItem>
                 </ToggleGroup>
               </div>
 
               <div className="flex flex-col gap-1">
-                <span className="text-xs text-muted-foreground">Valeur</span>
+                <span className="text-xs text-muted-foreground">Value</span>
                 {inputType === "boolean" ? (
                   <div className="flex items-center gap-2 py-1">
                     <Switch
@@ -168,14 +168,14 @@ function ValueNode(xyNode: Node) {
                       onCheckedChange={setInputBoolean}
                     />
                     <span className="text-sm">
-                      {inputBoolean ? "Oui" : "Non"}
+                      {inputBoolean ? "Yes" : "No"}
                     </span>
                   </div>
                 ) : (
                   <Input
                     onDoubleClick={(e) => e.stopPropagation()}
                     type={inputType === "number" ? "number" : "text"}
-                    placeholder={inputType === "number" ? "Nombre" : "Texte"}
+                    placeholder={inputType === "number" ? "Number" : "Text"}
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                   />
@@ -186,7 +186,7 @@ function ValueNode(xyNode: Node) {
                 <Input
                   onDoubleClick={(e) => e.stopPropagation()}
                   type="text"
-                  placeholder="Unité (kg, €, %...)"
+                  placeholder="Unit (kg, $, %...)"
                   value={inputUnit}
                   onChange={(e) => setInputUnit(e.target.value)}
                 />
@@ -201,7 +201,7 @@ function ValueNode(xyNode: Node) {
               />
 
               <Button onClick={handleSave} size="sm">
-                Valider
+                Save
               </Button>
             </div>
           </PopoverContent>
@@ -228,7 +228,7 @@ function ValueNode(xyNode: Node) {
           ) : (
             <span className="text-muted-foreground flex items-center gap-2">
               <TbTag size={18} />
-              Pas de valeur
+              No value
             </span>
           )}
         </div>

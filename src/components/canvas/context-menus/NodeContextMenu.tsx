@@ -46,7 +46,7 @@ export default function NodeContextMenu({
   const nodeOptions = [
     {
       hidden: !variants || Object.keys(variants).length === 0,
-      label: "Apparence",
+      label: "Appearance",
       icon: TbSpaces,
       subMenu: Object.entries(variants || {}).map(
         ([variantKey, variantConfig]) => ({
@@ -81,7 +81,7 @@ export default function NodeContextMenu({
       ),
     },
     {
-      label: "Dupliquer",
+      label: "Duplicate",
       icon: TbCopyPlus,
       onClick: () => {
         const nodeToDuplicate = xyNode;
@@ -102,7 +102,7 @@ export default function NodeContextMenu({
       },
     },
     {
-      label: "Dupliquer Synchro",
+      label: "Duplicate Synced",
       icon: TbCopyPlusFilled,
       onClick: () => {
         const nodeToDuplicate = xyNode;
@@ -119,7 +119,7 @@ export default function NodeContextMenu({
       },
     },
     {
-      label: "Supprimer",
+      label: "Delete",
       icon: HiOutlineTrash,
       onClick: () => {
         deleteElements({ nodes: [xyNode] });
@@ -131,7 +131,7 @@ export default function NodeContextMenu({
   return (
     <>
       <DropdownMenuLabel className="whitespace-nowrap">
-        Actions sur le bloc
+        Block actions
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
       {nodeOptions

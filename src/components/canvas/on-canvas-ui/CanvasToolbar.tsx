@@ -30,17 +30,17 @@ function CanvasToolbar() {
   const tools = [
     {
       value: "default",
-      label: "Sélectionner",
+      label: "Select",
       icon: LuMousePointer,
     },
     {
       value: "edge",
-      label: "Ajouter une connexion",
+      label: "Add a connection",
       icon: LuGitBranchPlus,
     },
     {
       value: "frame",
-      label: "Ajouter une frame",
+      label: "Add a frame",
       icon: TbFrame,
     },
   ] as const;
@@ -58,7 +58,7 @@ function CanvasToolbar() {
             <RiRobot2Fill size={20} />
           </Button>
         </TooltipTrigger>
-        <TooltipContent align="start">Assistant Nolë</TooltipContent>
+        <TooltipContent align="start">Nolë Assistant</TooltipContent>
       </Tooltip>
       <Separator />
       {tools.map((tool) => {

@@ -54,7 +54,7 @@ const ColorSelector = memo(function ColorSelector({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-[240px]">
-          <DropdownMenuLabel>Couleur du bloc</DropdownMenuLabel>
+          <DropdownMenuLabel>Block color</DropdownMenuLabel>
           <div className="grid grid-cols-5 gap-2 p-2">
             {availableColors.map(([key, value]) => (
               <button

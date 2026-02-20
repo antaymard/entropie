@@ -147,7 +147,7 @@ export function useUpdateCanvasNode(): UseUpdateCanvasNodeReturn {
         );
       } catch (error) {
         revertNodes(validInputs.map((i) => i.nodeId));
-        toastError(error, "Erreur lors de la mise à jour");
+        toastError(error, "Error updating");
       } finally {
         isUpdatingRef.current = false;
       }

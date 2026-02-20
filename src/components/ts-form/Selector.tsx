@@ -50,7 +50,7 @@ function Selector({
   name,
   label,
   options,
-  placeholder = "Sélectionner...",
+  placeholder = "Select...",
   className,
   disabled = false,
 }: SelectorProps) {

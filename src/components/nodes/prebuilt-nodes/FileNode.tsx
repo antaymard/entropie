@@ -92,7 +92,7 @@ function FileNode(xyNode: Node) {
         )}
         <Popover open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="icon" title="Modifier le fichier">
+            <Button variant="outline" size="icon" title="Edit file">
               <TbPencil />
             </Button>
           </PopoverTrigger>
@@ -105,7 +105,7 @@ function FileNode(xyNode: Node) {
               <Input
                 onDoubleClick={(e) => e.stopPropagation()}
                 type="text"
-                placeholder="Titre (optionnel)"
+                placeholder="Title (optional)"
                 value={titleDraft}
                 onChange={(e) => setTitleDraft(e.target.value)}
                 onKeyDown={(e) => {
@@ -113,7 +113,7 @@ function FileNode(xyNode: Node) {
                 }}
               />
               <Button size="sm" onClick={handleSave}>
-                Valider
+                Save
               </Button>
             </div>
           </PopoverContent>
@@ -138,7 +138,7 @@ function FileNode(xyNode: Node) {
               )}
             </>
           ) : (
-            <p className="text-sm text-muted-foreground">Aucun fichier</p>
+            <p className="text-sm text-muted-foreground">No file</p>
           )}
         </div>
       </NodeFrame>

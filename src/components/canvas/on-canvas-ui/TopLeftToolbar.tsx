@@ -55,7 +55,7 @@ function TopLeftToolbar({
         <Link key={c._id} to="/canvas/$canvasId" params={{ canvasId: c._id }}>
           {c.name}
           {c._id === canvas?._id && (
-            <span className="text-xs ml-2 italic">Actuel</span>
+            <span className="text-xs ml-2 italic">Current</span>
           )}
         </Link>
       </DropdownMenuItem>
@@ -72,13 +72,13 @@ function TopLeftToolbar({
               variant="ghost"
               className="flex items-center gap-1 disabled:opacity-100"
             >
-              <img src="/favicon.svg" alt="Logo de Nolenor" className="h-5" />
+              <img src="/favicon.svg" alt="Nolenor logo" className="h-5" />
               {isAuthenticated && <HiMiniChevronDown size={20} />}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
             <DropdownMenuLabel className="flex items-center justify-between">
-              Vos espaces
+              Your workspaces
               <Dialog>
                 <DialogTrigger>
                   <AiOutlinePlusCircle size={14} />
@@ -91,11 +91,11 @@ function TopLeftToolbar({
         </DropdownMenu>
         <InlineEditableText
           disabled={!isAuthenticated}
-          value={canvas?.name || "Sans nom"}
+          value={canvas?.name || "Untitled"}
           onSave={handleUpdateCanvasDetails}
           as="h1"
           className="font-semibold hover:bg-accent p-1 px-2 rounded-sm"
-          placeholder="Sans nom"
+          placeholder="Untitled"
         />
       </div>
 

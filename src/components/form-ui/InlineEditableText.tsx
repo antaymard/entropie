@@ -90,7 +90,7 @@ function InlineEditableText({
   name,
   className,
   inputClassName,
-  placeholder = "Cliquez pour éditer...",
+  placeholder = "Click to edit...",
   saveOnBlur = true,
   as: Element = "span",
   disabled = false,

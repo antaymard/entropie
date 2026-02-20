@@ -212,7 +212,7 @@ function ImageUploader({ initialValue, onSave, onClose }) {
   };
 
   return (
-    <SidePanelFrame id={sidePanelId} title="Modifier l'image" className="w-64">
+    <SidePanelFrame id={sidePanelId} title="Edit image" className="w-64">
       <Tabs defaultValue="upload" className="w-full">
         <TabsList className="w-full">
           <TabsTrigger value="upload">Image</TabsTrigger>

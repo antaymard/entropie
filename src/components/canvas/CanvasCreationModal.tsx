@@ -24,7 +24,7 @@ export default function CanvasCreationModal() {
       validate={(values) => {
         const errors: { name?: string } = {};
         if (!values.name.trim()) {
-          errors.name = "Le nom ne peut pas être vide";
+          errors.name = "Name cannot be empty";
         }
         return errors;
       }}
@@ -35,33 +35,33 @@ export default function CanvasCreationModal() {
             name: values.name,
           });
           if (newCanvasId) {
-            toast.success(`Espace "${values.name}" créé avec succès !`);
+            toast.success(`Workspace "${values.name}" created successfully!`);
             navigate({
               to: `/canvas/${newCanvasId}`,
               params: { canvasId: newCanvasId },
             });
           } else {
-            throw new Error("Échec de la création de l'espace.");
+            throw new Error("Failed to create workspace.");
           }
         } catch (error) {
-          toastError(error, "Erreur lors de la création de l'espace.");
+          toastError(error, "Error while creating workspace.");
         }
       }}
     >
       {({ submitForm }) => (
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Créer un espace</DialogTitle>
+            <DialogTitle>Create a workspace</DialogTitle>
             <DialogDescription>
-              Donnez un nom à ce nouvel espace.
+              Give this new workspace a name.
             </DialogDescription>
           </DialogHeader>
           <div className="my-3">
-            <TextInput name="name" label="Nom de l'espace" placeholder="" />
+            <TextInput name="name" label="Workspace name" placeholder="" />
           </div>
           <DialogFooter>
             <Button type="button" onClick={submitForm}>
-              Créer
+              Create
             </Button>
           </DialogFooter>
         </DialogContent>

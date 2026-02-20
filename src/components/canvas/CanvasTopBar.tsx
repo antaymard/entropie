@@ -29,7 +29,7 @@ function CanvasTopBar() {
         <div className="rounded-sm border border-gray-300 flex divide-x divide-gray-300">
           <button
             className="hover:bg-gray-200 p-2 flex items-center rounded-xs"
-            title="Espaces"
+            title="Workspaces"
             type="button"
             onClick={() => setOpen(true)}
           >
@@ -38,17 +38,17 @@ function CanvasTopBar() {
           <Link
             to="/settings"
             className="hover:bg-gray-200 p-2 flex items-center rounded-xs"
-            title="Paramètres"
+            title="Settings"
           >
             <HiOutlineCog size={18} />
           </Link>
         </div>
         <InlineEditableText
-          value={canvas?.name || "Sans nom"}
+          value={canvas?.name || "Untitled"}
           onSave={handleUpdateCanvasDetails}
           as="h1"
           className="font-semibold hover:text-black text-lg"
-          placeholder="Sans nom"
+          placeholder="Untitled"
         />
         <div>
           <CanvasStatus />

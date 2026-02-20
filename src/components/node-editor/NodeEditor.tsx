@@ -61,8 +61,8 @@ export default function NodeEditor({
     visuals: {
       node: {
         default: {
-          name: "Nouveau visuel",
-          description: "Description du visuel",
+          name: "New visual",
+          description: "Visual description",
           layout: {
             element: "root",
             children: [],
@@ -86,8 +86,8 @@ export default function NodeEditor({
       },
       window: {
         default: {
-          name: "Visuel fenêtre par défaut",
-          description: "Apparence de la fenêtre",
+          name: "Default window visual",
+          description: "Window appearance",
           layout: {
             element: "root",
             children: [],
@@ -120,9 +120,9 @@ export default function NodeEditor({
       const { _id, ...data } = values;
 
       await createOrUpdateTemplate({ templateId: _id, data });
-      toast.success("Template sauvegardé avec succès !");
+      toast.success("Template saved successfully!");
     } catch (error) {
-      toast.error("Erreur lors de la sauvegarde du template");
+      toast.error("Error saving template");
       console.error("Error saving template:", error);
     } finally {
       setIsSaving(false);
@@ -238,7 +238,7 @@ export default function NodeEditor({
                   disabled={isSaving}
                   className="p-2 bg-green-500 hover:bg-green-600 text-white w-fit rounded-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSaving ? "Sauvegarde en cours..." : "Sauvegarder"}
+                  {isSaving ? "Saving..." : "Save"}
                 </button>
               </div>
             </div>

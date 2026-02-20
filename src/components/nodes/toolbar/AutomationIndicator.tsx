@@ -63,7 +63,7 @@ function AutomationIndicator({ xyNode }: { xyNode: Node<any> }) {
           <Spinner />
           {automationMapping[
             nodeData?.automationProgress?.currentStepType as AutomationStepType
-          ] || "En cours..."}
+          ] || "In progress..."}
         </span>
       </NodeToolbar>
 
@@ -72,13 +72,13 @@ function AutomationIndicator({ xyNode }: { xyNode: Node<any> }) {
         {transitionState === "success" && (
           <span className="text-green-500 flex gap-2 items-center">
             <TbCheck />
-            Terminé !
+            Done!
           </span>
         )}
         {transitionState === "error" && (
           <span className="text-red-500 flex gap-2 items-center">
             <TbExclamationMark />
-            Erreur
+            Error
           </span>
         )}
       </NodeToolbar>

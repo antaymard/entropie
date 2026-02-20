@@ -2,7 +2,7 @@ import {
   format as dateFnsFormat,
   formatDistanceToNow as dateFnsFormatDistanceToNow,
 } from "date-fns";
-import { fr } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 
 /**
  * Format une date avec la locale française
@@ -10,7 +10,7 @@ import { fr } from "date-fns/locale";
  * @param formatStr Le format de sortie (ex: "EEE dd MMM yyyy")
  */
 export const format = (date: Date, formatStr: string) =>
-  dateFnsFormat(date, formatStr, { locale: fr });
+  dateFnsFormat(date, formatStr, { locale: enUS });
 
 /**
  * Formate la distance entre une date et maintenant avec la locale française
@@ -20,4 +20,4 @@ export const format = (date: Date, formatStr: string) =>
 export const formatDistanceToNow = (
   date: Date,
   options?: Parameters<typeof dateFnsFormatDistanceToNow>[1]
-) => dateFnsFormatDistanceToNow(date, { ...options, locale: fr });
+) => dateFnsFormatDistanceToNow(date, { ...options, locale: enUS });

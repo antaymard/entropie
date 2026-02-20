@@ -38,16 +38,16 @@ export default function CanvasSidebar({
   const currentCanvasName = userCanvases?.find((c) => c._id === canvasId)?.name;
 
   const handleDeleteCanvas = async (canvasId: Id<"canvases">) => {
-    if (confirm("Supprimer cet espace ?")) {
+    if (confirm("Delete this workspace?")) {
       await deleteCanvas({ canvasId });
     }
   };
 
   function renderUserCanvases() {
-    if (!userCanvases) return <div className="p-4">Chargement...</div>;
+    if (!userCanvases) return <div className="p-4">Loading...</div>;
     if (userCanvases.length === 0)
       return (
-        <div className="p-4 text-sm text-muted-foreground">Aucun espace</div>
+        <div className="p-4 text-sm text-muted-foreground">No workspaces</div>
       );
 
     return (
@@ -81,7 +81,7 @@ export default function CanvasSidebar({
                     onClick={() => handleDeleteCanvas(c._id)}
                     className="text-destructive"
                   >
-                    Supprimer
+                    Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -111,7 +111,7 @@ export default function CanvasSidebar({
           </Dialog>
         </SidebarHeader>
         <SidebarContent className="py-4">
-          <h3 className="px-4">Espaces</h3>
+          <h3 className="px-4">Workspaces</h3>
           {renderUserCanvases()}
         </SidebarContent>
         <SidebarFooter></SidebarFooter>

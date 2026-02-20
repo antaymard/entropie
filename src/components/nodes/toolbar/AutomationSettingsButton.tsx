@@ -64,7 +64,7 @@ export default function AutomationSettingsButton({
       dataProcessing: nodeData?.dataProcessing || [],
     } as Pick<NodeData, "automationMode" | "agent" | "dataProcessing">,
     onSubmit: async ({ value }) => {
-      if (!nodeDataId) return toast.error("Le nodeDataId est manquant.");
+      if (!nodeDataId) return toast.error("nodeDataId is missing.");
       await updateAutomationSettings({
         _id: nodeDataId,
         ...value,
@@ -78,7 +78,7 @@ export default function AutomationSettingsButton({
   const automationStatus = nodeData?.status;
 
   const handleTriggerAutomation = async () => {
-    if (!nodeDataId) return toast.error("Le nodeDataId est manquant.");
+    if (!nodeDataId) return toast.error("nodeDataId is missing.");
     await triggerAutomation({ nodeDataId });
   };
 
@@ -116,7 +116,7 @@ export default function AutomationSettingsButton({
                 {hasAutomationEnabled ? <TbBoltFilled /> : <TbBolt />}
               </TooltipTrigger>
               <TooltipContent>
-                <p>Paramètres d'automation</p>
+                <p>Automation settings</p>
               </TooltipContent>
             </Tooltip>
           </Button>
@@ -159,18 +159,18 @@ export default function AutomationSettingsButton({
                       form={form}
                       name="agent.instructions"
                       minRows={4}
-                      placeholder="Résume les éléments clé du bloc source."
+                      placeholder="Summarize the key elements of the source block."
                     />
                   </div>
                 ) : (
-                  <i>Automation désactivée</i>
+                  <i>Automation disabled</i>
                 )
               }
             />
 
             <div className="flex justify-end gap-2">
               <Button variant="ghost" onClick={() => setOpen(false)}>
-                Annuler
+                Cancel
               </Button>
               <Button onClick={form.handleSubmit}>OK</Button>
             </div>
@@ -197,7 +197,7 @@ export default function AutomationSettingsButton({
                 <TbPlayerPlayFilled />
               </TooltipTrigger>
               <TooltipContent>
-                <p>Lancer l'automation</p>
+                <p>Run automation</p>
               </TooltipContent>
             </Tooltip>
           )}

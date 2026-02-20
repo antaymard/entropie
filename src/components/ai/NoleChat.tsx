@@ -38,7 +38,7 @@ export function NoleChat() {
   if (!threadId) {
     return (
       <div className="h-full flex items-center justify-center text-gray-500">
-        Erreur lors du chargement du chat
+        Error loading chat
       </div>
     );
   }
@@ -59,7 +59,7 @@ export function NoleChat() {
               <TbCirclePlus size={15} />
             </button>
           </TooltipTrigger>
-          <TooltipContent>Nouveau chat</TooltipContent>
+          <TooltipContent>New chat</TooltipContent>
         </Tooltip>
         <div className="flex">
           <Tooltip delayDuration={300}>
@@ -81,8 +81,8 @@ export function NoleChat() {
             </TooltipTrigger>
             <TooltipContent>
               {showHistory
-                ? "Retour au chat"
-                : "Afficher l'historique des conversations"}
+                ? "Back to chat"
+                : "Show conversation history"}
             </TooltipContent>
           </Tooltip>
           <Tooltip delayDuration={300}>
@@ -95,7 +95,7 @@ export function NoleChat() {
                 <TbX size={15} />
               </button>
             </TooltipTrigger>
-            <TooltipContent>Fermer Nolë</TooltipContent>
+            <TooltipContent>Close Nolë</TooltipContent>
           </Tooltip>
         </div>
       </div>
@@ -164,10 +164,10 @@ function ChatHistory({
             >
               <div className="flex flex-col items-start gap-1 flex-1">
                 <div className="font-semibold truncate w-full text-left">
-                  {thread.title || "Sans titre"}
+                  {thread.title || "Untitled"}
                 </div>
                 <div className="text-sm">
-                  Créé le {new Date(thread._creationTime).toLocaleString()}
+                  Created on {new Date(thread._creationTime).toLocaleString()}
                 </div>
               </div>
               <button
@@ -180,7 +180,7 @@ function ChatHistory({
                   } catch (error) {
                     toastError(
                       error,
-                      "Erreur lors de la suppression du thread."
+                      "Error deleting thread."
                     );
                   }
                 }}

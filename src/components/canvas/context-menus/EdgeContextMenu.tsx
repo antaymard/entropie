@@ -72,14 +72,14 @@ export default function EdgeContextMenu({
   };
 
   const strokeWidthLabels = {
-    thin: "Fin",
-    regular: "Normal",
-    thick: "Épais",
+    thin: "Thin",
+    regular: "Regular",
+    thick: "Thick",
   };
 
   const markerLabels = {
-    none: "Aucun",
-    arrow: "Flèche",
+    none: "None",
+    arrow: "Arrow",
   };
 
   // Filtrer les couleurs disponibles (sans transparent)
@@ -90,7 +90,7 @@ export default function EdgeContextMenu({
   return (
     <>
       <DropdownMenuLabel className="whitespace-nowrap">
-        Actions sur le lien
+        Edge actions
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
 
@@ -101,7 +101,7 @@ export default function EdgeContextMenu({
             className="whitespace-nowrap"
             onClick={handleRemoveLabel}
           >
-            <TbTagOff size={16} /> Supprimer le label
+            <TbTagOff size={16} /> Remove label
           </DropdownMenuItem>
           <DropdownMenuSeparator />
         </>
@@ -217,7 +217,7 @@ export default function EdgeContextMenu({
           closeMenu();
         }}
       >
-        <TbTrash className="text-red-500" /> Supprimer
+        <TbTrash className="text-red-500" /> Delete
       </DropdownMenuItem>
     </>
   );

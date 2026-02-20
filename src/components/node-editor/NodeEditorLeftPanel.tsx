@@ -37,21 +37,21 @@ export default function NodeEditorLeftPanel() {
         className="font-semibold mb-4 cursor-pointer hover:text-gray-700"
         onClick={() => setInfoIsOpen(!infoIsOpen)}
       >
-        {infoIsOpen ? "Infos générales" : blockName || "Nom du bloc"}
+        {infoIsOpen ? "General info" : blockName || "Block name"}
       </h3>
       {infoIsOpen && (
         <div className="flex flex-col gap-4">
           <TextInput
-            label="Nom du bloc"
+            label="Block name"
             name="name"
             required
-            placeholder="Ex: Carte produit"
+            placeholder="E.g.: Product card"
           />
 
           <TextArea
             label="Description"
             name="description"
-            placeholder="Expliquer à quoi sert ce bloc..."
+            placeholder="Explain what this block is for..."
             minRows={5}
             maxRows={5}
           />
@@ -63,11 +63,11 @@ export default function NodeEditorLeftPanel() {
       {/* Fields selection */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold ">Champs du bloc</h3>
+          <h3 className="font-semibold ">Block fields</h3>
           <DropdownMenu>
             <DropdownMenuTrigger>
               <Button size="sm">
-                Ajouter <HiMiniPlusCircle className="ml-1" size={20} />
+                Add <HiMiniPlusCircle className="ml-1" size={20} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
@@ -79,7 +79,7 @@ export default function NodeEditorLeftPanel() {
         {/* Render de la liste des fields du node */}
         <div className="flex flex-col gap-1">
           {values.fields.length === 0 ? (
-            <i>Aucun champ ajouté</i>
+            <i>No fields added</i>
           ) : (
             values.fields.map((field, i) => {
               // Trouve l'icône depuis fieldList (côté front uniquement)

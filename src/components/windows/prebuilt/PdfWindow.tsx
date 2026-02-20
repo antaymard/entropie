@@ -71,7 +71,7 @@ function PdfWindow({ xyNode }: { xyNode: Node }) {
           </Document>
         ) : (
           <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-            Aucun PDF disponible
+            No PDF available
           </div>
         )}
       </div>

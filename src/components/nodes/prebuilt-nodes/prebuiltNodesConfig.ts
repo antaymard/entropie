@@ -51,8 +51,8 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
     node: {
       id: "",
       type: "floatingText",
-      height: 28,
-      width: 150,
+      height: 33,
+      width: 220,
       position: { x: 0, y: 0 },
       data: {
         // Pas de nodeDataId ici, car les données
@@ -78,8 +78,8 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
       },
       title: {
         label: "Title",
-        defaultHeight: 28,
-        defaultWidth: 150,
+        defaultHeight: 33,
+        defaultWidth: 220,
         resizable: false,
       },
     },

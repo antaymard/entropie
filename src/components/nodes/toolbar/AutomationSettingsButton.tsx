@@ -32,6 +32,7 @@ import {
 import { automationMapping } from "./automationTypesToLabelsMapping";
 
 const sectionClassName = "flex flex-col gap-2";
+const tooltipDelayDuration = 500;
 
 export default function AutomationSettingsButton({
   xyNode,
@@ -111,7 +112,7 @@ export default function AutomationSettingsButton({
             size="icon"
             className={cn(hasAutomationEnabled && "text-amber-500")}
           >
-            <Tooltip>
+            <Tooltip delayDuration={tooltipDelayDuration}>
               <TooltipTrigger>
                 {hasAutomationEnabled ? <TbBoltFilled /> : <TbBolt />}
               </TooltipTrigger>
@@ -192,7 +193,7 @@ export default function AutomationSettingsButton({
           }}
         >
           {(automationStatus === "idle" || !automationStatus) && (
-            <Tooltip>
+            <Tooltip delayDuration={tooltipDelayDuration}>
               <TooltipTrigger>
                 <TbPlayerPlayFilled />
               </TooltipTrigger>
@@ -208,7 +209,7 @@ export default function AutomationSettingsButton({
                 <p>{automationStep}</p>
               </span>
             ) : (
-              <Tooltip>
+              <Tooltip delayDuration={tooltipDelayDuration}>
                 <TooltipTrigger>
                   <Spinner />
                 </TooltipTrigger>

@@ -36,12 +36,7 @@ const ColorSelector = memo(function ColorSelector({
   );
 
   // Filtrer les couleurs disponibles selon la config du nœud
-  const availableColors = Object.entries(colors).filter(([key]) => {
-    if (key === "transparent") {
-      return nodeConfig?.canBeTransparent === true;
-    }
-    return true;
-  });
+  const availableColors = Object.entries(colors);
 
   const currentColor = (xyNode.data.color as colorsEnum) || "default";
 

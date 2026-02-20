@@ -43,7 +43,7 @@ type PrebuiltNodeConfig = {
 
 const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
   {
-    nodeLabel: "Texte flottant",
+    nodeLabel: "Floating text",
     nodeIcon: TbAbc,
     nodeComponent: FloatingTextNode,
     skipNodeDataCreation: true,
@@ -59,7 +59,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
         // restent dans canvas.node.data
         color: "transparent",
         // Actual data
-        text: "Texte flottant",
+        text: "Floating text",
         level: "p",
       } satisfies Omit<XyNodeData<FloatingTextCanvasNodeData>, "nodeDataId">,
     } as Node,
@@ -72,12 +72,12 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
     nodeComponent: DocumentNode,
     variants: {
       default: {
-        label: "Aperçu",
+        label: "Preview",
         defaultHeight: 320,
         defaultWidth: 320,
       },
       title: {
-        label: "Titre",
+        label: "Title",
         defaultHeight: 28,
         defaultWidth: 150,
         resizable: false,
@@ -128,17 +128,17 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
     },
   },
   {
-    nodeLabel: "Lien",
+    nodeLabel: "Link",
     nodeIcon: TbLink,
     nodeComponent: LinkNode,
     variants: {
       default: {
-        label: "Défaut",
+        label: "Default",
         defaultHeight: 33,
         defaultWidth: 220,
       },
       preview: {
-        label: "Aperçu",
+        label: "Preview",
         defaultHeight: 120,
         defaultWidth: 320,
       },
@@ -168,7 +168,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
     },
   },
   {
-    nodeLabel: "Fichier",
+    nodeLabel: "File",
     nodeIcon: TbFileTypePdf,
     nodeComponent: FileNode,
     canHaveAutomation: true,
@@ -199,7 +199,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
     },
   },
   {
-    nodeLabel: "Valeur",
+    nodeLabel: "Value",
     nodeIcon: TbTag,
     nodeComponent: ValueNode,
     canHaveAutomation: true,

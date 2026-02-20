@@ -60,7 +60,7 @@ function FloatingTextNode(xyNode: Node) {
             onSave={(text) =>
               updateCanvasNode({ nodeId: xyNode.id, data: { text } })
             }
-            placeholder="Double-cliquez pour éditer..."
+            placeholder="Double-click to edit..."
           />
         </div>
       </NodeFrame>

@@ -28,9 +28,9 @@ export default function ErrorDisplay({
     message ||
     (error instanceof ConvexError
       ? (error.data as string)
-      : error?.message || "Une erreur est survenue");
+      : error?.message || "An error occurred");
 
-  const displayTitle = title || "Erreur";
+  const displayTitle = title || "Error";
 
   return (
     <div className="h-full w-full flex items-center">

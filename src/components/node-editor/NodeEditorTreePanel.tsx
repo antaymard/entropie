@@ -51,21 +51,21 @@ export default function NodeEditorTreePanel() {
     },
     {
       element: "text" as const,
-      label: "Texte statique",
+      label: "Static text",
       icon: PiTextAa,
       prefix: "txt-",
       disabled: true,
     },
     {
       element: "separator" as const,
-      label: "Séparateur",
+      label: "Separator",
       icon: RiSeparator,
       prefix: "sep-",
       disabled: true,
     },
   ];
 
-  const panelTitle = visualType === "node" ? "Apparence du bloc" : "Apparence de la fenêtre";
+  const panelTitle = visualType === "node" ? "Block appearance" : "Window appearance";
 
   return (
     <div className="space-y-4 border-gray-300 border-r px-5 py-4">
@@ -73,7 +73,7 @@ export default function NodeEditorTreePanel() {
       {/* Disposition elements */}
       <div className="">
         <h4 className="text-sm font-medium mb-2">
-          Ajouter un élément de mise en page
+          Add a layout element
         </h4>
 
         <div className="flex flex-wrap gap-1 mb-4">
@@ -105,7 +105,7 @@ export default function NodeEditorTreePanel() {
       </div>
 
       <div className="">
-        <h4 className="text-sm font-medium mb-2">Structure du bloc</h4>
+        <h4 className="text-sm font-medium mb-2">Block structure</h4>
 
         {visual?.layout && <TreeRenderer layout={visual.layout} />}
       </div>

@@ -5,15 +5,15 @@ export default function ReadNodeConfigsToolCard({ state, input, output }: any) {
   function renderTooName() {
     switch (input?.operation) {
       case "listAllNodeTypes":
-        return "Lecture de tous les types de nœuds";
+        return "Reading all node types";
       case "readOneNodeType":
-        return `Lecture d'un type de nœud (${input.itemType})`;
+        return `Reading a node type (${input.itemType})`;
       case "listAllNodeFields":
-        return "Lecture de tous les champs de nœuds";
+        return "Reading all node fields";
       case "readOneNodeField":
-        return `Lecture d'un champ de nœud (${input.itemType})`;
+        return `Reading a node field (${input.itemType})`;
       default:
-        return "Lecture des configurations de nœuds";
+        return "Reading node configurations";
     }
   }
 

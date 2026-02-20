@@ -25,9 +25,9 @@ export function DateElementStatic(props: SlateElementProps<TDateElement>) {
               new Date(today.setDate(today.getDate() + 2)).toDateString() ===
               elementDate.toDateString();
 
-            if (isToday) return "Aujourd'hui";
-            if (isYesterday) return "Hier";
-            if (isTomorrow) return "Demain";
+            if (isToday) return "Today";
+            if (isYesterday) return "Yesterday";
+            if (isTomorrow) return "Tomorrow";
 
             return elementDate.toLocaleDateString(undefined, {
               day: "numeric",

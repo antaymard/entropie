@@ -295,7 +295,7 @@ const FieldRendererWrapper = memo(
     if (!visualVariant) {
       return (
         <div style={style} className="text-gray-400 text-xs">
-          {field.name} - Aucun visual "{targetVariantName}" défini pour{" "}
+          {field.name} - No visual "{targetVariantName}" defined for{" "}
           {visualType}
         </div>
       );

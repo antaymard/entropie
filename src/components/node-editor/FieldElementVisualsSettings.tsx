@@ -24,7 +24,7 @@ export default function FieldElementVisualSettings({
     return (
       <div className="px-5 py-4">
         <p className="text-sm text-gray-500">
-          Impossible de charger les paramètres pour ce champ.
+          Unable to load settings for this field.
         </p>
       </div>
     );
@@ -102,7 +102,7 @@ export default function FieldElementVisualSettings({
     <div className="space-y-4 divide-y divide-gray-300">
       <div className="px-5 py-4 space-y-4">
         <h3 className="font-semibold flex items-center gap-2">
-          Paramètres visuels de{" "}
+          Visual settings for{" "}
           <span className="flex items-center gap-1 bg-gray-100 px-2 rounded-sm">
             {fieldDefinition.icon && <fieldDefinition.icon />}
             {nodeField.name}
@@ -141,7 +141,7 @@ export default function FieldElementVisualSettings({
           <div className="px-5 py-4">
             <details className="text-xs">
               <summary className="cursor-pointer font-medium">
-                Debug: Settings actuels
+                Debug: Current settings
               </summary>
               <pre className="mt-2 p-2 bg-gray-100 rounded overflow-auto">
                 {JSON.stringify(currentSettings, null, 2)}

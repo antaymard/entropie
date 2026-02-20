@@ -13,7 +13,7 @@ const colors: Record<
   }
 > = {
   blue: {
-    label: "Bleu",
+    label: "Blue",
     border: "border-[#9cbcf4]",
     bg: "bg-[#dee7fb]",
     darkBg: "bg-[#c5d6f8]",
@@ -22,7 +22,7 @@ const colors: Record<
     transparentBg: "bg-[#577ee7]/20",
   },
   green: {
-    label: "Vert",
+    label: "Green",
     border: "border-[#85d0b0]",
     bg: "bg-[#d9f2e4]",
     darkBg: "bg-[#b6e4ce]",
@@ -31,7 +31,7 @@ const colors: Record<
     transparentBg: "bg-[#309973]/20",
   },
   red: {
-    label: "Rouge",
+    label: "Red",
     border: "border-red-300",
     bg: "bg-red-100",
     darkBg: "bg-red-200",
@@ -41,7 +41,7 @@ const colors: Record<
   },
   pink: {
     //#8e4478
-    label: "Rose",
+    label: "Pink",
     border: "border-[#d89ac8]",
     bg: "bg-[#f2dcee]",
     darkBg: "bg-[#f2dcee]",
@@ -59,7 +59,7 @@ const colors: Record<
     transparentBg: "bg-orange-500/20",
   },
   yellow: {
-    label: "Jaune",
+    label: "Yellow",
     border: "border-yellow-300",
     bg: "bg-yellow-100",
     darkBg: "bg-yellow-200",
@@ -68,7 +68,7 @@ const colors: Record<
     transparentBg: "bg-yellow-500/20",
   },
   purple: {
-    label: "Violet",
+    label: "Purple",
     border: "border-purple-300",
     bg: "bg-purple-100",
     darkBg: "bg-purple-200",
@@ -77,7 +77,7 @@ const colors: Record<
     transparentBg: "bg-purple-500/20",
   },
   default: {
-    label: "Par défaut",
+    label: "Default",
     border: "border-slate-300",
     bg: "bg-slate-100",
     darkBg: "bg-slate-200",

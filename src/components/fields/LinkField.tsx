@@ -40,7 +40,7 @@ export function LinkEditionPopover({
     try {
       new URL(url);
     } catch {
-      toast.error("L'URL n'est pas valide");
+      toast.error("Invalid URL");
       return;
     }
 
@@ -57,7 +57,7 @@ export function LinkEditionPopover({
         siteName: "",
       });
     } catch {
-      toast.error("Impossible de récupérer le titre de la page");
+      toast.error("Unable to fetch page title");
       // Sauvegarder quand même avec l'URL comme titre
       onSave({ href: url, pageTitle: url });
     } finally {
@@ -75,7 +75,7 @@ export function LinkEditionPopover({
         onChange={(e) => setLinkUrl(e.target.value)}
       />
       <Button onClick={handleSave} disabled={isLoading} size="sm">
-        {isLoading ? "Chargement..." : "Valider"}
+        {isLoading ? "Loading..." : "Save"}
       </Button>
     </div>
   );
@@ -112,11 +112,11 @@ function LinkField({ value, className = "", componentProps }: LinkFieldProps) {
           <TbLink size={18} className="shrink-0" />
 
           <p className="truncate hover:underline flex-1 min-w-0">
-            {linkValue.pageTitle || <i>Pas de titre</i>}
+            {linkValue.pageTitle || <i>No title</i>}
           </p>
         </a>
       ) : (
-        "Pas de lien"
+        "No link"
       )}
     </div>
   );

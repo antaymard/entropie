@@ -20,42 +20,42 @@ export default function DivElementSettings({
       <div className="px-5 py-4 space-y-3">
         <h3 className="font-semibold">Dimensions</h3>
         <div className="space-y-2">
-          <h4 className="text-sm">Largeur/Hauteur</h4>
+          <h4 className="text-sm">Width/Height</h4>
           <div className="grid grid-cols-2 gap-2">
             <StyleValueInput
               elementPath={elementPath}
               styleName="width"
-              label="Largeur"
+              label="Width"
               icon={<AiOutlineColumnWidth />}
             />
             <StyleValueInput
               elementPath={elementPath}
               styleName="height"
-              label="Hauteur"
+              label="Height"
               icon={<AiOutlineColumnHeight />}
             />
           </div>
         </div>
         <div className="space-y-2">
-          <h4 className="text-sm">Dimensions minimales</h4>
+          <h4 className="text-sm">Minimum dimensions</h4>
           <div className="grid grid-cols-2 gap-2">
             <StyleValueInput
               elementPath={elementPath}
               styleName="minWidth"
-              label="Largeur min"
+              label="Min width"
               icon={<AiOutlineColumnWidth />}
             />
             <StyleValueInput
               elementPath={elementPath}
               styleName="minHeight"
-              label="Hauteur min"
+              label="Min height"
               icon={<AiOutlineColumnHeight />}
             />
           </div>
         </div>
       </div>
       <div className="px-5 py-4 space-y-4">
-        <h3 className="font-semibold">Disposition</h3>
+        <h3 className="font-semibold">Layout</h3>
         <div className="grid grid-cols-2 gap-2">
           <StyleClickButton
             elementPath={elementPath}
@@ -92,25 +92,25 @@ export default function DivElementSettings({
             }
             elementPath={elementPath}
             styleName="gap"
-            label="Espacement entre éléments"
+            label="Spacing between elements"
             icon={<LuAlignVerticalSpaceAround />}
           />
         </div>
 
         {/* Gestion des paddings */}
         <div className="space-y-2">
-          <h4>Marges intérieures</h4>
+          <h4>Inner margins</h4>
           <div className="grid grid-cols-2 gap-2">
             <StyleValueInput
               elementPath={elementPath}
               styleName={["paddingTop", "paddingBottom"]}
-              label="Marges verticales"
+              label="Vertical margins"
               icon={<RiMergeCellsVertical />}
             />
             <StyleValueInput
               elementPath={elementPath}
               styleName={["paddingLeft", "paddingRight"]}
-              label="Marges horizontales"
+              label="Horizontal margins"
               icon={<RiMergeCellsHorizontal />}
             />
           </div>

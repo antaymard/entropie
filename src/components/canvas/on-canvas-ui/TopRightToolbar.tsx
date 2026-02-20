@@ -30,7 +30,7 @@ function TopRightToolbar() {
           <Link
             to="/settings"
             className="hover:bg-accent p-2 flex items-center rounded-md"
-            title="Paramètres"
+            title="Settings"
           >
             <HiOutlineCog size={18} />
           </Link>
@@ -54,9 +54,9 @@ function SharingButton() {
         <Button
           variant="ghost"
           className="hover:bg-accent p-2 flex items-center rounded-md"
-          title="Partager le canvas"
+          title="Share canvas"
         >
-          Partager
+          Share
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end">
@@ -73,7 +73,7 @@ function SharingButton() {
               }).catch((err) => {
                 toastError(
                   err,
-                  "Erreur lors de la mise à jour des options de partage"
+                  "Error updating sharing options"
                 );
                 // Revert the change in case of error
                 updateCanvas({
@@ -84,7 +84,7 @@ function SharingButton() {
               });
             }}
           />
-          <Label>Rendre public (en lecture seule)</Label>
+          <Label>Make public (read-only)</Label>
         </div>
       </PopoverContent>
     </Popover>
@@ -98,25 +98,25 @@ function CanvasStatus() {
   switch (status) {
     case "idle":
       return (
-        <span className="text-sm text-gray-500" title="Synchronisé">
+        <span className="text-sm text-gray-500" title="Synced">
           <TbCloudCheck size={size} />
         </span>
       );
     case "unsynced":
       return (
-        <span className="text-sm text-yellow-500" title="Non synchronisé">
+        <span className="text-sm text-yellow-500" title="Not synced">
           <TbCloudUp size={size} />
         </span>
       );
     case "saving":
       return (
-        <span className="text-sm text-blue-500" title="En cours de sauvegarde">
+        <span className="text-sm text-blue-500" title="Saving">
           <TbCloudUp size={size} />
         </span>
       );
     case "saved":
       return (
-        <span className="text-sm text-green-500" title="Sauvegardé">
+        <span className="text-sm text-green-500" title="Saved">
           <TbCloudCheck size={size} />
         </span>
       );
@@ -124,7 +124,7 @@ function CanvasStatus() {
       return (
         <span
           className="text-sm text-red-500"
-          title="Erreur de synchronisation"
+          title="Sync error"
         >
           <TbCloudX size={size} />
         </span>

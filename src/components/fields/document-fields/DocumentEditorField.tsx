@@ -141,7 +141,7 @@ const DocumentEditorField = forwardRef<
           <Editor
             disableDefaultStyles={true}
             variant="none"
-            placeholder="Commencez à écrire..."
+            placeholder="Start writing..."
             className="px-5 py-3"
             readOnly={isLocked}
           />

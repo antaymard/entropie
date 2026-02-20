@@ -79,7 +79,7 @@ export function useUpdateNodeDataValues(): UseUpdateNodeDataValuesReturn {
       } catch (error) {
         // Erreur : revert vers le snapshot
         revertNodeData(nodeDataId);
-        toastError(error, "Erreur lors de la mise à jour");
+        toastError(error, "Error updating");
       } finally {
         isUpdatingRef.current = false;
       }

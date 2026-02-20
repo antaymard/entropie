@@ -47,7 +47,7 @@ export default function NodeTemplateCard({
             }
           >
             <HiOutlineTrash />
-            Supprimer
+            Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -119,7 +119,7 @@ function SelectSidePanel({
   return (
     <SidePanelFrame
       id={sidePanelId}
-      title="Modifier la sélection"
+      title="Edit selection"
       className="w-64"
     >
       <div className="flex flex-col gap-2">

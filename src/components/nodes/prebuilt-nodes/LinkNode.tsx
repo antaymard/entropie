@@ -59,7 +59,7 @@ function LinkNode(xyNode: Node) {
     try {
       new URL(url);
     } catch {
-      toast.error("L'URL n'est pas valide");
+      toast.error("Invalid URL");
       return;
     }
 
@@ -84,7 +84,7 @@ function LinkNode(xyNode: Node) {
       setLinkUrl("");
       setLinkTitle("");
     } catch {
-      toast.error("Impossible de récupérer le titre de la page");
+      toast.error("Unable to fetch page title");
       // Sauvegarder quand même avec l'URL comme titre
       updateNodeDataValues({
         nodeDataId,
@@ -111,7 +111,7 @@ function LinkNode(xyNode: Node) {
       <CanvasNodeToolbar xyNode={xyNode}>
         <Popover open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="icon" title="Editer le lien">
+            <Button variant="outline" size="icon" title="Edit link">
               <TbPencil />
             </Button>
           </PopoverTrigger>
@@ -127,12 +127,12 @@ function LinkNode(xyNode: Node) {
               <Input
                 onDoubleClick={(e) => e.stopPropagation()}
                 type="text"
-                placeholder="Titre (optionnel)"
+                placeholder="Title (optional)"
                 value={linkTitle}
                 onChange={(e) => setLinkTitle(e.target.value)}
               />
               <Button onClick={handleSave} disabled={isLoading} size="sm">
-                {isLoading ? "Chargement..." : "Valider"}
+                {isLoading ? "Loading..." : "Save"}
               </Button>
             </div>
           </PopoverContent>
@@ -206,7 +206,7 @@ function LinkNode(xyNode: Node) {
           ) : (
             <div className="flex items-center justify-center h-full text-muted-foreground">
               <TbLink size={24} className="mr-2" />
-              Pas de lien
+              No link
             </div>
           )
         ) : (
@@ -218,7 +218,7 @@ function LinkNode(xyNode: Node) {
                   className="truncate flex-1 min-w-0"
                   title={linkValue.pageTitle || linkValue.href}
                 >
-                  {linkValue.pageTitle || <i>Pas de titre</i>}
+                  {linkValue.pageTitle || <i>No title</i>}
                 </p>
                 {xyNode.selected && (
                   <a
@@ -235,7 +235,7 @@ function LinkNode(xyNode: Node) {
             ) : (
               <span className="text-muted-foreground flex items-center gap-2">
                 <TbLink size={18} className="shrink-0" />
-                Pas de lien
+                No link
               </span>
             )}
           </div>

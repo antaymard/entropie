@@ -17,13 +17,13 @@ export default function ViewImageToolCard({
   return (
     <ToolCardFrame
       icon={TbFileSearch}
-      name="Lecture du PDF"
+      name="Reading PDF"
       state={state}
       canBeExpanded={true}
     >
       <div className="flex flex-col divide-y divide-white/20 -mx-2 text-white">
         <div className="p-2">
-          <p>Objectif</p>
+          <p>Objective</p>
           <p>{input?.objective}</p>
         </div>
         <div className="p-2">

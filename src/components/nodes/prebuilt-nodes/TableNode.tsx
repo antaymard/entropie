@@ -48,7 +48,7 @@ import {
 import { BsThreeDots } from "react-icons/bs";
 import { cn } from "@/lib/utils";
 import { format, parseISO, isValid } from "date-fns";
-import { fr } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 
 type ColumnType = "text" | "number" | "date";
 
@@ -70,8 +70,8 @@ interface TableData {
 
 const DEFAULT_TABLE_DATA: TableData = {
   columns: [
-    { id: "col1", name: "Colonne 1", type: "text" },
-    { id: "col2", name: "Colonne 2", type: "number" },
+    { id: "col1", name: "Column 1", type: "text" },
+    { id: "col2", name: "Column 2", type: "number" },
   ],
   rows: [
     { id: "row1", col1: "", col2: "" },
@@ -91,12 +91,12 @@ const createEmptyRow = (columns: TableColumn[]): TableRowData => {
 };
 
 const formatDateValue = (value: string | undefined): string => {
-  if (!value) return "Choisir une date";
+  if (!value) return "Choose a date";
   try {
     const tempDate = parseISO(value);
-    return isValid(tempDate) ? format(tempDate, "PPP", { locale: fr }) : "Date invalide";
+    return isValid(tempDate) ? format(tempDate, "PPP", { locale: enUS }) : "Invalid date";
   } catch {
-    return "Date invalide";
+    return "Invalid date";
   }
 };
 
@@ -116,7 +116,7 @@ const useTableOperations = (tableData: TableData, updateTableData: (data: TableD
   const addColumn = useCallback(
     (type: ColumnType) => {
       const newColId = generateId("col");
-      const newColumn: TableColumn = { id: newColId, name: `Colonne ${tableData.columns.length + 1}`, type };
+      const newColumn: TableColumn = { id: newColId, name: `Column ${tableData.columns.length + 1}`, type };
       const newRows = tableData.rows.map((row) => ({
         ...row,
         [newColId]: "",
@@ -369,19 +369,19 @@ const ColumnActionsMenu = memo(({ column, setColumnEdit, operations }: ColumnAct
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
         <DropdownMenuItem onClick={() => setColumnEdit({ id: column.id, name: column.name })}>
-          Renommer
+          Rename
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuSub>
-          <DropdownMenuSubTrigger>Type de colonne</DropdownMenuSubTrigger>
+          <DropdownMenuSubTrigger>Column type</DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
             <DropdownMenuItem onClick={() => operations.changeColumnType(column.id, "text")}>
               <LuType className="mr-2 h-4 w-4" />
-              Texte
+              Text
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => operations.changeColumnType(column.id, "number")}>
               <LuHash className="mr-2 h-4 w-4" />
-              Nombre
+              Number
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => operations.changeColumnType(column.id, "date")}>
               <LuCalendar className="mr-2 h-4 w-4" />
@@ -392,16 +392,16 @@ const ColumnActionsMenu = memo(({ column, setColumnEdit, operations }: ColumnAct
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => operations.moveColumn(column.id, "left")}>
           <LuArrowUp className="mr-2 h-4 w-4 -rotate-90" />
-          Déplacer à gauche
+          Move left
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => operations.moveColumn(column.id, "right")}>
           <LuArrowDown className="mr-2 h-4 w-4 -rotate-90" />
-          Déplacer à droite
+          Move right
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => operations.deleteColumn(column.id)} className="text-destructive">
           <LuTrash2 className="mr-2 h-4 w-4" />
-          Supprimer
+          Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -427,21 +427,21 @@ const RowActionsMenu = memo(({ rowId, operations }: RowActionsMenuProps) => {
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => operations.moveRow(rowId, "up")}>
           <LuArrowUp className="mr-2 h-4 w-4" />
-          Déplacer vers le haut
+          Move up
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => operations.moveRow(rowId, "down")}>
           <LuArrowDown className="mr-2 h-4 w-4" />
-          Déplacer vers le bas
+          Move down
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => operations.duplicateRow(rowId)}>
           <LuCopy className="mr-2 h-4 w-4" />
-          Dupliquer
+          Duplicate
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => operations.deleteRow(rowId)} className="text-destructive">
           <LuTrash2 className="mr-2 h-4 w-4" />
-          Supprimer
+          Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -663,17 +663,17 @@ function TableNode(xyNode: Node) {
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
               <LuPlus className="mr-2 h-4 w-4" />
-              Ajouter colonne
+              Add column
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem onClick={() => operations.addColumn("text")}>
               <LuType className="mr-2 h-4 w-4" />
-              Texte
+              Text
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => operations.addColumn("number")}>
               <LuHash className="mr-2 h-4 w-4" />
-              Nombre
+              Number
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => operations.addColumn("date")}>
               <LuCalendar className="mr-2 h-4 w-4" />
@@ -683,7 +683,7 @@ function TableNode(xyNode: Node) {
         </DropdownMenu>
         <Button variant="outline" size="sm" onClick={operations.addRow}>
           <LuPlus className="mr-2 h-4 w-4" />
-          Ajouter ligne
+          Add row
         </Button>
       </CanvasNodeToolbar>
 
@@ -705,7 +705,7 @@ function TableNode(xyNode: Node) {
               {table.getRowModel().rows.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={columns.length} className="text-center text-muted-foreground">
-                    Aucune donnée
+                    No data
                   </TableCell>
                 </TableRow>
               ) : (

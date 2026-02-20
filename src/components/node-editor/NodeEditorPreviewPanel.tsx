@@ -42,11 +42,11 @@ export default function NodeEditorPreviewPanel() {
         className="flex flex-col items-center flex-1 min-h-0"
       >
         <TabsList>
-          <TabsTrigger value="node">Vue bloc</TabsTrigger>
-          <TabsTrigger value="window">Vue fenêtre</TabsTrigger>
+          <TabsTrigger value="node">Block view</TabsTrigger>
+          <TabsTrigger value="window">Window view</TabsTrigger>
         </TabsList>
         <TabsContent value="node" className="flex flex-col items-center gap-4">
-          <p className="text-sm italic">Ce qui apparaît sur la toile</p>
+          <p className="text-sm italic">What appears on the canvas</p>
           <div
             className="bg-white rounded-md shadow border border-gray-300"
             style={{
@@ -63,7 +63,7 @@ export default function NodeEditorPreviewPanel() {
           className="flex flex-col items-center gap-4"
         >
           <p className="text-sm italic">
-            Quand vous double-cliquez sur le bloc
+            When you double-click the block
           </p>
           <div className="bg-white rounded-md shadow border border-gray-300 p-4 min-w-96">
             <NodeTemplateRendererEditor />

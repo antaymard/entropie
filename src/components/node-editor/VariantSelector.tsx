@@ -75,7 +75,7 @@ export default function VariantSelector({
           >
             <div className="flex items-center gap-2">
               {CurrentIcon && <CurrentIcon />}
-              <span>{currentVariant?.label || "Sélectionner un style"}</span>
+              <span>{currentVariant?.label || "Select a style"}</span>
             </div>
             <HiChevronDown />
           </Button>

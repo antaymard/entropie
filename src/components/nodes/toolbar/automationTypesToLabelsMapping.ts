@@ -1,20 +1,20 @@
 import type { AutomationStepType } from "@/types";
 
 export const automationMapping: Record<AutomationStepType, string> = {
-  "tool_launched=web_search": "Recherche web...",
-  "tool_completed=web_search": "Analyse des résultats de la recherche web...",
-  "tool_launched=web_extract": "Extraction de contenu web...",
-  "tool_completed=web_extract": "Analyse des résultats de l'extraction web...",
+  "tool_launched=web_search": "Web search...",
+  "tool_completed=web_search": "Analyzing web search results...",
+  "tool_launched=web_extract": "Extracting web content...",
+  "tool_completed=web_extract": "Analyzing web extraction results...",
   "tool_completed=update_node_data_values":
-    "Mise à jour des données du noeud...",
-  automation_launched: "Automatisation lancée...",
-  automation_completed: "Automatisation terminée",
-  automation_error: "Erreur d'automatisation",
-  "tool_launched=view_image": "Lecture de l'image...",
-  "tool_completed=view_image": "Image lue",
-  "tool_launched=read_pdf": "Lecture du PDF...",
-  "tool_completed=read_pdf": "PDF lu",
-  "tool_error=read_pdf": "Erreur lors de la lecture du PDF",
+    "Updating node data...",
+  automation_launched: "Automation launched...",
+  automation_completed: "Automation completed",
+  automation_error: "Automation error",
+  "tool_launched=view_image": "Reading image...",
+  "tool_completed=view_image": "Image read",
+  "tool_launched=read_pdf": "Reading PDF...",
+  "tool_completed=read_pdf": "PDF read",
+  "tool_error=read_pdf": "Error reading PDF",
   "tool_launched=update_node_data_values":
-    "Mise à jour des données du noeud...",
+    "Updating node data...",
 };

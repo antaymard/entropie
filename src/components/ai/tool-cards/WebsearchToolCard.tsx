@@ -22,25 +22,25 @@ function getRelativeTime(dateString: string | undefined): string {
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (diffInSeconds < 60) return "à l'instant";
+  if (diffInSeconds < 60) return "just now";
   if (diffInSeconds < 3600) {
     const minutes = Math.floor(diffInSeconds / 60);
-    return `il y a ${minutes} min`;
+    return `${minutes}m ago`;
   }
   if (diffInSeconds < 86400) {
     const hours = Math.floor(diffInSeconds / 3600);
-    return `il y a ${hours}h`;
+    return `${hours}h ago`;
   }
   if (diffInSeconds < 2592000) {
     const days = Math.floor(diffInSeconds / 86400);
-    return `il y a ${days}j`;
+    return `${days}d ago`;
   }
   if (diffInSeconds < 31536000) {
     const months = Math.floor(diffInSeconds / 2592000);
-    return `il y a ${months} mois`;
+    return `${months}mo ago`;
   }
   const years = Math.floor(diffInSeconds / 31536000);
-  return `il y a ${years} an${years > 1 ? "s" : ""}`;
+  return `${years}y ago`;
 }
 
 export default function WebsearchToolCard({
@@ -51,22 +51,22 @@ export default function WebsearchToolCard({
   return (
     <ToolCardFrame
       icon={TbWorldSearch}
-      name="Recherche web"
+      name="Web search"
       state={state}
       canBeExpanded={true}
-      detailLabel={`${output?.length ?? 0} résultats`}
+      detailLabel={`${output?.length ?? 0} results`}
     >
       <div className="flex flex-col divide-y divide-white/20 -mx-2 text-white">
         {input?.search_queries && (
           <div className="p-2 pb-5 flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <p>Objectif de recherche </p>
+              <p>Search objective </p>
               <p className="text-xs! px-1.5 py-0.5 rounded-sm bg-white/50 text-primary">
                 {input?.search_effort} effort
               </p>
             </div>
             <p className="text-sm! text-white/70 -mt-2">{input?.objective}</p>
-            <p className="text-sm mb-2">Mots-clés recherchés :</p>
+            <p className="text-sm mb-2">Search keywords:</p>
             <ul className="list-disc list-inside text-sm text-white/70 flex flex-col gap-3 pt-1">
               {input.search_queries.map((query, index) => (
                 <li key={index}>{query}</li>

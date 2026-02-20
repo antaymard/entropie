@@ -27,7 +27,7 @@ export default function OpenWebpageToolCard({
   return (
     <ToolCardFrame
       icon={TbPointer}
-      name="Navigation sur la page"
+      name="Web page navigation"
       state={state}
       canBeExpanded={true}
     >

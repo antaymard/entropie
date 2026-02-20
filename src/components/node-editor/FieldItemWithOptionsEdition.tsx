@@ -63,7 +63,7 @@ export default function FieldItemWithOptionsEdition({
             {IconComponent && <IconComponent size={18} />}
             <InlineEditableText
               name={`fields.${fieldIndex}.name`}
-              placeholder="Nom du champ..."
+              placeholder="Field name..."
               className="flex-1 truncate"
             />
           </div>
@@ -91,7 +91,7 @@ export default function FieldItemWithOptionsEdition({
               {IconComponent && <IconComponent size={18} />}
               <InlineEditableText
                 name={`fields.${fieldIndex}.name`}
-                placeholder="Nom du champ..."
+                placeholder="Field name..."
                 className="flex-1 truncate"
               />
             </div>
@@ -183,7 +183,7 @@ function FieldOptions({
 
   return (
     <div className="flex flex-col gap-6">
-      <h2 className="font-semibold">Options du champ</h2>
+      <h2 className="font-semibold">Field options</h2>
       {fieldDefinition.fieldOptions?.length &&
         fieldDefinition.fieldOptions?.map(renderOption)}
 
@@ -195,7 +195,7 @@ function FieldOptions({
           onClick={() => deleteNodeField(field.id)}
         >
           <HiMiniTrash size={18} />
-          Supprimer
+          Delete
         </Button>
       </div>
     </div>

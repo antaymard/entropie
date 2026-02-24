@@ -35,6 +35,7 @@ import type * as ia_tools_readPdfTool from "../ia/tools/readPdfTool.js";
 import type * as ia_tools_updateNodeDataValuesTool from "../ia/tools/updateNodeDataValuesTool.js";
 import type * as ia_tools_viewImageTool from "../ia/tools/viewImageTool.js";
 import type * as ia_tools_websearchTool from "../ia/tools/websearchTool.js";
+import type * as ia_voice from "../ia/voice.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_r2 from "../lib/r2.js";
 import type * as links from "../links.js";
@@ -81,6 +82,7 @@ declare const fullApi: ApiFromModules<{
   "ia/tools/updateNodeDataValuesTool": typeof ia_tools_updateNodeDataValuesTool;
   "ia/tools/viewImageTool": typeof ia_tools_viewImageTool;
   "ia/tools/websearchTool": typeof ia_tools_websearchTool;
+  "ia/voice": typeof ia_voice;
   "lib/auth": typeof lib_auth;
   "lib/r2": typeof lib_r2;
   links: typeof links;

@@ -1,7 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { requireAuth } from "./lib/auth";
-import { canvasesValidator } from "./schemas/canvasesSchema";
 
 export const getLastModified = query({
   args: {},

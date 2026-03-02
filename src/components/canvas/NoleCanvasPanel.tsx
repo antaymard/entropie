@@ -6,12 +6,26 @@ import { Button } from "@/components/shadcn/button";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { cn } from "@/lib/utils";
 
-export default function VoiceRecorderPanel() {
+import NoleIcon from "@/assets/svg-components/NoleIcon";
+import {
+  TbKeyboard,
+  TbMicrophone,
+  TbPlus,
+  TbSend,
+  TbSettingsSpark,
+} from "react-icons/tb";
+import { Kbd } from "@/components/shadcn/kbd";
+import { Textarea } from "@/components/shadcn/textarea";
+
+export default function NoleCanvasPanel() {
   const { status, startRecording, stopRecording, audioBlob, reset, error } =
     useAudioRecorder();
 
   const transcribeAction = useAction(api.ia.voice.transcribe);
 
+  const [layoutMode, setLayoutMode] = useState<"idle" | "recording" | "text">(
+    "idle",
+  );
   const [transcribing, setTranscribing] = useState(false);
   const [result, setResult] = useState<{
     text: string;
@@ -45,6 +59,63 @@ export default function VoiceRecorderPanel() {
     setResult(null);
     setTranscribeError(null);
   }, [reset]);
+
+  const Separator = () => (
+    <div className="bg-slate-200 h-5 w-px rounded-full" />
+  );
+
+  if (layoutMode === "idle") {
+    return (
+      <div className="bg-white rounded p-2 flex items-center gap-2 text-text border">
+        <Button variant="ghost" size="sm">
+          <NoleIcon />
+        </Button>
+        <Separator />
+        <Button variant="ghost" size="sm" onClick={() => setLayoutMode("text")}>
+          <TbKeyboard size={20} strokeWidth={2.5} />
+          <Kbd>Alt + A</Kbd>
+        </Button>
+        <Separator />
+        <Button variant="ghost" size="sm">
+          <TbMicrophone size={19} strokeWidth={2.5} />
+          <Kbd>Alt</Kbd>
+        </Button>
+        <Separator />
+        <Button variant="ghost" size="sm">
+          <TbSettingsSpark size={19} strokeWidth={2.5} />
+        </Button>
+      </div>
+    );
+  }
+
+  if (layoutMode === "text") {
+    return (
+      <div className="bg-white rounded p-3 min-w-2xl border shadow-md/5 flex flex-col gap-3">
+        <Textarea />
+        {/* Footer */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => setLayoutMode("idle")}
+            >
+              <TbSettingsSpark size={19} strokeWidth={2.5} />
+            </Button>
+            <Separator />
+            <p className="text-slate-400">Current Session : Job into Table</p>
+            <Button variant="ghost" size="sm" className="pl-1! text-slate-400">
+              <TbPlus size={16} />
+              New
+            </Button>
+          </div>
+          <Button variant="default" size="icon">
+            <TbSend size={19} strokeWidth={2.5} />
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center gap-2 rounded-xl bg-white/90 backdrop-blur-sm border shadow-lg px-4 py-3 min-w-70">

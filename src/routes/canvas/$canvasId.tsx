@@ -27,7 +27,7 @@ import CanvasSidebar from "@/components/canvas/CanvasSidebar";
 import { useCanvasNodes } from "@/hooks/useCanvasNodes";
 import { useCanvasEdges } from "@/hooks/useCanvasEdges";
 import { Spinner } from "@/components/shadcn/spinner";
-import VoiceRecorderPanel from "@/components/canvas/VoiceRecorderPanel";
+import NoleCanvasPanel from "@/components/canvas/NoleCanvasPanel";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -170,7 +170,7 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
         }}
       >
         <Panel position="top-center">
-          <VoiceRecorderPanel />
+          <NoleCanvasPanel />
         </Panel>
         {contextMenu.type && (
           <ContextMenu

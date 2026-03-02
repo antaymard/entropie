@@ -26,6 +26,8 @@ import type * as ia_helpers_pillMarkdownRules from "../ia/helpers/pillMarkdownRu
 import type * as ia_helpers_plateMarkdownConverter from "../ia/helpers/plateMarkdownConverter.js";
 import type * as ia_nole from "../ia/nole.js";
 import type * as ia_prompts_noleSystemPrompt from "../ia/prompts/noleSystemPrompt.js";
+import type * as ia_tools_browserUseAction from "../ia/tools/browserUseAction.js";
+import type * as ia_tools_browserUseTool from "../ia/tools/browserUseTool.js";
 import type * as ia_tools_editCanvasNodesAndEdgesTool from "../ia/tools/editCanvasNodesAndEdgesTool.js";
 import type * as ia_tools_openWebPageTool from "../ia/tools/openWebPageTool.js";
 import type * as ia_tools_readCanvasTool from "../ia/tools/readCanvasTool.js";
@@ -73,6 +75,8 @@ declare const fullApi: ApiFromModules<{
   "ia/helpers/plateMarkdownConverter": typeof ia_helpers_plateMarkdownConverter;
   "ia/nole": typeof ia_nole;
   "ia/prompts/noleSystemPrompt": typeof ia_prompts_noleSystemPrompt;
+  "ia/tools/browserUseAction": typeof ia_tools_browserUseAction;
+  "ia/tools/browserUseTool": typeof ia_tools_browserUseTool;
   "ia/tools/editCanvasNodesAndEdgesTool": typeof ia_tools_editCanvasNodesAndEdgesTool;
   "ia/tools/openWebPageTool": typeof ia_tools_openWebPageTool;
   "ia/tools/readCanvasTool": typeof ia_tools_readCanvasTool;

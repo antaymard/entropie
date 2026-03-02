@@ -13,11 +13,13 @@ import {
   TbPlus,
   TbSend,
   TbSettingsSpark,
+  TbX,
 } from "react-icons/tb";
 import { Kbd } from "@/components/shadcn/kbd";
-import { Textarea } from "@/components/shadcn/textarea";
+import RichTextArea from "./nole-panel/RichTextArea";
 
 export default function NoleCanvasPanel() {
+  const [richTextValue, setRichTextValue] = useState("");
   const { status, startRecording, stopRecording, audioBlob, reset, error } =
     useAudioRecorder();
 
@@ -60,6 +62,12 @@ export default function NoleCanvasPanel() {
     setTranscribeError(null);
   }, [reset]);
 
+  const sendMessage = useCallback(() => {
+    console.log("Message envoyé :", richTextValue);
+    // Ici, tu pourrais appeler une action pour envoyer le message au backend
+    setRichTextValue("");
+  }, [richTextValue]);
+
   const Separator = () => (
     <div className="bg-slate-200 h-5 w-px rounded-full" />
   );
@@ -90,8 +98,12 @@ export default function NoleCanvasPanel() {
 
   if (layoutMode === "text") {
     return (
-      <div className="bg-white rounded p-3 min-w-2xl border shadow-md/5 flex flex-col gap-3">
-        <Textarea />
+      <div className="bg-white rounded p-3 w-2xl border shadow-md/5 flex flex-col gap-3">
+        <RichTextArea
+          value={richTextValue}
+          onChange={setRichTextValue}
+          onSubmit={sendMessage}
+        />
         {/* Footer */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -100,8 +112,9 @@ export default function NoleCanvasPanel() {
               size="icon-sm"
               onClick={() => setLayoutMode("idle")}
             >
-              <TbSettingsSpark size={19} strokeWidth={2.5} />
+              <TbX size={19} strokeWidth={2.5} />
             </Button>
+
             <Separator />
             <p className="text-slate-400">Current Session : Job into Table</p>
             <Button variant="ghost" size="sm" className="pl-1! text-slate-400">
@@ -109,7 +122,7 @@ export default function NoleCanvasPanel() {
               New
             </Button>
           </div>
-          <Button variant="default" size="icon">
+          <Button variant="default" size="icon" onClick={sendMessage}>
             <TbSend size={19} strokeWidth={2.5} />
           </Button>
         </div>

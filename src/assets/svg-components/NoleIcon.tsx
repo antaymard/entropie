@@ -26,8 +26,8 @@ export default function NoleIcon({ size = "1em" }: NoleIconProps) {
         x2="9.25031"
         y2="9.25006"
         stroke="#475569"
-        stroke-width="1.5"
-        stroke-linecap="round"
+        strokeWidth="1.5"
+        strokeLinecap="round"
       />
       <ellipse
         cx="3.46755"

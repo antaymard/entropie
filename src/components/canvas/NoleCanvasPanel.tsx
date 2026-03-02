@@ -8,6 +8,7 @@ import { useNoleStore } from "@/stores/noleStore";
 import { useCanvasStore } from "@/stores/canvasStore";
 import { toConvexNodes } from "@/components/utils/nodeUtils";
 import { useNoleThread } from "@/hooks/useNoleThread";
+import { useHotkey, useKeyHold } from "@tanstack/react-hotkeys";
 
 import NoleIcon from "@/assets/svg-components/NoleIcon";
 import {
@@ -46,6 +47,15 @@ export default function NoleCanvasPanel() {
   >("idle");
   const [transcribeError, setTranscribeError] = useState<string | null>(null);
 
+  // Hotkeys management
+  const isAltHeld = useKeyHold("Alt");
+  useHotkey("C", () => setLayoutMode("text"), {
+    enabled: layoutMode === "idle",
+  });
+  useHotkey({ key: "Escape" }, () => setLayoutMode("idle"), {
+    enabled: layoutMode !== "idle",
+  });
+
   // Thread info (title)
   const threadInfo = useQuery(
     api.threads.getThreadInfo,
@@ -75,6 +85,15 @@ export default function NoleCanvasPanel() {
     stopRecording();
     setLayoutMode("transcribing");
   }, [stopRecording]);
+
+  // Alt hold-to-record: press Alt → start recording, release Alt → validate
+  useEffect(() => {
+    if (isAltHeld && layoutMode === "idle") {
+      handleStartRecording();
+    } else if (!isAltHeld && layoutMode === "recording") {
+      handleValidateRecording();
+    }
+  }, [isAltHeld, layoutMode, handleStartRecording, handleValidateRecording]);
 
   // Auto-transcribe when audioBlob is ready after validation
   useEffect(() => {
@@ -181,7 +200,7 @@ export default function NoleCanvasPanel() {
         <Separator />
         <Button variant="ghost" size="sm" onClick={() => setLayoutMode("text")}>
           <TbKeyboard size={20} strokeWidth={2.5} />
-          <Kbd>Alt + A</Kbd>
+          <Kbd>C</Kbd>
         </Button>
         <Separator />
         <Button variant="ghost" size="sm" onClick={handleStartRecording}>

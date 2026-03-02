@@ -83,6 +83,7 @@ export default function RichTextArea({
   return (
     <div ref={wrapperRef}>
       <MentionsInput
+        autoFocus
         style={{
           input: {
             resize: "none",

@@ -76,6 +76,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@tailwindcss/vite": "^4.1.15",
     "@tanstack/react-form": "^1.28.0",
+    "@tanstack/react-hotkeys": "^0.3.0",
     "@tanstack/react-router": "^1.134.9",
     "@tanstack/react-router-devtools": "^1.134.9",
     "@tanstack/react-table": "^8.21.3",

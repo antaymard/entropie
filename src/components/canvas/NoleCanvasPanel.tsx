@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { api } from "@/../convex/_generated/api";
 import { Button } from "@/components/shadcn/button";
@@ -29,6 +29,7 @@ import RichTextArea from "./nole-panel/RichTextArea";
 import SoundWaveAnimation from "./nole-panel/SoundWaveAnimation";
 import ChatResponseBubble from "./nole-panel/ChatResponseBubble";
 import ThreadSelector from "./nole-panel/ThreadSelector";
+import { playTextToSpeech, stopAudio } from "./nole-panel/textToSpeech";
 
 export default function NoleCanvasPanel() {
   const {
@@ -41,6 +42,9 @@ export default function NoleCanvasPanel() {
 
   const [richTextValue, setRichTextValue] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [showBubble, setShowBubble] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const { startRecording, stopRecording, audioBlob, reset } =
     useAudioRecorder();
@@ -80,6 +84,26 @@ export default function NoleCanvasPanel() {
     lastMessage.role === "assistant" &&
     lastMessage.status !== "success" &&
     lastMessage.status !== "failed";
+
+  // Fire TTS when assistant message finishes streaming
+  const prevMessageStatusRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    const wasPending = prevMessageStatusRef.current !== "success";
+    const isDone =
+      lastMessage?.status === "success" && lastMessage.role === "assistant";
+    if (wasPending && isDone && lastMessage.text) {
+      void playTextToSpeech(lastMessage.text, {
+        onStart: () => setIsSpeaking(true),
+        onEnd: () => {
+          setIsSpeaking(false);
+          currentAudioRef.current = null;
+        },
+      }).then((audio) => {
+        currentAudioRef.current = audio;
+      });
+    }
+    prevMessageStatusRef.current = lastMessage?.status;
+  }, [lastMessage?.status, lastMessage?.role, lastMessage?.text]);
 
   // Auto-switch to responding layout when assistant starts streaming
   useEffect(() => {
@@ -262,9 +286,21 @@ export default function NoleCanvasPanel() {
     return (
       <div className="flex flex-col items-center">
         <div className="bg-white rounded p-2 flex items-center gap-2 text-text border">
-          <Button variant="ghost" size="sm">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              if (isSpeaking && currentAudioRef.current) {
+                stopAudio(currentAudioRef.current);
+              } else {
+                setShowBubble((v) => !v);
+              }
+            }}
+          >
             {isAssistantResponding ? (
               <Spinner className="size-4" />
+            ) : isSpeaking ? (
+              <SoundWaveAnimation />
             ) : (
               <NoleIcon />
             )}
@@ -292,13 +328,14 @@ export default function NoleCanvasPanel() {
             <TbX size={19} strokeWidth={2.5} />
           </Button>
         </div>
-        {lastMessage && lastMessage.role === "assistant" ? (
-          <ChatResponseBubble message={lastMessage} />
-        ) : (
-          <p className="text-xs text-slate-400 mt-2">
-            Aucun message pour le moment
-          </p>
-        )}
+        {showBubble &&
+          (lastMessage && lastMessage.role === "assistant" ? (
+            <ChatResponseBubble message={lastMessage} />
+          ) : (
+            <p className="text-xs text-slate-400 mt-2">
+              Aucun message pour le moment
+            </p>
+          ))}
       </div>
     );
   }

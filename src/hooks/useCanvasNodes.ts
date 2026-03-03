@@ -157,7 +157,7 @@ export function useCanvasNodes(
           dimensionChanges.length === 0
         ) {
           // Throttle l'envoi à Convex pendant le drag (toutes les 300ms)
-          throttledUpdatePositions(positionChanges);
+          // throttledUpdatePositions(positionChanges);
         } else {
           // Envoi direct à Convex quand le drag est fini
           return updateCanvasNodesPositionOrDimensionsInConvex({
@@ -172,7 +172,7 @@ export function useCanvasNodes(
       addCanvasNodesToConvex,
       removeCanvasNodesToConvex,
       updateCanvasNodesPositionOrDimensionsInConvex,
-      throttledUpdatePositions,
+      // throttledUpdatePositions,
       onNodesChange,
     ],
   );

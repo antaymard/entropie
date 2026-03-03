@@ -48,22 +48,17 @@ export default function NoleCanvasPanel() {
   const transcribeAction = useAction(api.ia.voice.transcribe);
 
   const [layoutMode, setLayoutMode] = useState<
-    "idle" | "recording" | "transcribing" | "text"
+    "idle" | "recording" | "transcribing" | "text" | "responding"
   >("idle");
   const [transcribeError, setTranscribeError] = useState<string | null>(null);
-  const [showBubble, setShowBubble] = useState(false);
 
   // Hotkeys management
   const isAltHeld = useKeyHold("Alt");
   useHotkey("C", () => setLayoutMode("text"), {
-    enabled: layoutMode === "idle",
+    enabled: layoutMode === "idle" || layoutMode === "responding",
   });
-  useHotkey({ key: "Escape" }, () => {
-    if (showBubble) {
-      setShowBubble(false);
-    } else if (layoutMode !== "idle") {
-      setLayoutMode("idle");
-    }
+  useHotkey({ key: "Escape" }, () => setLayoutMode("idle"), {
+    enabled: layoutMode !== "idle",
   });
 
   // Thread messages (to detect if assistant is responding)
@@ -82,12 +77,12 @@ export default function NoleCanvasPanel() {
     lastMessage.status !== "success" &&
     lastMessage.status !== "failed";
 
-  // Show bubble when assistant starts responding, keep it visible after
+  // Auto-switch to responding layout when assistant starts streaming
   useEffect(() => {
-    if (isAssistantResponding) {
-      setShowBubble(true);
+    if (isAssistantResponding && layoutMode === "idle") {
+      setLayoutMode("responding");
     }
-  }, [isAssistantResponding]);
+  }, [isAssistantResponding, layoutMode]);
 
   // Thread info (title)
   const threadInfo = useQuery(
@@ -121,7 +116,7 @@ export default function NoleCanvasPanel() {
 
   // Alt hold-to-record: press Alt → start recording, release Alt → validate
   useEffect(() => {
-    if (isAltHeld && layoutMode === "idle") {
+    if (isAltHeld && (layoutMode === "idle" || layoutMode === "responding")) {
       handleStartRecording();
     } else if (!isAltHeld && layoutMode === "recording") {
       handleValidateRecording();
@@ -227,6 +222,30 @@ export default function NoleCanvasPanel() {
 
   if (layoutMode === "idle") {
     return (
+      <div className="bg-white rounded p-2 flex items-center gap-2 text-text border">
+        <Button variant="ghost" size="sm">
+          <NoleIcon />
+        </Button>
+        <Separator />
+        <Button variant="ghost" size="sm" onClick={() => setLayoutMode("text")}>
+          <TbKeyboard size={20} strokeWidth={2.5} />
+          <Kbd>C</Kbd>
+        </Button>
+        <Separator />
+        <Button variant="ghost" size="sm" onClick={handleStartRecording}>
+          <TbMicrophone size={19} strokeWidth={2.5} />
+          <Kbd>Alt</Kbd>
+        </Button>
+        <Separator />
+        <Button variant="ghost" size="sm">
+          <TbSettingsSpark size={19} strokeWidth={2.5} />
+        </Button>
+      </div>
+    );
+  }
+
+  if (layoutMode === "responding") {
+    return (
       <div className="flex flex-col items-center">
         <div className="bg-white rounded p-2 flex items-center gap-2 text-text border">
           <Button variant="ghost" size="sm">
@@ -251,15 +270,16 @@ export default function NoleCanvasPanel() {
             <Kbd>Alt</Kbd>
           </Button>
           <Separator />
-          <Button variant="ghost" size="sm">
-            <TbSettingsSpark size={19} strokeWidth={2.5} />
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setLayoutMode("idle")}
+          >
+            <TbX size={19} strokeWidth={2.5} />
           </Button>
         </div>
-        {showBubble && lastMessage && lastMessage.role === "assistant" && (
-          <ChatResponseBubble
-            message={lastMessage}
-            onDismiss={() => setShowBubble(false)}
-          />
+        {lastMessage && lastMessage.role === "assistant" && (
+          <ChatResponseBubble message={lastMessage} />
         )}
       </div>
     );

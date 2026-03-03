@@ -6,7 +6,7 @@ import { Id } from "../../_generated/dataModel";
 export const readCanvasTool = createTool({
   description:
     "Allow to read a whole canvas object, from a canvas ID. Returns the complete canvas object including the canvas data, and the nodes and edges. This is token-expensive, so use with caution.",
-  args: z.object({
+  inputSchema: z.object({
     canvasId: z.string().describe("ID of the canvas to read."),
     scope: z
       .array(
@@ -16,7 +16,7 @@ export const readCanvasTool = createTool({
         "Scope of the canvas to read, specifying which parts to include.\n`entireCanvas` returns all data (canvas data, nodes, edges, and metadata). `canvasDataOnly` returns only the canvas metadata and properties (name, sharing) without nodes and edges.",
       ),
   }),
-  handler: async (ctx, { canvasId, scope }): Promise<string> => {
+  execute: async (ctx, { canvasId, scope }): Promise<string> => {
     console.log(`🔍 Read canvas: ${canvasId} | Scope: ${scope.join(", ")}`);
 
     try {

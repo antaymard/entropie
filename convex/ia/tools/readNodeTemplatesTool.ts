@@ -6,7 +6,7 @@ import { Id } from "../../_generated/dataModel";
 export const readNodeTemplatesTool = createTool({
   description:
     "Some nodes are of type 'custom'. These nodes are based on templates that define their layout and properties. This tool allows you to list and retrieve information about these node templates, including their structure and attributes.",
-  args: z.object({
+  inputSchema: z.object({
     templateIds: z
       .array(z.string())
       .optional()
@@ -20,7 +20,7 @@ export const readNodeTemplatesTool = createTool({
         "If true, includes the visual layout of each template in the response. Default to false. This is token heavy, so use only if necessary."
       ),
   }),
-  handler: async (ctx, { includeTemplateLayout }): Promise<string> => {
+  execute: async (ctx, { includeTemplateLayout }): Promise<string> => {
     console.log(
       `🔍 List node templates | Include layout: ${includeTemplateLayout}`
     );

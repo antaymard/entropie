@@ -22,6 +22,16 @@ export const create = mutation({
   returns: v.id("nodeDatas"),
 });
 
+export const read = query({
+  args: { nodeDataId: v.id("nodeDatas") },
+  returns: v.union(nodeDatasWithIdValidator, v.null()),
+  handler: async (ctx, args) => {
+    await requireAuth(ctx);
+    const nodeData = await ctx.db.get(args.nodeDataId);
+    return nodeData ?? null;
+  },
+});
+
 export const listByCanvasId = query({
   args: { canvasId: v.id("canvases") },
   handler: async (ctx, { canvasId }) => {

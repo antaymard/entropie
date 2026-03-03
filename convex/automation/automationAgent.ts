@@ -3,7 +3,7 @@ import { components } from "../_generated/api";
 import { openWebPageTool } from "../ia/tools/openWebPageTool";
 import { viewImageTool } from "../ia/tools/viewImageTool";
 import { readPdfTool } from "../ia/tools/readPdfTool";
-import { type LanguageModel } from "ai";
+import { type LanguageModelV3 } from "@ai-sdk/provider";
 import { websearchTool } from "../ia/tools/websearchTool";
 import { anthropic } from "@ai-sdk/anthropic";
 
@@ -11,7 +11,7 @@ export function createAutomationAgent({
   model = anthropic("claude-haiku-4-5"),
   updateNodeDataValuesTool,
 }: {
-  model?: LanguageModel;
+  model?: LanguageModelV3;
   updateNodeDataValuesTool?: any;
 } = {}) {
   return new Agent(components.agent, {

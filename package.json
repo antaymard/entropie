@@ -26,6 +26,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@emoji-mart/data": "1.2.1",
     "@faker-js/faker": "^10.1.0",
+    "@openrouter/ai-sdk-provider": "^2.2.3",
     "@platejs/ai": "^51.1.2",
     "@platejs/autoformat": "^51.1.2",
     "@platejs/basic-nodes": "^51.1.2",

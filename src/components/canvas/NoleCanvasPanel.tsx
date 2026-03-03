@@ -3,7 +3,10 @@ import { useAction, useMutation, useQuery } from "convex/react";
 import { api } from "@/../convex/_generated/api";
 import { Button } from "@/components/shadcn/button";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
-import { optimisticallySendMessage } from "@convex-dev/agent/react";
+import {
+  optimisticallySendMessage,
+  useUIMessages,
+} from "@convex-dev/agent/react";
 import { useNoleStore } from "@/stores/noleStore";
 import { useCanvasStore } from "@/stores/canvasStore";
 import { toConvexNodes } from "@/components/utils/nodeUtils";
@@ -23,6 +26,8 @@ import {
 import { Spinner } from "@/components/shadcn/spinner";
 import { Kbd } from "@/components/shadcn/kbd";
 import RichTextArea from "./nole-panel/RichTextArea";
+import SoundWaveAnimation from "./nole-panel/SoundWaveAnimation";
+import ChatResponseBubble from "./nole-panel/ChatResponseBubble";
 import ThreadSelector from "./nole-panel/ThreadSelector";
 
 export default function NoleCanvasPanel() {
@@ -46,15 +51,43 @@ export default function NoleCanvasPanel() {
     "idle" | "recording" | "transcribing" | "text"
   >("idle");
   const [transcribeError, setTranscribeError] = useState<string | null>(null);
+  const [showBubble, setShowBubble] = useState(false);
 
   // Hotkeys management
   const isAltHeld = useKeyHold("Alt");
   useHotkey("C", () => setLayoutMode("text"), {
     enabled: layoutMode === "idle",
   });
-  useHotkey({ key: "Escape" }, () => setLayoutMode("idle"), {
-    enabled: layoutMode !== "idle",
+  useHotkey({ key: "Escape" }, () => {
+    if (showBubble) {
+      setShowBubble(false);
+    } else if (layoutMode !== "idle") {
+      setLayoutMode("idle");
+    }
   });
+
+  // Thread messages (to detect if assistant is responding)
+  const { results: messages } = useUIMessages(
+    api.ia.nole.listMessages,
+    threadId ? { threadId } : "skip",
+    { initialNumItems: 1, stream: true },
+  );
+
+  const lastMessage =
+    messages.length > 0 ? messages[messages.length - 1] : null;
+
+  const isAssistantResponding =
+    lastMessage !== null &&
+    lastMessage.role === "assistant" &&
+    lastMessage.status !== "success" &&
+    lastMessage.status !== "failed";
+
+  // Show bubble when assistant starts responding, keep it visible after
+  useEffect(() => {
+    if (isAssistantResponding) {
+      setShowBubble(true);
+    }
+  }, [isAssistantResponding]);
 
   // Thread info (title)
   const threadInfo = useQuery(
@@ -162,6 +195,7 @@ export default function NoleCanvasPanel() {
       useNoleStore.getState().resetAttachments();
       // Auto-generate title after first message
       void updateThreadTitle({ threadId, onlyIfUntitled: true });
+      setLayoutMode("idle");
     } catch (error) {
       console.error("Erreur lors de l'envoi:", error);
       setRichTextValue(prompt);
@@ -193,24 +227,40 @@ export default function NoleCanvasPanel() {
 
   if (layoutMode === "idle") {
     return (
-      <div className="bg-white rounded p-2 flex items-center gap-2 text-text border">
-        <Button variant="ghost" size="sm">
-          <NoleIcon />
-        </Button>
-        <Separator />
-        <Button variant="ghost" size="sm" onClick={() => setLayoutMode("text")}>
-          <TbKeyboard size={20} strokeWidth={2.5} />
-          <Kbd>C</Kbd>
-        </Button>
-        <Separator />
-        <Button variant="ghost" size="sm" onClick={handleStartRecording}>
-          <TbMicrophone size={19} strokeWidth={2.5} />
-          <Kbd>Alt</Kbd>
-        </Button>
-        <Separator />
-        <Button variant="ghost" size="sm">
-          <TbSettingsSpark size={19} strokeWidth={2.5} />
-        </Button>
+      <div className="flex flex-col items-center">
+        <div className="bg-white rounded p-2 flex items-center gap-2 text-text border">
+          <Button variant="ghost" size="sm">
+            {isAssistantResponding ? (
+              <Spinner className="size-4" />
+            ) : (
+              <NoleIcon />
+            )}
+          </Button>
+          <Separator />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setLayoutMode("text")}
+          >
+            <TbKeyboard size={20} strokeWidth={2.5} />
+            <Kbd>C</Kbd>
+          </Button>
+          <Separator />
+          <Button variant="ghost" size="sm" onClick={handleStartRecording}>
+            <TbMicrophone size={19} strokeWidth={2.5} />
+            <Kbd>Alt</Kbd>
+          </Button>
+          <Separator />
+          <Button variant="ghost" size="sm">
+            <TbSettingsSpark size={19} strokeWidth={2.5} />
+          </Button>
+        </div>
+        {showBubble && lastMessage && lastMessage.role === "assistant" && (
+          <ChatResponseBubble
+            message={lastMessage}
+            onDismiss={() => setShowBubble(false)}
+          />
+        )}
       </div>
     );
   }
@@ -314,27 +364,4 @@ export default function NoleCanvasPanel() {
   }
 
   return null;
-}
-
-function SoundWaveAnimation() {
-  const [heights, setHeights] = useState([40, 70, 50, 80, 30]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setHeights((prev) => prev.map(() => 20 + Math.random() * 80));
-    }, 150);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="flex items-center gap-0.75 h-5">
-      {heights.map((h, i) => (
-        <div
-          key={i}
-          className="w-0.75 rounded-full bg-red-400 transition-all duration-150"
-          style={{ height: `${h}%` }}
-        />
-      ))}
-    </div>
-  );
 }

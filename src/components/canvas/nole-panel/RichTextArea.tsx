@@ -97,7 +97,12 @@ export default function RichTextArea({
         value={value}
         placeholder="Mention nodes using '@'"
         onKeyDown={(e: React.KeyboardEvent) => {
-          if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+          if (e.key === "Enter") {
+            if (e.shiftKey || e.ctrlKey || e.metaKey) {
+              // Shift/Ctrl/Cmd+Enter → new line (default behavior)
+              return;
+            }
+            // Enter alone → send
             e.preventDefault();
             onSubmit?.();
           }

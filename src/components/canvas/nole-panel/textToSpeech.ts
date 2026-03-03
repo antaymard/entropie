@@ -1,6 +1,6 @@
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 
-const VOICE_ID = "JBFqnCBsd6RMkjVDRZzb";
+const VOICE_ID = "nOH2ie6NAW7GCyB75KCd"; // Delphine
 
 const client = new ElevenLabsClient({
   apiKey: import.meta.env.VITE_ELEVENLABS_API_KEY,
@@ -19,8 +19,8 @@ export async function playTextToSpeech(
     modelId: "eleven_multilingual_v2",
     outputFormat: "mp3_44100_128",
     voiceSettings: {
-      speed: 1.15,
-      stability: 0.3,
+      speed: 1.1,
+      stability: 0.1,
     },
   });
 

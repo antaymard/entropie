@@ -60,6 +60,10 @@ export default function NoleCanvasPanel() {
   useHotkey({ key: "Escape" }, () => setLayoutMode("idle"), {
     enabled: layoutMode !== "idle",
   });
+  // Alt+Enter to send message in text mode
+  useHotkey({ key: "alt+Enter" }, () => void sendMessage(), {
+    enabled: layoutMode === "text",
+  });
 
   // Thread messages (to detect if assistant is responding)
   const { results: messages } = useUIMessages(
@@ -222,24 +226,34 @@ export default function NoleCanvasPanel() {
 
   if (layoutMode === "idle") {
     return (
-      <div className="bg-white rounded p-2 flex items-center gap-2 text-text border">
-        <Button variant="ghost" size="sm">
-          <NoleIcon />
-        </Button>
-        <Separator />
-        <Button variant="ghost" size="sm" onClick={() => setLayoutMode("text")}>
-          <TbKeyboard size={20} strokeWidth={2.5} />
-          <Kbd>C</Kbd>
-        </Button>
-        <Separator />
-        <Button variant="ghost" size="sm" onClick={handleStartRecording}>
-          <TbMicrophone size={19} strokeWidth={2.5} />
-          <Kbd>Alt</Kbd>
-        </Button>
-        <Separator />
-        <Button variant="ghost" size="sm">
-          <TbSettingsSpark size={19} strokeWidth={2.5} />
-        </Button>
+      <div className="flex flex-col items-center">
+        <div className="bg-white rounded p-2 flex items-center gap-2 text-text border">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setLayoutMode("responding")}
+          >
+            <NoleIcon />
+          </Button>
+          <Separator />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setLayoutMode("text")}
+          >
+            <TbKeyboard size={20} strokeWidth={2.5} />
+            <Kbd>C</Kbd>
+          </Button>
+          <Separator />
+          <Button variant="ghost" size="sm" onClick={handleStartRecording}>
+            <TbMicrophone size={19} strokeWidth={2.5} />
+            <Kbd>Alt</Kbd>
+          </Button>
+          <Separator />
+          <Button variant="ghost" size="sm">
+            <TbSettingsSpark size={19} strokeWidth={2.5} />
+          </Button>
+        </div>
       </div>
     );
   }
@@ -278,8 +292,12 @@ export default function NoleCanvasPanel() {
             <TbX size={19} strokeWidth={2.5} />
           </Button>
         </div>
-        {lastMessage && lastMessage.role === "assistant" && (
+        {lastMessage && lastMessage.role === "assistant" ? (
           <ChatResponseBubble message={lastMessage} />
+        ) : (
+          <p className="text-xs text-slate-400 mt-2">
+            Aucun message pour le moment
+          </p>
         )}
       </div>
     );

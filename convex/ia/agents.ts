@@ -11,7 +11,7 @@ import { readNodeTemplatesTool } from "./tools/readNodeTemplatesTool";
 import { readPdfTool } from "./tools/readPdfTool";
 import { editCanvasNodesAndEdgesTool } from "./tools/editCanvasNodesAndEdgesTool";
 import { readNodeConfigsTool } from "./tools/readNodeConfigsTool";
-import { type LanguageModel } from "ai";
+import { type LanguageModelV3 } from "@ai-sdk/provider";
 import { ActionCtx } from "../_generated/server";
 
 export function createNoleAgent({
@@ -19,7 +19,7 @@ export function createNoleAgent({
   model = mistral("mistral-large-2512"),
 }: {
   ctx?: ActionCtx | null;
-  model?: LanguageModel;
+  model?: LanguageModelV3;
 } = {}) {
   return new Agent(components.agent, {
     name: "Nolë",

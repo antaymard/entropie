@@ -39,7 +39,18 @@ function ImageNode(xyNode: Node) {
     if (nodeDataId) {
       updateNodeDataValues({
         nodeDataId,
-        values: { images: [{ url: fileData.url }] },
+        values: {
+          images: [
+            {
+              url: fileData.url,
+              filename: fileData.filename,
+              mimeType: fileData.mimeType,
+              size: fileData.size,
+              uploadedAt: fileData.uploadedAt,
+              key: fileData.key,
+            },
+          ],
+        },
       });
     }
   };

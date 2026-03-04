@@ -1,20 +1,19 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import type { Id } from "@/../convex/_generated/dataModel";
-import type { NodeData } from "@/types/convex";
+import type { Doc, Id } from "@/../convex/_generated/dataModel";
 
 interface NodeDataStore {
   // Map pour O(1) lookup
-  nodeDatas: Map<Id<"nodeDatas">, NodeData>;
+  nodeDatas: Map<Id<"nodeDatas">, Doc<"nodeDatas">>;
 
   // Actions
-  setNodeDatas: (nodeDatas: NodeData[]) => void;
-  getNodeData: (id: Id<"nodeDatas">) => NodeData | undefined;
+  setNodeDatas: (nodeDatas: Doc<"nodeDatas">[]) => void;
+  getNodeData: (id: Id<"nodeDatas">) => Doc<"nodeDatas"> | undefined;
   updateNodeData: (
     id: Id<"nodeDatas">,
     values: Record<string, unknown>,
   ) => void;
-  setNodeData: (id: Id<"nodeDatas">, nodeData: NodeData) => void;
+  setNodeData: (id: Id<"nodeDatas">, nodeData: Doc<"nodeDatas">) => void;
   clear: () => void;
 }
 

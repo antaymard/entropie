@@ -1,19 +1,18 @@
 import { useMemo } from "react";
 import { useEdges, useNodes, useNodeId, type Node } from "@xyflow/react";
 import { useNodeDataStore } from "@/stores/nodeDataStore";
-import type { NodeData } from "@/types/convex";
-import type { Id } from "@/../convex/_generated/dataModel";
+import type { Doc, Id } from "@/../convex/_generated/dataModel";
 
 export type ConnectionType = "source" | "target" | "all";
 
 export interface ConnectedNodeInfo {
   node: Node;
-  nodeData: NodeData | null;
+  nodeData: Doc<"nodeDatas"> | null;
   type: "source" | "target";
 }
 
 export function useConnectedNodes(
-  connectionType: ConnectionType = "all"
+  connectionType: ConnectionType = "all",
 ): ConnectedNodeInfo[] {
   const nodeId = useNodeId();
   const edges = useEdges();
@@ -42,7 +41,7 @@ export function useConnectedNodes(
             | undefined;
           result.push({
             node: sourceNode,
-            nodeData: nodeDataId ? getNodeData(nodeDataId) ?? null : null,
+            nodeData: nodeDataId ? (getNodeData(nodeDataId) ?? null) : null,
             type: "source",
           });
         }
@@ -60,7 +59,7 @@ export function useConnectedNodes(
             | undefined;
           result.push({
             node: targetNode,
-            nodeData: nodeDataId ? getNodeData(nodeDataId) ?? null : null,
+            nodeData: nodeDataId ? (getNodeData(nodeDataId) ?? null) : null,
             type: "target",
           });
         }

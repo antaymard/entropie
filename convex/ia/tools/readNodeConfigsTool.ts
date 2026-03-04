@@ -6,7 +6,7 @@ import { encode } from "@toon-format/toon";
 export const readNodeConfigsTool = createTool({
   description:
     "Use this tool to retrieve the available node types or node fields. It returns a list of nodes or fields with their labels, types, and expected data structure. Use it before creating or editing nodes to ensure you have the correct data format.",
-  args: z.object({
+  inputSchema: z.object({
     operation: z
       .enum([
         "listAllNodeTypes",
@@ -24,7 +24,7 @@ export const readNodeConfigsTool = createTool({
         "The specific node type or field to read, required for readOneNodeType and readOneNodeField operations."
       ),
   }),
-  handler: async (ctx, { operation, itemType }) => {
+  execute: async (ctx, { operation, itemType }) => {
     console.log("readNodeConfigsTool called with:", { operation, itemType });
     switch (operation) {
       case "listAllNodeTypes":

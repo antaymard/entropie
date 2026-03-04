@@ -3,7 +3,7 @@ import { mutation } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { requireAuth } from "./lib/auth";
 import { canvasNodesValidator } from "./schemas/canvasesSchema";
-import errors from "./errorsConfig";
+import errors from "./config/errorsConfig";
 
 export const add = mutation({
   args: {

@@ -4,8 +4,7 @@ import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { toastError } from "@/components/utils/errorUtils";
 import { useNodeDataStore } from "@/stores/nodeDataStore";
-import type { NodeData } from "@/types/convex";
-
+import type { Doc } from "@/../convex/_generated/dataModel";
 
 interface UpdateNodeDataInput {
   nodeDataId: Id<"nodeDatas">;
@@ -26,7 +25,9 @@ export function useUpdateNodeDataValues(): UseUpdateNodeDataValuesReturn {
     setNodeData,
   } = useNodeDataStore();
 
-  const snapshotsRef = useRef<Map<Id<"nodeDatas">, NodeData>>(new Map());
+  const snapshotsRef = useRef<Map<Id<"nodeDatas">, Doc<"nodeDatas">>>(
+    new Map(),
+  );
   const isUpdatingRef = useRef(false);
 
   const saveSnapshot = useCallback(

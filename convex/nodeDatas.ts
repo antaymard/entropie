@@ -1,12 +1,15 @@
 import { v } from "convex/values";
 import { ConvexError } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { requireAuth } from "./lib/auth";
+import { internal } from "./_generated/api";
 import {
   nodeDatasValidator,
   nodeDatasWithIdValidator,
 } from "./schemas/nodeDatasSchema";
+
+const ABSTRACT_DEBOUNCE_MS = 5 * 60 * 1000; // 5 minutes
 
 export const create = mutation({
   args: nodeDatasValidator,
@@ -20,6 +23,16 @@ export const create = mutation({
     return nodeDataId;
   },
   returns: v.id("nodeDatas"),
+});
+
+export const read = query({
+  args: { nodeDataId: v.id("nodeDatas") },
+  returns: v.union(nodeDatasWithIdValidator, v.null()),
+  handler: async (ctx, args) => {
+    await requireAuth(ctx);
+    const nodeData = await ctx.db.get(args.nodeDataId);
+    return nodeData ?? null;
+  },
 });
 
 export const listByCanvasId = query({
@@ -58,10 +71,38 @@ export const updateValues = mutation({
     const existing = await ctx.db.get(_id);
     if (!existing) throw new ConvexError("NodeData non trouvé");
 
+    const now = Date.now();
     await ctx.db.patch(_id, {
       values: { ...existing.values, ...values },
-      updatedAt: Date.now(),
+      updatedAt: now,
     });
+
+    // Debounce abstract generation: cancel previous scheduled job if pending
+    const existingJob = await ctx.db
+      .query("scheduledJobs")
+      .withIndex("by_nodeDataId", (q) => q.eq("nodesDataId", _id))
+      .first();
+
+    if (existingJob) {
+      const job = await ctx.db.system.get(existingJob.jobId);
+      if (job && job.state.kind === "pending") {
+        await ctx.scheduler.cancel(existingJob.jobId);
+      }
+      await ctx.db.delete(existingJob._id);
+    }
+
+    const scheduledId = await ctx.scheduler.runAfter(
+      ABSTRACT_DEBOUNCE_MS,
+      internal.ia.abstractor.AbstractAgent.abstractNodeData,
+      { nodeDataId: _id },
+    );
+    await ctx.db.insert("scheduledJobs", {
+      type: "generate-node-data-abstract",
+      nodesDataId: _id,
+      scheduledAt: now + ABSTRACT_DEBOUNCE_MS,
+      jobId: scheduledId,
+    });
+
     return true;
   },
   returns: v.boolean(),

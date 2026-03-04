@@ -4,6 +4,7 @@ import {
   ReactFlowProvider,
   SelectionMode,
   MarkerType,
+  Panel,
 } from "@xyflow/react";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { api } from "@/../convex/_generated/api";
@@ -26,6 +27,7 @@ import CanvasSidebar from "@/components/canvas/CanvasSidebar";
 import { useCanvasNodes } from "@/hooks/useCanvasNodes";
 import { useCanvasEdges } from "@/hooks/useCanvasEdges";
 import { Spinner } from "@/components/shadcn/spinner";
+import NoleCanvasPanel from "@/components/canvas/NoleCanvasPanel";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -167,6 +169,9 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           ]);
         }}
       >
+        <Panel position="top-center">
+          <NoleCanvasPanel />
+        </Panel>
         {contextMenu.type && (
           <ContextMenu
             contextMenu={contextMenu}

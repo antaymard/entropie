@@ -20,6 +20,13 @@ const schema = defineSchema({
 
   nodeDatas: defineTable(nodeDatasValidator),
 
+  scheduledJobs: defineTable({
+    type: v.union(v.literal("generate-node-data-abstract")),
+    nodesDataId: v.optional(v.id("nodeDatas")),
+    scheduledAt: v.number(),
+    jobId: v.id("_scheduled_functions"),
+  }).index("by_nodeDataId", ["nodesDataId"]),
+
   // ============================================================================
   // NODE TEMPLATES
   // ============================================================================

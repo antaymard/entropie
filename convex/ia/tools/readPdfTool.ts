@@ -9,7 +9,7 @@ import { reportToolProgress } from "../../automation/progressReporter";
 export const readPdfTool = createTool({
   description:
     "Analyze a pdf from a URL using AI. Returns a natural-language description of the pdf content based on the specified objective.",
-  args: z.object({
+  inputSchema: z.object({
     url: z.string().describe("The URL of the pdf to analyze"),
     objective: z
       .string()
@@ -17,7 +17,7 @@ export const readPdfTool = createTool({
         "THIS MUST BE IN ENGLISH. Natural-language description of what information you're looking for concerning the pdf. The AI will analyze the pdf and provide a response focused on this objective.",
       ),
   }),
-  handler: async (ctx, args): Promise<string> => {
+  execute: async (ctx, args): Promise<string> => {
     console.log(`📄 Analyzing pdf from URL: ${args.url}`);
     console.log(`📋 Objective: ${args.objective}`);
 

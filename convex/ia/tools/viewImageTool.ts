@@ -9,7 +9,7 @@ import { reportToolProgress } from "../../automation/progressReporter";
 export const viewImageTool = createTool({
   description:
     "Analyze an image from a URL using AI vision. Returns a natural-language description of the image content based on the specified objective.",
-  args: z.object({
+  inputSchema: z.object({
     url: z.string().describe("The URL of the image to analyze"),
     objective: z
       .string()
@@ -17,7 +17,7 @@ export const viewImageTool = createTool({
         "THIS MUST BE IN ENGLISH. Natural-language description of what information you're looking for concerning the image. The AI will analyze the image and provide a response focused on this objective.",
       ),
   }),
-  handler: async (ctx, args): Promise<string> => {
+  execute: async (ctx, args): Promise<string> => {
     console.log(`🖼️ Analyzing image from URL: ${args.url}`);
     console.log(`📋 Objective: ${args.objective}`);
 

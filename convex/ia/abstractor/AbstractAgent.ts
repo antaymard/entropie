@@ -2,7 +2,8 @@ import { Agent, createThread } from "@convex-dev/agent";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { v } from "convex/values";
 import { internalAction } from "../../_generated/server";
-import { components, internal } from "../../_generated/api";
+import { components } from "../../_generated/api";
+import { anyApi } from "convex/server";
 import { Doc } from "../../_generated/dataModel";
 import { openWebPageTool } from "../tools/openWebPageTool";
 import { readPdfTool } from "../tools/readPdfTool";
@@ -33,7 +34,7 @@ export const abstractNodeData = internalAction({
     console.log(`Starting abstraction for nodeDataId: ${args.nodeDataId}`);
 
     const nodeData: Doc<"nodeDatas"> | null = await ctx.runQuery(
-      internal.ia.abstractor.helpers.readNodeData,
+      anyApi.ia.abstractor.helpers.readNodeData,
       {
         nodeDataId: args.nodeDataId,
       },
@@ -62,7 +63,7 @@ export const abstractNodeData = internalAction({
     );
 
     await ctx.runMutation(
-      internal.ia.abstractor.helpers.updateAbstractAndRemoveJob,
+      anyApi.ia.abstractor.helpers.updateAbstractAndRemoveJob,
       {
         nodeDataId: args.nodeDataId,
         aiAbstract: response.text,

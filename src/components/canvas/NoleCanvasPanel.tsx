@@ -228,7 +228,7 @@ export default function NoleCanvasPanel() {
   if (layoutMode === "idle") {
     return (
       <div className="flex flex-col items-center">
-        <div className="bg-white rounded p-2 flex items-center gap-2 text-text border">
+        <div className="bg-white rounded p-1 flex items-center gap-2 text-text border">
           <Button
             variant="ghost"
             size="sm"
@@ -262,7 +262,7 @@ export default function NoleCanvasPanel() {
   if (layoutMode === "responding") {
     return (
       <div className="flex flex-col items-center">
-        <div className="bg-white rounded p-2 flex items-center gap-2 text-text border">
+        <div className="bg-white rounded p-1 flex items-center gap-2 text-text border">
           <Button
             variant="ghost"
             size="sm"
@@ -311,7 +311,7 @@ export default function NoleCanvasPanel() {
 
   if (layoutMode === "recording" || layoutMode === "transcribing") {
     return (
-      <div className="bg-white rounded p-2 flex items-center gap-2 text-text border">
+      <div className="bg-white rounded p-1 flex items-center gap-2 text-text border">
         <Button variant="ghost" size="sm" disabled>
           <NoleIcon />
         </Button>

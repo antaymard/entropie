@@ -2,14 +2,14 @@
 
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
-import { anthropic } from "@ai-sdk/anthropic";
+import { openrouter } from "@openrouter/ai-sdk-provider";
 import { generateText } from "ai";
 import { reportToolProgress } from "../../automation/progressReporter";
 
 export const viewImageTool = createTool({
   description:
     "Analyze an image from a URL using AI vision. Returns a natural-language description of the image content based on the specified objective.",
-  inputSchema: z.object({
+  args: z.object({
     url: z.string().describe("The URL of the image to analyze"),
     objective: z
       .string()
@@ -17,7 +17,7 @@ export const viewImageTool = createTool({
         "THIS MUST BE IN ENGLISH. Natural-language description of what information you're looking for concerning the image. The AI will analyze the image and provide a response focused on this objective.",
       ),
   }),
-  execute: async (ctx, args): Promise<string> => {
+  handler: async (ctx, args): Promise<string> => {
     console.log(`🖼️ Analyzing image from URL: ${args.url}`);
     console.log(`📋 Objective: ${args.objective}`);
 
@@ -29,7 +29,7 @@ export const viewImageTool = createTool({
       // Analyser l'image avec Anthropic (supporte les URLs directement)
       console.log(`🤖 Sending image for analysis...`);
       const result = await generateText({
-        model: anthropic("claude-haiku-4-5"),
+        model: openrouter("anthropic/claude-haiku-4-5"),
         messages: [
           {
             role: "user",

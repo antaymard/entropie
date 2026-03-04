@@ -111,7 +111,7 @@ function validateNodeData(
 export const editCanvasNodesAndEdgesTool = createTool({
   description:
     "**Before using this tool, you must use read_node_configs to get the correct data structure for the node type you want to create or edit.** Otherwise, the data you pass will be rejected. Edit nodes on a user canvas. This tool allows you to create or edit nodes on a specified canvas.",
-  inputSchema: z.object({
+  args: z.object({
     canvas_id: z
       .string()
       .describe("ID of the canvas where the nodes will be modified."),
@@ -162,7 +162,7 @@ export const editCanvasNodesAndEdgesTool = createTool({
       })
     ),
   }),
-  execute: async (ctx, { canvas_id, nodes }) => {
+  handler: async (ctx, { canvas_id, nodes }) => {
     try {
       const createdNodeIds: string[] = [];
       const editedNodeIds: string[] = [];

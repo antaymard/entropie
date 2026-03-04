@@ -13,7 +13,7 @@ import { paginationOptsValidator } from "convex/server";
 import { requireAuth } from "../lib/auth";
 import { encode } from "@toon-format/toon";
 import z from "zod";
-import { mistral } from "@ai-sdk/mistral";
+import { openrouter } from "@openrouter/ai-sdk-provider";
 
 // Get the latest thread for the user
 export const getLatestThread = query({
@@ -221,7 +221,7 @@ export const updateThreadTitle = action({
   handler: async (ctx, { threadId, onlyIfUntitled }) => {
     // await authorizeThreadAccess(ctx, threadId);
     await requireAuth(ctx);
-    const noleAgent = createNoleAgent({ model: mistral("ministral-14b-2512") });
+    const noleAgent = createNoleAgent({ model: openrouter("mistralai/ministral-14b-2512") });
     const { thread } = await noleAgent.continueThread(ctx, { threadId });
     if (onlyIfUntitled) {
       const metadata = await thread.getMetadata();
@@ -233,8 +233,6 @@ export const updateThreadTitle = action({
       object: { title },
     } = await thread.generateObject(
       {
-        schemaDescription:
-          "Generate a title for the thread. The title should be a single sentence that captures the main topic of the thread. **Must be in French.**",
         schema: z.object({
           title: z.string().describe("The new title for the thread"),
           // summary: z.string().describe("The new summary for the thread"),

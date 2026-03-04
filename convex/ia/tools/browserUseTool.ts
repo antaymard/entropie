@@ -6,7 +6,7 @@ import { reportToolProgress } from "../../automation/progressReporter";
 export const browserUseTool = createTool({
   description:
     "The browser tool can navigate to the page and interact with it like a human would, allowing it to access content that traditional extraction tools can't handle. **This tool is costly and slow to process. So use it when the webpages you tried to fetch with the traditional 'openWebPage' tool were too difficult or impossible to extract from, or when multi-step interactions are needed to access the content. This tool cannot use credentials to access protected content, or the user's personal information.**",
-  inputSchema: z.object({
+  args: z.object({
     task: z
       .string()
       .describe(
@@ -21,7 +21,7 @@ export const browserUseTool = createTool({
       .optional()
       .describe("JSON schema string for structured response format"),
   }),
-  execute: async (ctx, { task, startUrl, structuredOutput }) => {
+  handler: async (ctx, { task, startUrl, structuredOutput }) => {
     console.log(
       `🤖 Browser use started: ${task}, starting in ${startUrl} and structured output: ${structuredOutput}`,
     );

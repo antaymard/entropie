@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { internalQuery } from "../../../_generated/server";
-import { type CanvasNode } from "../../../../schemas/canvasesSchema";
+import { type CanvasNode } from "../../../schemas/canvasesSchema";
 import { encode } from "@toon-format/toon";
 
 type CanvasNodeWithData = Omit<CanvasNode, "id" | "nodeDataId"> & {

@@ -62,7 +62,9 @@ export function createProgressReporter(
 ): ReportProgressFn {
   return async (progress: ProgressReport) => {
     // console.log(`Reporting progress for nodeData ${nodeDataId}:`, progress);
+
     await ctx.runMutation(
+      // @ts-expect-error
       internal.automation.helpers.updateAutomationProgress,
       {
         _id: nodeDataId,

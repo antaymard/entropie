@@ -3,15 +3,15 @@ import { components } from "../_generated/api";
 import { openWebPageTool } from "../ia/tools/openWebPageTool";
 import { viewImageTool } from "../ia/tools/viewImageTool";
 import { readPdfTool } from "../ia/tools/readPdfTool";
-import { type LanguageModelV3 } from "@ai-sdk/provider";
+import { type LanguageModel } from "ai";
 import { websearchTool } from "../ia/tools/websearchTool";
-import { anthropic } from "@ai-sdk/anthropic";
+import { openrouter } from "@openrouter/ai-sdk-provider";
 
 export function createAutomationAgent({
-  model = anthropic("claude-haiku-4-5"),
+  model = openrouter("anthropic/claude-haiku-4-5"),
   updateNodeDataValuesTool,
 }: {
-  model?: LanguageModelV3;
+  model?: LanguageModel;
   updateNodeDataValuesTool?: any;
 } = {}) {
   return new Agent(components.agent, {

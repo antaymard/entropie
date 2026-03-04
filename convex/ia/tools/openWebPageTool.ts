@@ -10,7 +10,7 @@ const client = new Parallel({
 export const openWebPageTool = createTool({
   description:
     "Convert any public URL into clean, LLM-optimized markdown. It converts any public URL into clean markdown, including JavaScript-heavy pages and PDFs. It returns focused excerpts aligned to the objective, or full page content if requested.",
-  inputSchema: z.object({
+  args: z.object({
     urls: z
       .array(z.string())
       .describe(
@@ -28,7 +28,7 @@ export const openWebPageTool = createTool({
       )
       .optional(),
   }),
-  execute: async (ctx, { urls, objective, search_queries = [] }) => {
+  handler: async (ctx, { urls, objective, search_queries = [] }) => {
     console.log(`🔍 Web extract: ${objective}, ${urls.join(", ")}`);
 
     await reportToolProgress(ctx, {

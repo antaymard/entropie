@@ -2,12 +2,12 @@ import { v } from "convex/values";
 import { internalQuery } from "../../../_generated/server";
 
 export const userContextPrompt = internalQuery({
-  args: { canvasId: v.id("canvases") },
-  handler: async (ctx, { canvasId }) => {
+  args: { userId: v.id("users") },
+  handler: async (ctx, { userId }) => {
     return `
-    ## Canvas Context
+    ## User Context
 
-    
+    The user is called Antoine.
     `;
   },
 });

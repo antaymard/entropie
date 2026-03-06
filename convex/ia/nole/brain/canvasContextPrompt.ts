@@ -25,6 +25,7 @@ export const canvasContextPrompt = internalQuery({
           nodeData = await ctx.db.get(node.nodeDataId);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { id: idOnCanvas, nodeDataId, ...restCanvasNode } = node;
         return {
           idOnCanvas,
@@ -45,16 +46,35 @@ export const canvasContextPrompt = internalQuery({
     - Number of edges: ${canvas.edges?.length ?? 0}
 
     ### Nodes summary
-    
+    ${generateNodeSummmary(nodesWithData)}
 
+    ### To know more
+    If you want to know more about the canvas or its nodes, you can use the provided tools: 
+    - canvasTool('your query here in natural language') 
+    - nodeTool('your query here in natural language'). 
 
-
+    Give the tools the necessary information to retrieve the relevant data (nodeId, canvasId...). Those tools can also be used to update the canvas or its nodes, again, in a natural language way. 
     `;
   },
 });
 
 function generateNodeSummmary(nodes: CanvasNodeWithData[]): string {
-  let summary = "";
+  const formattedNodes = nodes.map((node) => {
+    return {
+      idOnCanvas: node.idOnCanvas,
+      type: node.type,
+      positionOnCanvas: JSON.stringify(node.position),
+      abstract:
+        node.type === "floatingText"
+          ? JSON.stringify(node.data)
+          : (node.nodeData?.abstract ?? "No abstract"),
+      updatedAt:
+        node.nodeData?.updatedAt && typeof node.nodeData.updatedAt === "number"
+          ? new Date(node.nodeData.updatedAt).toISOString()
+          : "No update time",
+    };
+  });
 
-  return summary;
+  const response = encode(formattedNodes);
+  return response;
 }

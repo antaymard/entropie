@@ -12,6 +12,7 @@ import { useCanvasStore } from "@/stores/canvasStore";
 import { toConvexNodes } from "@/components/utils/nodeUtils";
 import { useNoleThread } from "@/hooks/useNoleThread";
 import { useHotkey, useKeyHold } from "@tanstack/react-hotkeys";
+import { useParams } from "@tanstack/react-router";
 
 import NoleIcon from "@/assets/svg-components/NoleIcon";
 import {
@@ -29,8 +30,12 @@ import RichTextArea from "./nole-panel/RichTextArea";
 import SoundWaveAnimation from "./nole-panel/SoundWaveAnimation";
 import ChatResponseBubble from "./nole-panel/ChatResponseBubble";
 import ThreadSelector from "./nole-panel/ThreadSelector";
+import type { Id } from "@/../convex/_generated/dataModel";
 
 export default function NoleCanvasPanel() {
+  const { canvasId } = useParams({ strict: false }) as {
+    canvasId: Id<"canvases">;
+  };
   const {
     threadId: initialThreadId,
     isLoading: isThreadLoading,
@@ -168,30 +173,12 @@ export default function NoleCanvasPanel() {
     setRichTextValue("");
     setIsSending(true);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const canvas: any = useCanvasStore.getState().canvas;
-    const context = {
-      attachedNodes: toConvexNodes(useNoleStore.getState().attachedNodes),
-      attachedPosition: useNoleStore.getState().attachedPosition,
-      canvas: {
-        _id: canvas?._id || "",
-        name: canvas?.name || "",
-        description: canvas?.description || "",
-        nodes:
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          canvas?.nodes?.map((n: any) => ({
-            id: n.id,
-            name: n.name,
-            position: n.position,
-            width: n.width,
-            height: n.height,
-          })) || [],
-        edges: canvas?.edges || [],
-      },
-    };
-
     try {
-      await sendMessageMutation({ threadId, prompt, context });
+      await sendMessageMutation({
+        threadId,
+        prompt,
+        canvasId,
+      });
       useNoleStore.getState().resetAttachments();
       // Auto-generate title after first message
       void updateThreadTitle({ threadId, onlyIfUntitled: true });
@@ -206,6 +193,7 @@ export default function NoleCanvasPanel() {
     threadId,
     richTextValue,
     isSending,
+    canvasId,
     sendMessageMutation,
     updateThreadTitle,
   ]);

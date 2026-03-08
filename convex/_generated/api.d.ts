@@ -46,7 +46,6 @@ import type * as ia_voice from "../ia/voice.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_r2 from "../lib/r2.js";
 import type * as links from "../links.js";
-import type * as migrations from "../migrations.js";
 import type * as nodeDatas from "../nodeDatas.js";
 import type * as schemas_canvasesSchema from "../schemas/canvasesSchema.js";
 import type * as schemas_nodeDataConfig from "../schemas/nodeDataConfig.js";
@@ -100,7 +99,6 @@ declare const fullApi: ApiFromModules<{
   "lib/auth": typeof lib_auth;
   "lib/r2": typeof lib_r2;
   links: typeof links;
-  migrations: typeof migrations;
   nodeDatas: typeof nodeDatas;
   "schemas/canvasesSchema": typeof schemas_canvasesSchema;
   "schemas/nodeDataConfig": typeof schemas_nodeDataConfig;

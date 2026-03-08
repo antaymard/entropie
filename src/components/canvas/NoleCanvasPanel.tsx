@@ -8,8 +8,6 @@ import {
   useUIMessages,
 } from "@convex-dev/agent/react";
 import { useNoleStore } from "@/stores/noleStore";
-import { useCanvasStore } from "@/stores/canvasStore";
-import { toConvexNodes } from "@/components/utils/nodeUtils";
 import { useNoleThread } from "@/hooks/useNoleThread";
 import { useHotkey, useKeyHold } from "@tanstack/react-hotkeys";
 import { useParams } from "@tanstack/react-router";

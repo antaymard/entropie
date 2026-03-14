@@ -1,6 +1,6 @@
 const errors = {
-  CANVAS_NOT_FOUND: "Cet espace n'existe pas.",
-  UNAUTHORIZED_USER: "Vous n'avez pas accès à cet espace.",
+  CANVAS_NOT_FOUND: "This canvas does not exist.",
+  UNAUTHORIZED_USER: "You do not have access to this canvas.",
 };
 
 export default errors;

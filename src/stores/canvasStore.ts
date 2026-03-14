@@ -4,15 +4,18 @@ import type { Canvas } from "@/types";
 
 type Status = "idle" | "unsynced" | "saving" | "saved" | "error";
 type Focus = "canvas" | "platejs";
+type Tool = "edit" | "slides" | "draw";
 
 interface CanvasStore {
   canvas: Omit<Canvas, "nodes" | "edges"> | null;
   status: Status;
   focus: Focus;
+  tool: Tool;
 
-  setCanvas: (canvas: Canvas) => void;
+  setCanvas: (canvas: Omit<Canvas, "nodes" | "edges"> | null) => void;
   setStatus: (status: Status) => void;
   setFocus: (focus: Focus) => void;
+  setTool: (tool: Tool) => void;
 }
 
 export const useCanvasStore = create<CanvasStore>()(
@@ -21,14 +24,18 @@ export const useCanvasStore = create<CanvasStore>()(
       canvas: null,
       status: "idle",
       focus: "canvas",
+      tool: "edit",
 
-      setFocus: (focus: Focus) => {
+      setTool: (tool) => {
+        set({ tool });
+      },
+      setFocus: (focus) => {
         set({ focus });
       },
-      setCanvas: (canvas: Canvas) => {
+      setCanvas: (canvas) => {
         set({ canvas });
       },
-      setStatus: (status: Status) => {
+      setStatus: (status) => {
         set({ status });
       },
     }),

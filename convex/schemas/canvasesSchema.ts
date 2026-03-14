@@ -37,6 +37,19 @@ const edgesSchema = z.object({
   data: z.record(z.string(), z.any()).optional(),
 });
 
+const slideshowsSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  slides: z
+    .array(
+      z.object({
+        name: z.string(),
+        viewport: z.any(),
+      }),
+    )
+    .optional(),
+});
+
 const canvasesSchema = z.object({
   // _id et _creationTime sont ajoutés automatiquement par Convex
   creatorId: zid("users"),
@@ -45,16 +58,20 @@ const canvasesSchema = z.object({
   nodes: z.array(canvasNodesSchema).optional(),
   edges: z.array(edgesSchema).optional(),
 
+  slideshows: z.array(slideshowsSchema).optional(),
+
   updatedAt: z.number(),
 });
 
 // Validators
 const canvasNodesValidator = zodToConvex(canvasNodesSchema);
 const edgesValidator = zodToConvex(edgesSchema);
+const slideshowsValidator = zodToConvex(slideshowsSchema);
 const canvasesValidator = zodToConvex(canvasesSchema);
 
 // Types TS
 export type CanvasNode = z.infer<typeof canvasNodesSchema>;
+export type Slideshow = z.infer<typeof slideshowsSchema>;
 export type Edge = z.infer<typeof edgesSchema>;
 export type Canvas = z.infer<typeof canvasesSchema>;
 
@@ -64,5 +81,7 @@ export {
   edgesSchema,
   canvasNodesValidator,
   edgesValidator,
+  slideshowsValidator,
   canvasesValidator,
+  slideshowsSchema,
 };

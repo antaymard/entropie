@@ -29,6 +29,7 @@ import { useCanvasEdges } from "@/hooks/useCanvasEdges";
 import { Spinner } from "@/components/shadcn/spinner";
 import NoleCanvasPanel from "@/components/canvas/NoleCanvasPanel";
 import CanvasToolbar from "@/components/canvas/on-canvas-ui/CanvasToolbar";
+import TopRightToolbar from "@/components/canvas/on-canvas-ui/TopRightToolbar";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -203,6 +204,9 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           ]);
         }}
       >
+        <Panel position="top-right">
+          <TopRightToolbar />
+        </Panel>
         <Panel position="center-left">
           <CanvasToolbar canvasId={canvasId} />
         </Panel>

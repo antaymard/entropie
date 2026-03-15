@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { mutation } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
-import { requireAuth } from "./lib/auth";
+import { requireAuth, requireCanvasAccess } from "./lib/auth";
 import { canvasNodesValidator } from "./schemas/canvasesSchema";
 import errors from "./config/errorsConfig";
 
@@ -12,14 +12,12 @@ export const add = mutation({
   },
   handler: async (ctx, { canvasNodes, canvasId }) => {
     const authUserId = await requireAuth(ctx);
-
-    const canvas = await ctx.db.get(canvasId);
-    if (!canvas) {
-      throw new ConvexError(errors.CANVAS_NOT_FOUND);
-    }
-    if (canvas.creatorId !== authUserId) {
-      throw new ConvexError(errors.UNAUTHORIZED_USER);
-    }
+    const { canvas } = await requireCanvasAccess(
+      ctx,
+      canvasId,
+      authUserId,
+      "editor",
+    );
 
     await ctx.db.patch(canvasId, {
       nodes: [...(canvas.nodes || []), ...canvasNodes],
@@ -38,14 +36,12 @@ export const updatePositionOrDimensions = mutation({
   },
   handler: async (ctx, { canvasId, nodeChanges }) => {
     const authUserId = await requireAuth(ctx);
-
-    const canvas = await ctx.db.get(canvasId);
-    if (!canvas) {
-      throw new ConvexError(errors.CANVAS_NOT_FOUND);
-    }
-    if (canvas.creatorId !== authUserId) {
-      throw new ConvexError(errors.UNAUTHORIZED_USER);
-    }
+    const { canvas } = await requireCanvasAccess(
+      ctx,
+      canvasId,
+      authUserId,
+      "editor",
+    );
 
     const nodes = canvas.nodes || [];
 
@@ -99,15 +95,12 @@ export const updateCanvasNodes = mutation({
   },
   handler: async (ctx, { canvasId, nodeProps }) => {
     const authUserId = await requireAuth(ctx);
-
-    const canvas = await ctx.db.get(canvasId);
-
-    if (!canvas) {
-      throw new ConvexError(errors.CANVAS_NOT_FOUND);
-    }
-    if (canvas.creatorId !== authUserId) {
-      throw new ConvexError(errors.UNAUTHORIZED_USER);
-    }
+    const { canvas } = await requireCanvasAccess(
+      ctx,
+      canvasId,
+      authUserId,
+      "editor",
+    );
 
     const nodes = canvas.nodes || [];
 
@@ -155,13 +148,12 @@ export const remove = mutation({
   },
   handler: async (ctx, { canvasId, nodeCanvasIds }) => {
     const authUserId = await requireAuth(ctx);
-    const canvas = await ctx.db.get(canvasId);
-    if (!canvas) {
-      throw new ConvexError(errors.CANVAS_NOT_FOUND);
-    }
-    if (canvas.creatorId !== authUserId) {
-      throw new ConvexError(errors.UNAUTHORIZED_USER);
-    }
+    const { canvas } = await requireCanvasAccess(
+      ctx,
+      canvasId,
+      authUserId,
+      "editor",
+    );
 
     const currentNodes = canvas.nodes || [];
     const removedNodes = currentNodes.filter((node) =>

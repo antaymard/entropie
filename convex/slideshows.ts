@@ -1,6 +1,6 @@
 import { mutation } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
-import { requireAuth } from "./lib/auth";
+import { requireAuth, requireCanvasAccess } from "./lib/auth";
 import errors from "./config/errorsConfig";
 import { slideshowsValidator } from "./schemas/canvasesSchema";
 
@@ -13,15 +13,12 @@ export const create = mutation({
   returns: v.null(),
   handler: async (ctx, { canvasId, name, id }) => {
     const authUserId = await requireAuth(ctx);
-
-    const canvas = await ctx.db.get(canvasId);
-    if (!canvas) {
-      throw new ConvexError(errors.CANVAS_NOT_FOUND);
-    }
-
-    if (canvas.creatorId !== authUserId) {
-      throw new ConvexError(errors.UNAUTHORIZED_USER);
-    }
+    const { canvas } = await requireCanvasAccess(
+      ctx,
+      canvasId,
+      authUserId,
+      "editor",
+    );
 
     const currentSlideshows = canvas.slideshows || [];
     const alreadyExists = currentSlideshows.some(
@@ -54,15 +51,12 @@ export const update = mutation({
   returns: slideshowsValidator,
   handler: async (ctx, { canvasId, slideshow }) => {
     const authUserId = await requireAuth(ctx);
-
-    const canvas = await ctx.db.get(canvasId);
-    if (!canvas) {
-      throw new ConvexError(errors.CANVAS_NOT_FOUND);
-    }
-
-    if (canvas.creatorId !== authUserId) {
-      throw new ConvexError(errors.UNAUTHORIZED_USER);
-    }
+    const { canvas } = await requireCanvasAccess(
+      ctx,
+      canvasId,
+      authUserId,
+      "editor",
+    );
 
     const currentSlideshows = canvas.slideshows || [];
     const slideshowExists = currentSlideshows.some(
@@ -93,15 +87,12 @@ export const deleteSlideshow = mutation({
   returns: v.string(),
   handler: async (ctx, { canvasId, id }) => {
     const authUserId = await requireAuth(ctx);
-
-    const canvas = await ctx.db.get(canvasId);
-    if (!canvas) {
-      throw new ConvexError(errors.CANVAS_NOT_FOUND);
-    }
-
-    if (canvas.creatorId !== authUserId) {
-      throw new ConvexError(errors.UNAUTHORIZED_USER);
-    }
+    const { canvas } = await requireCanvasAccess(
+      ctx,
+      canvasId,
+      authUserId,
+      "editor",
+    );
 
     const currentSlideshows = canvas.slideshows || [];
     const remainingSlideshows = currentSlideshows.filter(

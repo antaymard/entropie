@@ -1,6 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { mutation } from "./_generated/server";
-import { requireAuth } from "./lib/auth";
+import { requireAuth, requireCanvasAccess } from "./lib/auth";
 import { edgesValidator } from "./schemas/canvasesSchema";
 import errors from "./config/errorsConfig";
 
@@ -11,14 +11,12 @@ export const add = mutation({
   },
   handler: async (ctx, { edges, canvasId }) => {
     const authUserId = await requireAuth(ctx);
-
-    const canvas = await ctx.db.get(canvasId);
-    if (!canvas) {
-      throw new ConvexError(errors.CANVAS_NOT_FOUND);
-    }
-    if (canvas.creatorId !== authUserId) {
-      throw new ConvexError(errors.UNAUTHORIZED_USER);
-    }
+    const { canvas } = await requireCanvasAccess(
+      ctx,
+      canvasId,
+      authUserId,
+      "editor",
+    );
 
     // Ajouter les edges au canvas
     await ctx.db.patch(canvasId, {
@@ -93,14 +91,12 @@ export const update = mutation({
   },
   handler: async (ctx, { canvasId, edgeUpdates }) => {
     const authUserId = await requireAuth(ctx);
-
-    const canvas = await ctx.db.get(canvasId);
-    if (!canvas) {
-      throw new ConvexError(errors.CANVAS_NOT_FOUND);
-    }
-    if (canvas.creatorId !== authUserId) {
-      throw new ConvexError(errors.UNAUTHORIZED_USER);
-    }
+    const { canvas } = await requireCanvasAccess(
+      ctx,
+      canvasId,
+      authUserId,
+      "editor",
+    );
 
     const edges = canvas.edges || [];
 
@@ -127,14 +123,12 @@ export const remove = mutation({
   },
   handler: async (ctx, { canvasId, edgeIds }) => {
     const authUserId = await requireAuth(ctx);
-
-    const canvas = await ctx.db.get(canvasId);
-    if (!canvas) {
-      throw new ConvexError(errors.CANVAS_NOT_FOUND);
-    }
-    if (canvas.creatorId !== authUserId) {
-      throw new ConvexError(errors.UNAUTHORIZED_USER);
-    }
+    const { canvas } = await requireCanvasAccess(
+      ctx,
+      canvasId,
+      authUserId,
+      "editor",
+    );
 
     const nodes = canvas.nodes || [];
     const edges = canvas.edges || [];

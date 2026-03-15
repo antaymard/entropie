@@ -1,0 +1,168 @@
+import { useState } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@/../convex/_generated/api";
+import type { Id } from "@/../convex/_generated/dataModel";
+import { useCanvasStore } from "@/stores/canvasStore";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/shadcn/dialog";
+import { Button } from "@/components/shadcn/button";
+import { Input } from "@/components/shadcn/input";
+import { Label } from "@/components/shadcn/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/shadcn/select";
+import { toastError } from "@/components/utils/errorUtils";
+import { TbTrash } from "react-icons/tb";
+
+export default function SharingModal() {
+  const canvas = useCanvasStore((state) => state.canvas);
+  const [open, setOpen] = useState(false);
+
+  if (!canvas || canvas._permission !== "owner") return null;
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="ghost"
+          className="hover:bg-accent p-2 flex items-center rounded-md"
+          title="Share canvas"
+        >
+          Share
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Share canvas</DialogTitle>
+        </DialogHeader>
+        <ShareForm canvasId={canvas._id} />
+        <ShareList canvasId={canvas._id} />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ShareForm({ canvasId }: { canvasId: Id<"canvases"> }) {
+  const [email, setEmail] = useState("");
+  const [permission, setPermission] = useState<"viewer" | "editor">("viewer");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const shareCanvas = useMutation(api.shares.shareCanvas);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      await shareCanvas({
+        canvasId,
+        email: email.trim(),
+        permission,
+      });
+      setEmail("");
+    } catch (err) {
+      toastError(err, "Failed to share canvas");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="share-email">Email</Label>
+        <Input
+          id="share-email"
+          type="email"
+          placeholder="user@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </div>
+      <div className="flex items-end gap-2">
+        <div className="flex flex-col gap-1.5 flex-1">
+          <Label>Permission</Label>
+          <Select
+            value={permission}
+            onValueChange={(v) => setPermission(v as "viewer" | "editor")}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="viewer">Viewer</SelectItem>
+              <SelectItem value="editor">Editor</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <Button type="submit" disabled={isSubmitting || !email.trim()}>
+          {isSubmitting ? "Sharing..." : "Share"}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+function ShareList({ canvasId }: { canvasId: Id<"canvases"> }) {
+  const shares = useQuery(api.shares.listCanvasShares, {
+    canvasId,
+  });
+  const unshareCanvas = useMutation(api.shares.unshareCanvas);
+
+  if (!shares || shares.length === 0) return null;
+
+  const handleRemove = async (shareId: Id<"shares">) => {
+    try {
+      await unshareCanvas({ shareId });
+    } catch (err) {
+      toastError(err, "Failed to remove share");
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-2 mt-2">
+      <Label className="text-muted-foreground text-xs">Shared with</Label>
+      <div className="flex flex-col divide-y">
+        {shares.map((share) => (
+          <div
+            key={share._id}
+            className="flex items-center justify-between py-2"
+          >
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">{share.userName}</span>
+              {share.userEmail && (
+                <span className="text-xs text-muted-foreground">
+                  {share.userEmail}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground capitalize">
+                {share.permission}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleRemove(share._id)}
+                title="Remove access"
+              >
+                <TbTrash size={14} />
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

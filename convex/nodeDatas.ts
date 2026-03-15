@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { ConvexError } from "convex/values";
-import { internalMutation, mutation, query } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { requireAuth } from "./lib/auth";
 import { internal } from "./_generated/api";
@@ -66,6 +66,7 @@ export const updateValues = mutation({
     _id: v.id("nodeDatas"),
     values: v.record(v.string(), v.any()),
   },
+  returns: v.boolean(),
   handler: async (ctx, { _id, values }) => {
     await requireAuth(ctx);
     const existing = await ctx.db.get(_id);
@@ -105,7 +106,6 @@ export const updateValues = mutation({
 
     return true;
   },
-  returns: v.boolean(),
 });
 
 export const updateAutomationSettings = mutation({

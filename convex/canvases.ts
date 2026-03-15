@@ -1,6 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
-import { requireAuth } from "./lib/auth";
+import { requireAuth, requireCanvasAccess } from "./lib/auth";
 
 export const getLastModified = query({
   args: {},
@@ -25,17 +25,40 @@ export const listUserCanvases = query({
   handler: async (ctx) => {
     const authUserId = await requireAuth(ctx);
 
-    // Récupérer tous les canvas de l'utilisateur
-    const canvases = await ctx.db
+    // Canvas de l'utilisateur
+    const ownCanvases = await ctx.db
       .query("canvases")
       .withIndex("by_creator", (q) => q.eq("creatorId", authUserId))
       .collect();
 
-    // Retourner seulement l'id et le nom
-    return canvases.map((canvas) => ({
-      _id: canvas._id,
-      name: canvas.name,
-    }));
+    // Canvas partagés avec l'utilisateur
+    const shares = await ctx.db
+      .query("shares")
+      .withIndex("by_user", (q) => q.eq("userId", authUserId))
+      .collect();
+
+    const sharedCanvases = await Promise.all(
+      shares
+        .filter((s) => s.resourceType === "canvas")
+        .map(async (share) => {
+          const canvas = await ctx.db.get(share.canvasId);
+          if (!canvas) return null;
+          return {
+            _id: canvas._id,
+            name: canvas.name,
+            shared: true as const,
+            permission: share.permission,
+          };
+        }),
+    );
+
+    return [
+      ...ownCanvases.map((c) => ({
+        _id: c._id,
+        name: c.name,
+      })),
+      ...sharedCanvases.filter((c) => c !== null),
+    ];
   },
 });
 
@@ -44,21 +67,14 @@ export const readCanvas = query({
     canvasId: v.id("canvases"),
   },
   handler: async (ctx, { canvasId }) => {
-    // Check if canvas is public
-    const canvas = await ctx.db.get(canvasId);
-
-    if (!canvas) {
-      throw new ConvexError("L'espace demandé n'existe pas.");
-    }
-
-    // Else check if the user is auth and is the creator
     const authUserId = await requireAuth(ctx);
+    const { canvas, permission } = await requireCanvasAccess(
+      ctx,
+      canvasId,
+      authUserId,
+    );
 
-    if (canvas.creatorId !== authUserId) {
-      throw new ConvexError("Vous n'avez pas accès à cet espace.");
-    }
-
-    return canvas;
+    return { ...canvas, _permission: permission };
   },
 });
 
@@ -89,15 +105,7 @@ export const updateProps = mutation({
   },
   handler: async (ctx, args) => {
     const authUserId = await requireAuth(ctx);
-
-    const canvas = await ctx.db.get(args.canvasId);
-    if (!canvas) {
-      throw new ConvexError("Canvas not found");
-    }
-
-    if (canvas.creatorId !== authUserId) {
-      throw new ConvexError("Unauthorized");
-    }
+    await requireCanvasAccess(ctx, args.canvasId, authUserId, "owner");
 
     await ctx.db.patch(args.canvasId, {
       name: args.name,
@@ -114,14 +122,20 @@ export const deleteCanvas = mutation({
   },
   handler: async (ctx, { canvasId }) => {
     const authUserId = await requireAuth(ctx);
+    const { canvas } = await requireCanvasAccess(
+      ctx,
+      canvasId,
+      authUserId,
+      "owner",
+    );
 
-    // Vérifier si l'utilisateur est le créateur du canvas
-    const canvas = await ctx.db.get(canvasId);
-    if (!canvas) {
-      throw new ConvexError("Ce canvas n'existe pas.");
-    }
-    if (canvas.creatorId !== authUserId) {
-      throw new ConvexError("Vous n'avez pas accès à ce canvas");
+    // Supprimer les partages associés
+    const shares = await ctx.db
+      .query("shares")
+      .withIndex("by_canvas", (q) => q.eq("canvasId", canvasId))
+      .collect();
+    for (const share of shares) {
+      await ctx.db.delete(share._id);
     }
 
     // Supprimer le canvas

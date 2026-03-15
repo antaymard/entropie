@@ -2,7 +2,7 @@ import { ConvexError, v } from "convex/values";
 import { mutation } from "./_generated/server";
 import { requireAuth } from "./lib/auth";
 import { edgesValidator } from "./schemas/canvasesSchema";
-import errors from "./errorsConfig";
+import errors from "./config/errorsConfig";
 
 export const add = mutation({
   args: {

@@ -5,10 +5,10 @@ import { viewImageTool } from "../ia/tools/viewImageTool";
 import { readPdfTool } from "../ia/tools/readPdfTool";
 import { type LanguageModel } from "ai";
 import { websearchTool } from "../ia/tools/websearchTool";
-import { anthropic } from "@ai-sdk/anthropic";
+import { openrouter } from "@openrouter/ai-sdk-provider";
 
 export function createAutomationAgent({
-  model = anthropic("claude-haiku-4-5"),
+  model = openrouter("anthropic/claude-haiku-4-5"),
   updateNodeDataValuesTool,
 }: {
   model?: LanguageModel;

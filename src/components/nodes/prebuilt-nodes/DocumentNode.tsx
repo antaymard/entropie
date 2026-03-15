@@ -18,7 +18,8 @@ const defaultValue: Value = normalizeNodeId([
   },
 ]);
 
-function getDocumentTitle(value: Value): string {
+// eslint-disable-next-line react-refresh/only-export-components
+export function getDocumentTitle(value: Value): string {
   if (!value || value.length === 0) return "Document";
   const firstBlock = value[0];
   if (firstBlock.type === "h1" || firstBlock.type === "h2") {

@@ -36,6 +36,7 @@ export default function updateNodeDataValuesTool({
           updates = { ...args, doc: platejsContent };
         }
 
+        // @ts-expect-error
         await ctx.runMutation(api.nodeDatas.updateValues, {
           _id: nodeData._id as Id<"nodeDatas">,
           values: updates,

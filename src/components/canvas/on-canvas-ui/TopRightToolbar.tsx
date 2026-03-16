@@ -12,29 +12,27 @@ function TopRightToolbar() {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="h-12 flex items-center gap-2">
-      <div className="bg-white px-2 rounded h-full border border-gray-300 flex items-center gap-2">
-        <div className="px-2">
-          <CanvasStatus />
-        </div>
-        <SharingModal />
-        <Button variant="ghost" asChild>
-          <Link
-            to="/settings"
-            className="hover:bg-accent p-2 flex items-center rounded-md"
-            title="Settings"
-          >
-            <HiOutlineCog size={18} />
-          </Link>
-        </Button>
+    <div className="canvas-ui-container">
+      <div className="px-2">
+        <CanvasStatus />
       </div>
+      <SharingModal />
+      <Button variant="ghost" size="icon-sm" asChild>
+        <Link
+          to="/settings"
+          className="hover:bg-accent flex items-center rounded-md"
+          title="Settings"
+        >
+          <HiOutlineCog size={18} />
+        </Link>
+      </Button>
     </div>
   );
 }
 
 function CanvasStatus() {
   const status = useCanvasStore((state) => state.status);
-  const size = 20;
+  const size = 16;
 
   switch (status) {
     case "idle":

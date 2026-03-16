@@ -25,7 +25,7 @@ interface CanvasStore {
 
 export const useCanvasStore = create<CanvasStore>()(
   devtools(
-    (set, get) => ({
+    (set) => ({
       canvas: null,
       status: "idle",
       focus: "canvas",

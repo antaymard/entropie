@@ -30,6 +30,7 @@ import { Spinner } from "@/components/shadcn/spinner";
 import NoleCanvasPanel from "@/components/canvas/NoleCanvasPanel";
 import CanvasToolbar from "@/components/canvas/on-canvas-ui/CanvasToolbar";
 import TopRightToolbar from "@/components/canvas/on-canvas-ui/TopRightToolbar";
+import BottomToolbar from "@/components/canvas/on-canvas-ui/BottomToolbar";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -212,6 +213,9 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
         </Panel>
         <Panel position="top-center">
           <NoleCanvasPanel />
+        </Panel>
+        <Panel position="bottom-center">
+          <BottomToolbar />
         </Panel>
         {contextMenu.type && (
           <ContextMenu

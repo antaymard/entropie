@@ -34,7 +34,8 @@ export default function SharingModal() {
       <DialogTrigger asChild>
         <Button
           variant="ghost"
-          className="hover:bg-accent p-2 flex items-center rounded-md"
+          size="sm"
+          className="hover:bg-accent flex items-center rounded-md"
           title="Share canvas"
         >
           Share

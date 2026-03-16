@@ -1,7 +1,7 @@
 import { Button } from "@/components/shadcn/button";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { useCanvasStore } from "@/stores/canvasStore";
-import SlideshowEditor from "@/components/canvas/on-canvas-ui/SlideshowEditor";
+import SlideshowContainer from "./slideshow/SlideshowContainer";
 import { BiSlideshow } from "react-icons/bi";
 import { TbClick } from "react-icons/tb";
 
@@ -31,7 +31,7 @@ export default function CanvasToolbar({
           <BiSlideshow size={20} />
         </Button>
       </div>
-      {tool === "slides" && <SlideshowEditor canvasId={canvasId} />}
+      {tool === "slides" && <SlideshowContainer canvasId={canvasId} />}
     </div>
   );
 }

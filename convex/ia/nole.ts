@@ -1,6 +1,5 @@
 import { v } from "convex/values";
 import { action, internalAction, mutation, query } from "../_generated/server";
-import { internal } from "../_generated/api";
 import { createNoleAgent } from "./agents";
 import {
   createThread,
@@ -9,9 +8,8 @@ import {
   vStreamArgs,
 } from "@convex-dev/agent";
 import { components } from "../_generated/api";
-import { paginationOptsValidator } from "convex/server";
+import { anyApi, paginationOptsValidator } from "convex/server";
 import { requireAuth } from "../lib/auth";
-import { encode } from "@toon-format/toon";
 import z from "zod";
 import { openrouter } from "@openrouter/ai-sdk-provider";
 import { generateBrainSystemPrompt } from "./nole/brain/brainAgent";
@@ -102,14 +100,16 @@ export const sendMessage = mutation({
     }
 
     // Save the user message
-    const noleAgent = createNoleAgent();
+    const noleAgent = createNoleAgent({
+      readCanvasInternal: anyApi.ia.helpers.canvasHelpers.getCanvasInternal,
+    });
     const { messageId } = await noleAgent.saveMessage(ctx, {
       threadId,
       prompt,
     });
 
     // Schedule the streaming action (no await needed for scheduler)
-    void ctx.scheduler.runAfter(0, internal.ia.nole.streamResponse, {
+    void ctx.scheduler.runAfter(0, anyApi.ia.nole.streamResponse, {
       authUserId: authUserId,
       threadId,
       promptMessageId: messageId,
@@ -128,7 +128,6 @@ export const streamResponse = internalAction({
     threadId: v.string(),
     canvasId: v.id("canvases"),
   },
-  returns: v.null(),
   handler: async (ctx, { authUserId, promptMessageId, threadId, canvasId }) => {
     // Generate brain context (canvas + user context)
     const brainInstructions = await generateBrainSystemPrompt({
@@ -137,7 +136,9 @@ export const streamResponse = internalAction({
       ctx,
     });
 
-    const noleAgent = createNoleAgent();
+    const noleAgent = createNoleAgent({
+      readCanvasInternal: anyApi.ia.helpers.canvasHelpers.getCanvasInternal,
+    });
     const result = await noleAgent.streamText(
       ctx,
       { threadId, userId: authUserId },
@@ -166,7 +167,12 @@ export const listMessages = query({
     paginationOpts: paginationOptsValidator,
     streamArgs: vStreamArgs,
   },
-  returns: v.any(),
+  // returns: v.object({
+  //   page: v.array(v.any()),
+  //   isDone: v.boolean(),
+  //   continueCursor: v.string(),
+  //   streams: v.any(),
+  // }),
   handler: async (ctx, { threadId, paginationOpts, streamArgs }) => {
     // Sync ongoing streams
     const streams = await syncStreams(ctx, components.agent, {
@@ -189,12 +195,12 @@ export const listMessages = query({
 
 export const updateThreadTitle = action({
   args: { threadId: v.string(), onlyIfUntitled: v.optional(v.boolean()) },
-  returns: v.null(),
   handler: async (ctx, { threadId, onlyIfUntitled }) => {
     // await authorizeThreadAccess(ctx, threadId);
     await requireAuth(ctx);
     const noleAgent = createNoleAgent({
       model: openrouter("mistralai/ministral-14b-2512"),
+      readCanvasInternal: anyApi.ia.helpers.canvasHelpers.getCanvasInternal,
     });
     const { thread } = await noleAgent.continueThread(ctx, { threadId });
     if (onlyIfUntitled) {
@@ -221,10 +227,11 @@ export const updateThreadTitle = action({
 
 export const deleteThread = action({
   args: { threadId: v.string() },
-  returns: v.object({ success: v.boolean() }),
   handler: async (ctx, { threadId }) => {
     await requireAuth(ctx);
-    const noleAgent = createNoleAgent();
+    const noleAgent = createNoleAgent({
+      readCanvasInternal: anyApi.ia.helpers.canvasHelpers.getCanvasInternal,
+    });
     await noleAgent.deleteThreadAsync(ctx, { threadId });
     return { success: true };
   },

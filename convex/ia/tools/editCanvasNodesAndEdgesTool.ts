@@ -1,6 +1,6 @@
 import { createTool } from "@convex-dev/agent";
+import { anyApi } from "convex/server";
 import { z } from "zod";
-import { internal } from "../../_generated/api";
 import { Id } from "../../_generated/dataModel";
 import { nodeTypes } from "../helpers/nodeFieldsAndTypesHelper";
 
@@ -12,7 +12,7 @@ interface ValidationResult {
 
 function validateNodeData(
   nodeType: string,
-  nodeData: Record<string, unknown> | undefined
+  nodeData: Record<string, unknown> | undefined,
 ): ValidationResult {
   const nodeConfig = nodeTypes.find((n) => n.type === nodeType);
 
@@ -47,7 +47,7 @@ function validateNodeData(
   for (const key of dataKeys) {
     if (!allowedProps.has(key)) {
       errors.push(
-        `Unexpected property "${key}" for node type "${nodeType}". Allowed properties: ${[...allowedProps].join(", ") || "none"}.`
+        `Unexpected property "${key}" for node type "${nodeType}". Allowed properties: ${[...allowedProps].join(", ") || "none"}.`,
       );
     }
   }
@@ -56,7 +56,7 @@ function validateNodeData(
   for (const prop of expectedProps.properties) {
     if (prop.required && !(prop.name in data)) {
       errors.push(
-        `Missing required property "${prop.name}" for node type "${nodeType}".`
+        `Missing required property "${prop.name}" for node type "${nodeType}".`,
       );
     }
 
@@ -66,26 +66,26 @@ function validateNodeData(
 
       if (prop.type === "string" && typeof value !== "string") {
         errors.push(
-          `Property "${prop.name}" should be a string, got ${typeof value}.`
+          `Property "${prop.name}" should be a string, got ${typeof value}.`,
         );
       }
 
       if (prop.type === "number" && typeof value !== "number") {
         errors.push(
-          `Property "${prop.name}" should be a number, got ${typeof value}.`
+          `Property "${prop.name}" should be a number, got ${typeof value}.`,
         );
       }
 
       if (prop.type === "array" && !Array.isArray(value)) {
         errors.push(
-          `Property "${prop.name}" should be an array, got ${typeof value}.`
+          `Property "${prop.name}" should be an array, got ${typeof value}.`,
         );
       }
 
       // Check enum values
       if (prop.enum && !prop.enum.includes(value as string)) {
         errors.push(
-          `Property "${prop.name}" must be one of: ${prop.enum.join(", ")}. Got "${value}".`
+          `Property "${prop.name}" must be one of: ${prop.enum.join(", ")}. Got "${value}".`,
         );
       }
     }
@@ -124,7 +124,7 @@ export const editCanvasNodesAndEdgesTool = createTool({
         node_id: z
           .string()
           .describe(
-            "ID of the node to edit. Required for edit operation, ignored for create."
+            "ID of the node to edit. Required for edit operation, ignored for create.",
           )
           .optional(),
         name: z
@@ -133,14 +133,14 @@ export const editCanvasNodesAndEdgesTool = createTool({
         node_type: z
           .string()
           .describe(
-            "Type of the node (nodeType). Use readNodeConfigsTool to get the available node types. Required for create, optional for edit."
+            "Type of the node (nodeType). Use readNodeConfigsTool to get the available node types. Required for create, optional for edit.",
           )
           .optional(),
         node_data: z
           .object({})
           .passthrough()
           .describe(
-            "Data for the node. Use readNodeConfigsTool to get the expected data structure for each node type."
+            "Data for the node. Use readNodeConfigsTool to get the expected data structure for each node type.",
           )
           .optional(),
         position: z
@@ -157,9 +157,9 @@ export const editCanvasNodesAndEdgesTool = createTool({
           })
           .optional()
           .describe(
-            "Dimensions of the node. If omitted, min dimensions will be used."
+            "Dimensions of the node. If omitted, min dimensions will be used.",
           ),
-      })
+      }),
     ),
   }),
   handler: async (ctx, { canvas_id, nodes }) => {
@@ -175,7 +175,7 @@ export const editCanvasNodesAndEdgesTool = createTool({
         const missingTypes = nodesToCreate.filter((n) => !n.node_type);
         if (missingTypes.length > 0) {
           errors.push(
-            `${missingTypes.length} node(s) missing required node_type for create operation.`
+            `${missingTypes.length} node(s) missing required node_type for create operation.`,
           );
         }
 
@@ -190,7 +190,7 @@ export const editCanvasNodesAndEdgesTool = createTool({
         for (const node of validNodesToCreate) {
           const validation = validateNodeData(
             node.node_type!,
-            node.node_data as Record<string, unknown>
+            node.node_data as Record<string, unknown>,
           );
           if (!validation.isValid) {
             const nodeName = node.name || node.node_type!;
@@ -200,7 +200,7 @@ export const editCanvasNodesAndEdgesTool = createTool({
             detailedValidationErrors.push(
               `Node: ${nodeName}\n` +
                 `Errors: ${validation.errors.join("; ")}\n` +
-                `Expected format: ${JSON.stringify(validation.expectedFormat, null, 2)}`
+                `Expected format: ${JSON.stringify(validation.expectedFormat, null, 2)}`,
             );
           } else {
             validationResults.push({ node, validation });
@@ -211,11 +211,11 @@ export const editCanvasNodesAndEdgesTool = createTool({
         const nodesPassingValidation = validationResults.map((v) => v.node);
         if (nodesPassingValidation.length > 0) {
           const newNodeIds = nodesPassingValidation.map(
-            () => `node-${crypto.randomUUID()}`
+            () => `node-${crypto.randomUUID()}`,
           );
 
           await ctx.runMutation(
-            internal.ia.helpers.canvasHelpers.addNodesToCanvasInternal,
+            anyApi.ia.helpers.canvasHelpers.addNodesToCanvasInternal,
             {
               canvasId: canvas_id as Id<"canvases">,
               newNodes: nodesPassingValidation.map((node, index) => ({
@@ -235,7 +235,7 @@ export const editCanvasNodesAndEdgesTool = createTool({
                       ?.minHeight) ??
                   100,
               })),
-            }
+            },
           );
 
           createdNodeIds.push(...newNodeIds);
@@ -248,7 +248,7 @@ export const editCanvasNodesAndEdgesTool = createTool({
         const missingIds = nodesToEdit.filter((n) => !n.node_id);
         if (missingIds.length > 0) {
           errors.push(
-            `${missingIds.length} node(s) missing required node_id for edit operation.`
+            `${missingIds.length} node(s) missing required node_id for edit operation.`,
           );
         }
 
@@ -259,7 +259,7 @@ export const editCanvasNodesAndEdgesTool = createTool({
           if (node.node_type && node.node_data) {
             const validation = validateNodeData(
               node.node_type,
-              node.node_data as Record<string, unknown>
+              node.node_data as Record<string, unknown>,
             );
             if (!validation.isValid) {
               const nodeName = node.name || node.node_id!;
@@ -267,7 +267,7 @@ export const editCanvasNodesAndEdgesTool = createTool({
               detailedValidationErrors.push(
                 `Node: ${nodeName}\n` +
                   `Errors: ${validation.errors.join("; ")}\n` +
-                  `Expected format: ${JSON.stringify(validation.expectedFormat, null, 2)}`
+                  `Expected format: ${JSON.stringify(validation.expectedFormat, null, 2)}`,
               );
               continue;
             }
@@ -275,7 +275,7 @@ export const editCanvasNodesAndEdgesTool = createTool({
 
           try {
             await ctx.runMutation(
-              internal.ia.helpers.canvasHelpers.editNodeInCanvasInternal,
+              anyApi.ia.helpers.canvasHelpers.editNodeInCanvasInternal,
               {
                 canvasId: canvas_id as Id<"canvases">,
                 nodeId: node.node_id!,
@@ -291,12 +291,12 @@ export const editCanvasNodesAndEdgesTool = createTool({
                     height: node.dimensions.height,
                   }),
                 },
-              }
+              },
             );
             editedNodeIds.push(node.node_id!);
           } catch (error: unknown) {
             errors.push(
-              `Failed to edit node ${node.node_id}: ${error instanceof Error ? error.message : String(error)}`
+              `Failed to edit node ${node.node_id}: ${error instanceof Error ? error.message : String(error)}`,
             );
           }
         }

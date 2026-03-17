@@ -1,6 +1,7 @@
 import { ConvexError, v } from "convex/values";
+import { anyApi } from "convex/server";
 import { action } from "./_generated/server";
-import { components, internal } from "./_generated/api";
+import { components } from "./_generated/api";
 import { createAutomationAgent } from "./automation/automationAgent";
 import { createThread } from "@convex-dev/agent";
 import { requireAuth } from "./lib/auth";
@@ -16,20 +17,19 @@ export const trigger = action({
   args: {
     nodeDataId: v.id("nodeDatas"),
   },
-  returns: v.null(),
   handler: async (ctx, { nodeDataId }) => {
     try {
       console.log("Automation triggered");
       const userId = await requireAuth(ctx);
 
       const currentNodeData = await ctx.runQuery(
-        internal.automation.helpers.readNodeData,
+        anyApi.automation.helpers.readNodeData,
         { _id: nodeDataId },
       );
 
       // 1. Passer le statut en working et initialiser les infos d'automationProgress
       const reportProgress = createProgressReporter(ctx, nodeDataId);
-      await ctx.runMutation(internal.automation.helpers.updateStatus, {
+      await ctx.runMutation(anyApi.automation.helpers.updateStatus, {
         _id: nodeDataId,
         status: "working",
       });
@@ -39,7 +39,7 @@ export const trigger = action({
 
       // 2. Charger les nodeData input du noeud courant
       const inputNodeDatas = await ctx.runQuery(
-        internal.automation.helpers.listNodeDataDependencies,
+        anyApi.automation.helpers.listNodeDataDependencies,
         {
           nodeDataId,
           type: "input",
@@ -64,13 +64,21 @@ export const trigger = action({
           nodeData: currentNodeData,
           inputSchema,
           reportProgress,
+          updateValuesMutation: anyApi.nodeDatas.updateValues,
         }),
       });
       const threadId = await createThread(ctx, components.agent, {
         userId,
       });
       const response = await automationAgent.generateText(
-        { ...ctx, currentNodeData, reportProgress } as any,
+        {
+          ...ctx,
+          currentNodeData,
+          reportProgress,
+        } as typeof ctx & {
+          currentNodeData: typeof currentNodeData;
+          reportProgress: typeof reportProgress;
+        },
         { threadId },
         {
           prompt: `Voici les données d'entrée disponibles pour le noeud actuel :
@@ -90,7 +98,7 @@ ${generateNodeContext(currentNodeData)}
       console.log("Agent response:", response.text);
 
       // 5. Repasser le statut en idle
-      await ctx.runMutation(internal.automation.helpers.updateStatus, {
+      await ctx.runMutation(anyApi.automation.helpers.updateStatus, {
         _id: nodeDataId,
         status: "idle",
       });
@@ -99,18 +107,16 @@ ${generateNodeContext(currentNodeData)}
       });
 
       // X. Lancer les automations des noeuds suivants (à implémenter)
-      return null;
     } catch (error) {
       console.error(
         "Erreur lors du déclenchement de l'automatisation :",
         error,
       );
       // En cas d'erreur, passer le statut en error
-      await ctx.runMutation(internal.automation.helpers.updateStatus, {
+      await ctx.runMutation(anyApi.automation.helpers.updateStatus, {
         _id: nodeDataId,
         status: "error",
       });
-      return null;
     }
   },
 });

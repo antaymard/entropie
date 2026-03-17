@@ -1,7 +1,7 @@
 import { type ActionCtx } from "../_generated/server";
-import { internal } from "../_generated/api";
 import { type Id } from "../_generated/dataModel";
 import { type ToolCtx } from "@convex-dev/agent";
+import { anyApi } from "convex/server";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -27,7 +27,7 @@ export type AutomationStepType =
 
 export type ProgressReport = {
   stepType: AutomationStepType;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 };
 
 /**
@@ -64,7 +64,7 @@ export function createProgressReporter(
     // console.log(`Reporting progress for nodeData ${nodeDataId}:`, progress);
 
     await ctx.runMutation(
-      internal.automation.helpers.updateAutomationProgress,
+      anyApi.automation.helpers.updateAutomationProgress,
       {
         _id: nodeDataId,
         automationProgress: {

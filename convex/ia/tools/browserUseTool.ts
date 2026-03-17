@@ -1,6 +1,6 @@
 import { createTool } from "@convex-dev/agent";
+import { anyApi } from "convex/server";
 import { z } from "zod";
-import { internal } from "../../_generated/api";
 import { reportToolProgress } from "../../automation/progressReporter";
 
 export const browserUseTool = createTool({
@@ -37,7 +37,7 @@ export const browserUseTool = createTool({
 
     try {
       const result: string = await ctx.runAction(
-        internal.ia.tools.browserUseAction.run,
+        anyApi.ia.tools.browserUseAction.run,
         { task, startUrl, structuredOutput },
       );
 

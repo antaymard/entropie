@@ -51,7 +51,6 @@ export const addNodesToCanvasInternal = internalMutation({
     canvasId: v.id("canvases"),
     newNodes: v.array(v.any()),
   },
-  returns: v.string(),
   handler: async (ctx, { canvasId, newNodes }) => {
     try {
       const canvas = await ctx.db.get(canvasId);

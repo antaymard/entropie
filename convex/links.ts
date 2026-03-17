@@ -7,6 +7,12 @@ export const fetchLinkMetadata = action({
   args: {
     url: v.string(),
   },
+  returns: v.object({
+    title: v.string(),
+    description: v.string(),
+    image: v.string(),
+    url: v.string(),
+  }),
   handler: async (ctx, { url }) => {
     await requireAuth(ctx);
 

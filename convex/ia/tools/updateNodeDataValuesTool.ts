@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { dynamicTool } from "ai";
-import { Doc, Id } from "../../_generated/dataModel";
+import { Doc } from "../../_generated/dataModel";
 import { markdownToPlateJson } from "../helpers/plateMarkdownConverter";
 import { type ActionCtx } from "../../_generated/server";
 import { api } from "../../_generated/api";
@@ -36,9 +36,8 @@ export default function updateNodeDataValuesTool({
           updates = { ...args, doc: platejsContent };
         }
 
-        // @ts-expect-error
         await ctx.runMutation(api.nodeDatas.updateValues, {
-          _id: nodeData._id as Id<"nodeDatas">,
+          _id: nodeData._id,
           values: updates,
         });
 

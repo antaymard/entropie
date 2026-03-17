@@ -3,6 +3,7 @@ import { internalMutation, internalQuery } from "../_generated/server";
 import {
   automationProgressValidator,
   nodeDataStatusValidator,
+  nodeDatasWithIdValidator,
 } from "../schemas/nodeDatasSchema";
 
 export const updateStatus = internalMutation({
@@ -10,6 +11,7 @@ export const updateStatus = internalMutation({
     _id: v.id("nodeDatas"),
     status: nodeDataStatusValidator,
   },
+  returns: v.boolean(),
   handler: async (ctx, args) => {
     const existing = await ctx.db.get(args._id);
     if (!existing) throw new ConvexError("NodeData non trouvé");
@@ -25,6 +27,7 @@ export const updateAutomationProgress = internalMutation({
     _id: v.id("nodeDatas"),
     automationProgress: automationProgressValidator,
   },
+  returns: v.boolean(),
   handler: async (ctx, args) => {
     const existing = await ctx.db.get(args._id);
     if (!existing) throw new ConvexError("NodeData non trouvé");
@@ -41,6 +44,7 @@ export const updateAutomationProgress = internalMutation({
 
 export const readNodeData = internalQuery({
   args: { _id: v.id("nodeDatas") },
+  returns: nodeDatasWithIdValidator,
   handler: async (ctx, args) => {
     const nodeData = await ctx.db.get(args._id);
     if (!nodeData) throw new ConvexError("NodeData non trouvé");
@@ -53,6 +57,7 @@ export const listNodeDataDependencies = internalQuery({
     type: v.union(v.literal("input"), v.literal("output"), v.literal("both")),
     nodeDataId: v.id("nodeDatas"),
   },
+  returns: v.array(nodeDatasWithIdValidator),
   handler: async (ctx, { type, nodeDataId }) => {
     const nodeData = await ctx.db.get(nodeDataId);
     if (!nodeData) throw new ConvexError("NodeData non trouvé");

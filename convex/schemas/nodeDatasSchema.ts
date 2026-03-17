@@ -60,6 +60,7 @@ const nodeDatasValidator = v.object({
 
 const nodeDatasWithIdValidator = v.object({
   _id: v.id("nodeDatas"),
+  _creationTime: v.number(),
   ...nodeDatasValidator.fields,
 });
 

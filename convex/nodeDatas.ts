@@ -4,7 +4,6 @@ import { mutation, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { requireAuth } from "./lib/auth";
 import { internal } from "./_generated/api";
-import type { FunctionReference } from "convex/server";
 import {
   agentConfigValidator,
   dataProcessingValidator,
@@ -40,6 +39,7 @@ export const read = query({
 
 export const listByCanvasId = query({
   args: { canvasId: v.id("canvases") },
+  returns: v.array(nodeDatasWithIdValidator),
   handler: async (ctx, { canvasId }) => {
     await requireAuth(ctx);
 
@@ -124,6 +124,7 @@ export const updateAutomationSettings = mutation({
     agent: v.optional(agentConfigValidator),
     dataProcessing: v.optional(v.array(dataProcessingValidator)),
   },
+  returns: v.boolean(),
   handler: async (ctx, args) => {
     await requireAuth(ctx);
     const existing = await ctx.db.get(args._id);

@@ -9,6 +9,7 @@ export const add = mutation({
     canvasId: v.id("canvases"),
     edges: v.array(edgesValidator),
   },
+  returns: v.boolean(),
   handler: async (ctx, { edges, canvasId }) => {
     const authUserId = await requireAuth(ctx);
     const { canvas } = await requireCanvasAccess(
@@ -89,6 +90,7 @@ export const update = mutation({
       }),
     ),
   },
+  returns: v.boolean(),
   handler: async (ctx, { canvasId, edgeUpdates }) => {
     const authUserId = await requireAuth(ctx);
     const { canvas } = await requireCanvasAccess(
@@ -121,6 +123,7 @@ export const remove = mutation({
     canvasId: v.id("canvases"),
     edgeIds: v.array(v.string()),
   },
+  returns: v.boolean(),
   handler: async (ctx, { canvasId, edgeIds }) => {
     const authUserId = await requireAuth(ctx);
     const { canvas } = await requireCanvasAccess(

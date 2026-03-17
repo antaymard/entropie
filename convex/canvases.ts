@@ -4,6 +4,7 @@ import { requireAuth, requireCanvasAccess } from "./lib/auth";
 
 export const getLastModified = query({
   args: {},
+  returns: v.object({ success: v.boolean(), canvas: v.any() }),
   handler: async (ctx) => {
     const authUserId = await requireAuth(ctx);
 
@@ -22,6 +23,12 @@ export const getLastModified = query({
 
 export const listUserCanvases = query({
   args: {},
+  returns: v.array(v.object({
+    _id: v.id("canvases"),
+    name: v.string(),
+    shared: v.optional(v.boolean()),
+    permission: v.optional(v.union(v.literal("viewer"), v.literal("editor"))),
+  })),
   handler: async (ctx) => {
     const authUserId = await requireAuth(ctx);
 
@@ -66,6 +73,7 @@ export const readCanvas = query({
   args: {
     canvasId: v.id("canvases"),
   },
+  returns: v.any(),
   handler: async (ctx, { canvasId }) => {
     const authUserId = await requireAuth(ctx);
     const { canvas, permission } = await requireCanvasAccess(
@@ -82,6 +90,7 @@ export const createCanvas = mutation({
   args: {
     name: v.string(),
   },
+  returns: v.id("canvases"),
   handler: async (ctx, { name }) => {
     const authUserId = await requireAuth(ctx);
 
@@ -103,6 +112,7 @@ export const updateProps = mutation({
     canvasId: v.id("canvases"),
     name: v.string(),
   },
+  returns: v.id("canvases"),
   handler: async (ctx, args) => {
     const authUserId = await requireAuth(ctx);
     await requireCanvasAccess(ctx, args.canvasId, authUserId, "owner");
@@ -120,6 +130,7 @@ export const deleteCanvas = mutation({
   args: {
     canvasId: v.id("canvases"),
   },
+  returns: v.id("canvases"),
   handler: async (ctx, { canvasId }) => {
     const authUserId = await requireAuth(ctx);
     const { canvas } = await requireCanvasAccess(

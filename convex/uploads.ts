@@ -9,6 +9,11 @@ export const generateUploadUrl = action({
     filename: v.string(),
     mimeType: v.string(),
   },
+  returns: v.object({
+    uploadUrl: v.string(),
+    publicUrl: v.string(),
+    key: v.string(),
+  }),
   handler: async (ctx, args) => {
     const userId = await requireAuth(ctx);
 
@@ -37,6 +42,11 @@ export const generateUploadUrls = action({
       })
     ),
   },
+  returns: v.array(v.object({
+    uploadUrl: v.string(),
+    publicUrl: v.string(),
+    key: v.string(),
+  })),
   handler: async (ctx, args) => {
     const userId = await requireAuth(ctx);
 

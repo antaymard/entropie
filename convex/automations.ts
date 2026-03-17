@@ -16,6 +16,7 @@ export const trigger = action({
   args: {
     nodeDataId: v.id("nodeDatas"),
   },
+  returns: v.null(),
   handler: async (ctx, { nodeDataId }) => {
     try {
       console.log("Automation triggered");
@@ -98,6 +99,7 @@ ${generateNodeContext(currentNodeData)}
       });
 
       // X. Lancer les automations des noeuds suivants (à implémenter)
+      return null;
     } catch (error) {
       console.error(
         "Erreur lors du déclenchement de l'automatisation :",
@@ -108,6 +110,7 @@ ${generateNodeContext(currentNodeData)}
         _id: nodeDataId,
         status: "error",
       });
+      return null;
     }
   },
 });

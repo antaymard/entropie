@@ -10,6 +10,7 @@ export const add = mutation({
     canvasId: v.id("canvases"),
     canvasNodes: v.array(canvasNodesValidator),
   },
+  returns: v.boolean(),
   handler: async (ctx, { canvasNodes, canvasId }) => {
     const authUserId = await requireAuth(ctx);
     const { canvas } = await requireCanvasAccess(
@@ -34,6 +35,7 @@ export const updatePositionOrDimensions = mutation({
     canvasId: v.id("canvases"),
     nodeChanges: v.array(v.any()), // NodeChange[] de reactflow
   },
+  returns: v.boolean(),
   handler: async (ctx, { canvasId, nodeChanges }) => {
     const authUserId = await requireAuth(ctx);
     const { canvas } = await requireCanvasAccess(
@@ -93,6 +95,7 @@ export const updateCanvasNodes = mutation({
       }),
     ),
   },
+  returns: v.boolean(),
   handler: async (ctx, { canvasId, nodeProps }) => {
     const authUserId = await requireAuth(ctx);
     const { canvas } = await requireCanvasAccess(
@@ -146,6 +149,7 @@ export const remove = mutation({
     canvasId: v.id("canvases"),
     nodeCanvasIds: v.array(v.string()),
   },
+  returns: v.boolean(),
   handler: async (ctx, { canvasId, nodeCanvasIds }) => {
     const authUserId = await requireAuth(ctx);
     const { canvas } = await requireCanvasAccess(
@@ -195,9 +199,7 @@ export const remove = mutation({
           if (otherCanvas._id === canvasId) continue;
           for (const node of otherCanvas.nodes || []) {
             if (node.nodeDataId) {
-              nodeDataIdsInOtherCanvases.add(
-                node.nodeDataId as Id<"nodeDatas">,
-              );
+              nodeDataIdsInOtherCanvases.add(node.nodeDataId);
             }
           }
         }

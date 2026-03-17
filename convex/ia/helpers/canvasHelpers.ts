@@ -9,7 +9,7 @@ import { canvasesValidator } from "../../schemas/canvasesSchema";
 const canvasWithIdValidator = v.object({
   _id: v.id("canvases"),
   _creationTime: v.number(),
-  ...(canvasesValidator.fields as Record<string, any>),
+  ...canvasesValidator.fields,
 });
 
 export const getCanvasInternal = internalQuery({
@@ -51,6 +51,7 @@ export const addNodesToCanvasInternal = internalMutation({
     canvasId: v.id("canvases"),
     newNodes: v.array(v.any()),
   },
+  returns: v.string(),
   handler: async (ctx, { canvasId, newNodes }) => {
     try {
       const canvas = await ctx.db.get(canvasId);

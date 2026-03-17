@@ -8,6 +8,7 @@ export const listUserThreads = query({
   args: {
     paginationOpts: paginationOptsValidator,
   },
+  returns: v.any(),
   handler: async (ctx, args) => {
     const authUserId = await requireAuth(ctx);
 
@@ -32,6 +33,7 @@ export const getThreadInfo = query({
   args: {
     threadId: v.string(),
   },
+  returns: v.any(),
   handler: async (ctx, args) => {
     const authUserId = await requireAuth(ctx);
     if (!authUserId) return null;

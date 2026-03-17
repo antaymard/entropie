@@ -15,6 +15,7 @@ type CanvasNodeWithData = Pick<CanvasNode, "type" | "position" | "data"> & {
 
 export const canvasContextPrompt = internalQuery({
   args: { canvasId: v.id("canvases") },
+  returns: v.string(),
   handler: async (ctx, { canvasId }) => {
     const canvas = await ctx.db.get(canvasId);
 

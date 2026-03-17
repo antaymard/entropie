@@ -128,6 +128,7 @@ export const streamResponse = internalAction({
     threadId: v.string(),
     canvasId: v.id("canvases"),
   },
+  returns: v.null(),
   handler: async (ctx, { authUserId, promptMessageId, threadId, canvasId }) => {
     // Generate brain context (canvas + user context)
     const brainInstructions = await generateBrainSystemPrompt({
@@ -165,12 +166,7 @@ export const listMessages = query({
     paginationOpts: paginationOptsValidator,
     streamArgs: vStreamArgs,
   },
-  // returns: v.object({
-  //   page: v.array(v.any()),
-  //   isDone: v.boolean(),
-  //   continueCursor: v.string(),
-  //   streams: v.any(),
-  // }),
+  returns: v.any(),
   handler: async (ctx, { threadId, paginationOpts, streamArgs }) => {
     // Sync ongoing streams
     const streams = await syncStreams(ctx, components.agent, {
@@ -193,6 +189,7 @@ export const listMessages = query({
 
 export const updateThreadTitle = action({
   args: { threadId: v.string(), onlyIfUntitled: v.optional(v.boolean()) },
+  returns: v.null(),
   handler: async (ctx, { threadId, onlyIfUntitled }) => {
     // await authorizeThreadAccess(ctx, threadId);
     await requireAuth(ctx);
@@ -224,6 +221,7 @@ export const updateThreadTitle = action({
 
 export const deleteThread = action({
   args: { threadId: v.string() },
+  returns: v.object({ success: v.boolean() }),
   handler: async (ctx, { threadId }) => {
     await requireAuth(ctx);
     const noleAgent = createNoleAgent();

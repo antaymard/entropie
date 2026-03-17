@@ -6,6 +6,7 @@ export const getUserTemplates = query({
   args: {
     canvasId: v.optional(v.id("canvases")),
   },
+  returns: v.any(),
   handler: async (ctx, args) => {
     const { canvasId } = args;
     let userId;
@@ -44,6 +45,7 @@ export const getTemplateById = query({
   args: {
     templateId: v.id("nodeTemplates"),
   },
+  returns: v.any(),
   handler: async (ctx, args) => {
     const { templateId } = args;
     const authUserId = await requireAuth(ctx);
@@ -72,6 +74,7 @@ export const createOrUpdateTemplate = mutation({
     templateId: v.optional(v.union(v.id("nodeTemplates"), v.literal("new"))),
     data: v.any(),
   },
+  returns: v.null(),
   handler: async (ctx, args) => {
     const authUserId = await requireAuth(ctx);
     const { templateId, data } = args;
@@ -108,6 +111,7 @@ export const deleteTemplate = mutation({
   args: {
     templateId: v.id("nodeTemplates"),
   },
+  returns: v.null(),
   handler: async (ctx, args) => {
     const { templateId } = args;
     const authUserId = await requireAuth(ctx);
@@ -116,5 +120,6 @@ export const deleteTemplate = mutation({
     if (template.creatorId !== authUserId) throw new Error("Unauthorized");
 
     await ctx.db.delete(templateId);
+    return null;
   },
 });

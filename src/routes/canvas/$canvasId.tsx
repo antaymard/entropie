@@ -4,6 +4,7 @@ import {
   ReactFlowProvider,
   SelectionMode,
   MarkerType,
+  Panel,
 } from "@xyflow/react";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { api } from "@/../convex/_generated/api";
@@ -15,7 +16,7 @@ import { useCanvasStore } from "@/stores/canvasStore";
 import ErrorDisplay from "@/components/ui/ErrorDisplay";
 import ContextMenu from "@/components/canvas/context-menus";
 import { useContextMenu } from "@/hooks/useContextMenu";
-import { useEffect } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type { CanvasNode } from "@/types/convex";
 import { nodeTypes } from "@/components/nodes/nodeTypes";
 import { useCanvasPasteHandler } from "@/hooks/useCanvasPasteHandler";
@@ -26,6 +27,10 @@ import CanvasSidebar from "@/components/canvas/CanvasSidebar";
 import { useCanvasNodes } from "@/hooks/useCanvasNodes";
 import { useCanvasEdges } from "@/hooks/useCanvasEdges";
 import { Spinner } from "@/components/shadcn/spinner";
+import NoleCanvasPanel from "@/components/canvas/NoleCanvasPanel";
+import CanvasToolbar from "@/components/canvas/on-canvas-ui/CanvasToolbar";
+import TopRightToolbar from "@/components/canvas/on-canvas-ui/TopRightToolbar";
+import BottomToolbar from "@/components/canvas/on-canvas-ui/BottomToolbar";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -49,12 +54,16 @@ function RouteComponent() {
 
 function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   const setNodeDatas = useNodeDataStore((state) => state.setNodeDatas);
+  const setCanvas = useCanvasStore((state) => state.setCanvas);
+  const lastCanvasSnapshotRef = useRef<string | null>(null);
 
   // Cleanup stores on canvas switch
   useEffect(() => {
     useWindowsStore.getState().closeAllWindows();
     useCanvasStore.getState().setStatus("idle");
-  }, [canvasId]);
+    setCanvas(null);
+    lastCanvasSnapshotRef.current = null;
+  }, [canvasId, setCanvas]);
 
   // Handle paste events (images, URLs)
   useCanvasPasteHandler();
@@ -94,6 +103,35 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
 
   // Canvas edges management
   const { edges, handleEdgeChange } = useCanvasEdges(canvasId, canvas?.edges);
+
+  // ======= Put canvas in store, if it changes (besides nodes and edges)
+  // Keep only non-flow fields in canvas store (no nodes/edges)
+  const canvasForStore = useMemo(() => {
+    if (!canvas) {
+      return null;
+    }
+
+    const canvasWithoutFlowData = { ...canvas };
+    delete canvasWithoutFlowData.nodes;
+    delete canvasWithoutFlowData.edges;
+
+    return canvasWithoutFlowData;
+  }, [canvas]);
+  // Sync convex canvas -> zustand canvas store without pointless store updates
+  useEffect(() => {
+    if (!canvasForStore) {
+      return;
+    }
+
+    const nextSnapshot = JSON.stringify(canvasForStore);
+    if (lastCanvasSnapshotRef.current === nextSnapshot) {
+      return;
+    }
+
+    lastCanvasSnapshotRef.current = nextSnapshot;
+    setCanvas(canvasForStore);
+  }, [canvasForStore, setCanvas]);
+  // ======
 
   // Sync convex nodeDatas -> zustand store
   useEffect(() => {
@@ -167,6 +205,18 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           ]);
         }}
       >
+        <Panel position="top-right">
+          <TopRightToolbar />
+        </Panel>
+        <Panel position="center-left">
+          <CanvasToolbar canvasId={canvasId} />
+        </Panel>
+        <Panel position="top-center">
+          <NoleCanvasPanel />
+        </Panel>
+        <Panel position="bottom-center">
+          <BottomToolbar />
+        </Panel>
         {contextMenu.type && (
           <ContextMenu
             contextMenu={contextMenu}

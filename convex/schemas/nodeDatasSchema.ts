@@ -1,80 +1,74 @@
-import { z } from "zod";
-import { zodToConvex, zid } from "convex-helpers/server/zod4";
 import { v } from "convex/values";
 
-const agentConfigSchema = z.object({
-  model: z.string(),
-  instructions: z.string(),
-  touchableFields: z.array(z.string()).optional(),
+// ── Sub-validators ──────────────────────────────────────────────────────
+
+const agentConfigValidator = v.object({
+  model: v.string(),
+  instructions: v.string(),
+  touchableFields: v.optional(v.array(v.string())),
 });
 
-const dataProcessingSchema = z.object({
-  field: z.string(), // Field to update with the processed data
-  sourceNode: zid("nodeDatas"),
-  expression: z.string(), // JSONata expression to process the data
+const dataProcessingValidator = v.object({
+  field: v.string(),
+  sourceNode: v.id("nodeDatas"),
+  expression: v.string(),
 });
 
-const dependencySchema = z.object({
-  nodeDataId: zid("nodeDatas"),
-  field: z.string().optional(),
-  type: z.union([z.literal("input"), z.literal("output")]),
-  degree: z.number().optional(),
-  shouldTriggerUpdate: z.boolean().optional(),
+const dependencyValidator = v.object({
+  nodeDataId: v.id("nodeDatas"),
+  field: v.optional(v.string()),
+  type: v.union(v.literal("input"), v.literal("output")),
+  degree: v.optional(v.number()),
+  shouldTriggerUpdate: v.optional(v.boolean()),
 });
 
-// MAIN SCHEMA
-const nodeDatasSchema = z.object({
-  // _id et _creationTime sont ajoutés automatiquement par Convex
-  templateId: zid("nodeTemplates").optional(),
-  template: z.any().optional(), // Override templateId if on the spot template is needed
-  type: z.string(),
-  updatedAt: z.number(),
-  removedFromCanvasAt: z.number().optional(),
-  values: z.record(z.string(), z.any()), // Field values
+const nodeDataStatusValidator = v.optional(
+  v.union(v.literal("idle"), v.literal("working"), v.literal("error")),
+);
 
-  status: z
-    .union([z.literal("idle"), z.literal("working"), z.literal("error")])
-    .optional(),
-  automationProgress: z
-    .object({
-      currentStepType: z.string().optional(),
-      currentStepData: z.record(z.string(), z.any()).optional(),
-      currentStepStartedAt: z.number().optional(), // When the current step started, to calculate time spent on the step
-      workStartedAt: z.number().optional(), // when the automation started working on this nodeData
-    })
-    .optional(),
+const automationProgressValidator = v.optional(
+  v.object({
+    currentStepType: v.optional(v.string()),
+    currentStepData: v.optional(v.record(v.string(), v.any())),
+    currentStepStartedAt: v.optional(v.number()),
+    workStartedAt: v.optional(v.number()),
+  }),
+);
 
-  agent: agentConfigSchema.optional(),
-  dataProcessing: z.array(dataProcessingSchema).optional(),
-  automationMode: z
-    .union([z.literal("agent"), z.literal("dataProcessing"), z.literal("off")])
-    .optional(),
-  dependencies: z.array(dependencySchema).optional(),
+// ── Main validator ──────────────────────────────────────────────────────
+
+const nodeDatasValidator = v.object({
+  templateId: v.optional(v.id("nodeTemplates")),
+  template: v.optional(v.any()),
+  type: v.string(),
+  updatedAt: v.number(),
+  removedFromCanvasAt: v.optional(v.number()),
+  values: v.record(v.string(), v.any()),
+
+  aiAbstract: v.optional(v.string()),
+
+  status: nodeDataStatusValidator,
+  automationProgress: automationProgressValidator,
+
+  agent: v.optional(agentConfigValidator),
+  dataProcessing: v.optional(v.array(dataProcessingValidator)),
+  automationMode: v.optional(
+    v.union(v.literal("agent"), v.literal("dataProcessing"), v.literal("off")),
+  ),
+  dependencies: v.optional(v.array(dependencyValidator)),
 });
 
-// Validators
-const agentConfigValidator = zodToConvex(agentConfigSchema);
-const dataProcessingValidator = zodToConvex(dataProcessingSchema);
-const dependencyValidator = zodToConvex(dependencySchema);
-const nodeDatasValidator = zodToConvex(nodeDatasSchema);
 const nodeDatasWithIdValidator = v.object({
   _id: v.id("nodeDatas"),
+  _creationTime: v.number(),
   ...nodeDatasValidator.fields,
 });
 
-// Types TS
-export type AgentConfig = z.infer<typeof agentConfigSchema>;
-export type DataProcessing = z.infer<typeof dataProcessingSchema>;
-export type Dependency = z.infer<typeof dependencySchema>;
-export type NodeData = z.infer<typeof nodeDatasSchema>;
-
 export {
-  nodeDatasSchema,
-  agentConfigSchema,
-  dataProcessingSchema,
-  dependencySchema,
   nodeDatasValidator,
   nodeDatasWithIdValidator,
+  nodeDataStatusValidator,
+  automationProgressValidator,
   agentConfigValidator,
   dataProcessingValidator,
   dependencyValidator,

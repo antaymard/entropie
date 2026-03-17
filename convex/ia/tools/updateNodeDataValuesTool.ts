@@ -1,10 +1,20 @@
 import { z } from "zod";
 import { dynamicTool } from "ai";
-import { Doc, Id } from "../../_generated/dataModel";
+import type { FunctionReference } from "convex/server";
+import { Doc } from "../../_generated/dataModel";
 import { markdownToPlateJson } from "../helpers/plateMarkdownConverter";
 import { type ActionCtx } from "../../_generated/server";
-import { api } from "../../_generated/api";
 import { type ReportProgressFn } from "../../automation/progressReporter";
+
+type UpdateValuesMutationRef = FunctionReference<
+  "mutation",
+  "public" | "internal",
+  {
+    _id: Doc<"nodeDatas">["_id"];
+    values: Record<string, unknown>;
+  },
+  unknown
+>;
 
 // Helper that creates a tool dynamically using runtime values.
 export default function updateNodeDataValuesTool({
@@ -12,16 +22,18 @@ export default function updateNodeDataValuesTool({
   nodeData,
   inputSchema,
   reportProgress,
+  updateValuesMutation,
 }: {
   ctx: ActionCtx;
   nodeData: Doc<"nodeDatas">;
   inputSchema: z.ZodTypeAny;
   reportProgress?: ReportProgressFn;
+  updateValuesMutation: UpdateValuesMutationRef;
 }) {
   return dynamicTool({
     description: `Met à jour les valeurs des données d'un noeud spécifique dans l'application Canvas.`,
     inputSchema: inputSchema,
-    execute: async (args: any) => {
+    execute: async (args) => {
       try {
         await reportProgress?.({
           stepType: "tool_launched=update_node_data_values",
@@ -29,15 +41,20 @@ export default function updateNodeDataValuesTool({
 
         console.log("updateNodeDataValuesTool args:", args);
 
-        let updates = args;
+        const rawArgs =
+          typeof args === "object" && args !== null
+            ? (args as Record<string, unknown>)
+            : {};
 
-        if (nodeData.type === "document" && "doc" in args) {
-          const platejsContent = markdownToPlateJson(args.doc as string);
-          updates = { ...args, doc: platejsContent };
+        let updates: Record<string, unknown> = rawArgs;
+
+        if (nodeData.type === "document" && typeof rawArgs.doc === "string") {
+          const platejsContent = markdownToPlateJson(rawArgs.doc);
+          updates = { ...rawArgs, doc: platejsContent };
         }
 
-        await ctx.runMutation(api.nodeDatas.updateValues, {
-          _id: nodeData._id as Id<"nodeDatas">,
+        await ctx.runMutation(updateValuesMutation, {
+          _id: nodeData._id,
           values: updates,
         });
 

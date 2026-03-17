@@ -1,26 +1,39 @@
 import { Agent } from "@convex-dev/agent";
-import { anthropic } from "@ai-sdk/anthropic";
-import { mistral } from "@ai-sdk/mistral";
+import { openrouter } from "@openrouter/ai-sdk-provider";
 import { components } from "../_generated/api";
 import noleSystemPrompt from "./prompts/noleSystemPrompt";
 import { websearchTool } from "./tools/websearchTool";
 import { openWebPageTool } from "./tools/openWebPageTool";
-import { readCanvasTool } from "./tools/readCanvasTool";
+import { createReadCanvasTool } from "./tools/readCanvasTool";
 import { viewImageTool } from "./tools/viewImageTool";
-import { readNodeTemplatesTool } from "./tools/readNodeTemplatesTool";
 import { readPdfTool } from "./tools/readPdfTool";
 import { editCanvasNodesAndEdgesTool } from "./tools/editCanvasNodesAndEdgesTool";
 import { readNodeConfigsTool } from "./tools/readNodeConfigsTool";
 import { type LanguageModel } from "ai";
 import { ActionCtx } from "../_generated/server";
+import type { FunctionReference } from "convex/server";
+import type { Id } from "../_generated/dataModel";
+
+type CanvasReadRef = FunctionReference<
+  "query",
+  "public" | "internal",
+  { canvasId: Id<"canvases"> },
+  unknown
+>;
 
 export function createNoleAgent({
   ctx,
-  model = mistral("mistral-large-2512"),
+  model = openrouter("mistralai/mistral-large-2512"),
+  readCanvasInternal,
 }: {
   ctx?: ActionCtx | null;
   model?: LanguageModel;
-} = {}) {
+  readCanvasInternal: CanvasReadRef;
+}) {
+  const readCanvasTool = createReadCanvasTool({
+    getCanvasInternal: readCanvasInternal,
+  });
+
   return new Agent(components.agent, {
     name: "Nolë",
     maxSteps: 15,

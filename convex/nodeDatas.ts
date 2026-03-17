@@ -1,9 +1,13 @@
 import { v } from "convex/values";
 import { ConvexError } from "convex/values";
+import { anyApi } from "convex/server";
 import { mutation, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { requireAuth } from "./lib/auth";
+import * as NodeDataModel from "./model/nodeData";
 import {
+  agentConfigValidator,
+  dataProcessingValidator,
   nodeDatasValidator,
   nodeDatasWithIdValidator,
 } from "./schemas/nodeDatasSchema";
@@ -22,8 +26,19 @@ export const create = mutation({
   returns: v.id("nodeDatas"),
 });
 
+export const read = query({
+  args: { nodeDataId: v.id("nodeDatas") },
+  returns: v.union(nodeDatasWithIdValidator, v.null()),
+  handler: async (ctx, args) => {
+    await requireAuth(ctx);
+    const nodeData = await ctx.db.get(args.nodeDataId);
+    return nodeData ?? null;
+  },
+});
+
 export const listByCanvasId = query({
   args: { canvasId: v.id("canvases") },
+  returns: v.array(nodeDatasWithIdValidator),
   handler: async (ctx, { canvasId }) => {
     await requireAuth(ctx);
 
@@ -53,27 +68,31 @@ export const updateValues = mutation({
     _id: v.id("nodeDatas"),
     values: v.record(v.string(), v.any()),
   },
-  handler: async (ctx, { _id, values }) => {
-    await requireAuth(ctx);
-    const existing = await ctx.db.get(_id);
-    if (!existing) throw new ConvexError("NodeData non trouvé");
-
-    await ctx.db.patch(_id, {
-      values: { ...existing.values, ...values },
-      updatedAt: Date.now(),
-    });
-    return true;
-  },
   returns: v.boolean(),
+  handler: async (ctx, { _id, values }): Promise<boolean> => {
+    await requireAuth(ctx);
+    return NodeDataModel.updateValues(
+      ctx,
+      { _id, values },
+      anyApi.ia.abstractor.AbstractAgent.abstractNodeData,
+    );
+  },
 });
 
 export const updateAutomationSettings = mutation({
   args: {
-    _id: nodeDatasWithIdValidator.fields._id,
-    automationMode: nodeDatasWithIdValidator.fields.automationMode,
-    agent: nodeDatasWithIdValidator.fields.agent,
-    dataProcessing: nodeDatasWithIdValidator.fields.dataProcessing,
+    _id: v.id("nodeDatas"),
+    automationMode: v.optional(
+      v.union(
+        v.literal("agent"),
+        v.literal("dataProcessing"),
+        v.literal("off"),
+      ),
+    ),
+    agent: v.optional(agentConfigValidator),
+    dataProcessing: v.optional(v.array(dataProcessingValidator)),
   },
+  returns: v.boolean(),
   handler: async (ctx, args) => {
     await requireAuth(ctx);
     const existing = await ctx.db.get(args._id);

@@ -1,26 +1,29 @@
 import { type ActionCtx } from "../_generated/server";
-import { internal } from "../_generated/api";
 import { type Id } from "../_generated/dataModel";
 import { type ToolCtx } from "@convex-dev/agent";
+import { anyApi } from "convex/server";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-export type AutomationStepType =
+type AutomationLifecycle =
   | "automation_launched"
   | "automation_completed"
-  | "automation_error"
-  | "tool_launched=web_search"
-  | "tool_completed=web_search"
-  | "tool_launched=web_extract"
-  | "tool_completed=web_extract"
-  | "tool_launched=view_image"
-  | "tool_completed=view_image"
-  | "tool_launched=read_pdf"
-  | "tool_completed=read_pdf"
-  | "tool_error=read_pdf"
-  | "tool_launched=update_node_data_values"
-  | "tool_completed=update_node_data_values";
+  | "automation_error";
+
+type ToolMethod = "tool_launched" | "tool_completed" | "tool_error";
+
+type ToolName =
+  | "web_search"
+  | "web_extract"
+  | "view_image"
+  | "read_pdf"
+  | "update_node_data_values"
+  | "browser_use";
+
+export type AutomationStepType =
+  | AutomationLifecycle
+  | `${ToolMethod}=${ToolName}`;
 
 export type ProgressReport = {
   stepType: AutomationStepType;
@@ -59,8 +62,9 @@ export function createProgressReporter(
 ): ReportProgressFn {
   return async (progress: ProgressReport) => {
     // console.log(`Reporting progress for nodeData ${nodeDataId}:`, progress);
+
     await ctx.runMutation(
-      internal.automation.helpers.updateAutomationProgress,
+      anyApi.automation.helpers.updateAutomationProgress,
       {
         _id: nodeDataId,
         automationProgress: {

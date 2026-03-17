@@ -2,7 +2,7 @@
 
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
-import { anthropic } from "@ai-sdk/anthropic";
+import { openrouter } from "@openrouter/ai-sdk-provider";
 import { generateText } from "ai";
 import { reportToolProgress } from "../../automation/progressReporter";
 
@@ -29,7 +29,7 @@ export const viewImageTool = createTool({
       // Analyser l'image avec Anthropic (supporte les URLs directement)
       console.log(`🤖 Sending image for analysis...`);
       const result = await generateText({
-        model: anthropic("claude-haiku-4-5"),
+        model: openrouter("anthropic/claude-haiku-4-5"),
         messages: [
           {
             role: "user",

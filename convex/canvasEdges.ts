@@ -1,24 +1,23 @@
 import { ConvexError, v } from "convex/values";
 import { mutation } from "./_generated/server";
-import { requireAuth } from "./lib/auth";
+import { requireAuth, requireCanvasAccess } from "./lib/auth";
 import { edgesValidator } from "./schemas/canvasesSchema";
-import errors from "./errorsConfig";
+import errors from "./config/errorsConfig";
 
 export const add = mutation({
   args: {
     canvasId: v.id("canvases"),
     edges: v.array(edgesValidator),
   },
+  returns: v.boolean(),
   handler: async (ctx, { edges, canvasId }) => {
     const authUserId = await requireAuth(ctx);
-
-    const canvas = await ctx.db.get(canvasId);
-    if (!canvas) {
-      throw new ConvexError(errors.CANVAS_NOT_FOUND);
-    }
-    if (canvas.creatorId !== authUserId) {
-      throw new ConvexError(errors.UNAUTHORIZED_USER);
-    }
+    const { canvas } = await requireCanvasAccess(
+      ctx,
+      canvasId,
+      authUserId,
+      "editor",
+    );
 
     // Ajouter les edges au canvas
     await ctx.db.patch(canvasId, {
@@ -91,16 +90,15 @@ export const update = mutation({
       }),
     ),
   },
+  returns: v.boolean(),
   handler: async (ctx, { canvasId, edgeUpdates }) => {
     const authUserId = await requireAuth(ctx);
-
-    const canvas = await ctx.db.get(canvasId);
-    if (!canvas) {
-      throw new ConvexError(errors.CANVAS_NOT_FOUND);
-    }
-    if (canvas.creatorId !== authUserId) {
-      throw new ConvexError(errors.UNAUTHORIZED_USER);
-    }
+    const { canvas } = await requireCanvasAccess(
+      ctx,
+      canvasId,
+      authUserId,
+      "editor",
+    );
 
     const edges = canvas.edges || [];
 
@@ -125,16 +123,15 @@ export const remove = mutation({
     canvasId: v.id("canvases"),
     edgeIds: v.array(v.string()),
   },
+  returns: v.boolean(),
   handler: async (ctx, { canvasId, edgeIds }) => {
     const authUserId = await requireAuth(ctx);
-
-    const canvas = await ctx.db.get(canvasId);
-    if (!canvas) {
-      throw new ConvexError(errors.CANVAS_NOT_FOUND);
-    }
-    if (canvas.creatorId !== authUserId) {
-      throw new ConvexError(errors.UNAUTHORIZED_USER);
-    }
+    const { canvas } = await requireCanvasAccess(
+      ctx,
+      canvasId,
+      authUserId,
+      "editor",
+    );
 
     const nodes = canvas.nodes || [];
     const edges = canvas.edges || [];

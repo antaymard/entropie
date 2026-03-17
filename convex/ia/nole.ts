@@ -1,6 +1,5 @@
 import { v } from "convex/values";
 import { action, internalAction, mutation, query } from "../_generated/server";
-import { internal } from "../_generated/api";
 import { createNoleAgent } from "./agents";
 import {
   createThread,
@@ -9,11 +8,11 @@ import {
   vStreamArgs,
 } from "@convex-dev/agent";
 import { components } from "../_generated/api";
-import { paginationOptsValidator } from "convex/server";
+import { anyApi, paginationOptsValidator } from "convex/server";
 import { requireAuth } from "../lib/auth";
-import { encode } from "@toon-format/toon";
 import z from "zod";
-import { mistral } from "@ai-sdk/mistral";
+import { openrouter } from "@openrouter/ai-sdk-provider";
+import { generateBrainSystemPrompt } from "./nole/brain/brainAgent";
 
 // Get the latest thread for the user
 export const getLatestThread = query({
@@ -80,7 +79,7 @@ export const sendMessage = mutation({
   args: {
     threadId: v.string(),
     prompt: v.string(),
-    context: v.optional(v.any()),
+    canvasId: v.id("canvases"),
   },
   returns: v.union(
     v.object({
@@ -91,7 +90,7 @@ export const sendMessage = mutation({
       error: v.string(),
     }),
   ),
-  handler: async (ctx, { threadId, prompt, context }) => {
+  handler: async (ctx, { threadId, prompt, canvasId }) => {
     const authUserId = await requireAuth(ctx);
     if (!authUserId) {
       return {
@@ -101,20 +100,20 @@ export const sendMessage = mutation({
     }
 
     // Save the user message
-    const noleAgent = createNoleAgent();
+    const noleAgent = createNoleAgent({
+      readCanvasInternal: anyApi.ia.helpers.canvasHelpers.getCanvasInternal,
+    });
     const { messageId } = await noleAgent.saveMessage(ctx, {
       threadId,
       prompt,
     });
 
     // Schedule the streaming action (no await needed for scheduler)
-    void ctx.scheduler.runAfter(0, internal.ia.nole.streamResponse, {
+    void ctx.scheduler.runAfter(0, anyApi.ia.nole.streamResponse, {
       authUserId: authUserId,
       threadId,
       promptMessageId: messageId,
-      metadata: {
-        context,
-      },
+      canvasId,
     });
 
     return { messageId };
@@ -124,55 +123,33 @@ export const sendMessage = mutation({
 // Internal action that handles streaming
 export const streamResponse = internalAction({
   args: {
-    authUserId: v.string(),
+    authUserId: v.id("users"),
     promptMessageId: v.string(),
     threadId: v.string(),
-    metadata: v.optional(
-      v.object({
-        context: v.optional(v.any()),
-      }),
-    ),
+    canvasId: v.id("canvases"),
   },
-  handler: async (ctx, { authUserId, promptMessageId, threadId, metadata }) => {
-    const optimizedCanvas = {
-      canvasId: metadata?.context?.canvas?._id || null,
-      name: metadata?.context?.canvas?.name || null,
-      description: metadata?.context?.canvas?.description || null,
-      nodesNb: metadata?.context?.canvas?.nodes
-        ? metadata?.context?.canvas?.nodes.length
-        : 0,
-    };
-    const noleAgent = createNoleAgent();
+  handler: async (ctx, { authUserId, promptMessageId, threadId, canvasId }) => {
+    // Generate brain context (canvas + user context)
+    const brainInstructions = await generateBrainSystemPrompt({
+      canvasId,
+      userId: authUserId,
+      ctx,
+    });
+
+    const noleAgent = createNoleAgent({
+      readCanvasInternal: anyApi.ia.helpers.canvasHelpers.getCanvasInternal,
+    });
     const result = await noleAgent.streamText(
       ctx,
       { threadId, userId: authUserId },
       {
         promptMessageId,
-        system: `${noleAgent.options.instructions}
-
-        # ======== Contexte utilisateur lors de la question ========
-
-        ## Canvas actuel (utilise tes tools pour plus de détails si besoin)
-        ${encode(optimizedCanvas ?? null) || "N/A"}
-        
-        ## Pièces jointes
-        L'utilisateur a joint les éléments suivants à sa question. Si des nodes sont fournis, utilise-les pour mieux comprendre le contexte et répondre à la question. Si une position est fournie, utilise-la pour situer la question dans le canvas ou générer des nodes à cet endroit.
-
-        ### Nodes attachés
-        ${encode(metadata?.context?.attachedNodes ?? null) || "N/A"}
-
-        ### Position attachée
-        ${encode(metadata?.context?.attachedPosition ?? null) || "N/A"}
-        
-        ========= Fin du contexte ========
-        
-        Si l'utilisateur te dit de mettre de l'info ou de placer une info ou d'écrire ou quelque chose, ton réflexe doit être de passer par la création de nodes sur le canvas. Surtout quand l'information est complexe. C'est mieux qu'une longue réponse texte dans le chat.
-        `,
+        system: brainInstructions,
       },
       {
         saveStreamDeltas: {
           chunking: "word", // Stream word by word
-          throttleMs: 100, // 50ms between each update
+          throttleMs: 200, // 200ms between each update
         },
       },
     );
@@ -221,7 +198,10 @@ export const updateThreadTitle = action({
   handler: async (ctx, { threadId, onlyIfUntitled }) => {
     // await authorizeThreadAccess(ctx, threadId);
     await requireAuth(ctx);
-    const noleAgent = createNoleAgent({ model: mistral("ministral-14b-2512") });
+    const noleAgent = createNoleAgent({
+      model: openrouter("mistralai/ministral-14b-2512"),
+      readCanvasInternal: anyApi.ia.helpers.canvasHelpers.getCanvasInternal,
+    });
     const { thread } = await noleAgent.continueThread(ctx, { threadId });
     if (onlyIfUntitled) {
       const metadata = await thread.getMetadata();
@@ -233,9 +213,6 @@ export const updateThreadTitle = action({
       object: { title },
     } = await thread.generateObject(
       {
-        mode: "json",
-        schemaDescription:
-          "Generate a title for the thread. The title should be a single sentence that captures the main topic of the thread. **Must be in French.**",
         schema: z.object({
           title: z.string().describe("The new title for the thread"),
           // summary: z.string().describe("The new summary for the thread"),
@@ -252,7 +229,9 @@ export const deleteThread = action({
   args: { threadId: v.string() },
   handler: async (ctx, { threadId }) => {
     await requireAuth(ctx);
-    const noleAgent = createNoleAgent();
+    const noleAgent = createNoleAgent({
+      readCanvasInternal: anyApi.ia.helpers.canvasHelpers.getCanvasInternal,
+    });
     await noleAgent.deleteThreadAsync(ctx, { threadId });
     return { success: true };
   },

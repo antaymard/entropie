@@ -58,9 +58,12 @@ export default function CanvasSidebar({
         <div className="p-4 text-sm text-muted-foreground">No workspaces</div>
       );
 
+    const ownCanvases = userCanvases.filter((c) => !("shared" in c));
+    const sharedCanvases = userCanvases.filter((c) => "shared" in c);
+
     return (
       <SidebarMenu>
-        {userCanvases.map((c) => (
+        {ownCanvases.map((c) => (
           <div key={c._id}>
             <div className="flex items-center justify-between w-full group px-2">
               <Link
@@ -96,6 +99,32 @@ export default function CanvasSidebar({
             </div>
           </div>
         ))}
+
+        {sharedCanvases.length > 0 && (
+          <>
+            <h4 className="px-4 pt-4 text-xs text-muted-foreground uppercase tracking-wider">
+              Shared with me
+            </h4>
+            {sharedCanvases.map((c) => (
+              <div key={c._id}>
+                <div className="flex items-center justify-between w-full group px-2">
+                  <Link
+                    to="/canvas/$canvasId"
+                    params={{ canvasId: c._id }}
+                    className={cn(
+                      "text-base! font-medium px-2 py-1 flex-1 min-w-0 truncate rounded-md",
+                      c._id === canvasId
+                        ? "bg-slate-200"
+                        : "hover:bg-slate-100",
+                    )}
+                  >
+                    {c.name}
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
       </SidebarMenu>
     );
   }

@@ -123,6 +123,11 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
       images: z.array(
         z.object({
           url: z.string(),
+          filename: z.string(),
+          mimeType: z.string(),
+          size: z.number(),
+          uploadedAt: z.number(),
+          key: z.string(),
         }),
       ),
     },

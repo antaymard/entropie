@@ -1,34 +1,46 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import type { Canvas } from "@/types";
+import type { Doc } from "@/../convex/_generated/dataModel";
+import type { CanvasPermission } from "@/../convex/lib/auth";
+
+type CanvasInStore = Omit<Doc<"canvases">, "nodes" | "edges"> & {
+  _permission: CanvasPermission;
+};
 
 type Status = "idle" | "unsynced" | "saving" | "saved" | "error";
 type Focus = "canvas" | "platejs";
+type Tool = "edit" | "slides" | "draw";
 
 interface CanvasStore {
-  canvas: Omit<Canvas, "nodes" | "edges"> | null;
+  canvas: CanvasInStore | null;
   status: Status;
   focus: Focus;
+  tool: Tool;
 
-  setCanvas: (canvas: Canvas) => void;
+  setCanvas: (canvas: CanvasInStore | null) => void;
   setStatus: (status: Status) => void;
   setFocus: (focus: Focus) => void;
+  setTool: (tool: Tool) => void;
 }
 
 export const useCanvasStore = create<CanvasStore>()(
   devtools(
-    (set, get) => ({
+    (set) => ({
       canvas: null,
       status: "idle",
       focus: "canvas",
+      tool: "edit",
 
-      setFocus: (focus: Focus) => {
+      setTool: (tool) => {
+        set({ tool });
+      },
+      setFocus: (focus) => {
         set({ focus });
       },
-      setCanvas: (canvas: Canvas) => {
+      setCanvas: (canvas) => {
         set({ canvas });
       },
-      setStatus: (status: Status) => {
+      setStatus: (status) => {
         set({ status });
       },
     }),

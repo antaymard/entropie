@@ -6,8 +6,7 @@ import { plateJsonToMarkdown } from "./plateMarkdownConverter";
  * Convertit notamment le contenu PlateJS des nodes `document` en markdown.
  */
 export function generateNodeContext(nodeData: Doc<"nodeDatas">): string {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const values = nodeData.values as Record<string, any>;
+  const values = nodeData.values;
 
   switch (nodeData.type) {
     case "document": {

@@ -8,6 +8,7 @@ export const listUserThreads = query({
   args: {
     paginationOpts: paginationOptsValidator,
   },
+  returns: v.any(),
   handler: async (ctx, args) => {
     const authUserId = await requireAuth(ctx);
 
@@ -25,5 +26,29 @@ export const listUserThreads = query({
     );
 
     return { success: true, threads };
+  },
+});
+
+export const getThreadInfo = query({
+  args: {
+    threadId: v.string(),
+  },
+  returns: v.any(),
+  handler: async (ctx, args) => {
+    const authUserId = await requireAuth(ctx);
+    if (!authUserId) return null;
+
+    const thread = await ctx.runQuery(components.agent.threads.getThread, {
+      threadId: args.threadId,
+    });
+
+    if (!thread || thread.userId !== authUserId) return null;
+
+    return {
+      _id: thread._id,
+      _creationTime: thread._creationTime,
+      title: thread.title ?? null,
+      summary: thread.summary ?? null,
+    };
   },
 });

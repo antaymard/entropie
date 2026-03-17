@@ -21,6 +21,27 @@ const schema = defineSchema({
   nodeDatas: defineTable(nodeDatasValidator),
 
   // ============================================================================
+  // SHARES
+  // ============================================================================
+  shares: defineTable({
+    resourceType: v.union(v.literal("canvas")), // extensible: "nodeData" later
+    canvasId: v.id("canvases"),
+    userId: v.id("users"),
+    permission: v.union(v.literal("viewer"), v.literal("editor")),
+    grantedBy: v.id("users"),
+  })
+    .index("by_canvas_and_user", ["canvasId", "userId"])
+    .index("by_user", ["userId"])
+    .index("by_canvas", ["canvasId"]),
+
+  scheduledJobs: defineTable({
+    type: v.union(v.literal("generate-node-data-abstract")),
+    nodesDataId: v.optional(v.id("nodeDatas")),
+    scheduledAt: v.number(),
+    jobId: v.id("_scheduled_functions"),
+  }).index("by_nodeDataId", ["nodesDataId"]),
+
+  // ============================================================================
   // NODE TEMPLATES
   // ============================================================================
   nodeTemplates: defineTable({

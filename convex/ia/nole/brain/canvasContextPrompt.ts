@@ -1,11 +1,16 @@
 import { v } from "convex/values";
 import { internalQuery } from "../../../_generated/server";
-import { type CanvasNode } from "../../../schemas/canvasesSchema";
 import { encode } from "@toon-format/toon";
+import type { Doc } from "../../../_generated/dataModel";
 
-type CanvasNodeWithData = Omit<CanvasNode, "id" | "nodeDataId"> & {
+type CanvasNode = NonNullable<Doc<"canvases">["nodes"]>[number];
+
+type CanvasNodeWithData = Pick<CanvasNode, "type" | "position" | "data"> & {
   idOnCanvas: string;
-  nodeData: Record<string, unknown> | null;
+  nodeData: {
+    abstract?: string;
+    updatedAt?: number;
+  } | null;
 };
 
 export const canvasContextPrompt = internalQuery({
@@ -20,16 +25,21 @@ export const canvasContextPrompt = internalQuery({
     // For each node, fetch its nodeData
     const nodesWithData: CanvasNodeWithData[] = await Promise.all(
       (canvas.nodes || []).map(async (node) => {
-        let nodeData = null;
+        let nodeData: CanvasNodeWithData["nodeData"] = null;
         if (node.nodeDataId) {
-          nodeData = await ctx.db.get(node.nodeDataId);
+          const fullNodeData = await ctx.db.get(node.nodeDataId);
+          nodeData = fullNodeData
+            ? {
+                abstract: fullNodeData.aiAbstract,
+                updatedAt: fullNodeData.updatedAt,
+              }
+            : null;
         }
-
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { id: idOnCanvas, nodeDataId, ...restCanvasNode } = node;
         return {
-          idOnCanvas,
-          ...restCanvasNode,
+          idOnCanvas: node.id,
+          type: node.type,
+          position: node.position,
+          data: node.data,
           nodeData,
         };
       }),

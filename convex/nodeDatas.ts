@@ -4,7 +4,10 @@ import { mutation, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { requireAuth } from "./lib/auth";
 import { internal } from "./_generated/api";
+import type { FunctionReference } from "convex/server";
 import {
+  agentConfigValidator,
+  dataProcessingValidator,
   nodeDatasValidator,
   nodeDatasWithIdValidator,
 } from "./schemas/nodeDatasSchema";
@@ -110,10 +113,16 @@ export const updateValues = mutation({
 
 export const updateAutomationSettings = mutation({
   args: {
-    _id: nodeDatasWithIdValidator.fields._id,
-    automationMode: nodeDatasWithIdValidator.fields.automationMode,
-    agent: nodeDatasWithIdValidator.fields.agent,
-    dataProcessing: nodeDatasWithIdValidator.fields.dataProcessing,
+    _id: v.id("nodeDatas"),
+    automationMode: v.optional(
+      v.union(
+        v.literal("agent"),
+        v.literal("dataProcessing"),
+        v.literal("off"),
+      ),
+    ),
+    agent: v.optional(agentConfigValidator),
+    dataProcessing: v.optional(v.array(dataProcessingValidator)),
   },
   handler: async (ctx, args) => {
     await requireAuth(ctx);

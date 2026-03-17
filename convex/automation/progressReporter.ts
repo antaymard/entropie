@@ -27,7 +27,7 @@ export type AutomationStepType =
 
 export type ProgressReport = {
   stepType: AutomationStepType;
-  data?: Record<string, unknown>;
+  data?: Record<string, any>;
 };
 
 /**
@@ -64,7 +64,6 @@ export function createProgressReporter(
     // console.log(`Reporting progress for nodeData ${nodeDataId}:`, progress);
 
     await ctx.runMutation(
-      // @ts-expect-error
       internal.automation.helpers.updateAutomationProgress,
       {
         _id: nodeDataId,

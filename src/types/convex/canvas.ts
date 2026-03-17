@@ -1,10 +1,9 @@
 /**
- * Canvas types re-exported from Convex schemas
- * This is the single source of truth for Canvas-related types
+ * Canvas types derived from Convex Doc<"canvases">
  */
 
-export type {
-  Canvas,
-  CanvasNode,
-  Edge,
-} from "@/../convex/schemas/canvasesSchema";
+import type { Doc } from "@/../convex/_generated/dataModel";
+
+export type Canvas = Doc<"canvases">;
+export type CanvasNode = NonNullable<Doc<"canvases">["nodes"]>[number];
+export type Edge = NonNullable<Doc<"canvases">["edges"]>[number];

@@ -1,13 +1,14 @@
 /**
- * NodeData types re-exported from Convex schemas
- * This is the single source of truth for NodeData-related types
+ * NodeData types derived from Convex Doc<"nodeDatas">
  */
 
 export type { AutomationStepType } from "@/../convex/automation/progressReporter";
 
-export type {
-  NodeData,
-  AgentConfig,
-  DataProcessing,
-  Dependency,
-} from "@/../convex/schemas/nodeDatasSchema";
+import type { Doc } from "@/../convex/_generated/dataModel";
+
+export type NodeData = Doc<"nodeDatas">;
+export type AgentConfig = NonNullable<Doc<"nodeDatas">["agent"]>;
+export type DataProcessing = NonNullable<
+  Doc<"nodeDatas">["dataProcessing"]
+>[number];
+export type Dependency = NonNullable<Doc<"nodeDatas">["dependencies"]>[number];

@@ -4,12 +4,19 @@ import {
   markdownToPlateJson,
   plateJsonToMarkdown,
 } from "./plateMarkdownConverter";
+import { canvasesValidator } from "../../schemas/canvasesSchema";
+
+const canvasWithIdValidator = v.object({
+  _id: v.id("canvases"),
+  _creationTime: v.number(),
+  ...(canvasesValidator.fields as Record<string, any>),
+});
 
 export const getCanvasInternal = internalQuery({
   args: {
     canvasId: v.id("canvases"),
   },
-  returns: v.any(),
+  returns: v.union(canvasWithIdValidator, v.null()),
   handler: async (ctx, { canvasId }) => {
     const canvas = await ctx.db.get(canvasId);
     if (!canvas) return null;

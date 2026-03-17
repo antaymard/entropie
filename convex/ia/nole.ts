@@ -109,7 +109,6 @@ export const sendMessage = mutation({
     });
 
     // Schedule the streaming action (no await needed for scheduler)
-    // @ts-ignore
     void ctx.scheduler.runAfter(0, internal.ia.nole.streamResponse, {
       authUserId: authUserId,
       threadId,

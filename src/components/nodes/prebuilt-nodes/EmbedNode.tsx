@@ -29,24 +29,41 @@ export type EmbedValueType = {
   type: EmbedType;
 };
 
-function resolveEmbedUrl(rawUrl: string): { embedUrl: string; type: EmbedType } {
-  let url = rawUrl.trim();
-  if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
-    url = "https://" + url;
+function detectType(url: string): { embedUrl: string; type: EmbedType } {
+  if (url.includes("youtube.com/embed") || url.includes("youtu.be"))
+    return { embedUrl: url, type: "youtube" };
+  if (url.includes("docs.google.com/document"))
+    return { embedUrl: url, type: "google-docs" };
+  if (url.includes("docs.google.com/spreadsheets"))
+    return { embedUrl: url, type: "google-sheets" };
+  if (url.includes("docs.google.com/presentation"))
+    return { embedUrl: url, type: "google-slides" };
+  return { embedUrl: url, type: "generic" };
+}
+
+function parseEmbedInput(input: string): { embedUrl: string; type: EmbedType } {
+  const trimmed = input.trim();
+
+  // Cas 1 : snippet <iframe> → extraire le src
+  if (trimmed.toLowerCase().includes("<iframe")) {
+    const match = trimmed.match(/src=["']([^"']+)["']/i);
+    if (match) return detectType(match[1]);
   }
 
+  // Cas 2 : URL brute YouTube (watch?v=…) → transformer en embed
   try {
+    let url = trimmed;
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      url = "https://" + url;
+    }
     const parsed = new URL(url);
     const host = parsed.hostname.replace(/^www\./, "");
 
-    // YouTube: youtube.com/watch?v=ID ou youtu.be/ID
     if (host === "youtube.com" || host === "youtu.be") {
-      let videoId: string | null = null;
-      if (host === "youtu.be") {
-        videoId = parsed.pathname.slice(1);
-      } else {
-        videoId = parsed.searchParams.get("v");
-      }
+      const videoId =
+        host === "youtu.be"
+          ? parsed.pathname.slice(1)
+          : parsed.searchParams.get("v");
       if (videoId) {
         return {
           embedUrl: `https://www.youtube.com/embed/${videoId}`,
@@ -55,45 +72,32 @@ function resolveEmbedUrl(rawUrl: string): { embedUrl: string; type: EmbedType } 
       }
     }
 
-    // Google Docs
     if (host === "docs.google.com") {
       const path = parsed.pathname;
-
-      if (path.includes("/document/")) {
-        const match = path.match(/\/document\/d\/([^/]+)/);
-        if (match) {
-          return {
-            embedUrl: `https://docs.google.com/document/d/${match[1]}/preview`,
-            type: "google-docs",
-          };
-        }
-      }
-
-      if (path.includes("/spreadsheets/")) {
-        const match = path.match(/\/spreadsheets\/d\/([^/]+)/);
-        if (match) {
-          return {
-            embedUrl: `https://docs.google.com/spreadsheets/d/${match[1]}/preview`,
-            type: "google-sheets",
-          };
-        }
-      }
-
-      if (path.includes("/presentation/")) {
-        const match = path.match(/\/presentation\/d\/([^/]+)/);
-        if (match) {
-          return {
-            embedUrl: `https://docs.google.com/presentation/d/${match[1]}/embed`,
-            type: "google-slides",
-          };
-        }
-      }
+      const docMatch = path.match(/\/document\/d\/([^/]+)/);
+      if (docMatch)
+        return {
+          embedUrl: `https://docs.google.com/document/d/${docMatch[1]}/preview`,
+          type: "google-docs",
+        };
+      const sheetMatch = path.match(/\/spreadsheets\/d\/([^/]+)/);
+      if (sheetMatch)
+        return {
+          embedUrl: `https://docs.google.com/spreadsheets/d/${sheetMatch[1]}/preview`,
+          type: "google-sheets",
+        };
+      const slideMatch = path.match(/\/presentation\/d\/([^/]+)/);
+      if (slideMatch)
+        return {
+          embedUrl: `https://docs.google.com/presentation/d/${slideMatch[1]}/embed`,
+          type: "google-slides",
+        };
     }
-  } catch {
-    // URL invalide, on passe en générique
-  }
 
-  return { embedUrl: url, type: "generic" };
+    return detectType(url);
+  } catch {
+    return { embedUrl: trimmed, type: "generic" };
+  }
 }
 
 function EmbedNode(xyNode: Node) {
@@ -110,7 +114,7 @@ function EmbedNode(xyNode: Node) {
   const handleSave = () => {
     if (!nodeDataId || !inputUrl.trim()) return;
 
-    const { embedUrl, type } = resolveEmbedUrl(inputUrl);
+    const { embedUrl, type } = parseEmbedInput(inputUrl);
 
     updateNodeDataValues({
       nodeDataId,
@@ -150,7 +154,7 @@ function EmbedNode(xyNode: Node) {
               <Input
                 onDoubleClick={(e) => e.stopPropagation()}
                 type="text"
-                placeholder="https://..."
+                placeholder="URL or <iframe> embed code..."
                 value={inputUrl}
                 onChange={(e) => setInputUrl(e.target.value)}
                 onKeyDown={(e) => {
@@ -183,7 +187,7 @@ function EmbedNode(xyNode: Node) {
         ) : (
           <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground select-none">
             <TbCode size={28} />
-            <span className="text-sm">Paste a URL to embed</span>
+            <span className="text-sm">Paste a URL or &lt;iframe&gt; embed code</span>
           </div>
         )}
       </NodeFrame>

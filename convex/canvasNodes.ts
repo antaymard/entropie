@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { mutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { requireAuth, requireCanvasAccess } from "./lib/auth";
 import { canvasNodesValidator } from "./schemas/canvasesSchema";
@@ -208,12 +209,42 @@ export const remove = mutation({
           (id) => !nodeDataIdsInOtherCanvases.has(id),
         );
 
+        const allFileKeys: string[] = [];
+
         for (const orphanId of orphanedIds) {
+          const nodeData = await ctx.db.get(orphanId);
+          if (nodeData) {
+            let templateFields: Array<{ id: string; type: string }> | undefined;
+            if (nodeData.template?.fields) {
+              templateFields = nodeData.template.fields;
+            } else if (nodeData.templateId) {
+              const tpl = await ctx.db.get(nodeData.templateId);
+              templateFields = tpl?.fields;
+            }
+
+            if (templateFields) {
+              for (const field of templateFields) {
+                if (field.type === "file") {
+                  const files = nodeData.values[field.id];
+                  if (Array.isArray(files)) {
+                    for (const file of files) {
+                      if (file?.key) allFileKeys.push(file.key);
+                    }
+                  }
+                }
+              }
+            }
+          }
           await ctx.db.delete(orphanId);
         }
 
         if (orphanedIds.length > 0) {
           console.log(`🗑️ Deleted ${orphanedIds.length} orphaned nodeDatas`);
+        }
+
+        if (allFileKeys.length > 0) {
+          await ctx.scheduler.runAfter(0, internal.uploads.deleteFiles, { keys: allFileKeys });
+          console.log(`🗑️ Scheduled deletion of ${allFileKeys.length} R2 files`);
         }
       }
     }

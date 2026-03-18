@@ -1,6 +1,6 @@
 import { v } from "convex/values";
-import { action } from "./_generated/server";
-import { generatePresignedUrl, getPublicUrl } from "./lib/r2";
+import { action, internalAction } from "./_generated/server";
+import { generatePresignedUrl, getPublicUrl, deleteFile } from "./lib/r2";
 import { requireAuth } from "./lib/auth";
 
 // Single file upload - Action publique
@@ -29,6 +29,16 @@ export const generateUploadUrl = action({
       publicUrl, // À sauvegarder dans le node après upload
       key, // Pour référence/delete futur
     };
+  },
+});
+
+// Internal action to delete R2 files
+export const deleteFiles = internalAction({
+  args: { keys: v.array(v.string()) },
+  returns: v.null(),
+  handler: async (_ctx, { keys }) => {
+    await Promise.all(keys.map((key) => deleteFile(key)));
+    return null;
   },
 });
 

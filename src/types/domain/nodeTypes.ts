@@ -10,7 +10,8 @@ export type nodeTypes =
   | "image"
   | "link"
   | "value"
-  | "file";
+  | "file"
+  | "embed";
 
 /**
  * Node field definition

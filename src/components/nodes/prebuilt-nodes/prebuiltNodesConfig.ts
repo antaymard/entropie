@@ -10,6 +10,7 @@ import {
   TbTag,
   TbApi,
   TbNews,
+  TbCode,
 } from "react-icons/tb";
 
 // Node Components
@@ -21,6 +22,7 @@ import ValueNode from "./ValueNode";
 import FetchNode from "./FetchNode";
 import z from "zod";
 import FileNode from "./FileNode";
+import EmbedNode from "./EmbedNode";
 
 type PrebuiltNodeConfig = {
   nodeLabel: string;
@@ -265,6 +267,38 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
         result: z.optional(z.any()),
         lastFetchedAt: z.optional(z.string()),
         error: z.optional(z.string()),
+      }),
+    },
+  },
+  {
+    nodeLabel: "Embed",
+    nodeIcon: TbCode,
+    nodeComponent: EmbedNode,
+    canHaveAutomation: false,
+
+    node: {
+      id: "",
+      type: "embed",
+      height: 320,
+      width: 480,
+      position: { x: 0, y: 0 },
+      data: {
+        color: "default",
+      } satisfies Omit<XyNodeData, "nodeDataId">,
+    } as Node,
+
+    nodeDataValuesSchema: {
+      embed: z.object({
+        url: z.string(),
+        embedUrl: z.string(),
+        title: z.optional(z.string()),
+        type: z.enum([
+          "youtube",
+          "google-docs",
+          "google-sheets",
+          "google-slides",
+          "generic",
+        ]),
       }),
     },
   },

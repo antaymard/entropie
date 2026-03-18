@@ -1,7 +1,6 @@
 import { ConvexError, v } from "convex/values";
-import { anyApi } from "convex/server";
 import { action } from "./_generated/server";
-import { components, internal } from "./_generated/api";
+import { api, components, internal } from "./_generated/api";
 import { createAutomationAgent } from "./automation/automationAgent";
 import { createThread } from "@convex-dev/agent";
 import { requireAuth } from "./lib/auth";
@@ -64,7 +63,7 @@ export const trigger = action({
           nodeData: currentNodeData,
           inputSchema,
           reportProgress,
-          updateValuesMutation: anyApi.nodeDatas.updateValues,
+          updateValuesMutation: api.nodeDatas.updateValues,
         }),
       });
       const threadId = await createThread(ctx, components.agent, {

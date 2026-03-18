@@ -1,6 +1,15 @@
 import { components } from "../_generated/api";
 import { Agent } from "@convex-dev/agent";
 import { openrouter } from "@openrouter/ai-sdk-provider";
+import { openWebPageTool } from "./tools/openWebPageTool";
+import { readPdfTool } from "./tools/readPdfTool";
+import { viewImageTool } from "./tools/viewImageTool";
+
+// Minimal agent used for utility operations (e.g. saveMessage) that don't require a specific model.
+export const baseAgent = new Agent(components.agent, {
+  name: "base",
+  languageModel: openrouter("mistralai/mistral-small-2603"),
+});
 
 export function createNoleAgent({
   readCanvasInternal,
@@ -39,7 +48,12 @@ export function createAbstractorAgent() {
   return new Agent(components.agent, {
     name: "abstractor",
     maxSteps: 5,
-    languageModel: openrouter.chat("mistralai/mistral-small-2603"),
+    languageModel: openrouter("mistralai/mistral-small-2603"),
+    tools: {
+      open_web_page: openWebPageTool,
+      read_pdf: readPdfTool,
+      view_image: viewImageTool,
+    },
     instructions:
       "You are a concise summarizer. Extract the relevant information and provide a summary that can be used by an agent to understand the content and context of a node. Focus on key details such as the main topic, any important entities mentioned, and the overall purpose of the node. If the node is a url, extract the main content of the page. If it's a pdf, extract the main insights. If it's an image, describe its content. Be concise and factual. The abstract will be used by an agent to understand the content and context of a node, so include information that would be relevant for that purpose. !! The length of the summary should ideally be between 50 and 150 words. !! No formatting, and no title. Only the abstract in plain text.",
   });

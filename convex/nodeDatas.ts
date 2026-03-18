@@ -1,6 +1,5 @@
 import { v } from "convex/values";
 import { ConvexError } from "convex/values";
-import { anyApi } from "convex/server";
 import { mutation, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { requireAuth } from "./lib/auth";
@@ -10,6 +9,7 @@ import {
   dataProcessingValidator,
   nodeDatasValidator,
 } from "./schemas/nodeDatasSchema";
+import { internal } from "./_generated/api";
 
 export const create = mutation({
   args: nodeDatasValidator,
@@ -71,7 +71,7 @@ export const updateValues = mutation({
     return NodeDataModel.updateValues(
       ctx,
       { _id, values },
-      anyApi.ia.abstractor.AbstractAgent.abstractNodeData,
+      internal.ia.abstractor.AbstractAgent.abstractNodeData,
     );
   },
 });

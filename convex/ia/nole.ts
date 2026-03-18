@@ -1,73 +1,11 @@
 import { v } from "convex/values";
-import { action, internalAction, mutation, query } from "../_generated/server";
-import { createNoleAgent } from "./agents";
-import { createThread } from "@convex-dev/agent";
-import { components } from "../_generated/api";
+import { action, internalAction, mutation } from "../_generated/server";
+import { baseAgent, createNoleAgent } from "./agents";
 import { anyApi } from "convex/server";
 import { requireAuth } from "../lib/auth";
 import z from "zod";
 import { openrouter } from "@openrouter/ai-sdk-provider";
 import { generateBrainSystemPrompt } from "./nole/brain/brainAgent";
-
-// Get the latest thread for the user
-export const getLatestThread = query({
-  args: {},
-  returns: v.union(
-    v.object({
-      threadId: v.string(),
-    }),
-    v.null(),
-  ),
-  handler: async (ctx) => {
-    const authUserId = await requireAuth(ctx);
-    if (!authUserId) {
-      return null;
-    }
-
-    // Get the latest thread from the agent component
-    const result = await ctx.runQuery(
-      components.agent.threads.listThreadsByUserId,
-      {
-        userId: authUserId,
-        order: "desc",
-        paginationOpts: { numItems: 1, cursor: null },
-      },
-    );
-
-    if (!result || result.page.length === 0) {
-      return null;
-    }
-
-    return { threadId: result.page[0]._id };
-  },
-});
-
-// Create a new thread for the user
-export const startThread = action({
-  args: {},
-  returns: v.union(
-    v.object({
-      threadId: v.string(),
-    }),
-    v.object({
-      success: v.boolean(),
-      error: v.string(),
-    }),
-  ),
-  handler: async (ctx) => {
-    const authUserId = await requireAuth(ctx);
-    if (!authUserId) {
-      return {
-        success: false,
-        error: "Utilisateur non authentifié",
-      };
-    }
-    const threadId = await createThread(ctx, components.agent, {
-      userId: authUserId,
-    });
-    return { threadId };
-  },
-});
 
 // Save user message, then stream response asynchronously
 export const sendMessage = mutation({
@@ -95,10 +33,7 @@ export const sendMessage = mutation({
     }
 
     // Save the user message
-    const noleAgent = createNoleAgent({
-      readCanvasInternal: anyApi.ia.helpers.canvasHelpers.getCanvasInternal,
-    });
-    const { messageId } = await noleAgent.saveMessage(ctx, {
+    const { messageId } = await baseAgent.saveMessage(ctx, {
       threadId,
       prompt,
     });

@@ -1,10 +1,58 @@
-import { action, query } from "./_generated/server";
+import { action, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireAuth } from "./lib/auth";
 import { components } from "./_generated/api";
 import { paginationOptsValidator } from "convex/server";
-import { listUIMessages, syncStreams, vStreamArgs } from "@convex-dev/agent";
+import {
+  createThread,
+  getThreadMetadata,
+  listUIMessages,
+  syncStreams,
+  vStreamArgs,
+} from "@convex-dev/agent";
 import errors from "./config/errorsConfig";
+
+export const getLatestThread = query({
+  args: {},
+  returns: v.union(
+    v.object({
+      threadId: v.string(),
+    }),
+    v.null(),
+  ),
+  handler: async (ctx) => {
+    const authUserId = await requireAuth(ctx);
+
+    const result = await ctx.runQuery(
+      components.agent.threads.listThreadsByUserId,
+      {
+        userId: authUserId,
+        order: "desc",
+        paginationOpts: { numItems: 1, cursor: null },
+      },
+    );
+
+    if (!result || result.page.length === 0) {
+      return null;
+    }
+
+    return { threadId: result.page[0]._id };
+  },
+});
+
+export const startThread = mutation({
+  args: {},
+  returns: v.object({
+    threadId: v.string(),
+  }),
+  handler: async (ctx) => {
+    const authUserId = await requireAuth(ctx);
+    const threadId = await createThread(ctx, components.agent, {
+      userId: authUserId,
+    });
+    return { threadId };
+  },
+});
 
 export const listUserThreads = query({
   args: {
@@ -40,7 +88,7 @@ export const getThreadInfo = query({
     const authUserId = await requireAuth(ctx);
     if (!authUserId) return null;
 
-    const thread = await ctx.runQuery(components.agent.threads.getThread, {
+    const thread = await getThreadMetadata(ctx, components.agent, {
       threadId: args.threadId,
     });
 
@@ -67,7 +115,7 @@ export const listMessages = query({
       throw new Error(errors.UNAUTHORIZED_USER);
     }
 
-    const thread = await ctx.runQuery(components.agent.threads.getThread, {
+    const thread = await getThreadMetadata(ctx, components.agent, {
       threadId,
     });
     if (!thread || thread.userId !== authUserId) {
@@ -99,7 +147,7 @@ export const deleteThread = action({
       throw new Error(errors.UNAUTHORIZED_USER);
     }
 
-    const thread = await ctx.runQuery(components.agent.threads.getThread, {
+    const thread = await getThreadMetadata(ctx, components.agent, {
       threadId,
     });
     if (!thread || thread.userId !== authUserId) {

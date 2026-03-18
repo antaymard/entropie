@@ -51,6 +51,8 @@ import type * as nodeDatas from "../nodeDatas.js";
 import type * as schemas_canvasesSchema from "../schemas/canvasesSchema.js";
 import type * as schemas_nodeDataConfig from "../schemas/nodeDataConfig.js";
 import type * as schemas_nodeDatasSchema from "../schemas/nodeDatasSchema.js";
+import type * as schemas_scheduledJobsSchema from "../schemas/scheduledJobsSchema.js";
+import type * as schemas_sharesSchema from "../schemas/sharesSchema.js";
 import type * as shares from "../shares.js";
 import type * as slideshows from "../slideshows.js";
 import type * as templates from "../templates.js";
@@ -107,6 +109,8 @@ declare const fullApi: ApiFromModules<{
   "schemas/canvasesSchema": typeof schemas_canvasesSchema;
   "schemas/nodeDataConfig": typeof schemas_nodeDataConfig;
   "schemas/nodeDatasSchema": typeof schemas_nodeDatasSchema;
+  "schemas/scheduledJobsSchema": typeof schemas_scheduledJobsSchema;
+  "schemas/sharesSchema": typeof schemas_sharesSchema;
   shares: typeof shares;
   slideshows: typeof slideshows;
   templates: typeof templates;

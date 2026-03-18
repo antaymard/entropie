@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/shadcn/button";
 import { Input } from "@/components/shadcn/input";
 import { Label } from "@/components/shadcn/label";
+import { Separator } from "@/components/shadcn/separator";
 import {
   Select,
   SelectContent,
@@ -20,7 +21,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/shadcn/select";
+import { Switch } from "@/components/shadcn/switch";
 import { toastError } from "@/components/utils/errorUtils";
+import toast from "react-hot-toast";
 import { TbTrash } from "react-icons/tb";
 
 export default function SharingModal() {
@@ -45,10 +48,83 @@ export default function SharingModal() {
         <DialogHeader>
           <DialogTitle>Share canvas</DialogTitle>
         </DialogHeader>
+        <PublicLinkSection
+          canvasId={canvas._id}
+          isPublic={canvas.isPublic ?? false}
+        />
+        <Separator />
         <ShareForm canvasId={canvas._id} />
         <ShareList canvasId={canvas._id} />
       </DialogContent>
     </Dialog>
+  );
+}
+
+function PublicLinkSection({
+  canvasId,
+  isPublic,
+}: {
+  canvasId: Id<"canvases">;
+  isPublic: boolean;
+}) {
+  const [isUpdating, setIsUpdating] = useState(false);
+  const togglePublic = useMutation(api.canvases.togglePublic);
+
+  const handlePublicToggle = async (checked: boolean) => {
+    setIsUpdating(true);
+    try {
+      await togglePublic({
+        canvasId,
+        isPublic: checked,
+      });
+      toast.success(
+        checked ? "Canvas is now public." : "Canvas is now private.",
+      );
+    } catch (err) {
+      toastError(err, "Failed to update canvas visibility");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success("Link copied to clipboard");
+    } catch (err) {
+      toastError(err, "Failed to copy link");
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="public-canvas-switch">Public link</Label>
+          <p className="text-xs text-muted-foreground">
+            Anyone with the link can view this canvas.
+          </p>
+        </div>
+        <Switch
+          id="public-canvas-switch"
+          checked={isPublic}
+          onCheckedChange={handlePublicToggle}
+          disabled={isUpdating}
+        />
+      </div>
+      {isPublic && (
+        <div className="flex justify-start">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleCopyLink}
+          >
+            Copy link
+          </Button>
+        </div>
+      )}
+    </div>
   );
 }
 

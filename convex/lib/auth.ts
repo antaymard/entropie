@@ -13,11 +13,19 @@ export async function requireAuth(ctx: QueryCtx | MutationCtx | ActionCtx) {
   } else return userId;
 }
 
+export async function optionalAuth(ctx: QueryCtx | MutationCtx | ActionCtx) {
+  return await getAuthUserId(ctx);
+}
+
 export type CanvasPermission = "viewer" | "editor" | "owner";
 
 type CanvasAccessResult = {
   canvas: Doc<"canvases">;
   permission: CanvasPermission;
+};
+
+type RequireCanvasAccessOptions = {
+  allowPublic?: boolean;
 };
 
 /**
@@ -54,27 +62,20 @@ export async function getCanvasAccess(
 export async function requireCanvasAccess(
   ctx: QueryCtx | MutationCtx,
   canvasId: Id<"canvases">,
-  userId: Id<"users">,
+  userId: Id<"users"> | null,
   minPermission: CanvasPermission = "viewer",
+  options: RequireCanvasAccessOptions = {},
 ): Promise<CanvasAccessResult> {
+  const { allowPublic = false } = options;
+
   const canvas = await ctx.db.get(canvasId);
   if (!canvas) {
     throw new ConvexError(errors.CANVAS_NOT_FOUND);
   }
 
-  // Owner = full access
-  if (canvas.creatorId === userId) return { canvas, permission: "owner" };
-
-  // Check shares
-  const share = await ctx.db
-    .query("shares")
-    .withIndex("by_canvas_and_user", (q) =>
-      q.eq("canvasId", canvasId).eq("userId", userId),
-    )
-    .unique();
-
-  if (!share) {
-    throw new ConvexError(errors.CANVAS_NOT_FOUND);
+  let access: CanvasAccessResult | null = null;
+  if (userId) {
+    access = await getCanvasAccess(ctx, canvasId, userId);
   }
 
   const levels: Record<CanvasPermission, number> = {
@@ -83,9 +84,21 @@ export async function requireCanvasAccess(
     owner: 2,
   };
 
-  if (levels[share.permission] < levels[minPermission]) {
+  if (access) {
+    if (levels[access.permission] >= levels[minPermission]) {
+      return access;
+    }
+
+    if (allowPublic && minPermission === "viewer" && canvas.isPublic === true) {
+      return { canvas, permission: "viewer" };
+    }
+
     throw new ConvexError(errors.INSUFFICIENT_PERMISSIONS);
   }
 
-  return { canvas, permission: share.permission };
+  if (allowPublic && minPermission === "viewer" && canvas.isPublic === true) {
+    return { canvas, permission: "viewer" };
+  }
+
+  throw new ConvexError(errors.CANVAS_NOT_FOUND);
 }

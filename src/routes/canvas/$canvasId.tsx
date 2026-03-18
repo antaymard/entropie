@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -14,6 +15,7 @@ import { useNodeDataStore } from "@/stores/nodeDataStore";
 import { useWindowsStore } from "@/stores/windowsStore";
 import { useCanvasStore } from "@/stores/canvasStore";
 import ErrorDisplay from "@/components/ui/ErrorDisplay";
+import { Button } from "@/components/shadcn/button";
 import ContextMenu from "@/components/canvas/context-menus";
 import { useContextMenu } from "@/hooks/useContextMenu";
 import { useEffect, useMemo, useRef } from "react";
@@ -31,6 +33,8 @@ import NoleCanvasPanel from "@/components/canvas/NoleCanvasPanel";
 import CanvasToolbar from "@/components/canvas/on-canvas-ui/CanvasToolbar";
 import TopRightToolbar from "@/components/canvas/on-canvas-ui/TopRightToolbar";
 import BottomToolbar from "@/components/canvas/on-canvas-ui/BottomToolbar";
+import AuthUpgradeBanner from "@/components/canvas/on-canvas-ui/AuthUpgradeBanner";
+import { useConvexAuth } from "convex/react";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -38,22 +42,36 @@ export const Route = createFileRoute("/canvas/$canvasId")({
 
 function RouteComponent() {
   const { canvasId } = Route.useParams() as { canvasId: Id<"canvases"> };
+  const { isAuthenticated } = useConvexAuth();
+
+  const canvasContent = (
+    <div className={cn("h-screen w-full bg-slate-50")}>
+      <CanvasContent canvasId={canvasId} isAuthenticated={isAuthenticated} />
+    </div>
+  );
 
   return (
     <div className="bg-white">
       <ReactFlowProvider key={canvasId}>
-        <CanvasSidebar canvasId={canvasId}>
-          <div className={cn("h-screen w-full bg-slate-50")}>
-            <CanvasContent canvasId={canvasId} />
-          </div>
-        </CanvasSidebar>
+        {isAuthenticated ? (
+          <CanvasSidebar canvasId={canvasId}>{canvasContent}</CanvasSidebar>
+        ) : (
+          canvasContent
+        )}
       </ReactFlowProvider>
     </div>
   );
 }
 
-function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
+function CanvasContent({
+  canvasId,
+  isAuthenticated,
+}: {
+  canvasId: Id<"canvases">;
+  isAuthenticated: boolean;
+}) {
   const setNodeDatas = useNodeDataStore((state) => state.setNodeDatas);
+  const clearNodeDatas = useNodeDataStore((state) => state.clear);
   const setCanvas = useCanvasStore((state) => state.setCanvas);
   const lastCanvasSnapshotRef = useRef<string | null>(null);
 
@@ -62,8 +80,9 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     useWindowsStore.getState().closeAllWindows();
     useCanvasStore.getState().setStatus("idle");
     setCanvas(null);
+    clearNodeDatas();
     lastCanvasSnapshotRef.current = null;
-  }, [canvasId, setCanvas]);
+  }, [canvasId, clearNodeDatas, setCanvas]);
 
   // Handle paste events (images, URLs)
   useCanvasPasteHandler();
@@ -78,7 +97,11 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   });
 
   // Fetch nodeDatas for this canvas
-  const { data: nodeDatas } = useRichQuery(
+  const {
+    isError: isNodeDatasError,
+    data: nodeDatas,
+    error: nodeDatasError,
+  } = useRichQuery(
     api.nodeDatas.listByCanvasId,
     canvasId ? { canvasId } : "skip",
   );
@@ -140,6 +163,12 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     }
   }, [nodeDatas, setNodeDatas]);
 
+  useEffect(() => {
+    if (isNodeDatasError) {
+      clearNodeDatas();
+    }
+  }, [clearNodeDatas, isNodeDatasError]);
+
   // Sync document title
   useEffect(() => {
     if (canvas?.name) {
@@ -148,7 +177,25 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   }, [canvas?.name]);
 
   if (isCanvasError && canvasError) {
+    if (!isAuthenticated) {
+      return (
+        <ErrorDisplay
+          title="This canvas is private or unavailable"
+          message="Sign in to check whether you have access, or ask the owner to share it with you."
+          cta={
+            <Button asChild>
+              <Link to="/signin">Sign in / Create account</Link>
+            </Button>
+          }
+        />
+      );
+    }
+
     return <ErrorDisplay error={canvasError} />;
+  }
+
+  if (isNodeDatasError && nodeDatasError) {
+    return <ErrorDisplay error={nodeDatasError} />;
   }
 
   if (!canvas) {
@@ -205,15 +252,23 @@ function CanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           ]);
         }}
       >
-        <Panel position="top-right">
-          <TopRightToolbar />
-        </Panel>
+        {isAuthenticated ? (
+          <Panel position="top-right">
+            <TopRightToolbar />
+          </Panel>
+        ) : null}
         <Panel position="center-left">
           <CanvasToolbar canvasId={canvasId} />
         </Panel>
-        <Panel position="top-center">
-          <NoleCanvasPanel />
-        </Panel>
+        {isAuthenticated ? (
+          <Panel position="top-center">
+            <NoleCanvasPanel />
+          </Panel>
+        ) : (
+          <Panel position="top-center">
+            <AuthUpgradeBanner />
+          </Panel>
+        )}
         <Panel position="bottom-center">
           <BottomToolbar />
         </Panel>

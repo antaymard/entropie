@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { ConvexError } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
-import { requireAuth } from "./lib/auth";
+import { optionalAuth, requireAuth, requireCanvasAccess } from "./lib/auth";
 import * as NodeDataModel from "./model/nodeData";
 import {
   agentConfigValidator,
@@ -35,10 +35,14 @@ export const read = query({
 export const listByCanvasId = query({
   args: { canvasId: v.id("canvases") },
   handler: async (ctx, { canvasId }) => {
-    await requireAuth(ctx);
-
-    const canvas = await ctx.db.get(canvasId);
-    if (!canvas) return [];
+    const authUserId = await optionalAuth(ctx);
+    const { canvas } = await requireCanvasAccess(
+      ctx,
+      canvasId,
+      authUserId,
+      "viewer",
+      { allowPublic: true },
+    );
 
     // Extraire les nodeDataIds des nodes du canvas
     const nodeDataIds = (canvas.nodes || [])

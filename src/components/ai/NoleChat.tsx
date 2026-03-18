@@ -68,7 +68,7 @@ export function NoleChat() {
                 type="button"
                 className={cn(
                   buttonCn,
-                  showHistory && "bg-white text-primary hover:bg-white/80"
+                  showHistory && "bg-white text-primary hover:bg-white/80",
                 )}
                 onClick={() => setShowHistory(!showHistory)}
               >
@@ -80,9 +80,7 @@ export function NoleChat() {
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              {showHistory
-                ? "Back to chat"
-                : "Show conversation history"}
+              {showHistory ? "Back to chat" : "Show conversation history"}
             </TooltipContent>
           </Tooltip>
           <Tooltip delayDuration={300}>
@@ -130,7 +128,7 @@ function ChatHistory({
       cursor: null,
     },
   });
-  const deleteThread = useAction(api.ia.nole.deleteThread);
+  const deleteThread = useAction(api.threads.deleteThread);
 
   if (!userThreads) {
     return <div>Loading...</div>;
@@ -151,7 +149,7 @@ function ChatHistory({
               _creationTime: string | number | Date;
               title: string | null;
             },
-            i: Key | null | undefined
+            i: Key | null | undefined,
           ) => (
             <button
               key={i}
@@ -178,17 +176,14 @@ function ChatHistory({
                   try {
                     await deleteThread({ threadId: thread._id });
                   } catch (error) {
-                    toastError(
-                      error,
-                      "Error deleting thread."
-                    );
+                    toastError(error, "Error deleting thread.");
                   }
                 }}
               >
                 <TbTrash size={16} />
               </button>
             </button>
-          )
+          ),
         )}
       </div>
     </div>

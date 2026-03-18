@@ -1,14 +1,9 @@
 import { v } from "convex/values";
 import { action, internalAction, mutation, query } from "../_generated/server";
 import { createNoleAgent } from "./agents";
-import {
-  createThread,
-  listUIMessages,
-  syncStreams,
-  vStreamArgs,
-} from "@convex-dev/agent";
+import { createThread } from "@convex-dev/agent";
 import { components } from "../_generated/api";
-import { anyApi, paginationOptsValidator } from "convex/server";
+import { anyApi } from "convex/server";
 import { requireAuth } from "../lib/auth";
 import z from "zod";
 import { openrouter } from "@openrouter/ai-sdk-provider";
@@ -160,39 +155,6 @@ export const streamResponse = internalAction({
   },
 });
 
-// Query to retrieve and subscribe to messages
-export const listMessages = query({
-  args: {
-    threadId: v.string(),
-    paginationOpts: paginationOptsValidator,
-    streamArgs: vStreamArgs,
-  },
-  // returns: v.object({
-  //   page: v.array(v.any()),
-  //   isDone: v.boolean(),
-  //   continueCursor: v.string(),
-  //   streams: v.any(),
-  // }),
-  handler: async (ctx, { threadId, paginationOpts, streamArgs }) => {
-    // Sync ongoing streams
-    const streams = await syncStreams(ctx, components.agent, {
-      threadId,
-      streamArgs,
-    });
-
-    // Retrieve messages with pagination
-    const paginated = await listUIMessages(ctx, components.agent, {
-      threadId,
-      paginationOpts,
-    });
-
-    return {
-      ...paginated,
-      streams,
-    };
-  },
-});
-
 export const updateThreadTitle = action({
   args: { threadId: v.string(), onlyIfUntitled: v.optional(v.boolean()) },
   handler: async (ctx, { threadId, onlyIfUntitled }) => {
@@ -222,17 +184,5 @@ export const updateThreadTitle = action({
       { storageOptions: { saveMessages: "none" } },
     );
     await thread.updateMetadata({ title });
-  },
-});
-
-export const deleteThread = action({
-  args: { threadId: v.string() },
-  handler: async (ctx, { threadId }) => {
-    await requireAuth(ctx);
-    const noleAgent = createNoleAgent({
-      readCanvasInternal: anyApi.ia.helpers.canvasHelpers.getCanvasInternal,
-    });
-    await noleAgent.deleteThreadAsync(ctx, { threadId });
-    return { success: true };
   },
 });

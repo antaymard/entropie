@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { anyApi } from "convex/server";
 import { action } from "./_generated/server";
-import { components } from "./_generated/api";
+import { components, internal } from "./_generated/api";
 import { createAutomationAgent } from "./automation/automationAgent";
 import { createThread } from "@convex-dev/agent";
 import { requireAuth } from "./lib/auth";
@@ -23,13 +23,13 @@ export const trigger = action({
       const userId = await requireAuth(ctx);
 
       const currentNodeData = await ctx.runQuery(
-        anyApi.automation.helpers.readNodeData,
+        internal.automation.helpers.readNodeData,
         { _id: nodeDataId },
       );
 
       // 1. Passer le statut en working et initialiser les infos d'automationProgress
       const reportProgress = createProgressReporter(ctx, nodeDataId);
-      await ctx.runMutation(anyApi.automation.helpers.updateStatus, {
+      await ctx.runMutation(internal.automation.helpers.updateStatus, {
         _id: nodeDataId,
         status: "working",
       });
@@ -39,7 +39,7 @@ export const trigger = action({
 
       // 2. Charger les nodeData input du noeud courant
       const inputNodeDatas = await ctx.runQuery(
-        anyApi.automation.helpers.listNodeDataDependencies,
+        internal.automation.helpers.listNodeDataDependencies,
         {
           nodeDataId,
           type: "input",
@@ -98,7 +98,7 @@ ${generateNodeContext(currentNodeData)}
       console.log("Agent response:", response.text);
 
       // 5. Repasser le statut en idle
-      await ctx.runMutation(anyApi.automation.helpers.updateStatus, {
+      await ctx.runMutation(internal.automation.helpers.updateStatus, {
         _id: nodeDataId,
         status: "idle",
       });
@@ -113,7 +113,7 @@ ${generateNodeContext(currentNodeData)}
         error,
       );
       // En cas d'erreur, passer le statut en error
-      await ctx.runMutation(anyApi.automation.helpers.updateStatus, {
+      await ctx.runMutation(internal.automation.helpers.updateStatus, {
         _id: nodeDataId,
         status: "error",
       });

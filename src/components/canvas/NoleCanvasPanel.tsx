@@ -49,7 +49,7 @@ export default function NoleCanvasPanel() {
   const { startRecording, stopRecording, audioBlob, reset } =
     useAudioRecorder();
 
-  const transcribeAction = useAction(api.ia.voice.transcribe);
+  const transcribeAction = useAction(api.speech.transcribe);
 
   const [layoutMode, setLayoutMode] = useState<
     "idle" | "recording" | "transcribing" | "text" | "responding"
@@ -71,7 +71,7 @@ export default function NoleCanvasPanel() {
 
   // Thread messages (to detect if assistant is responding)
   const { results: messages } = useUIMessages(
-    api.ia.nole.listMessages,
+    api.threads.listMessages,
     threadId ? { threadId } : "skip",
     { initialNumItems: 1, stream: true },
   );
@@ -101,7 +101,7 @@ export default function NoleCanvasPanel() {
   // Send message mutation with optimistic update
   const sendMessageMutation = useMutation(
     api.ia.nole.sendMessage,
-  ).withOptimisticUpdate(optimisticallySendMessage(api.ia.nole.listMessages));
+  ).withOptimisticUpdate(optimisticallySendMessage(api.threads.listMessages));
 
   const updateThreadTitle = useAction(api.ia.nole.updateThreadTitle);
 

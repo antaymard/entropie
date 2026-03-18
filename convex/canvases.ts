@@ -1,6 +1,6 @@
 import { query, mutation } from "./_generated/server";
-import { ConvexError, v } from "convex/values";
-import { requireAuth, requireCanvasAccess } from "./lib/auth";
+import { v } from "convex/values";
+import { optionalAuth, requireAuth, requireCanvasAccess } from "./lib/auth";
 
 export const getLastModified = query({
   args: {},
@@ -75,14 +75,35 @@ export const readCanvas = query({
   },
   returns: v.any(),
   handler: async (ctx, { canvasId }) => {
-    const authUserId = await requireAuth(ctx);
+    const authUserId = await optionalAuth(ctx);
     const { canvas, permission } = await requireCanvasAccess(
       ctx,
       canvasId,
       authUserId,
+      "viewer",
+      { allowPublic: true },
     );
 
     return { ...canvas, _permission: permission };
+  },
+});
+
+export const togglePublic = mutation({
+  args: {
+    canvasId: v.id("canvases"),
+    isPublic: v.boolean(),
+  },
+  returns: v.null(),
+  handler: async (ctx, { canvasId, isPublic }) => {
+    const authUserId = await requireAuth(ctx);
+    await requireCanvasAccess(ctx, canvasId, authUserId, "owner");
+
+    await ctx.db.patch(canvasId, {
+      isPublic,
+      updatedAt: Date.now(),
+    });
+
+    return null;
   },
 });
 
@@ -133,12 +154,7 @@ export const deleteCanvas = mutation({
   returns: v.id("canvases"),
   handler: async (ctx, { canvasId }) => {
     const authUserId = await requireAuth(ctx);
-    const { canvas } = await requireCanvasAccess(
-      ctx,
-      canvasId,
-      authUserId,
-      "owner",
-    );
+    await requireCanvasAccess(ctx, canvasId, authUserId, "owner");
 
     // Supprimer les partages associés
     const shares = await ctx.db

@@ -55,6 +55,7 @@ const slideshowsValidator = v.object({
 const canvasesValidator = v.object({
   creatorId: v.id("users"),
   name: v.string(),
+  isPublic: v.optional(v.boolean()),
 
   nodes: v.optional(v.array(canvasNodesValidator)),
   edges: v.optional(v.array(edgesValidator)),

@@ -45,8 +45,6 @@ const nodeDatasValidator = v.object({
   removedFromCanvasAt: v.optional(v.number()),
   values: v.record(v.string(), v.any()),
 
-  aiAbstract: v.optional(v.string()),
-
   status: nodeDataStatusValidator,
   automationProgress: automationProgressValidator,
 
@@ -58,15 +56,8 @@ const nodeDatasValidator = v.object({
   dependencies: v.optional(v.array(dependencyValidator)),
 });
 
-const nodeDatasWithIdValidator = v.object({
-  _id: v.id("nodeDatas"),
-  _creationTime: v.number(),
-  ...nodeDatasValidator.fields,
-});
-
 export {
   nodeDatasValidator,
-  nodeDatasWithIdValidator,
   nodeDataStatusValidator,
   automationProgressValidator,
   agentConfigValidator,

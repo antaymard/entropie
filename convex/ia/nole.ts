@@ -1,78 +1,11 @@
 import { v } from "convex/values";
-import { action, internalAction, mutation, query } from "../_generated/server";
-import { createNoleAgent } from "./agents";
-import {
-  createThread,
-  listUIMessages,
-  syncStreams,
-  vStreamArgs,
-} from "@convex-dev/agent";
-import { components } from "../_generated/api";
-import { anyApi, paginationOptsValidator } from "convex/server";
+import { action, internalAction, mutation } from "../_generated/server";
+import { baseAgent, createNoleAgent } from "./agents";
+import { anyApi } from "convex/server";
 import { requireAuth } from "../lib/auth";
 import z from "zod";
 import { openrouter } from "@openrouter/ai-sdk-provider";
 import { generateBrainSystemPrompt } from "./nole/brain/brainAgent";
-
-// Get the latest thread for the user
-export const getLatestThread = query({
-  args: {},
-  returns: v.union(
-    v.object({
-      threadId: v.string(),
-    }),
-    v.null(),
-  ),
-  handler: async (ctx) => {
-    const authUserId = await requireAuth(ctx);
-    if (!authUserId) {
-      return null;
-    }
-
-    // Get the latest thread from the agent component
-    const result = await ctx.runQuery(
-      components.agent.threads.listThreadsByUserId,
-      {
-        userId: authUserId,
-        order: "desc",
-        paginationOpts: { numItems: 1, cursor: null },
-      },
-    );
-
-    if (!result || result.page.length === 0) {
-      return null;
-    }
-
-    return { threadId: result.page[0]._id };
-  },
-});
-
-// Create a new thread for the user
-export const startThread = action({
-  args: {},
-  returns: v.union(
-    v.object({
-      threadId: v.string(),
-    }),
-    v.object({
-      success: v.boolean(),
-      error: v.string(),
-    }),
-  ),
-  handler: async (ctx) => {
-    const authUserId = await requireAuth(ctx);
-    if (!authUserId) {
-      return {
-        success: false,
-        error: "Utilisateur non authentifié",
-      };
-    }
-    const threadId = await createThread(ctx, components.agent, {
-      userId: authUserId,
-    });
-    return { threadId };
-  },
-});
 
 // Save user message, then stream response asynchronously
 export const sendMessage = mutation({
@@ -100,10 +33,7 @@ export const sendMessage = mutation({
     }
 
     // Save the user message
-    const noleAgent = createNoleAgent({
-      readCanvasInternal: anyApi.ia.helpers.canvasHelpers.getCanvasInternal,
-    });
-    const { messageId } = await noleAgent.saveMessage(ctx, {
+    const { messageId } = await baseAgent.saveMessage(ctx, {
       threadId,
       prompt,
     });
@@ -160,39 +90,6 @@ export const streamResponse = internalAction({
   },
 });
 
-// Query to retrieve and subscribe to messages
-export const listMessages = query({
-  args: {
-    threadId: v.string(),
-    paginationOpts: paginationOptsValidator,
-    streamArgs: vStreamArgs,
-  },
-  // returns: v.object({
-  //   page: v.array(v.any()),
-  //   isDone: v.boolean(),
-  //   continueCursor: v.string(),
-  //   streams: v.any(),
-  // }),
-  handler: async (ctx, { threadId, paginationOpts, streamArgs }) => {
-    // Sync ongoing streams
-    const streams = await syncStreams(ctx, components.agent, {
-      threadId,
-      streamArgs,
-    });
-
-    // Retrieve messages with pagination
-    const paginated = await listUIMessages(ctx, components.agent, {
-      threadId,
-      paginationOpts,
-    });
-
-    return {
-      ...paginated,
-      streams,
-    };
-  },
-});
-
 export const updateThreadTitle = action({
   args: { threadId: v.string(), onlyIfUntitled: v.optional(v.boolean()) },
   handler: async (ctx, { threadId, onlyIfUntitled }) => {
@@ -222,17 +119,5 @@ export const updateThreadTitle = action({
       { storageOptions: { saveMessages: "none" } },
     );
     await thread.updateMetadata({ title });
-  },
-});
-
-export const deleteThread = action({
-  args: { threadId: v.string() },
-  handler: async (ctx, { threadId }) => {
-    await requireAuth(ctx);
-    const noleAgent = createNoleAgent({
-      readCanvasInternal: anyApi.ia.helpers.canvasHelpers.getCanvasInternal,
-    });
-    await noleAgent.deleteThreadAsync(ctx, { threadId });
-    return { success: true };
   },
 });

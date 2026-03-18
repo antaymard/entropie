@@ -1,61 +1,42 @@
+import { components } from "../_generated/api";
 import { Agent } from "@convex-dev/agent";
 import { openrouter } from "@openrouter/ai-sdk-provider";
-import { components } from "../_generated/api";
-import noleSystemPrompt from "./prompts/noleSystemPrompt";
-import { websearchTool } from "./tools/websearchTool";
-import { openWebPageTool } from "./tools/openWebPageTool";
-import { createReadCanvasTool } from "./tools/readCanvasTool";
-import { viewImageTool } from "./tools/viewImageTool";
-import { readPdfTool } from "./tools/readPdfTool";
-import { editCanvasNodesAndEdgesTool } from "./tools/editCanvasNodesAndEdgesTool";
-import { readNodeConfigsTool } from "./tools/readNodeConfigsTool";
-import { type LanguageModel } from "ai";
-import { ActionCtx } from "../_generated/server";
-import type { FunctionReference } from "convex/server";
-import type { Id } from "../_generated/dataModel";
 
-type CanvasReadRef = FunctionReference<
-  "query",
-  "public" | "internal",
-  { canvasId: Id<"canvases"> },
-  unknown
->;
+// Minimal agent used for utility operations (e.g. saveMessage) that don't require a specific model.
+export const baseAgent = new Agent(components.agent, {
+  name: "base",
+  languageModel: openrouter("minimax/minimax-m2.7"),
+});
 
 export function createNoleAgent({
-  ctx,
-  model = openrouter("mistralai/mistral-large-2512"),
   readCanvasInternal,
+  model, // To dep ?
 }: {
-  ctx?: ActionCtx | null;
-  model?: LanguageModel;
-  readCanvasInternal: CanvasReadRef;
+  readCanvasInternal: any;
+  model?: any;
 }) {
-  const readCanvasTool = createReadCanvasTool({
-    getCanvasInternal: readCanvasInternal,
-  });
-
   return new Agent(components.agent, {
     name: "Nolë",
     maxSteps: 15,
-    languageModel: model,
-    tools: {
-      // read_node_templates: readNodeTemplatesTool,
-      web_search: websearchTool,
-      open_web_page: openWebPageTool,
-      read_canvas: readCanvasTool,
-      view_image: viewImageTool,
-      read_pdf: readPdfTool,
-      edit_canvas_nodes_and_edges: editCanvasNodesAndEdgesTool,
-      read_node_configs: readNodeConfigsTool,
-    },
-    instructions: noleSystemPrompt,
-    // contextOptions: {
-    //   searchOtherThreads: true,
-    //   searchOptions: {
-    //     limit: 10,
-    //     textSearch: true,
-    //     // vectorSearch: true,
-    //   },
-    // },
+    languageModel: openrouter("minimax/minimax-m2.7"),
+  });
+}
+
+export function createAutomationAgent({
+  model,
+  updateNodeDataValuesTool,
+}: {
+  model?: any;
+  updateNodeDataValuesTool?: any;
+}) {
+  return new Agent(components.agent, {
+    name: "automation-agent",
+    languageModel: openrouter("minimax/minimax-m2.7"),
+    maxSteps: 5,
+    instructions: `Tu es un agent d'automatisation, lié à un node sur une app canvas-base type miro. Tu peux utiliser les outils à ta disposition pour accomplir les tâches demandées. Le noeud auquel tu es lié peut contenir des données d'entrée d'autres noeuds (input) que tu devras le plus souvent utiliser pour accomplir ta tâche. Utilise les outils à ta disposition pour trouver l'information.
+      
+    Ne réponds pas à l'utilisateur directement comme un chat. Utilise l'outil update_node_data_values pour mettre à jour les données du noeud auquel tu es lié en guise de réponse et de livraison de ton travail. 
+    
+    Sois le plus concis possible, exact et factuel. Ne fabrique pas d'informations. Ne sois pas verbeux.`,
   });
 }

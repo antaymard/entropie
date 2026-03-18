@@ -1,6 +1,5 @@
 import { v } from "convex/values";
 import { ConvexError } from "convex/values";
-import { anyApi } from "convex/server";
 import { mutation, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { requireAuth } from "./lib/auth";
@@ -9,9 +8,7 @@ import {
   agentConfigValidator,
   dataProcessingValidator,
   nodeDatasValidator,
-  nodeDatasWithIdValidator,
 } from "./schemas/nodeDatasSchema";
-
 export const create = mutation({
   args: nodeDatasValidator,
   handler: async (ctx, args) => {
@@ -28,7 +25,6 @@ export const create = mutation({
 
 export const read = query({
   args: { nodeDataId: v.id("nodeDatas") },
-  returns: v.union(nodeDatasWithIdValidator, v.null()),
   handler: async (ctx, args) => {
     await requireAuth(ctx);
     const nodeData = await ctx.db.get(args.nodeDataId);
@@ -38,7 +34,6 @@ export const read = query({
 
 export const listByCanvasId = query({
   args: { canvasId: v.id("canvases") },
-  returns: v.array(nodeDatasWithIdValidator),
   handler: async (ctx, { canvasId }) => {
     await requireAuth(ctx);
 
@@ -71,11 +66,7 @@ export const updateValues = mutation({
   returns: v.boolean(),
   handler: async (ctx, { _id, values }): Promise<boolean> => {
     await requireAuth(ctx);
-    return NodeDataModel.updateValues(
-      ctx,
-      { _id, values },
-      anyApi.ia.abstractor.AbstractAgent.abstractNodeData,
-    );
+    return NodeDataModel.updateValues(ctx, { _id, values });
   },
 });
 

@@ -1,4 +1,4 @@
-import { useAction, useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useEffect, useState } from "react";
 
@@ -8,8 +8,8 @@ import { useEffect, useState } from "react";
 export function useNoleThread() {
   const [threadId, setThreadId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const latestThread = useQuery(api.ia.nole.getLatestThread);
-  const startThread = useAction(api.ia.nole.startThread);
+  const latestThread = useQuery(api.threads.getLatestThread);
+  const startThread = useMutation(api.threads.startThread);
 
   useEffect(() => {
     const initThread = async () => {
@@ -23,14 +23,7 @@ export function useNoleThread() {
           } else {
             // No existing thread, create a new one
             const result = await startThread({});
-            if ("threadId" in result) {
-              setThreadId(result.threadId);
-            } else if ("error" in result) {
-              console.error(
-                "Erreur lors de la création du thread:",
-                result.error
-              );
-            }
+            setThreadId(result.threadId);
             setIsLoading(false);
           }
         }
@@ -48,9 +41,7 @@ export function useNoleThread() {
     setThreadId(null);
     try {
       const result = await startThread({});
-      if ("threadId" in result) {
-        setThreadId(result.threadId);
-      }
+      setThreadId(result.threadId);
     } catch (error) {
       console.error("Erreur lors du reset du thread:", error);
     } finally {

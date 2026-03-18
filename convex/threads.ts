@@ -1,8 +1,58 @@
-import { query, mutation } from "./_generated/server";
+import { action, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireAuth } from "./lib/auth";
 import { components } from "./_generated/api";
 import { paginationOptsValidator } from "convex/server";
+import {
+  createThread,
+  getThreadMetadata,
+  listUIMessages,
+  syncStreams,
+  vStreamArgs,
+} from "@convex-dev/agent";
+import errors from "./config/errorsConfig";
+
+export const getLatestThread = query({
+  args: {},
+  returns: v.union(
+    v.object({
+      threadId: v.string(),
+    }),
+    v.null(),
+  ),
+  handler: async (ctx) => {
+    const authUserId = await requireAuth(ctx);
+
+    const result = await ctx.runQuery(
+      components.agent.threads.listThreadsByUserId,
+      {
+        userId: authUserId,
+        order: "desc",
+        paginationOpts: { numItems: 1, cursor: null },
+      },
+    );
+
+    if (!result || result.page.length === 0) {
+      return null;
+    }
+
+    return { threadId: result.page[0]._id };
+  },
+});
+
+export const startThread = mutation({
+  args: {},
+  returns: v.object({
+    threadId: v.string(),
+  }),
+  handler: async (ctx) => {
+    const authUserId = await requireAuth(ctx);
+    const threadId = await createThread(ctx, components.agent, {
+      userId: authUserId,
+    });
+    return { threadId };
+  },
+});
 
 export const listUserThreads = query({
   args: {
@@ -16,7 +66,7 @@ export const listUserThreads = query({
       return {
         success: false,
         threads: [],
-        error: "Utilisateur non authentifié",
+        error: errors.UNAUTHORIZED_USER,
       };
     }
 
@@ -38,7 +88,7 @@ export const getThreadInfo = query({
     const authUserId = await requireAuth(ctx);
     if (!authUserId) return null;
 
-    const thread = await ctx.runQuery(components.agent.threads.getThread, {
+    const thread = await getThreadMetadata(ctx, components.agent, {
       threadId: args.threadId,
     });
 
@@ -50,5 +100,64 @@ export const getThreadInfo = query({
       title: thread.title ?? null,
       summary: thread.summary ?? null,
     };
+  },
+});
+
+export const listMessages = query({
+  args: {
+    threadId: v.string(),
+    paginationOpts: paginationOptsValidator,
+    streamArgs: vStreamArgs,
+  },
+  handler: async (ctx, { threadId, paginationOpts, streamArgs }) => {
+    const authUserId = await requireAuth(ctx);
+    if (!authUserId) {
+      throw new Error(errors.UNAUTHORIZED_USER);
+    }
+
+    const thread = await getThreadMetadata(ctx, components.agent, {
+      threadId,
+    });
+    if (!thread || thread.userId !== authUserId) {
+      throw new Error(errors.THREAD_NOT_FOUND_OR_FORBIDDEN);
+    }
+
+    const streams = await syncStreams(ctx, components.agent, {
+      threadId,
+      streamArgs,
+    });
+
+    const paginated = await listUIMessages(ctx, components.agent, {
+      threadId,
+      paginationOpts,
+    });
+
+    return {
+      ...paginated,
+      streams,
+    };
+  },
+});
+
+export const deleteThread = action({
+  args: { threadId: v.string() },
+  handler: async (ctx, { threadId }) => {
+    const authUserId = await requireAuth(ctx);
+    if (!authUserId) {
+      throw new Error(errors.UNAUTHORIZED_USER);
+    }
+
+    const thread = await getThreadMetadata(ctx, components.agent, {
+      threadId,
+    });
+    if (!thread || thread.userId !== authUserId) {
+      throw new Error(errors.THREAD_NOT_FOUND_OR_FORBIDDEN);
+    }
+
+    await ctx.runMutation(components.agent.threads.deleteAllForThreadIdAsync, {
+      threadId,
+    });
+
+    return { success: true };
   },
 });

@@ -22,7 +22,7 @@ export default function ThreadSelector({
   const userThreads = useQuery(api.threads.listUserThreads, {
     paginationOpts: { numItems: 20, cursor: null },
   });
-  const deleteThread = useAction(api.ia.nole.deleteThread);
+  const deleteThread = useAction(api.threads.deleteThread);
 
   const threadsData = userThreads?.success ? userThreads.threads : null;
   const threads =

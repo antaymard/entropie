@@ -35,13 +35,13 @@ const ChatInterface = memo(function ChatInterface({
     status,
     loadMore,
   } = useUIMessages(
-    api.ia.nole.listMessages,
+    api.threads.listMessages,
     { threadId },
-    { initialNumItems: 20, stream: true }
+    { initialNumItems: 20, stream: true },
   );
 
   const sendMessage = useMutation(api.ia.nole.sendMessage).withOptimisticUpdate(
-    optimisticallySendMessage(api.ia.nole.listMessages)
+    optimisticallySendMessage(api.threads.listMessages),
   );
 
   const updateThreadTitle = useAction(api.ia.nole.updateThreadTitle);

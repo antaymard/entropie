@@ -3,6 +3,8 @@ import { authTables } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { canvasesValidator } from "./schemas/canvasesSchema";
 import { nodeDatasValidator } from "./schemas/nodeDatasSchema";
+import { scheduledJobsValidator } from "./schemas/scheduledJobsSchema";
+import { sharesValidator } from "./schemas/sharesSchema";
 
 const schema = defineSchema({
   ...authTables,
@@ -23,23 +25,14 @@ const schema = defineSchema({
   // ============================================================================
   // SHARES
   // ============================================================================
-  shares: defineTable({
-    resourceType: v.union(v.literal("canvas")), // extensible: "nodeData" later
-    canvasId: v.id("canvases"),
-    userId: v.id("users"),
-    permission: v.union(v.literal("viewer"), v.literal("editor")),
-    grantedBy: v.id("users"),
-  })
+  shares: defineTable(sharesValidator)
     .index("by_canvas_and_user", ["canvasId", "userId"])
     .index("by_user", ["userId"])
     .index("by_canvas", ["canvasId"]),
 
-  scheduledJobs: defineTable({
-    type: v.union(v.literal("generate-node-data-abstract")),
-    nodesDataId: v.optional(v.id("nodeDatas")),
-    scheduledAt: v.number(),
-    jobId: v.id("_scheduled_functions"),
-  }).index("by_nodeDataId", ["nodesDataId"]),
+  scheduledJobs: defineTable(scheduledJobsValidator).index("by_nodeDataId", [
+    "nodesDataId",
+  ]),
 
   // ============================================================================
   // NODE TEMPLATES

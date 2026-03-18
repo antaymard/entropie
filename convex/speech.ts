@@ -1,8 +1,8 @@
 "use node";
 
-import { action } from "../_generated/server";
+import { action } from "./_generated/server";
 import { v } from "convex/values";
-import { requireAuth } from "../lib/auth";
+import { requireAuth } from "./lib/auth";
 
 const segmentValidator = v.object({
   text: v.string(),

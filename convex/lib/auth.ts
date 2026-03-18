@@ -9,7 +9,7 @@ export async function requireAuth(ctx: QueryCtx | MutationCtx | ActionCtx) {
   const userId = await getAuthUserId(ctx);
 
   if (!userId) {
-    throw new ConvexError("Utilisateur non authentifié");
+    throw new ConvexError(errors.UNAUTHORIZED_USER);
   } else return userId;
 }
 

@@ -1,10 +1,8 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery } from "../../_generated/server";
-import { nodeDatasWithIdValidator } from "../../schemas/nodeDatasSchema";
 
 export const readNodeData = internalQuery({
   args: { nodeDataId: v.id("nodeDatas") },
-  returns: v.union(nodeDatasWithIdValidator, v.null()),
   handler: async (ctx, args) => {
     const nodeData = await ctx.db.get(args.nodeDataId);
     return nodeData ?? null;

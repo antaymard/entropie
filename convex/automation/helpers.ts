@@ -3,7 +3,6 @@ import { internalMutation, internalQuery } from "../_generated/server";
 import {
   automationProgressValidator,
   nodeDataStatusValidator,
-  nodeDatasWithIdValidator,
 } from "../schemas/nodeDatasSchema";
 import * as NodeDataModel from "../model/nodeData";
 
@@ -31,7 +30,6 @@ export const updateAutomationProgress = internalMutation({
 
 export const readNodeData = internalQuery({
   args: { _id: v.id("nodeDatas") },
-  returns: nodeDatasWithIdValidator,
   handler: async (ctx, args) => {
     return NodeDataModel.readNodeData(ctx, args);
   },
@@ -42,7 +40,6 @@ export const listNodeDataDependencies = internalQuery({
     type: v.union(v.literal("input"), v.literal("output"), v.literal("both")),
     nodeDataId: v.id("nodeDatas"),
   },
-  returns: v.array(nodeDatasWithIdValidator),
   handler: async (ctx, { type, nodeDataId }) => {
     return NodeDataModel.listNodeDataDependencies(ctx, {
       type,

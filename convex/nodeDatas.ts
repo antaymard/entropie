@@ -9,7 +9,6 @@ import {
   agentConfigValidator,
   dataProcessingValidator,
   nodeDatasValidator,
-  nodeDatasWithIdValidator,
 } from "./schemas/nodeDatasSchema";
 
 export const create = mutation({
@@ -28,7 +27,6 @@ export const create = mutation({
 
 export const read = query({
   args: { nodeDataId: v.id("nodeDatas") },
-  returns: v.union(nodeDatasWithIdValidator, v.null()),
   handler: async (ctx, args) => {
     await requireAuth(ctx);
     const nodeData = await ctx.db.get(args.nodeDataId);
@@ -38,7 +36,6 @@ export const read = query({
 
 export const listByCanvasId = query({
   args: { canvasId: v.id("canvases") },
-  returns: v.array(nodeDatasWithIdValidator),
   handler: async (ctx, { canvasId }) => {
     await requireAuth(ctx);
 

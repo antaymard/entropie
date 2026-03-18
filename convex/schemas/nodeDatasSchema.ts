@@ -58,15 +58,8 @@ const nodeDatasValidator = v.object({
   dependencies: v.optional(v.array(dependencyValidator)),
 });
 
-const nodeDatasWithIdValidator = v.object({
-  _id: v.id("nodeDatas"),
-  _creationTime: v.number(),
-  ...nodeDatasValidator.fields,
-});
-
 export {
   nodeDatasValidator,
-  nodeDatasWithIdValidator,
   nodeDataStatusValidator,
   automationProgressValidator,
   agentConfigValidator,

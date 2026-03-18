@@ -9,7 +9,6 @@
  */
 
 import type * as auth from "../auth.js";
-import type * as automation_automationAgent from "../automation/automationAgent.js";
 import type * as automation_helpers from "../automation/helpers.js";
 import type * as automation_progressReporter from "../automation/progressReporter.js";
 import type * as automations from "../automations.js";
@@ -18,8 +17,6 @@ import type * as canvasNodes from "../canvasNodes.js";
 import type * as canvases from "../canvases.js";
 import type * as config_errorsConfig from "../config/errorsConfig.js";
 import type * as http from "../http.js";
-import type * as ia_abstractor_AbstractAgent from "../ia/abstractor/AbstractAgent.js";
-import type * as ia_abstractor_helpers from "../ia/abstractor/helpers.js";
 import type * as ia_agents from "../ia/agents.js";
 import type * as ia_helpers_canvasHelpers from "../ia/helpers/canvasHelpers.js";
 import type * as ia_helpers_contextGenerator from "../ia/helpers/contextGenerator.js";
@@ -63,7 +60,6 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
-  "automation/automationAgent": typeof automation_automationAgent;
   "automation/helpers": typeof automation_helpers;
   "automation/progressReporter": typeof automation_progressReporter;
   automations: typeof automations;
@@ -72,8 +68,6 @@ declare const fullApi: ApiFromModules<{
   canvases: typeof canvases;
   "config/errorsConfig": typeof config_errorsConfig;
   http: typeof http;
-  "ia/abstractor/AbstractAgent": typeof ia_abstractor_AbstractAgent;
-  "ia/abstractor/helpers": typeof ia_abstractor_helpers;
   "ia/agents": typeof ia_agents;
   "ia/helpers/canvasHelpers": typeof ia_helpers_canvasHelpers;
   "ia/helpers/contextGenerator": typeof ia_helpers_contextGenerator;

@@ -45,8 +45,6 @@ const nodeDatasValidator = v.object({
   removedFromCanvasAt: v.optional(v.number()),
   values: v.record(v.string(), v.any()),
 
-  aiAbstract: v.optional(v.string()),
-
   status: nodeDataStatusValidator,
   automationProgress: automationProgressValidator,
 

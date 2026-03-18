@@ -8,7 +8,6 @@ type CanvasNode = NonNullable<Doc<"canvases">["nodes"]>[number];
 type CanvasNodeWithData = Pick<CanvasNode, "type" | "position" | "data"> & {
   idOnCanvas: string;
   nodeData: {
-    abstract?: string;
     updatedAt?: number;
   } | null;
 };
@@ -31,7 +30,6 @@ export const canvasContextPrompt = internalQuery({
           const fullNodeData = await ctx.db.get(node.nodeDataId);
           nodeData = fullNodeData
             ? {
-                abstract: fullNodeData.aiAbstract,
                 updatedAt: fullNodeData.updatedAt,
               }
             : null;
@@ -75,10 +73,6 @@ function generateNodeSummmary(nodes: CanvasNodeWithData[]): string {
       idOnCanvas: node.idOnCanvas,
       type: node.type,
       positionOnCanvas: JSON.stringify(node.position),
-      abstract:
-        node.type === "floatingText"
-          ? JSON.stringify(node.data)
-          : (node.nodeData?.abstract ?? "No abstract"),
       updatedAt:
         node.nodeData?.updatedAt && typeof node.nodeData.updatedAt === "number"
           ? new Date(node.nodeData.updatedAt).toISOString()

@@ -1,16 +1,6 @@
 import { ConvexError } from "convex/values";
-import type { FunctionReference } from "convex/server";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-
-const ABSTRACT_DEBOUNCE_MS = 5 * 60 * 1000;
-
-type AbstractNodeDataRef = FunctionReference<
-  "action",
-  "public" | "internal",
-  { nodeDataId: Id<"nodeDatas"> },
-  unknown
->;
 
 export async function readNodeData(
   ctx: QueryCtx,
@@ -108,7 +98,6 @@ export async function updateValues(
     _id: Id<"nodeDatas">;
     values: Record<string, unknown>;
   },
-  abstractNodeDataRef: AbstractNodeDataRef,
 ): Promise<boolean> {
   const existing = await ctx.db.get("nodeDatas", _id);
   if (!existing) throw new ConvexError("NodeData non trouvé");
@@ -117,32 +106,6 @@ export async function updateValues(
   await ctx.db.patch("nodeDatas", _id, {
     values: { ...existing.values, ...values },
     updatedAt: now,
-  });
-
-  const existingJob = await ctx.db
-    .query("scheduledJobs")
-    .withIndex("by_nodeDataId", (q) => q.eq("nodesDataId", _id))
-    .first();
-
-  if (existingJob) {
-    const job = await ctx.db.system.get(existingJob.jobId);
-    if (job && job.state.kind === "pending") {
-      await ctx.scheduler.cancel(existingJob.jobId);
-    }
-    await ctx.db.delete("scheduledJobs", existingJob._id);
-  }
-
-  const scheduledId = await ctx.scheduler.runAfter(
-    ABSTRACT_DEBOUNCE_MS,
-    abstractNodeDataRef,
-    { nodeDataId: _id },
-  );
-
-  await ctx.db.insert("scheduledJobs", {
-    type: "generate-node-data-abstract",
-    nodesDataId: _id,
-    scheduledAt: now + ABSTRACT_DEBOUNCE_MS,
-    jobId: scheduledId,
   });
 
   return true;

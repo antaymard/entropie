@@ -9,8 +9,6 @@ import {
   dataProcessingValidator,
   nodeDatasValidator,
 } from "./schemas/nodeDatasSchema";
-import { internal } from "./_generated/api";
-
 export const create = mutation({
   args: nodeDatasValidator,
   handler: async (ctx, args) => {
@@ -68,11 +66,7 @@ export const updateValues = mutation({
   returns: v.boolean(),
   handler: async (ctx, { _id, values }): Promise<boolean> => {
     await requireAuth(ctx);
-    return NodeDataModel.updateValues(
-      ctx,
-      { _id, values },
-      internal.ia.abstractor.AbstractAgent.abstractNodeData,
-    );
+    return NodeDataModel.updateValues(ctx, { _id, values });
   },
 });
 

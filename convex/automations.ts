@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { action } from "./_generated/server";
 import { api, components, internal } from "./_generated/api";
-import { createAutomationAgent } from "./automation/automationAgent";
+import { createAutomationAgent } from "./ia/agents";
 import { createThread } from "@convex-dev/agent";
 import { requireAuth } from "./lib/auth";
 import { nodeDataConfig } from "./schemas/nodeDataConfig";

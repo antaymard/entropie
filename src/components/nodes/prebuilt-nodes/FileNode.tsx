@@ -85,7 +85,10 @@ function FileNode(xyNode: Node) {
           <Button
             size="icon"
             variant="outline"
-            onClick={() => openWindow(xyNode.id)}
+            onClick={() => {
+              if (!nodeDataId) return;
+              openWindow({ xyNodeId: xyNode.id, nodeDataId, nodeType: "file" });
+            }}
           >
             <TbMaximize />
           </Button>

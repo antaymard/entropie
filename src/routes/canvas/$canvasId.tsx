@@ -22,7 +22,7 @@ import { useEffect, useMemo, useRef } from "react";
 import type { CanvasNode } from "@/types/convex";
 import { nodeTypes } from "@/components/nodes/nodeTypes";
 import { useCanvasPasteHandler } from "@/hooks/useCanvasPasteHandler";
-import WindowPanelsContainer from "@/components/windows/WindowPanelsContainer";
+import WindowsContainer from "@/components/windows/WindowsContainer";
 import "@xyflow/react/dist/style.css";
 import { useIsMobile } from "@/hooks/use-mobile";
 import CanvasSidebar from "@/components/canvas/CanvasSidebar";
@@ -208,7 +208,7 @@ function CanvasContent({
 
   return (
     <div className="flex-1 w-full h-full">
-      <WindowPanelsContainer />
+      <WindowsContainer />
       <ReactFlow
         panOnScroll
         panOnDrag={isMobile ? true : [1]}

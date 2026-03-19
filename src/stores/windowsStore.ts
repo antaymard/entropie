@@ -1,41 +1,327 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { useCanvasStore } from "./canvasStore";
+import type { Id } from "@/../convex/_generated/dataModel";
+import type { nodeTypes } from "@/types/domain/nodeTypes";
+
+const MIN_WINDOW_WIDTH = 320;
+const MIN_WINDOW_HEIGHT = 220;
+
+type WindowSize = { width: number; height: number };
+
+const DEFAULT_WINDOW_SIZE: WindowSize = { width: 720, height: 520 };
+
+const WINDOW_SIZE_BY_TYPE: Partial<Record<nodeTypes, WindowSize>> = {
+  document: { width: 450, height: 520 },
+  image: { width: 300, height: 300 },
+  embed: { width: 500, height: 500 },
+  link: { width: 480, height: 360 },
+  file: { width: 480, height: 360 },
+  value: { width: 400, height: 300 },
+  floatingText: { width: 480, height: 320 },
+};
+
+function getDefaultWindowSize(nodeType: nodeTypes): WindowSize {
+  return WINDOW_SIZE_BY_TYPE[nodeType] ?? DEFAULT_WINDOW_SIZE;
+}
+
+const PLACEMENT_PADDING = 24;
+const PLACEMENT_STEP = 40;
+
+/**
+ * Scans the viewport in a raster pattern to find a position for a new window
+ * that doesn't overlap any existing visible window.
+ * Falls back to a cascaded center position if no free spot exists.
+ */
+function findSmartPosition(
+  existingWindows: OpenedWindow[],
+  newWidth: number,
+  newHeight: number,
+): { x: number; y: number } {
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+
+  const maxX = Math.max(
+    PLACEMENT_PADDING,
+    viewportWidth - newWidth - PLACEMENT_PADDING,
+  );
+  const maxY = Math.max(
+    PLACEMENT_PADDING,
+    viewportHeight - newHeight - PLACEMENT_PADDING,
+  );
+
+  const visibleWindows = existingWindows.filter(
+    (w) => w.windowState !== "minimized",
+  );
+
+  if (visibleWindows.length === 0) {
+    return { x: PLACEMENT_PADDING, y: PLACEMENT_PADDING };
+  }
+
+  const overlapsAny = (x: number, y: number): boolean =>
+    visibleWindows.some(
+      (w) =>
+        !(
+          x + newWidth <= w.position.x ||
+          x >= w.position.x + w.width ||
+          y + newHeight <= w.position.y ||
+          y >= w.position.y + w.height
+        ),
+    );
+
+  for (let y = PLACEMENT_PADDING; y <= maxY; y += PLACEMENT_STEP) {
+    for (let x = PLACEMENT_PADDING; x <= maxX; x += PLACEMENT_STEP) {
+      if (!overlapsAny(x, y)) {
+        return { x, y };
+      }
+    }
+  }
+
+  // No free spot: cascade from center so the window is at least visible
+  const cascadeOffset = (visibleWindows.length % 8) * 36;
+  return {
+    x: Math.min(
+      Math.max(
+        PLACEMENT_PADDING,
+        Math.round((viewportWidth - newWidth) / 2) + cascadeOffset,
+      ),
+      maxX,
+    ),
+    y: Math.min(
+      Math.max(
+        PLACEMENT_PADDING,
+        Math.round((viewportHeight - newHeight) / 2) + cascadeOffset,
+      ),
+      maxY,
+    ),
+  };
+}
+
+type OpenedWindowState = "normal" | "minimized" | "maximized";
+
+type Delta = { x: number; y: number };
+
+export interface OpenedWindow {
+  position: { x: number; y: number };
+  width: number;
+  height: number;
+  xyNodeId: string;
+  nodeDataId: Id<"nodeDatas">;
+  nodeType: nodeTypes;
+  windowState: OpenedWindowState;
+}
+
+type OpenedWindowPayload = Pick<
+  OpenedWindow,
+  "xyNodeId" | "nodeDataId" | "nodeType"
+>;
 
 interface WindowsStore {
-  openWindows: string[];
-  openWindow: (xyNodeId: string) => void;
+  openedWindows: OpenedWindow[];
+  openWindow: (payload: OpenedWindowPayload) => void;
   closeWindow: (xyNodeId: string) => void;
   closeAllWindows: () => void;
+  moveWindow: (xyNodeId: string, delta: Delta) => void;
+  resizeWindow: (
+    xyNodeId: string,
+    sizeDelta: Delta,
+    positionDelta?: Delta,
+  ) => void;
+  setWindowState: (xyNodeId: string, state: OpenedWindowState) => void;
+  toggleMinimizeWindow: (xyNodeId: string) => void;
 }
 
 export const useWindowsStore = create<WindowsStore>()(
   devtools(
     (set) => ({
-      openWindows: [],
-      openWindow: (xyNodeId: string) => {
-        set((state) => {
-          if (state.openWindows[0] === xyNodeId) {
-            return state;
+      openedWindows: [],
+      openWindow: ({ xyNodeId, nodeDataId, nodeType }: OpenedWindowPayload) => {
+        set((store) => {
+          const existingWindowIndex = store.openedWindows.findIndex(
+            (window) => window.xyNodeId === xyNodeId,
+          );
+
+          // If the window is already open, just bring it to front (and unminimize if needed)
+          if (existingWindowIndex >= 0) {
+            const currentWindow = store.openedWindows[existingWindowIndex];
+
+            const isAlreadyOnTopAndVisible =
+              existingWindowIndex === store.openedWindows.length - 1 &&
+              currentWindow.windowState !== "minimized";
+
+            if (isAlreadyOnTopAndVisible) return store;
+
+            // Unminimize if needed, then move to top (end of array = highest z-order)
+            const newWindow: OpenedWindow =
+              currentWindow.windowState === "minimized"
+                ? { ...currentWindow, windowState: "normal" }
+                : currentWindow;
+
+            const newOpenedWindows = [
+              ...store.openedWindows.filter((w) => w.xyNodeId !== xyNodeId),
+              newWindow,
+            ];
+
+            return { openedWindows: newOpenedWindows };
           }
+
+          // If the window is not open, create a new one
+          const { width, height } = getDefaultWindowSize(nodeType);
+          const newWindow: OpenedWindow = {
+            xyNodeId,
+            nodeDataId,
+            nodeType,
+            position: findSmartPosition(store.openedWindows, width, height),
+            width,
+            height,
+            windowState: "normal",
+          };
+
           return {
-            openWindows: [xyNodeId],
+            openedWindows: [...store.openedWindows, newWindow],
           };
         });
       },
       closeWindow: (xyNodeId: string) => {
         useCanvasStore.getState().setFocus("canvas");
-        set((state) => ({
-          openWindows: state.openWindows.filter(
-            (window) => window !== xyNodeId,
-          ),
-        }));
+        set((store) => {
+          const newOpenedWindows = store.openedWindows.filter(
+            (window) => window.xyNodeId !== xyNodeId,
+          );
+          // Avoir re-render if no changes
+          if (newOpenedWindows.length === store.openedWindows.length) {
+            return store;
+          }
+
+          return {
+            openedWindows: newOpenedWindows,
+          };
+        });
       },
       closeAllWindows: () => {
         useCanvasStore.getState().setFocus("canvas");
         set(() => ({
-          openWindows: [],
+          openedWindows: [],
         }));
+      },
+      moveWindow: (xyNodeId: string, delta: Delta) => {
+        if (delta.x === 0 && delta.y === 0) return;
+
+        set((store) => {
+          const windowToMoveIndex = store.openedWindows.findIndex(
+            (window) => window.xyNodeId === xyNodeId,
+          );
+          if (windowToMoveIndex < 0) return store;
+
+          const windowToMove = store.openedWindows[windowToMoveIndex];
+          if (windowToMove.windowState !== "normal") return store;
+
+          const nextPosition = {
+            x: windowToMove.position.x + delta.x,
+            y: windowToMove.position.y + delta.y,
+          };
+
+          if (
+            nextPosition.x === windowToMove.position.x &&
+            nextPosition.y === windowToMove.position.y
+          ) {
+            return store;
+          }
+
+          const nextOpenedWindows = store.openedWindows.slice();
+          nextOpenedWindows[windowToMoveIndex] = {
+            ...windowToMove,
+            position: nextPosition,
+          };
+          return { openedWindows: nextOpenedWindows };
+        });
+      },
+      resizeWindow: (
+        xyNodeId: string,
+        sizeDelta: Delta,
+        positionDelta?: Delta,
+      ) => {
+        if (sizeDelta.x === 0 && sizeDelta.y === 0) return;
+
+        set((store) => {
+          const windowToResizeIndex = store.openedWindows.findIndex(
+            (window) => window.xyNodeId === xyNodeId,
+          );
+          if (windowToResizeIndex < 0) return store;
+
+          const windowToResize = store.openedWindows[windowToResizeIndex];
+          if (windowToResize.windowState !== "normal") return store;
+
+          const nextWidth = Math.max(
+            MIN_WINDOW_WIDTH,
+            windowToResize.width + sizeDelta.x,
+          );
+          const nextHeight = Math.max(
+            MIN_WINDOW_HEIGHT,
+            windowToResize.height + sizeDelta.y,
+          );
+
+          // When resizing from left/top edges, the position must shift accordingly
+          const nextPosition = positionDelta
+            ? {
+                x: windowToResize.position.x + positionDelta.x,
+                y: windowToResize.position.y + positionDelta.y,
+              }
+            : windowToResize.position;
+
+          if (
+            nextWidth === windowToResize.width &&
+            nextHeight === windowToResize.height &&
+            nextPosition === windowToResize.position
+          ) {
+            return store;
+          }
+
+          const nextOpenedWindows = store.openedWindows.slice();
+          nextOpenedWindows[windowToResizeIndex] = {
+            ...windowToResize,
+            width: nextWidth,
+            height: nextHeight,
+            position: nextPosition,
+          };
+          return { openedWindows: nextOpenedWindows };
+        });
+      },
+      setWindowState: (xyNodeId: string, windowState: OpenedWindowState) => {
+        set((store) => {
+          const index = store.openedWindows.findIndex(
+            (window) => window.xyNodeId === xyNodeId,
+          );
+          if (index < 0) return store;
+
+          const current = store.openedWindows[index];
+          if (current.windowState === windowState) return store;
+
+          const nextOpenedWindows = store.openedWindows.slice();
+          nextOpenedWindows[index] = { ...current, windowState };
+          return { openedWindows: nextOpenedWindows };
+        });
+      },
+      toggleMinimizeWindow: (xyNodeId: string) => {
+        set((store) => {
+          const index = store.openedWindows.findIndex(
+            (window) => window.xyNodeId === xyNodeId,
+          );
+          if (index < 0) return store;
+
+          const current = store.openedWindows[index];
+          const nextWindowState: OpenedWindowState =
+            current.windowState === "minimized" ? "normal" : "minimized";
+
+          if (nextWindowState === current.windowState) return store;
+
+          const nextOpenedWindows = store.openedWindows.slice();
+          nextOpenedWindows[index] = {
+            ...current,
+            windowState: nextWindowState,
+          };
+          return { openedWindows: nextOpenedWindows };
+        });
       },
     }),
     { name: "windows-store" },

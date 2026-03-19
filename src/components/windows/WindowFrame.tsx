@@ -1,0 +1,269 @@
+import { useEffect, useRef, useCallback, useState } from "react";
+import { cn } from "@/lib/utils";
+import { useWindowsStore, type OpenedWindow } from "@/stores/windowsStore";
+import { useNodeTitle } from "@/hooks/useNodeTitle";
+import { X, Minus, Save } from "lucide-react";
+import DocumentWindow from "./prebuilt/DocumentWindow";
+import { WindowFrameContext } from "./WindowFrameContext";
+
+function WindowContent({ openedWindow }: { openedWindow: OpenedWindow }) {
+  const { nodeType, xyNodeId, nodeDataId } = openedWindow;
+
+  switch (nodeType) {
+    case "document":
+      return <DocumentWindow xyNodeId={xyNodeId} nodeDataId={nodeDataId} />;
+    default:
+      return (
+        <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+          {nodeType}
+        </div>
+      );
+  }
+}
+
+type ResizeDirection = "n" | "ne" | "e" | "se" | "s" | "sw" | "w" | "nw";
+
+const RESIZE_CURSOR: Record<ResizeDirection, string> = {
+  n: "cursor-n-resize",
+  ne: "cursor-ne-resize",
+  e: "cursor-e-resize",
+  se: "cursor-se-resize",
+  s: "cursor-s-resize",
+  sw: "cursor-sw-resize",
+  w: "cursor-w-resize",
+  nw: "cursor-nw-resize",
+};
+
+interface WindowFrameProps {
+  openedWindow: OpenedWindow;
+}
+
+export default function WindowFrame({ openedWindow }: WindowFrameProps) {
+  const { xyNodeId, nodeDataId } = openedWindow;
+  const [isDirty, setDirty] = useState(false);
+  const [saveHandler, setSaveHandler] = useState<(() => void) | null>(null);
+  const moveWindow = useWindowsStore((s) => s.moveWindow);
+  const resizeWindow = useWindowsStore((s) => s.resizeWindow);
+  const closeWindow = useWindowsStore((s) => s.closeWindow);
+  const toggleMinimizeWindow = useWindowsStore((s) => s.toggleMinimizeWindow);
+
+  const title = useNodeTitle(nodeDataId);
+
+  // Stored as refs to avoid stale closures in the event listeners
+  const dragRef = useRef<{ startX: number; startY: number } | null>(null);
+  const resizeRef = useRef<{
+    startX: number;
+    startY: number;
+    direction: ResizeDirection;
+  } | null>(null);
+
+  const handleHeaderMouseDown = useCallback((e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    dragRef.current = { startX: e.clientX, startY: e.clientY };
+    document.body.style.cursor = "grabbing";
+    document.body.style.userSelect = "none";
+  }, []);
+
+  const handleResizeMouseDown = useCallback(
+    (e: React.MouseEvent, direction: ResizeDirection) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      e.stopPropagation();
+      resizeRef.current = { startX: e.clientX, startY: e.clientY, direction };
+      document.body.style.cursor = RESIZE_CURSOR[direction].replace(
+        "cursor-",
+        "",
+      );
+      document.body.style.userSelect = "none";
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (dragRef.current) {
+        const delta = {
+          x: e.clientX - dragRef.current.startX,
+          y: e.clientY - dragRef.current.startY,
+        };
+        dragRef.current = { startX: e.clientX, startY: e.clientY };
+        moveWindow(xyNodeId, delta);
+        return;
+      }
+
+      if (resizeRef.current) {
+        const { startX, startY, direction } = resizeRef.current;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        resizeRef.current = {
+          startX: e.clientX,
+          startY: e.clientY,
+          direction,
+        };
+
+        let sizeDelta = { x: 0, y: 0 };
+        let positionDelta: { x: number; y: number } | undefined;
+
+        switch (direction) {
+          case "n":
+            sizeDelta = { x: 0, y: -dy };
+            positionDelta = { x: 0, y: dy };
+            break;
+          case "ne":
+            sizeDelta = { x: dx, y: -dy };
+            positionDelta = { x: 0, y: dy };
+            break;
+          case "e":
+            sizeDelta = { x: dx, y: 0 };
+            break;
+          case "se":
+            sizeDelta = { x: dx, y: dy };
+            break;
+          case "s":
+            sizeDelta = { x: 0, y: dy };
+            break;
+          case "sw":
+            sizeDelta = { x: -dx, y: dy };
+            positionDelta = { x: dx, y: 0 };
+            break;
+          case "w":
+            sizeDelta = { x: -dx, y: 0 };
+            positionDelta = { x: dx, y: 0 };
+            break;
+          case "nw":
+            sizeDelta = { x: -dx, y: -dy };
+            positionDelta = { x: dx, y: dy };
+            break;
+        }
+
+        resizeWindow(xyNodeId, sizeDelta, positionDelta);
+      }
+    };
+
+    const handleMouseUp = () => {
+      dragRef.current = null;
+      resizeRef.current = null;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [xyNodeId, moveWindow, resizeWindow]);
+
+  return (
+    <WindowFrameContext.Provider value={{ setDirty, setSaveHandler }}>
+      <div className="relative flex h-full w-full flex-col overflow-hidden rounded-lg border bg-white shadow-2xl/10">
+        {/* ── Resize handles ───────────────────────────────────────── */}
+
+        {/* Corners (12×12, priority z-20) */}
+        <div
+          className={cn(
+            "absolute -left-1 -top-1 z-20 h-3 w-3 rounded-sm transition-colors hover:bg-blue-400/50",
+            RESIZE_CURSOR.nw,
+          )}
+          onMouseDown={(e) => handleResizeMouseDown(e, "nw")}
+        />
+        <div
+          className={cn(
+            "absolute -right-1 -top-1 z-20 h-3 w-3 rounded-sm transition-colors hover:bg-blue-400/50",
+            RESIZE_CURSOR.ne,
+          )}
+          onMouseDown={(e) => handleResizeMouseDown(e, "ne")}
+        />
+        <div
+          className={cn(
+            "absolute -bottom-1 -left-1 z-20 h-3 w-3 rounded-sm transition-colors hover:bg-blue-400/50",
+            RESIZE_CURSOR.sw,
+          )}
+          onMouseDown={(e) => handleResizeMouseDown(e, "sw")}
+        />
+        <div
+          className={cn(
+            "absolute -bottom-1 -right-1 z-20 h-3 w-3 rounded-sm transition-colors hover:bg-blue-400/50",
+            RESIZE_CURSOR.se,
+          )}
+          onMouseDown={(e) => handleResizeMouseDown(e, "se")}
+        />
+
+        {/* Edges (z-10, inset slightly so corners win) */}
+        <div
+          className={cn(
+            "absolute -top-1 left-2 right-2 z-10 h-2 transition-colors hover:bg-blue-400/30",
+            RESIZE_CURSOR.n,
+          )}
+          onMouseDown={(e) => handleResizeMouseDown(e, "n")}
+        />
+        <div
+          className={cn(
+            "absolute -bottom-1 left-2 right-2 z-10 h-2 transition-colors hover:bg-blue-400/30",
+            RESIZE_CURSOR.s,
+          )}
+          onMouseDown={(e) => handleResizeMouseDown(e, "s")}
+        />
+        <div
+          className={cn(
+            "absolute -left-1 bottom-2 top-2 z-10 w-2 transition-colors hover:bg-blue-400/30",
+            RESIZE_CURSOR.w,
+          )}
+          onMouseDown={(e) => handleResizeMouseDown(e, "w")}
+        />
+        <div
+          className={cn(
+            "absolute -right-1 bottom-2 top-2 z-10 w-2 transition-colors hover:bg-blue-400/30",
+            RESIZE_CURSOR.e,
+          )}
+          onMouseDown={(e) => handleResizeMouseDown(e, "e")}
+        />
+
+        {/* ── Header (draggable) ────────────────────────────────────── */}
+        <div
+          className="flex cursor-grab select-none items-center gap-2 border-b px-3 py-2 hover:cursor-grab active:cursor-grabbing"
+          onMouseDown={handleHeaderMouseDown}
+        >
+          <span className="min-w-0 flex-1 truncate text-sm font-medium">
+            {title ?? "—"}
+          </span>
+          {saveHandler && (
+            <button
+              className="flex shrink-0 items-center gap-1.5 rounded px-2 py-1 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 disabled:pointer-events-none disabled:opacity-30"
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={saveHandler}
+              disabled={!isDirty}
+            >
+              <Save size={12} />
+              Sauvegarder
+            </button>
+          )}
+          <button
+            className="shrink-0 rounded p-0.5 opacity-50 hover:bg-black/10 hover:opacity-100"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={() => toggleMinimizeWindow(xyNodeId)}
+            aria-label="Minimize"
+          >
+            <Minus size={14} />
+          </button>
+          <button
+            className="shrink-0 rounded p-0.5 opacity-50 hover:bg-red-500/15 hover:text-red-600 hover:opacity-100"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={() => closeWindow(xyNodeId)}
+            aria-label="Close"
+          >
+            <X size={14} />
+          </button>
+        </div>
+
+        {/* ── Body (non-draggable) ──────────────────────────────────── */}
+        <div className="min-h-0 flex-1 overflow-auto">
+          <WindowContent openedWindow={openedWindow} />
+        </div>
+      </div>
+    </WindowFrameContext.Provider>
+  );
+}

@@ -5,13 +5,13 @@ import PdfWindow from "./prebuilt/PdfWindow";
 import { useReactFlow, type Node } from "@xyflow/react";
 
 export default function WindowPanelsContainer() {
-  const openWindows = useWindowsStore((state) => state.openWindows);
+  const openedWindows = useWindowsStore((state) => state.openedWindows);
   const { getNode } = useReactFlow();
 
-  if (openWindows.length === 0) return null;
+  if (openedWindows.length === 0) return null;
 
-  const window = openWindows[0];
-  const node = getNode(window) as Node;
+  const window = openedWindows[0];
+  const node = getNode(window.xyNodeId) as Node;
 
   function renderWindowPanel() {
     if (!node?.type) return null;

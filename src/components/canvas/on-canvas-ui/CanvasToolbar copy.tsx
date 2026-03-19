@@ -22,10 +22,12 @@ function CanvasToolbar() {
         setCurrentTool: state.setCurrentCanvasTool,
         isAiPanelOpen: state.isAiPanelOpen,
         setIsAiPanelOpen: state.setIsAiPanelOpen,
-      }))
+      })),
     );
 
-  const openWindows = useWindowsStore(useShallow((state) => state.openWindows));
+  const openedWindows = useWindowsStore(
+    useShallow((state) => state.openedWindows),
+  );
 
   const tools = [
     {
@@ -80,9 +82,9 @@ function CanvasToolbar() {
           </Tooltip>
         );
       })}
-      {openWindows.length > 0 && <Separator />}
-      {openWindows.map((window) => (
-        <MinimizedWindow key={window.id} window={window} />
+      {openedWindows.length > 0 && <Separator />}
+      {openedWindows.map((window) => (
+        <MinimizedWindow key={window.xyNodeId} window={window} />
       ))}
     </div>
   );

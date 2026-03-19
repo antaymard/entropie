@@ -1,98 +1,43 @@
 import type { BaseFieldProps } from "@/types/ui";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNodeSidePanel } from "../nodes/side-panels/NodeSidePanelContext";
-import SidePanelFrame from "../nodes/side-panels/SidePanelFrame";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../shadcn/tabs";
-import { UploadFile } from "./UploadFile";
-import { TbPencil } from "react-icons/tb";
-import debounce from "lodash/debounce";
-import {
-  TransformComponent,
-  TransformWrapper,
-  type ReactZoomPanPinchRef,
-} from "react-zoom-pan-pinch";
-import { Button } from "../shadcn/button";
-import { useCanvasStore } from "@/stores/canvasStore";
+import { useEffect, useState } from "react";
+import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 
 type ImageValueType = {
   url: string;
-  inImageNavigation?: {
-    scale: number;
-    positionX: number;
-    positionY: number;
-  };
 };
 
-const sidePanelId = "imageEdition";
-
 export default function ImageField({
-  field,
   value,
-  onChange,
   visualSettings,
   visualType,
 }: BaseFieldProps<ImageValueType[]>) {
-  const { closeSidePanel, openSidePanel } = useNodeSidePanel();
   const imageUrl = value && value.length > 0 ? value[0].url : "";
-  const currentCanvasTool = useCanvasStore((state) => state.currentCanvasTool);
-
-  const handleSave = useCallback((newValue: ImageValueType) => {
-    onChange?.([newValue]);
-    closeSidePanel(sidePanelId);
-  }, []);
-
-  function openSidePanelForImageEdition() {
-    openSidePanel(
-      sidePanelId,
-      <ImageUploader
-        initialValue={imageUrl}
-        onSave={handleSave}
-        onClose={() => closeSidePanel(sidePanelId)}
-      />
-    );
-  }
+  const imageSettings = visualSettings as
+    | {
+        enableInImageNavigation?: boolean;
+      }
+    | undefined;
+  const canNavigateInImage =
+    visualType === "window" && Boolean(imageSettings?.enableInImageNavigation);
 
   if (!value || value.length === 0) {
     return (
-      <div
-        className="aspect-video border-2 border-dashed flex items-center justify-center rounded-md cursor-pointer"
-        onClick={openSidePanelForImageEdition}
-      >
+      <div className="aspect-video border-2 border-dashed flex items-center justify-center rounded-md">
         <p className="text-gray-500">Ajouter une image</p>
       </div>
     );
   }
 
   return (
-    <div className="relative group/imagefield">
-      {visualSettings?.disableEditButton ? null : (
-        <button
-          type="button"
-          className="absolute top-2 right-2 bg-white rounded items-center justify-center h-8 w-8 group-hover/imagefield:flex hidden z-10"
-          onClick={openSidePanelForImageEdition}
-        >
-          <TbPencil />
-        </button>
-      )}
-      {visualSettings?.enableInImageNavigation ? (
-        <NavigatingImage
-          disabled={currentCanvasTool !== "default"}
-          imageUrl={imageUrl}
-          onMouve={(newTransform: {
-            scale: number;
-            positionX: number;
-            positionY: number;
-          }) => {
-            if (visualType === "window") return; // Pas de sauvegarde en mode preview
-            onChange?.([
-              {
-                url: imageUrl || "",
-                inImageNavigation: newTransform,
-              },
-            ]);
-          }}
-          inImageNavigation={value?.[0]?.inImageNavigation}
-        />
+    <div
+      className={
+        canNavigateInImage
+          ? "group/imagefield relative flex h-full w-full overflow-hidden"
+          : "group/imagefield relative"
+      }
+    >
+      {canNavigateInImage ? (
+        <NavigatingImage imageUrl={imageUrl} />
       ) : (
         <img
           src={imageUrl}
@@ -104,138 +49,84 @@ export default function ImageField({
   );
 }
 
-function NavigatingImage({
-  disabled,
-  imageUrl,
-  onMouve,
-  inImageNavigation,
-}: {
-  disabled?: boolean;
-  imageUrl: string;
-  onMouve: (newTransform: {
-    scale: number;
-    positionX: number;
-    positionY: number;
-  }) => void;
-  inImageNavigation?: { scale: number; positionX: number; positionY: number };
-}) {
-  const transformRef = useRef<ReactZoomPanPinchRef>(null);
-  const hasInitialized = useRef(false);
+function NavigatingImage({ imageUrl }: { imageUrl: string }) {
+  const containerRef = useState<HTMLDivElement | null>(null);
+  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
+  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+  const [containerNode, setContainerNode] = containerRef;
 
-  // Debounced update function - créé une seule fois et réutilisé
-  const debouncedUpdate = useMemo(
-    () =>
-      debounce((scale: number, positionX: number, positionY: number) => {
-        onMouve({
-          scale,
-          positionX,
-          positionY,
-        });
-      }, 300),
-    []
-  );
-
-  // Nettoyage du debounce au démontage
   useEffect(() => {
-    return () => {
-      debouncedUpdate.cancel();
+    if (!containerNode) return;
+
+    const updateSize = () => {
+      setViewportSize({
+        width: containerNode.clientWidth,
+        height: containerNode.clientHeight,
+      });
     };
-  }, []);
 
-  // Handler pour les transformations
-  const handleTransform = useCallback(
-    (_e: unknown, { scale, positionX, positionY }: any) => {
-      debouncedUpdate(scale, positionX, positionY);
-    },
-    []
-  );
+    updateSize();
 
-  // Restaurer la position après le montage du TransformWrapper
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(containerNode);
+
+    return () => observer.disconnect();
+  }, [containerNode]);
+
   useEffect(() => {
-    if (!transformRef.current || hasInitialized.current || !imageUrl) {
-      return;
-    }
+    if (!imageUrl) return;
 
-    const savedTransform = inImageNavigation as
-      | { scale: number; positionX: number; positionY: number }
-      | undefined;
+    const image = new Image();
+    image.onload = () => {
+      setImageSize({
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+      });
+    };
+    image.src = imageUrl;
+  }, [imageUrl]);
 
-    if (savedTransform) {
-      const timerId = setTimeout(() => {
-        transformRef.current?.setTransform(
-          savedTransform.positionX,
-          savedTransform.positionY,
-          savedTransform.scale,
-          0
-        );
-        hasInitialized.current = true;
-      }, 0);
-
-      return () => clearTimeout(timerId);
-    }
-  }, [imageUrl, inImageNavigation]);
-
-  return (
-    <TransformWrapper
-      disabled={disabled}
-      ref={transformRef}
-      panning={{ velocityDisabled: true }}
-      doubleClick={{ disabled: true }}
-      onTransformed={handleTransform}
-    >
-      <TransformComponent wrapperClass="flex-1 nodrag" contentClass="flex-1">
-        <img src={imageUrl} alt="" className="w-full h-full object-cover" />
-      </TransformComponent>
-    </TransformWrapper>
-  );
-}
-
-function ImageUploader({ initialValue, onSave, onClose }) {
-  const [urlInput, setUrlInput] = useState("");
-
-  const handleUrlSubmit = () => {
-    if (urlInput.trim()) {
-      onSave({ url: urlInput.trim() });
-      setUrlInput("");
-    }
-  };
-
-  const handleUploadComplete = (fileData: {
-    url: string;
-    filename: string;
-    mimeType: string;
-    size: number;
-    uploadedAt: number;
-    key: string;
-  }) => {
-    onSave({ url: fileData.url });
-  };
+  const fitScale =
+    viewportSize.width > 0 &&
+    viewportSize.height > 0 &&
+    imageSize.width > 0 &&
+    imageSize.height > 0
+      ? Math.min(
+          viewportSize.width / imageSize.width,
+          viewportSize.height / imageSize.height,
+        )
+      : 1;
 
   return (
-    <SidePanelFrame id={sidePanelId} title="Edit image" className="w-64">
-      <Tabs defaultValue="upload" className="w-full">
-        <TabsList className="w-full">
-          <TabsTrigger value="upload">Image</TabsTrigger>
-          <TabsTrigger value="url">URL</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="upload" className="mt-2">
-          <UploadFile
-            onUploadComplete={handleUploadComplete}
-            accept="image/*"
-          />
-        </TabsContent>
-        <TabsContent value="url" className="mt-4 space-y-2">
-          <input
-            type="text"
-            value={urlInput}
-            onChange={(e) => setUrlInput(e.target.value)}
-            placeholder="https://example.com/image.jpg"
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <Button onClick={handleUrlSubmit}>Valider</Button>
-        </TabsContent>
-      </Tabs>
-    </SidePanelFrame>
+    <div className="h-full w-full overflow-hidden" ref={setContainerNode}>
+      {imageSize.width > 0 && imageSize.height > 0 && (
+        <TransformWrapper
+          key={`${imageUrl}-${viewportSize.width}-${viewportSize.height}`}
+          initialScale={fitScale}
+          minScale={Math.min(fitScale, 1)}
+          centerOnInit
+          centerZoomedOut
+          panning={{ velocityDisabled: true }}
+          doubleClick={{ disabled: true }}
+        >
+          <TransformComponent
+            wrapperClass="nodrag h-full w-full overflow-hidden"
+            wrapperStyle={{ width: "100%", height: "100%" }}
+          >
+            <img
+              src={imageUrl}
+              alt=""
+              draggable={false}
+              style={{
+                width: imageSize.width,
+                height: imageSize.height,
+                maxWidth: "none",
+                maxHeight: "none",
+              }}
+            />
+          </TransformComponent>
+        </TransformWrapper>
+      )}
+    </div>
   );
 }

@@ -1,31 +1,37 @@
-import { useStore } from "@xyflow/react";
 import { memo } from "react";
-import type { Node } from "@xyflow/react";
-import WindowFrame from "../WindowFrame";
 import ImageField from "@/components/fields/ImageField";
+import type { Id } from "@/../convex/_generated/dataModel";
+import { useNodeDataValues } from "@/hooks/useNodeData";
 
 interface ImageWindowProps {
-  windowId: string;
+  nodeDataId: Id<"nodeDatas">;
 }
 
-function ImageWindow({ windowId }: ImageWindowProps) {
-  // Récupère uniquement la data du node, re-render uniquement quand elle change
-  const nodeData = useStore(
-    (state) => state.nodes.find((n: Node) => n.id === windowId)?.data
-  );
-  const value = [{ url: nodeData?.url }];
+type ImageWindowValue = Array<{
+  url: string;
+  inImageNavigation?: {
+    scale: number;
+    positionX: number;
+    positionY: number;
+  };
+}>;
+
+function ImageWindow({ nodeDataId }: ImageWindowProps) {
+  const nodeDataValues = useNodeDataValues(nodeDataId);
+  const value = (nodeDataValues?.images as ImageWindowValue | undefined) ?? [];
+
+  if (!nodeDataValues) return null;
 
   return (
-    <WindowFrame windowId={windowId} contentClassName="p-0! ">
+    <div className="h-full w-full">
       <ImageField
         value={value}
         visualType="window"
         visualSettings={{
-          enableInImageNavigation: false,
-          disableEditButton: true,
+          enableInImageNavigation: true,
         }}
       />
-    </WindowFrame>
+    </div>
   );
 }
 

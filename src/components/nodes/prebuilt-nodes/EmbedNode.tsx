@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useCallback, useState } from "react";
 import type { Node } from "@xyflow/react";
 import { areNodePropsEqual } from "../areNodePropsEqual";
 import NodeFrame from "../NodeFrame";
@@ -10,10 +10,11 @@ import {
 } from "@/components/shadcn/popover";
 import { Button } from "@/components/shadcn/button";
 import { Input } from "@/components/shadcn/input";
-import { TbCode, TbPencil } from "react-icons/tb";
+import { TbCode, TbMaximize, TbPencil } from "react-icons/tb";
 import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
 import { useNodeDataValues } from "@/hooks/useNodeData";
 import type { Id } from "@/../convex/_generated/dataModel";
+import { useWindowsStore } from "@/stores/windowsStore";
 
 type EmbedType =
   | "youtube"
@@ -104,12 +105,18 @@ function EmbedNode(xyNode: Node) {
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
   const values = useNodeDataValues(nodeDataId);
   const { updateNodeDataValues } = useUpdateNodeDataValues();
+  const openWindow = useWindowsStore((s) => s.openWindow);
 
   const [inputUrl, setInputUrl] = useState("");
   const [inputTitle, setInputTitle] = useState("");
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   const embedValue = values?.embed as EmbedValueType | undefined;
+
+  const handleOpenWindow = useCallback(() => {
+    if (!nodeDataId) return;
+    openWindow({ xyNodeId: xyNode.id, nodeDataId, nodeType: "embed" });
+  }, [nodeDataId, openWindow, xyNode.id]);
 
   const handleSave = () => {
     if (!nodeDataId || !inputUrl.trim()) return;
@@ -143,6 +150,14 @@ function EmbedNode(xyNode: Node) {
   return (
     <>
       <CanvasNodeToolbar xyNode={xyNode}>
+        <Button
+          size="icon"
+          variant="outline"
+          disabled={!nodeDataId}
+          onClick={handleOpenWindow}
+        >
+          <TbMaximize />
+        </Button>
         <Popover open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
           <PopoverTrigger asChild>
             <Button variant="outline" size="icon" title="Edit embed URL">
@@ -168,7 +183,11 @@ function EmbedNode(xyNode: Node) {
                 value={inputTitle}
                 onChange={(e) => setInputTitle(e.target.value)}
               />
-              <Button onClick={handleSave} size="sm" disabled={!inputUrl.trim()}>
+              <Button
+                onClick={handleSave}
+                size="sm"
+                disabled={!inputUrl.trim()}
+              >
                 Save
               </Button>
             </div>
@@ -182,12 +201,15 @@ function EmbedNode(xyNode: Node) {
             title={embedValue.title ?? "Embedded content"}
             className="w-full h-full border-0 rounded"
             allow="autoplay; fullscreen; clipboard-read; clipboard-write"
+            allowFullScreen
             sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
           />
         ) : (
           <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground select-none">
             <TbCode size={28} />
-            <span className="text-sm">Paste a URL or &lt;iframe&gt; embed code</span>
+            <span className="text-sm">
+              Paste a URL or &lt;iframe&gt; embed code
+            </span>
           </div>
         )}
       </NodeFrame>

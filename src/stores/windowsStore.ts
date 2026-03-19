@@ -120,6 +120,7 @@ interface WindowsStore {
   openedWindows: OpenedWindow[];
   openWindow: (payload: OpenedWindowPayload) => void;
   closeWindow: (xyNodeId: string) => void;
+  closeWindowsForNodeIds: (xyNodeIds: string[]) => void;
   closeAllWindows: () => void;
   moveWindow: (xyNodeId: string, delta: Delta) => void;
   resizeWindow: (
@@ -195,6 +196,25 @@ export const useWindowsStore = create<WindowsStore>()(
 
           return {
             openedWindows: newOpenedWindows,
+          };
+        });
+      },
+      closeWindowsForNodeIds: (xyNodeIds: string[]) => {
+        if (xyNodeIds.length === 0) return;
+
+        useCanvasStore.getState().setFocus("canvas");
+        set((store) => {
+          const idsToClose = new Set(xyNodeIds);
+          const nextOpenedWindows = store.openedWindows.filter(
+            (window) => !idsToClose.has(window.xyNodeId),
+          );
+
+          if (nextOpenedWindows.length === store.openedWindows.length) {
+            return store;
+          }
+
+          return {
+            openedWindows: nextOpenedWindows,
           };
         });
       },

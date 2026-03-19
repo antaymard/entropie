@@ -4,7 +4,11 @@ import { useWindowsStore, type OpenedWindow } from "@/stores/windowsStore";
 import { useNodeTitle } from "@/hooks/useNodeTitle";
 import { X, Minus, Save } from "lucide-react";
 import DocumentWindow from "./prebuilt/DocumentWindow";
+import EmbedWindow from "./prebuilt/EmbedWindow";
+import FileWindow from "./prebuilt/FileWindow";
+import ImageWindow from "./prebuilt/ImageWindow";
 import { WindowFrameContext } from "./WindowFrameContext";
+import ConfirmableButton from "@/components/ui/ConfirmableButton";
 
 function WindowContent({ openedWindow }: { openedWindow: OpenedWindow }) {
   const { nodeType, xyNodeId, nodeDataId } = openedWindow;
@@ -12,6 +16,12 @@ function WindowContent({ openedWindow }: { openedWindow: OpenedWindow }) {
   switch (nodeType) {
     case "document":
       return <DocumentWindow xyNodeId={xyNodeId} nodeDataId={nodeDataId} />;
+    case "embed":
+      return <EmbedWindow nodeDataId={nodeDataId} />;
+    case "file":
+      return <FileWindow nodeDataId={nodeDataId} />;
+    case "image":
+      return <ImageWindow nodeDataId={nodeDataId} />;
     default:
       return (
         <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
@@ -249,14 +259,26 @@ export default function WindowFrame({ openedWindow }: WindowFrameProps) {
           >
             <Minus size={14} />
           </button>
-          <button
-            className="shrink-0 rounded p-0.5 opacity-50 hover:bg-red-500/15 hover:text-red-600 hover:opacity-100"
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={() => closeWindow(xyNodeId)}
-            aria-label="Close"
+          <ConfirmableButton
+            title="Fermer sans sauvegarder ?"
+            text="Vous avez des modifications non sauvegardees. Voulez-vous fermer cette fenetre ?"
+            onCancel={() => closeWindow(xyNodeId)}
+            onConfirm={() => {
+              saveHandler?.();
+              closeWindow(xyNodeId);
+            }}
+            shouldConfirm={isDirty}
+            cancelLabel="Fermer sans sauvegarder"
+            confirmLabel="Sauvegarder et fermer"
           >
-            <X size={14} />
-          </button>
+            <button
+              className="shrink-0 rounded p-0.5 opacity-50 hover:bg-red-500/15 hover:text-red-600 hover:opacity-100"
+              onMouseDown={(e) => e.stopPropagation()}
+              aria-label="Close"
+            >
+              <X size={14} />
+            </button>
+          </ConfirmableButton>
         </div>
 
         {/* ── Body (non-draggable) ──────────────────────────────────── */}

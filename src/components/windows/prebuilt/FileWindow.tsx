@@ -1,25 +1,23 @@
-import { useStore } from "@xyflow/react";
 import { memo } from "react";
-import type { Node } from "@xyflow/react";
-import WindowFrame from "../WindowFrame";
 import PdfViewerField from "@/components/fields/file-fields/PdfViewerField";
 import type { FileFieldType } from "@/components/fields/file-fields/FileNameField";
+import type { Id } from "@/../convex/_generated/dataModel";
+import { useNodeDataValues } from "@/hooks/useNodeData";
 
 interface FileWindowProps {
-  windowId: string;
+  nodeDataId: Id<"nodeDatas">;
 }
 
-function FileWindow({ windowId }: FileWindowProps) {
-  // Récupère uniquement la data du node, re-render uniquement quand elle change
-  const nodeData = useStore(
-    (state) => state.nodes.find((n: Node) => n.id === windowId)?.data
-  );
-  const value = (nodeData?.files as FileFieldType[]) || [];
+function FileWindow({ nodeDataId }: FileWindowProps) {
+  const nodeDataValues = useNodeDataValues(nodeDataId);
+  const value = (nodeDataValues?.files as FileFieldType[] | undefined) ?? [];
+
+  if (!nodeDataValues) return null;
 
   return (
-    <WindowFrame windowId={windowId} contentClassName="p-0! ">
+    <div className="h-full w-full">
       <PdfViewerField value={value} />
-    </WindowFrame>
+    </div>
   );
 }
 

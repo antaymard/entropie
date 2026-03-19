@@ -17,12 +17,16 @@ import {
   fromXyNodesToCanvasNodes,
 } from "@/lib/node-types-converter";
 import type { CanvasNode } from "@/types";
+import { useWindowsStore } from "@/stores/windowsStore";
 
 export function useCanvasNodes(
   canvasId: Id<"canvases">,
   canvasNodes?: CanvasNode[],
 ) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const closeWindowsForNodeIds = useWindowsStore(
+    (state) => state.closeWindowsForNodeIds,
+  );
 
   const lastPositionChangesWhenResizing = useRef<NodePositionChange[] | null>(
     null,
@@ -112,8 +116,9 @@ export function useCanvasNodes(
         });
       } else if (removedChanges.length > 0) {
         // REMOVE NODES
+        closeWindowsForNodeIds(removedChanges.map((change) => change.id));
         // Envoi direct à Convex
-        removeCanvasNodesToConvex({
+        return removeCanvasNodesToConvex({
           nodeCanvasIds: removedChanges.map((c) => c.id),
           canvasId,
         });
@@ -170,6 +175,7 @@ export function useCanvasNodes(
     [
       canvasId,
       addCanvasNodesToConvex,
+      closeWindowsForNodeIds,
       removeCanvasNodesToConvex,
       updateCanvasNodesPositionOrDimensionsInConvex,
       // throttledUpdatePositions,

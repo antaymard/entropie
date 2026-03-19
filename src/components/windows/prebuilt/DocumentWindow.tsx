@@ -1,27 +1,46 @@
-import { memo, useCallback, useMemo } from "react";
-import type { Node } from "@xyflow/react";
 import type { Value } from "platejs";
-import DocumentEditorField from "@/components/fields/document-fields/DocumentEditorField";
-import WindowPanelFrame from "../WindowPanelFrame";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import DocumentEditorField, {
+  type DocumentEditorFieldHandle,
+} from "@/components/fields/document-fields/DocumentEditorField";
 import { useNodeData, useNodeDataValues } from "@/hooks/useNodeData";
 import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
 import type { Id } from "@/../convex/_generated/dataModel";
+import { useWindowFrameContext } from "@/components/windows/WindowFrameContext";
 
-function DocumentWindow({ xyNode }: { xyNode: Node }) {
-  const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas">;
+interface DocumentWindowProps {
+  xyNodeId: string;
+  nodeDataId: Id<"nodeDatas">;
+}
+
+function DocumentWindow({ xyNodeId, nodeDataId }: DocumentWindowProps) {
+  const editorRef = useRef<DocumentEditorFieldHandle>(null);
+  const [isDirty, setIsDirty] = useState(false);
+  const { setDirty, setSaveHandler } = useWindowFrameContext();
   const nodeDataValues = useNodeDataValues(nodeDataId);
   const nodeData = useNodeData(nodeDataId);
   const isLocked = nodeData?.status === "working";
   const { updateNodeDataValues } = useUpdateNodeDataValues();
 
+  const handleSaveClick = useCallback(() => {
+    editorRef.current?.save();
+  }, []);
+
+  useEffect(() => {
+    setSaveHandler(() => handleSaveClick);
+    return () => setSaveHandler(null);
+  }, [handleSaveClick, setSaveHandler]);
+
+  useEffect(() => {
+    setDirty(isDirty && !isLocked);
+  }, [isDirty, isLocked, setDirty]);
+
   const handleSave = useCallback(
     (newValue: { doc: Value }) => {
-      if (nodeDataId) {
-        updateNodeDataValues({
-          nodeDataId,
-          values: newValue,
-        });
-      }
+      updateNodeDataValues({
+        nodeDataId,
+        values: newValue,
+      });
     },
     [nodeDataId, updateNodeDataValues],
   );
@@ -34,20 +53,19 @@ function DocumentWindow({ xyNode }: { xyNode: Node }) {
   if (!nodeDataValues) return null;
 
   return (
-    <WindowPanelFrame xyNode={xyNode} title="Document">
-      <DocumentEditorField
-        editorId={xyNode.id}
-        value={editorValue}
-        onChange={handleSave}
-        isLocked={isLocked}
-      />
-    </WindowPanelFrame>
+    <DocumentEditorField
+      ref={editorRef}
+      editorId={xyNodeId}
+      value={editorValue}
+      onChange={handleSave}
+      isLocked={isLocked}
+      onDirtyChange={setIsDirty}
+    />
   );
 }
 
-export default memo(DocumentWindow, (prev, next) =>
-  prev.xyNode.id === next.xyNode.id &&
-  prev.xyNode.type === next.xyNode.type &&
-  prev.xyNode.data === next.xyNode.data,
+export default memo(
+  DocumentWindow,
+  (prev, next) =>
+    prev.xyNodeId === next.xyNodeId && prev.nodeDataId === next.nodeDataId,
 );
-

@@ -1,10 +1,10 @@
-import { memo } from "react";
+import { memo, useCallback } from "react";
 import type { Node } from "@xyflow/react";
 import { areNodePropsEqual } from "../areNodePropsEqual";
 import NodeFrame from "../NodeFrame";
 import { useNodeDataValues } from "@/hooks/useNodeData";
 import type { Id } from "@/../convex/_generated/dataModel";
-import { TbPencil, TbPhoto } from "react-icons/tb";
+import { TbMaximize, TbPencil, TbPhoto } from "react-icons/tb";
 import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
 import { Button } from "@/components/shadcn/button";
 import {
@@ -14,6 +14,7 @@ import {
 } from "@/components/shadcn/popover";
 import { UploadFile } from "@/components/fields/UploadFile";
 import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
+import { useWindowsStore } from "@/stores/windowsStore";
 
 type Value = Array<{
   url: string;
@@ -25,8 +26,14 @@ function ImageNode(xyNode: Node) {
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
   const values = useNodeDataValues(nodeDataId);
   const { updateNodeDataValues } = useUpdateNodeDataValues();
+  const openWindow = useWindowsStore((s) => s.openWindow);
 
   const currentValue = (values?.images as Value | undefined) ?? defaultValue;
+
+  const handleOpenWindow = useCallback(() => {
+    if (!nodeDataId) return;
+    openWindow({ xyNodeId: xyNode.id, nodeDataId, nodeType: "image" });
+  }, [nodeDataId, openWindow, xyNode.id]);
 
   const handleUploadComplete = (fileData: {
     url: string;
@@ -58,6 +65,14 @@ function ImageNode(xyNode: Node) {
   return (
     <>
       <CanvasNodeToolbar xyNode={xyNode}>
+        <Button
+          size="icon"
+          variant="outline"
+          disabled={!nodeDataId}
+          onClick={handleOpenWindow}
+        >
+          <TbMaximize />
+        </Button>
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" size="icon" title="Upload an image">

@@ -1,7 +1,8 @@
-import { memo } from "react";
+import { memo, useCallback } from "react";
 import { type Node } from "@xyflow/react";
 import { areNodePropsEqual } from "../areNodePropsEqual";
 import { useNodeDataValues } from "@/hooks/useNodeData";
+import { useNodeTitle } from "@/hooks/useNodeTitle";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { normalizeNodeId, type Value } from "platejs";
 import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
@@ -18,29 +19,22 @@ const defaultValue: Value = normalizeNodeId([
   },
 ]);
 
-// eslint-disable-next-line react-refresh/only-export-components
-export function getDocumentTitle(value: Value): string {
-  if (!value || value.length === 0) return "Document";
-  const firstBlock = value[0];
-  if (firstBlock.type === "h1" || firstBlock.type === "h2") {
-    return (
-      firstBlock.children.map((child) => child.text).join(" ") || "Document"
-    );
-  }
-  return "Document";
-}
-
 function DocumentNode(xyNode: Node) {
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
   const values = useNodeDataValues(nodeDataId);
 
   const openWindow = useWindowsStore((s) => s.openWindow);
 
+  const handleOpenWindow = useCallback(() => {
+    if (!nodeDataId) return;
+    openWindow({ xyNodeId: xyNode.id, nodeDataId, nodeType: "document" });
+  }, [nodeDataId, openWindow, xyNode.id]);
+
   // Récupère la valeur depuis le store NodeData
   const currentValue: Value =
     (values?.doc as Value | undefined) ?? defaultValue;
 
-  const documentTitle = getDocumentTitle(currentValue);
+  const documentTitle = useNodeTitle(nodeDataId) ?? "Document";
 
   return (
     <>
@@ -48,7 +42,8 @@ function DocumentNode(xyNode: Node) {
         <Button
           size="icon"
           variant="outline"
-          onClick={() => openWindow(xyNode.id)}
+          disabled={!nodeDataId}
+          onClick={handleOpenWindow}
         >
           <TbMaximize />
         </Button>

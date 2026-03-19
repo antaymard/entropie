@@ -3,9 +3,7 @@
 import { useNodeDataStore } from "@/stores/nodeDataStore";
 import { useCallback, useRef } from "react";
 import { MentionsInput, Mention } from "react-mentions";
-import { getDocumentTitle } from "@/components/nodes/prebuilt-nodes/DocumentNode";
-import type { Doc, Id } from "@/../convex/_generated/dataModel";
-import type { Value } from "platejs";
+import { getNodeTitle } from "@/hooks/useNodeTitle";
 import { cn } from "@/lib/utils";
 import {
   TbFileTypePdf,
@@ -26,29 +24,6 @@ const IconMap: Record<string, React.ComponentType> = {
   value: TbTag,
   fetch: TbApi,
 };
-
-function getNodeTitle(nodeData: Doc<"nodeDatas">): string {
-  switch (nodeData.type) {
-    case "document":
-      return getDocumentTitle(nodeData.values.doc as Value);
-    case "image":
-      return nodeData.values?.images?.[0]?.filename || "Image";
-    case "link":
-      return (
-        nodeData.values?.link?.pageTitle ||
-        nodeData.values?.link?.href ||
-        "Link"
-      );
-    case "file":
-      return nodeData.values?.files?.[0]?.filename || "File";
-    case "value":
-      return nodeData.values?.value?.label || "Value";
-    case "fetch":
-      return nodeData.values?.fetch?.params?.url || "Fetch";
-    default:
-      return nodeData.type ?? "Node";
-  }
-}
 
 interface RichTextAreaProps {
   value: string;

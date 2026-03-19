@@ -1,36 +1,49 @@
-import * as React from 'react';
+import * as React from "react";
 
-import type { TMentionElement } from 'platejs';
-import type { SlateElementProps } from 'platejs/static';
+import type { TMentionElement } from "platejs";
+import type { SlateElementProps } from "platejs/static";
 
-import { KEYS } from 'platejs';
-import { SlateElement } from 'platejs/static';
+import { KEYS } from "platejs";
+import { SlateElement } from "platejs/static";
 
-import { cn } from '@/lib/utils';
+import type { Id } from "@/../convex/_generated/dataModel";
+import { getNodeIcon } from "@/components/utils/nodeDataDisplayUtils";
+import { useNodeDataStore } from "@/stores/nodeDataStore";
+import { cn } from "@/lib/utils";
+
+type MentionWithNodeDataKey = TMentionElement & {
+  key?: Id<"nodeDatas">;
+};
 
 export function MentionElementStatic(
   props: SlateElementProps<TMentionElement> & {
     prefix?: string;
-  }
+  },
 ) {
   const { prefix } = props;
-  const element = props.element;
+  const element = props.element as MentionWithNodeDataKey;
+  const nodeDataId = element.key;
+  const nodeType = useNodeDataStore((state) =>
+    nodeDataId ? state.nodeDatas.get(nodeDataId)?.type : undefined,
+  );
+  const MentionIcon = getNodeIcon(nodeType);
 
   return (
     <SlateElement
       {...props}
       className={cn(
-        'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline font-medium text-sm',
-        element.children[0][KEYS.bold] === true && 'font-bold',
-        element.children[0][KEYS.italic] === true && 'italic',
-        element.children[0][KEYS.underline] === true && 'underline'
+        "inline-flex items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 align-baseline font-medium text-sm",
+        element.children[0][KEYS.bold] === true && "font-bold",
+        element.children[0][KEYS.italic] === true && "italic",
+        element.children[0][KEYS.underline] === true && "underline",
       )}
       attributes={{
         ...props.attributes,
-        'data-slate-value': element.value,
+        "data-slate-value": element.value,
       }}
     >
       {props.children}
+      {MentionIcon ? <MentionIcon className="size-3.5 shrink-0" /> : null}
       {prefix}
       {element.value}
     </SlateElement>

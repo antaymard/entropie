@@ -3,27 +3,12 @@
 import { useNodeDataStore } from "@/stores/nodeDataStore";
 import { useCallback, useRef } from "react";
 import { MentionsInput, Mention } from "react-mentions";
-import { getNodeTitle } from "@/hooks/useNodeTitle";
-import { cn } from "@/lib/utils";
 import {
-  TbFileTypePdf,
-  TbAbc,
-  TbPhoto,
-  TbLink,
-  TbTag,
-  TbApi,
-  TbNews,
-} from "react-icons/tb";
-
-const IconMap: Record<string, React.ComponentType> = {
-  floatingText: TbAbc,
-  document: TbNews,
-  image: TbPhoto,
-  link: TbLink,
-  file: TbFileTypePdf,
-  value: TbTag,
-  fetch: TbApi,
-};
+  getNodeDataTitle,
+  getNodeIcon,
+} from "@/components/utils/nodeDataDisplayUtils";
+import type { Id } from "@/../convex/_generated/dataModel";
+import { cn } from "@/lib/utils";
 
 interface RichTextAreaProps {
   value: string;
@@ -41,7 +26,7 @@ export default function RichTextArea({
   const nodeDatasToMention = Array.from(nodeDatas.entries()).map(
     ([id, nd]) => ({
       id,
-      display: getNodeTitle(nd),
+      display: getNodeDataTitle(nd),
     }),
   );
 
@@ -105,7 +90,7 @@ export default function RichTextArea({
             focused,
           ) => {
             const nd = nodeDatas.get(entry.id as Id<"nodeDatas">);
-            const Icon = nd ? IconMap[nd.type] : undefined;
+            const Icon = getNodeIcon(nd?.type);
             return (
               <div
                 className={cn(

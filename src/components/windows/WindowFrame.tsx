@@ -1,7 +1,9 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useWindowsStore, type OpenedWindow } from "@/stores/windowsStore";
-import { useNodeTitle } from "@/hooks/useNodeTitle";
+import { useNodeDataTitle } from "@/hooks/useNodeTitle";
+import { useNodeData } from "@/hooks/useNodeData";
+import { getNodeIcon } from "@/components/utils/nodeDataDisplayUtils";
 import { X, Minus, Save } from "lucide-react";
 import DocumentWindow from "./prebuilt/DocumentWindow";
 import EmbedWindow from "./prebuilt/EmbedWindow";
@@ -57,7 +59,9 @@ export default function WindowFrame({ openedWindow }: WindowFrameProps) {
   const closeWindow = useWindowsStore((s) => s.closeWindow);
   const toggleMinimizeWindow = useWindowsStore((s) => s.toggleMinimizeWindow);
 
-  const title = useNodeTitle(nodeDataId);
+  const title = useNodeDataTitle(nodeDataId);
+  const nodeData = useNodeData(nodeDataId);
+  const NodeIcon = getNodeIcon(nodeData?.type);
 
   // Stored as refs to avoid stale closures in the event listeners
   const dragRef = useRef<{ startX: number; startY: number } | null>(null);
@@ -237,6 +241,9 @@ export default function WindowFrame({ openedWindow }: WindowFrameProps) {
           className="flex cursor-grab select-none items-center gap-2 border-b px-3 py-2 hover:cursor-grab active:cursor-grabbing"
           onMouseDown={handleHeaderMouseDown}
         >
+          {NodeIcon ? (
+            <NodeIcon className="size-4 shrink-0 text-slate-600" />
+          ) : null}
           <span className="min-w-0 flex-1 truncate text-sm font-medium">
             {title ?? "—"}
           </span>

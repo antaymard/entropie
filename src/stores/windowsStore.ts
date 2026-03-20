@@ -12,7 +12,7 @@ type WindowSize = { width: number; height: number };
 const DEFAULT_WINDOW_SIZE: WindowSize = { width: 720, height: 520 };
 
 const WINDOW_SIZE_BY_TYPE: Partial<Record<nodeTypes, WindowSize>> = {
-  document: { width: 450, height: 520 },
+  document: { width: 750, height: 520 },
   image: { width: 300, height: 300 },
   embed: { width: 500, height: 500 },
   link: { width: 480, height: 360 },

@@ -1,6 +1,6 @@
 import type { Doc } from "@/../convex/_generated/dataModel";
 import type { IconType } from "react-icons";
-import prebuiltNodesConfig from "@/components/nodes/prebuilt-nodes/prebuiltNodesConfig";
+import { NODE_TYPE_ICON_MAP } from "@/components/nodes/prebuilt-nodes/nodeIconMap";
 import type { Value } from "platejs";
 
 function getDocumentTitle(value: Value): string {
@@ -48,18 +48,6 @@ export function getNodeDataTitle(nodeData: Doc<"nodeDatas">): string {
       return nodeData.type ?? "Node";
   }
 }
-
-const NODE_TYPE_ICON_MAP: Record<string, IconType> = prebuiltNodesConfig.reduce<
-  Record<string, IconType>
->((acc, config) => {
-  const nodeType = config.node.type;
-
-  if (typeof nodeType === "string") {
-    acc[nodeType] = config.nodeIcon as IconType;
-  }
-
-  return acc;
-}, {});
 
 export function getNodeIcon(type: string | undefined): IconType | undefined {
   if (!type) return undefined;

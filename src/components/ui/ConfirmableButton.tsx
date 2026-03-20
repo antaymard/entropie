@@ -2,7 +2,6 @@ import {
   cloneElement,
   isValidElement,
   useMemo,
-  useRef,
   useState,
   type MouseEventHandler,
   type ReactElement,
@@ -44,7 +43,6 @@ export default function ConfirmableButton({
   showCloseButton = true,
 }: ConfirmableButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const isConfirmingRef = useRef(false);
 
   const childWithDirectConfirm = useMemo(() => {
     if (!isValidElement(children) || shouldConfirm) {
@@ -67,22 +65,12 @@ export default function ConfirmableButton({
   }
 
   return (
-    <AlertDialog
-      open={isOpen}
-      onOpenChange={(open) => {
-        if (!open && isOpen && !isConfirmingRef.current) {
-          onCancel?.();
-        }
-        isConfirmingRef.current = false;
-        setIsOpen(open);
-      }}
-    >
+    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
       <AlertDialogContent>
         {showCloseButton && (
           <AlertDialogCancel
             className="absolute right-3 top-3 h-7 w-7 p-0"
-            onClick={onCancel}
             aria-label="Fermer"
           >
             <X className="h-4 w-4" />
@@ -93,15 +81,10 @@ export default function ConfirmableButton({
           <AlertDialogDescription>{text}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onCancel}>
+          <AlertDialogCancel onClick={() => onCancel?.()}>
             {cancelLabel}
           </AlertDialogCancel>
-          <AlertDialogAction
-            onClick={() => {
-              isConfirmingRef.current = true;
-              onConfirm();
-            }}
-          >
+          <AlertDialogAction onClick={() => onConfirm()}>
             {confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>

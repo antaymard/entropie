@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import type { TMentionElement } from "platejs";
 import type { SlateElementProps } from "platejs/static";
 
@@ -10,6 +8,7 @@ import type { Id } from "@/../convex/_generated/dataModel";
 import { getNodeIcon } from "@/components/utils/nodeDataDisplayUtils";
 import { useNodeDataStore } from "@/stores/nodeDataStore";
 import { cn } from "@/lib/utils";
+import { useOpenMentionedNodeWindow } from "./useOpenMentionedNodeWindow";
 
 type MentionWithNodeDataKey = TMentionElement & {
   key?: Id<"nodeDatas">;
@@ -27,12 +26,13 @@ export function MentionElementStatic(
     nodeDataId ? state.nodeDatas.get(nodeDataId)?.type : undefined,
   );
   const MentionIcon = getNodeIcon(nodeType);
+  const handleClick = useOpenMentionedNodeWindow(nodeDataId);
 
   return (
     <SlateElement
       {...props}
       className={cn(
-        "inline-flex items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 align-baseline font-medium text-sm",
+        "inline-flex items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 align-baseline font-medium text-sm cursor-pointer",
         element.children[0][KEYS.bold] === true && "font-bold",
         element.children[0][KEYS.italic] === true && "italic",
         element.children[0][KEYS.underline] === true && "underline",
@@ -40,6 +40,8 @@ export function MentionElementStatic(
       attributes={{
         ...props.attributes,
         "data-slate-value": element.value,
+        "data-node-data-id": nodeDataId,
+        onClick: handleClick,
       }}
     >
       {props.children}

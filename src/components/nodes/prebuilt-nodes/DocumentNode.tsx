@@ -2,7 +2,7 @@ import { memo, useCallback } from "react";
 import { type Node } from "@xyflow/react";
 import { areNodePropsEqual } from "../areNodePropsEqual";
 import { useNodeDataValues } from "@/hooks/useNodeData";
-import { useNodeTitle } from "@/hooks/useNodeTitle";
+import { useNodeDataTitle } from "@/hooks/useNodeTitle";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { normalizeNodeId, type Value } from "platejs";
 import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
@@ -34,7 +34,7 @@ function DocumentNode(xyNode: Node) {
   const currentValue: Value =
     (values?.doc as Value | undefined) ?? defaultValue;
 
-  const documentTitle = useNodeTitle(nodeDataId) ?? "Document";
+  const documentTitle = useNodeDataTitle(nodeDataId) ?? "Document";
 
   return (
     <>

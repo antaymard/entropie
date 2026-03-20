@@ -3,6 +3,7 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useRef,
   forwardRef,
 } from "react";
 import type { Value } from "platejs";
@@ -29,11 +30,20 @@ const DocumentEditorField = forwardRef<
   DocumentEditorFieldHandle,
   DocumentEditorFieldProps
 >(function DocumentEditorField(
-  { editorId, value, visualType, onChange, plugins = EditorKit, isLocked, onDirtyChange },
+  {
+    editorId,
+    value,
+    visualType,
+    onChange,
+    plugins = EditorKit,
+    isLocked,
+    onDirtyChange,
+  },
   ref,
 ) {
   const initialValue: Value = value?.doc as Value;
   const setFocus = useCanvasStore((s) => s.setFocus);
+  const skipNextChangeRef = useRef(false);
 
   const editor = usePlateEditor({
     id: editorId ? `doc-${editorId}` : undefined,
@@ -44,6 +54,7 @@ const DocumentEditorField = forwardRef<
   // Last Write Wins: server value always overrides local content unconditionally
   useEffect(() => {
     if (!initialValue) return;
+    skipNextChangeRef.current = true;
     editor.tf.setValue(initialValue);
     onDirtyChange?.(false);
   }, [initialValue, editor, onDirtyChange]);
@@ -56,6 +67,10 @@ const DocumentEditorField = forwardRef<
   useImperativeHandle(ref, () => ({ save }), [save]);
 
   const handleChange = useCallback(() => {
+    if (skipNextChangeRef.current) {
+      skipNextChangeRef.current = false;
+      return;
+    }
     onDirtyChange?.(true);
   }, [onDirtyChange]);
 

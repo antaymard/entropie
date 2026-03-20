@@ -1,18 +1,6 @@
 import type { FloatingTextCanvasNodeData, XyNodeData } from "@/types/domain";
 import type { Node } from "@xyflow/react";
 
-// Icons
-import {
-  TbFileTypePdf,
-  TbAbc,
-  TbPhoto,
-  TbLink,
-  TbTag,
-  TbApi,
-  TbNews,
-  TbCode,
-} from "react-icons/tb";
-
 // Node Components
 import DocumentNode from "./DocumentNode";
 import FloatingTextNode from "./FloatingTextNode";
@@ -23,6 +11,7 @@ import FetchNode from "./FetchNode";
 import z from "zod";
 import FileNode from "./FileNode";
 import EmbedNode from "./EmbedNode";
+import { NODE_TYPE_ICON_MAP } from "./nodeIconMap";
 
 type PrebuiltNodeConfig = {
   nodeLabel: string;
@@ -46,7 +35,7 @@ type PrebuiltNodeConfig = {
 const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
   {
     nodeLabel: "Floating text",
-    nodeIcon: TbAbc,
+    nodeIcon: NODE_TYPE_ICON_MAP.floatingText,
     nodeComponent: FloatingTextNode,
     skipNodeDataCreation: true,
 
@@ -70,7 +59,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
   },
   {
     nodeLabel: "Document",
-    nodeIcon: TbNews,
+    nodeIcon: NODE_TYPE_ICON_MAP.document,
     nodeComponent: DocumentNode,
     variants: {
       default: {
@@ -105,7 +94,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
   },
   {
     nodeLabel: "Image",
-    nodeIcon: TbPhoto,
+    nodeIcon: NODE_TYPE_ICON_MAP.image,
     nodeComponent: ImageNode,
     canHaveAutomation: true,
 
@@ -136,7 +125,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
   },
   {
     nodeLabel: "Link",
-    nodeIcon: TbLink,
+    nodeIcon: NODE_TYPE_ICON_MAP.link,
     nodeComponent: LinkNode,
     variants: {
       default: {
@@ -176,7 +165,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
   },
   {
     nodeLabel: "File",
-    nodeIcon: TbFileTypePdf,
+    nodeIcon: NODE_TYPE_ICON_MAP.file,
     nodeComponent: FileNode,
     canHaveAutomation: true,
 
@@ -207,7 +196,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
   },
   {
     nodeLabel: "Value",
-    nodeIcon: TbTag,
+    nodeIcon: NODE_TYPE_ICON_MAP.value,
     nodeComponent: ValueNode,
     canHaveAutomation: true,
 
@@ -234,7 +223,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
   },
   {
     nodeLabel: "Fetch",
-    nodeIcon: TbApi,
+    nodeIcon: NODE_TYPE_ICON_MAP.fetch,
     nodeComponent: FetchNode,
     canHaveAutomation: false,
 
@@ -272,7 +261,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
   },
   {
     nodeLabel: "Embed",
-    nodeIcon: TbCode,
+    nodeIcon: NODE_TYPE_ICON_MAP.embed,
     nodeComponent: EmbedNode,
     canHaveAutomation: false,
 

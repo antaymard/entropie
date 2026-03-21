@@ -103,7 +103,7 @@ export default function NoleCanvasPanel() {
     api.ia.nole.sendMessage,
   ).withOptimisticUpdate(optimisticallySendMessage(api.threads.listMessages));
 
-  const updateThreadTitle = useAction(api.ia.nole.updateThreadTitle);
+  const updateThreadTitle = useAction(api.threads.updateThreadTitle);
 
   // Recording flow
   const handleStartRecording = useCallback(async () => {

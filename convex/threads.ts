@@ -10,6 +10,8 @@ import {
   syncStreams,
   vStreamArgs,
 } from "@convex-dev/agent";
+import z from "zod";
+import { createBaseAgent } from "./ia/agents";
 import errors from "./config/errorsConfig";
 
 export const getLatestThread = query({
@@ -159,5 +161,47 @@ export const deleteThread = action({
     });
 
     return { success: true };
+  },
+});
+
+export const updateThreadTitle = action({
+  args: { threadId: v.string(), onlyIfUntitled: v.optional(v.boolean()) },
+  handler: async (ctx, { threadId, onlyIfUntitled }) => {
+    const authUserId = await requireAuth(ctx);
+    if (!authUserId) {
+      throw new Error(errors.UNAUTHORIZED_USER);
+    }
+
+    const threadMetadata = await getThreadMetadata(ctx, components.agent, {
+      threadId,
+    });
+    if (!threadMetadata || threadMetadata.userId !== authUserId) {
+      throw new Error(errors.THREAD_NOT_FOUND_OR_FORBIDDEN);
+    }
+
+    const basicAgent = createBaseAgent();
+    const { thread } = await basicAgent.continueThread(ctx, { threadId });
+
+    if (onlyIfUntitled) {
+      const metadata = await thread.getMetadata();
+      if (metadata.title && metadata.title.trim().length > 0) {
+        return;
+      }
+    }
+
+    const {
+      object: { title },
+    } = await thread.generateObject(
+      {
+        schema: z.object({
+          title: z.string().describe("The new title for the thread"),
+        }),
+        prompt:
+          "Generate a title for this thread. Short and based on the content of the thread. It should be concise and descriptive, and allow the user to understand the topic of the thread at a glance.",
+      },
+      { storageOptions: { saveMessages: "none" } },
+    );
+
+    await thread.updateMetadata({ title });
   },
 });

@@ -1,24 +1,30 @@
 import { components } from "../_generated/api";
 import { Agent } from "@convex-dev/agent";
 import { openrouter } from "@openrouter/ai-sdk-provider";
+import type { LanguageModel } from "ai";
+
+export function createBaseAgent({ model }: { model?: LanguageModel } = {}) {
+  return new Agent(components.agent, {
+    name: "base",
+    languageModel: model ?? openrouter("mistralai/mistral-small-2603"),
+  });
+}
 
 // Minimal agent used for utility operations (e.g. saveMessage) that don't require a specific model.
-export const baseAgent = new Agent(components.agent, {
-  name: "base",
-  languageModel: openrouter("minimax/minimax-m2.7"),
-});
+export const baseAgent = createBaseAgent();
 
 export function createNoleAgent({
   readCanvasInternal,
-  model, // To dep ?
+  model,
 }: {
-  readCanvasInternal: any;
-  model?: any;
+  readCanvasInternal: unknown;
+  model?: LanguageModel;
 }) {
+  void readCanvasInternal;
   return new Agent(components.agent, {
     name: "Nolë",
     maxSteps: 15,
-    languageModel: openrouter("minimax/minimax-m2.7"),
+    languageModel: model ?? openrouter("minimax/minimax-m2.7"),
   });
 }
 
@@ -26,12 +32,13 @@ export function createAutomationAgent({
   model,
   updateNodeDataValuesTool,
 }: {
-  model?: any;
-  updateNodeDataValuesTool?: any;
+  model?: LanguageModel;
+  updateNodeDataValuesTool?: unknown;
 }) {
+  void updateNodeDataValuesTool;
   return new Agent(components.agent, {
     name: "automation-agent",
-    languageModel: openrouter("minimax/minimax-m2.7"),
+    languageModel: model ?? openrouter("minimax/minimax-m2.7"),
     maxSteps: 5,
     instructions: `Tu es un agent d'automatisation, lié à un node sur une app canvas-base type miro. Tu peux utiliser les outils à ta disposition pour accomplir les tâches demandées. Le noeud auquel tu es lié peut contenir des données d'entrée d'autres noeuds (input) que tu devras le plus souvent utiliser pour accomplir ta tâche. Utilise les outils à ta disposition pour trouver l'information.
       

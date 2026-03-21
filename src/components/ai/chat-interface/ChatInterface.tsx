@@ -44,7 +44,7 @@ const ChatInterface = memo(function ChatInterface({
     optimisticallySendMessage(api.threads.listMessages),
   );
 
-  const updateThreadTitle = useAction(api.ia.nole.updateThreadTitle);
+  const updateThreadTitle = useAction(api.threads.updateThreadTitle);
 
   const [prompt, setPrompt] = useState("");
   const scrollViewportRef = useRef<HTMLDivElement>(null);

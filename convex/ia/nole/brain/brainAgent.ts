@@ -1,26 +1,7 @@
-import { Agent } from "@convex-dev/agent";
-import { components } from "../../../_generated/api";
-import { openrouter } from "@openrouter/ai-sdk-provider";
-import { anyApi } from "convex/server";
-import { ActionCtx, MutationCtx } from "../../../_generated/server";
+import { ActionCtx } from "../../../_generated/server";
 import { Id } from "../../../_generated/dataModel";
 import { introduction } from "./introductionPrompt";
-
-export function createBrainAgent({
-  instructions,
-}: {
-  canvasId: Id<"canvases">;
-  userId: Id<"users">;
-  instructions: string;
-}) {
-  return new Agent(components.agent, {
-    name: "Brain",
-    maxSteps: 15,
-    languageModel: openrouter("stepfun/step-3.5-flash:free"),
-    tools: {},
-    instructions,
-  });
-}
+import { internal } from "../../../_generated/api";
 
 export async function generateBrainSystemPrompt({
   canvasId,
@@ -29,23 +10,22 @@ export async function generateBrainSystemPrompt({
 }: {
   canvasId: Id<"canvases">;
   userId: Id<"users">;
-  ctx: ActionCtx | MutationCtx;
+  ctx: ActionCtx;
 }) {
   let systemPrompt = "";
 
   systemPrompt += introduction;
 
-  const canvasContext = await ctx.runQuery(
-    anyApi.ia.nole.brain.canvasContextPrompt.canvasContextPrompt,
-    { canvasId },
-  );
+  const [canvasContext, userContext] = await Promise.all([
+    ctx.runAction(internal.ia.nole.brain.canvasContextPrompt.create, {
+      canvasId,
+    }),
+    ctx.runQuery(internal.ia.nole.brain.userContextPrompt.create, {
+      userId,
+    }),
+  ]);
 
   systemPrompt += "\n\n" + canvasContext;
-
-  const userContext = await ctx.runQuery(
-    anyApi.ia.nole.brain.userContextPrompt.userContextPrompt,
-    { userId },
-  );
   systemPrompt += "\n\n" + userContext;
 
   return systemPrompt;

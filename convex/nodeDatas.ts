@@ -3,7 +3,7 @@ import { ConvexError } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { optionalAuth, requireAuth, requireCanvasAccess } from "./lib/auth";
-import * as NodeDataModel from "./model/nodeData";
+import * as NodeDataModel from "./models/nodeDataModels";
 import {
   agentConfigValidator,
   dataProcessingValidator,

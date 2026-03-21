@@ -64,7 +64,7 @@ export function createProgressReporter(
     // console.log(`Reporting progress for nodeData ${nodeDataId}:`, progress);
 
     await ctx.runMutation(
-      internal.automation.helpers.updateAutomationProgress,
+      internal.wrappers.nodeDataWrappers.updateAutomationProgress,
       {
         _id: nodeDataId,
         automationProgress: {

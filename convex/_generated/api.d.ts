@@ -9,7 +9,6 @@
  */
 
 import type * as auth from "../auth.js";
-import type * as automation_helpers from "../automation/helpers.js";
 import type * as automation_progressReporter from "../automation/progressReporter.js";
 import type * as automations from "../automations.js";
 import type * as canvasEdges from "../canvasEdges.js";
@@ -18,14 +17,17 @@ import type * as canvases from "../canvases.js";
 import type * as config_errorsConfig from "../config/errorsConfig.js";
 import type * as http from "../http.js";
 import type * as ia_agents from "../ia/agents.js";
+import type * as ia_helpers_abstractGenerator from "../ia/helpers/abstractGenerator.js";
 import type * as ia_helpers_canvasHelpers from "../ia/helpers/canvasHelpers.js";
 import type * as ia_helpers_contextGenerator from "../ia/helpers/contextGenerator.js";
+import type * as ia_helpers_makeNodeDataLLMFriendly from "../ia/helpers/makeNodeDataLLMFriendly.js";
 import type * as ia_helpers_nodeFieldsAndTypesHelper from "../ia/helpers/nodeFieldsAndTypesHelper.js";
 import type * as ia_helpers_pillMarkdownRules from "../ia/helpers/pillMarkdownRules.js";
 import type * as ia_helpers_plateMarkdownConverter from "../ia/helpers/plateMarkdownConverter.js";
 import type * as ia_nole from "../ia/nole.js";
 import type * as ia_nole_brain_brainAgent from "../ia/nole/brain/brainAgent.js";
 import type * as ia_nole_brain_canvasContextPrompt from "../ia/nole/brain/canvasContextPrompt.js";
+import type * as ia_nole_brain_getCanvasNodeDatasWithAbstracts from "../ia/nole/brain/getCanvasNodeDatasWithAbstracts.js";
 import type * as ia_nole_brain_introductionPrompt from "../ia/nole/brain/introductionPrompt.js";
 import type * as ia_nole_brain_userContextPrompt from "../ia/nole/brain/userContextPrompt.js";
 import type * as ia_tools_openWebPageTool from "../ia/tools/openWebPageTool.js";
@@ -38,8 +40,11 @@ import type * as ia_tools_websearchTool from "../ia/tools/websearchTool.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_r2 from "../lib/r2.js";
 import type * as links from "../links.js";
-import type * as model_nodeData from "../model/nodeData.js";
+import type * as migrations from "../migrations.js";
+import type * as models_aiMemoryModels from "../models/aiMemoryModels.js";
+import type * as models_nodeDataModels from "../models/nodeDataModels.js";
 import type * as nodeDatas from "../nodeDatas.js";
+import type * as schemas_aiMemorySchema from "../schemas/aiMemorySchema.js";
 import type * as schemas_canvasesSchema from "../schemas/canvasesSchema.js";
 import type * as schemas_nodeDataConfig from "../schemas/nodeDataConfig.js";
 import type * as schemas_nodeDatasSchema from "../schemas/nodeDatasSchema.js";
@@ -51,6 +56,8 @@ import type * as speech from "../speech.js";
 import type * as templates from "../templates.js";
 import type * as threads from "../threads.js";
 import type * as uploads from "../uploads.js";
+import type * as wrappers_aiMemoryWrappers from "../wrappers/aiMemoryWrappers.js";
+import type * as wrappers_nodeDataWrappers from "../wrappers/nodeDataWrappers.js";
 
 import type {
   ApiFromModules,
@@ -60,7 +67,6 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
-  "automation/helpers": typeof automation_helpers;
   "automation/progressReporter": typeof automation_progressReporter;
   automations: typeof automations;
   canvasEdges: typeof canvasEdges;
@@ -69,14 +75,17 @@ declare const fullApi: ApiFromModules<{
   "config/errorsConfig": typeof config_errorsConfig;
   http: typeof http;
   "ia/agents": typeof ia_agents;
+  "ia/helpers/abstractGenerator": typeof ia_helpers_abstractGenerator;
   "ia/helpers/canvasHelpers": typeof ia_helpers_canvasHelpers;
   "ia/helpers/contextGenerator": typeof ia_helpers_contextGenerator;
+  "ia/helpers/makeNodeDataLLMFriendly": typeof ia_helpers_makeNodeDataLLMFriendly;
   "ia/helpers/nodeFieldsAndTypesHelper": typeof ia_helpers_nodeFieldsAndTypesHelper;
   "ia/helpers/pillMarkdownRules": typeof ia_helpers_pillMarkdownRules;
   "ia/helpers/plateMarkdownConverter": typeof ia_helpers_plateMarkdownConverter;
   "ia/nole": typeof ia_nole;
   "ia/nole/brain/brainAgent": typeof ia_nole_brain_brainAgent;
   "ia/nole/brain/canvasContextPrompt": typeof ia_nole_brain_canvasContextPrompt;
+  "ia/nole/brain/getCanvasNodeDatasWithAbstracts": typeof ia_nole_brain_getCanvasNodeDatasWithAbstracts;
   "ia/nole/brain/introductionPrompt": typeof ia_nole_brain_introductionPrompt;
   "ia/nole/brain/userContextPrompt": typeof ia_nole_brain_userContextPrompt;
   "ia/tools/openWebPageTool": typeof ia_tools_openWebPageTool;
@@ -89,8 +98,11 @@ declare const fullApi: ApiFromModules<{
   "lib/auth": typeof lib_auth;
   "lib/r2": typeof lib_r2;
   links: typeof links;
-  "model/nodeData": typeof model_nodeData;
+  migrations: typeof migrations;
+  "models/aiMemoryModels": typeof models_aiMemoryModels;
+  "models/nodeDataModels": typeof models_nodeDataModels;
   nodeDatas: typeof nodeDatas;
+  "schemas/aiMemorySchema": typeof schemas_aiMemorySchema;
   "schemas/canvasesSchema": typeof schemas_canvasesSchema;
   "schemas/nodeDataConfig": typeof schemas_nodeDataConfig;
   "schemas/nodeDatasSchema": typeof schemas_nodeDatasSchema;
@@ -102,6 +114,8 @@ declare const fullApi: ApiFromModules<{
   templates: typeof templates;
   threads: typeof threads;
   uploads: typeof uploads;
+  "wrappers/aiMemoryWrappers": typeof wrappers_aiMemoryWrappers;
+  "wrappers/nodeDataWrappers": typeof wrappers_nodeDataWrappers;
 }>;
 
 /**

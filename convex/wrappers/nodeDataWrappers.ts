@@ -4,7 +4,8 @@ import {
   automationProgressValidator,
   nodeDataStatusValidator,
 } from "../schemas/nodeDatasSchema";
-import * as NodeDataModel from "../model/nodeData";
+
+import * as NodeDataModels from "../models/nodeDataModels";
 
 export const updateStatus = internalMutation({
   args: {
@@ -13,7 +14,7 @@ export const updateStatus = internalMutation({
   },
   returns: v.boolean(),
   handler: async (ctx, args) => {
-    return NodeDataModel.updateStatus(ctx, args);
+    return NodeDataModels.updateStatus(ctx, args);
   },
 });
 
@@ -24,14 +25,14 @@ export const updateAutomationProgress = internalMutation({
   },
   returns: v.boolean(),
   handler: async (ctx, args) => {
-    return NodeDataModel.updateAutomationProgress(ctx, args);
+    return NodeDataModels.updateAutomationProgress(ctx, args);
   },
 });
 
 export const readNodeData = internalQuery({
   args: { _id: v.id("nodeDatas") },
   handler: async (ctx, args) => {
-    return NodeDataModel.readNodeData(ctx, args);
+    return NodeDataModels.readNodeData(ctx, args);
   },
 });
 
@@ -41,7 +42,7 @@ export const listNodeDataDependencies = internalQuery({
     nodeDataId: v.id("nodeDatas"),
   },
   handler: async (ctx, { type, nodeDataId }) => {
-    return NodeDataModel.listNodeDataDependencies(ctx, {
+    return NodeDataModels.listNodeDataDependencies(ctx, {
       type,
       nodeDataId,
     });

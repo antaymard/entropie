@@ -47,7 +47,6 @@ export default function ContextMenu({
               await createNode({
                 node: nodeToCreate,
                 position: newNodePosition,
-                skipNodeDataCreation: nodeConfig.skipNodeDataCreation,
               });
               closeMenu();
             }}

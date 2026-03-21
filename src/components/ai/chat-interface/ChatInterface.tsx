@@ -40,11 +40,11 @@ const ChatInterface = memo(function ChatInterface({
     { initialNumItems: 20, stream: true },
   );
 
-  const sendMessage = useMutation(api.ia.nole.sendMessage).withOptimisticUpdate(
+  const sendMessage = useMutation(api.ia.nole.saveMessage).withOptimisticUpdate(
     optimisticallySendMessage(api.threads.listMessages),
   );
 
-  const updateThreadTitle = useAction(api.ia.nole.updateThreadTitle);
+  const updateThreadTitle = useAction(api.threads.updateThreadTitle);
 
   const [prompt, setPrompt] = useState("");
   const scrollViewportRef = useRef<HTMLDivElement>(null);

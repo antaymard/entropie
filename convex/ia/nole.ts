@@ -1,36 +1,20 @@
 import { v } from "convex/values";
-import { action, internalAction, mutation } from "../_generated/server";
+import { internalAction, mutation } from "../_generated/server";
 import { baseAgent, createNoleAgent } from "./agents";
 import { anyApi } from "convex/server";
 import { requireAuth } from "../lib/auth";
-import z from "zod";
-import { openrouter } from "@openrouter/ai-sdk-provider";
 import { generateBrainSystemPrompt } from "./nole/brain/brainAgent";
+import { internal } from "../_generated/api";
 
 // Save user message, then stream response asynchronously
-export const sendMessage = mutation({
+export const saveMessage = mutation({
   args: {
     threadId: v.string(),
     prompt: v.string(),
     canvasId: v.id("canvases"),
   },
-  returns: v.union(
-    v.object({
-      messageId: v.string(),
-    }),
-    v.object({
-      success: v.boolean(),
-      error: v.string(),
-    }),
-  ),
   handler: async (ctx, { threadId, prompt, canvasId }) => {
     const authUserId = await requireAuth(ctx);
-    if (!authUserId) {
-      return {
-        success: false,
-        error: "Utilisateur non authentifié",
-      };
-    }
 
     // Save the user message
     const { messageId } = await baseAgent.saveMessage(ctx, {
@@ -39,7 +23,7 @@ export const sendMessage = mutation({
     });
 
     // Schedule the streaming action (no await needed for scheduler)
-    void ctx.scheduler.runAfter(0, anyApi.ia.nole.streamResponse, {
+    void ctx.scheduler.runAfter(0, internal.ia.nole.streamResponse, {
       authUserId: authUserId,
       threadId,
       promptMessageId: messageId,
@@ -87,37 +71,5 @@ export const streamResponse = internalAction({
     // Consume the stream to ensure it finishes
     await result.consumeStream();
     return null;
-  },
-});
-
-export const updateThreadTitle = action({
-  args: { threadId: v.string(), onlyIfUntitled: v.optional(v.boolean()) },
-  handler: async (ctx, { threadId, onlyIfUntitled }) => {
-    // await authorizeThreadAccess(ctx, threadId);
-    await requireAuth(ctx);
-    const noleAgent = createNoleAgent({
-      model: openrouter("mistralai/ministral-14b-2512"),
-      readCanvasInternal: anyApi.ia.helpers.canvasHelpers.getCanvasInternal,
-    });
-    const { thread } = await noleAgent.continueThread(ctx, { threadId });
-    if (onlyIfUntitled) {
-      const metadata = await thread.getMetadata();
-      if (metadata.title && metadata.title.trim().length > 0) {
-        return;
-      }
-    }
-    const {
-      object: { title },
-    } = await thread.generateObject(
-      {
-        schema: z.object({
-          title: z.string().describe("The new title for the thread"),
-          // summary: z.string().describe("The new summary for the thread"),
-        }),
-        prompt: "Generate a title for this thread.",
-      },
-      { storageOptions: { saveMessages: "none" } },
-    );
-    await thread.updateMetadata({ title });
   },
 });

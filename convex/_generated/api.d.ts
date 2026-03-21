@@ -40,6 +40,7 @@ import type * as ia_tools_websearchTool from "../ia/tools/websearchTool.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_r2 from "../lib/r2.js";
 import type * as links from "../links.js";
+import type * as migrations from "../migrations.js";
 import type * as models_aiMemoryModels from "../models/aiMemoryModels.js";
 import type * as models_nodeDataModels from "../models/nodeDataModels.js";
 import type * as nodeDatas from "../nodeDatas.js";
@@ -97,6 +98,7 @@ declare const fullApi: ApiFromModules<{
   "lib/auth": typeof lib_auth;
   "lib/r2": typeof lib_r2;
   links: typeof links;
+  migrations: typeof migrations;
   "models/aiMemoryModels": typeof models_aiMemoryModels;
   "models/nodeDataModels": typeof models_nodeDataModels;
   nodeDatas: typeof nodeDatas;

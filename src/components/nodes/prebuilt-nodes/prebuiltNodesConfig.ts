@@ -1,4 +1,4 @@
-import type { FloatingTextCanvasNodeData, XyNodeData } from "@/types/domain";
+import type { XyNodeData } from "@/types/domain";
 import type { Node } from "@xyflow/react";
 
 // Node Components
@@ -26,7 +26,6 @@ type PrebuiltNodeConfig = {
       resizable?: boolean;
     }
   >;
-  skipNodeDataCreation?: boolean;
   node: Node;
   nodeDataValuesSchema?: object | null;
   canHaveAutomation?: boolean;
@@ -37,7 +36,7 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
     nodeLabel: "Floating text",
     nodeIcon: NODE_TYPE_ICON_MAP.floatingText,
     nodeComponent: FloatingTextNode,
-    skipNodeDataCreation: true,
+    canHaveAutomation: true,
 
     node: {
       id: "",
@@ -46,16 +45,14 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = [
       width: 220,
       position: { x: 0, y: 0 },
       data: {
-        // Pas de nodeDataId ici, car les données
-        // restent dans canvas.node.data
         color: "transparent",
-        // Actual data
-        text: "Floating text",
-        level: "p",
-      } satisfies Omit<XyNodeData<FloatingTextCanvasNodeData>, "nodeDataId">,
+      } satisfies Omit<XyNodeData, "nodeDataId">,
     } as Node,
 
-    nodeDataValuesSchema: null,
+    nodeDataValuesSchema: {
+      text: z.string(),
+      level: z.enum(["h1", "h2", "h3", "p"]),
+    },
   },
   {
     nodeLabel: "Document",

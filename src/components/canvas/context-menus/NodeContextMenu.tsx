@@ -14,6 +14,7 @@ import { useMutation } from "convex/react";
 import { api } from "@/../convex/_generated/api";
 import { useParams } from "@tanstack/react-router";
 import type { Id } from "@/../convex/_generated/dataModel";
+import { useNodeDataStore } from "@/stores/nodeDataStore";
 
 // Icons
 import { HiOutlineTrash } from "react-icons/hi";
@@ -38,6 +39,7 @@ export default function NodeContextMenu({
   const updatePositionOrDimensions = useMutation(
     api.canvasNodes.updatePositionOrDimensions,
   );
+  const getNodeData = useNodeDataStore((s) => s.getNodeData);
 
   const variants = prebuiltNodesConfig.find(
     (config) => config.node.type === xyNode.type,
@@ -90,13 +92,25 @@ export default function NodeContextMenu({
             (config) => config.node.type === nodeToDuplicate.type,
           );
 
+          // Get the values from the existing nodeData to duplicate them
+          let initialValues: Record<string, unknown> | undefined;
+          const nodeDataId = nodeToDuplicate.data?.nodeDataId as
+            | Id<"nodeDatas">
+            | undefined;
+          if (nodeDataId) {
+            const nodeData = getNodeData(nodeDataId);
+            if (nodeData) {
+              initialValues = nodeData.values;
+            }
+          }
+
           createNode({
             node: nodeToDuplicate,
             position: {
               x: nodeToDuplicate.position.x + 50,
               y: nodeToDuplicate.position.y + 50,
             },
-            skipNodeDataCreation: nodeConfig?.skipNodeDataCreation || false,
+            initialValues,
           });
         }
       },

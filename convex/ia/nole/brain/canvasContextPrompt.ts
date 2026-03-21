@@ -1,85 +1,90 @@
 import { v } from "convex/values";
-import { internalQuery } from "../../../_generated/server";
+import { internalAction } from "../../../_generated/server";
+import { internal } from "../../../_generated/api";
 import { encode } from "@toon-format/toon";
-import type { Doc } from "../../../_generated/dataModel";
+import type { Id } from "../../../_generated/dataModel";
 
-type CanvasNode = NonNullable<Doc<"canvases">["nodes"]>[number];
+// ── Types ───────────────────────────────────────────────────────────────
 
-type CanvasNodeWithData = Pick<CanvasNode, "type" | "position" | "data"> & {
-  idOnCanvas: string;
-  nodeData: {
-    updatedAt?: number;
-  } | null;
+type CanvasData = {
+  canvasId: Id<"canvases">;
+  name: string;
+  nodeCount: number;
+  edgeCount: number;
+  nodes: Array<{
+    idOnCanvas: string;
+    type: string;
+    position: { x: number; y: number };
+    nodeDataId: Id<"nodeDatas"> | null;
+    abstract: string | null;
+  }>;
 };
 
-export const canvasContextPrompt = internalQuery({
+export const create = internalAction({
   args: { canvasId: v.id("canvases") },
   returns: v.string(),
-  handler: async (ctx, { canvasId }) => {
-    const canvas = await ctx.db.get(canvasId);
+  handler: async (ctx, { canvasId }): Promise<string> => {
+    console.log("🚧 Creating canvas context for canvasId:", canvasId);
+    // 1. Récupérer les données du canvas pour extraire les nodeDataIds
+    const canvasData = await ctx.runQuery(
+      internal.ia.nole.brain.getCanvasNodeDatasWithAbstracts
+        .getCanvasNodeDatasWithAbstracts,
+      { canvasId },
+    );
+    if (!canvasData) return "No canvas found.";
 
-    if (!canvas) {
-      return "No canvas found.";
+    // 2. Générer / rafraîchir les abstracts (skip auto si déjà à jour)
+    const nodeDataIds = canvasData.nodes
+      .map((n) => n.nodeDataId)
+      .filter((id): id is Id<"nodeDatas"> => id !== null);
+
+    if (nodeDataIds.length > 0) {
+      await ctx.runAction(internal.ia.helpers.abstractGenerator.generateMany, {
+        nodeDataIds,
+      });
     }
 
-    // For each node, fetch its nodeData
-    const nodesWithData: CanvasNodeWithData[] = await Promise.all(
-      (canvas.nodes || []).map(async (node) => {
-        let nodeData: CanvasNodeWithData["nodeData"] = null;
-        if (node.nodeDataId) {
-          const fullNodeData = await ctx.db.get(node.nodeDataId);
-          nodeData = fullNodeData
-            ? {
-                updatedAt: fullNodeData.updatedAt,
-              }
-            : null;
-        }
-        return {
-          idOnCanvas: node.id,
-          type: node.type,
-          position: node.position,
-          data: node.data,
-          nodeData,
-        };
-      }),
+    // 3. Re-fetch avec les abstracts frais
+    const freshData = await ctx.runQuery(
+      internal.ia.nole.brain.getCanvasNodeDatasWithAbstracts
+        .getCanvasNodeDatasWithAbstracts,
+      { canvasId },
     );
+    if (!freshData) return "No canvas found.";
 
-    return `
-    ## Current canvas context
-
-    Here is the canvas that the user is currently working on:
-
-    - Canvas ID: ${canvas._id}
-    - Canvas title: ${canvas?.name ?? "Untitled"}
-    - Number of nodes: ${canvas.nodes?.length ?? 0}
-    - Number of edges: ${canvas.edges?.length ?? 0}
-
-    ### Nodes summary
-    ${generateNodeSummmary(nodesWithData)}
-
-    ### To know more
-    If you want to know more about the canvas or its nodes, you can use the provided tools: 
-    - canvasTool('your query here in natural language') 
-    - nodeTool('your query here in natural language'). 
-
-    Give the tools the necessary information to retrieve the relevant data (nodeId, canvasId...). Those tools can also be used to update the canvas or its nodes, again, in a natural language way. 
-    `;
+    // 4. Construire le résumé
+    return buildCanvasSummary(freshData);
   },
 });
 
-function generateNodeSummmary(nodes: CanvasNodeWithData[]): string {
-  const formattedNodes = nodes.map((node) => {
-    return {
+// ── Helpers ─────────────────────────────────────────────────────────────
+
+function buildCanvasSummary(data: CanvasData): string {
+  const nodesSummary = encode(
+    data.nodes.map((node) => ({
       idOnCanvas: node.idOnCanvas,
       type: node.type,
-      positionOnCanvas: JSON.stringify(node.position),
-      updatedAt:
-        node.nodeData?.updatedAt && typeof node.nodeData.updatedAt === "number"
-          ? new Date(node.nodeData.updatedAt).toISOString()
-          : "No update time",
-    };
-  });
+      position: JSON.stringify(node.position),
+      abstract: node.abstract ?? "No abstract available",
+    })),
+  );
 
-  const response = encode(formattedNodes);
-  return response;
+  return `## Current canvas context
+
+Here is the canvas that the user is currently working on:
+
+- Canvas ID: ${data.canvasId}
+- Canvas title: ${data.name}
+- Number of nodes: ${data.nodeCount}
+- Number of edges: ${data.edgeCount}
+
+### Nodes summary
+${nodesSummary}
+
+### To know more
+If you want to know more about the canvas or its nodes, you can use the provided tools: 
+- canvasTool('your query here in natural language') 
+- nodeTool('your query here in natural language'). 
+
+Give the tools the necessary information to retrieve the relevant data (nodeId, canvasId...). Those tools can also be used to update the canvas or its nodes, again, in a natural language way.`;
 }

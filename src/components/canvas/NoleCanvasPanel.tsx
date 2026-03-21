@@ -100,7 +100,7 @@ export default function NoleCanvasPanel() {
 
   // Send message mutation with optimistic update
   const sendMessageMutation = useMutation(
-    api.ia.nole.sendMessage,
+    api.ia.nole.saveMessage,
   ).withOptimisticUpdate(optimisticallySendMessage(api.threads.listMessages));
 
   const updateThreadTitle = useAction(api.threads.updateThreadTitle);

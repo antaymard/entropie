@@ -40,7 +40,7 @@ const ChatInterface = memo(function ChatInterface({
     { initialNumItems: 20, stream: true },
   );
 
-  const sendMessage = useMutation(api.ia.nole.sendMessage).withOptimisticUpdate(
+  const sendMessage = useMutation(api.ia.nole.saveMessage).withOptimisticUpdate(
     optimisticallySendMessage(api.threads.listMessages),
   );
 

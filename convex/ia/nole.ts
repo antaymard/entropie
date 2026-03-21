@@ -4,31 +4,17 @@ import { baseAgent, createNoleAgent } from "./agents";
 import { anyApi } from "convex/server";
 import { requireAuth } from "../lib/auth";
 import { generateBrainSystemPrompt } from "./nole/brain/brainAgent";
+import { internal } from "../_generated/api";
 
 // Save user message, then stream response asynchronously
-export const sendMessage = mutation({
+export const saveMessage = mutation({
   args: {
     threadId: v.string(),
     prompt: v.string(),
     canvasId: v.id("canvases"),
   },
-  returns: v.union(
-    v.object({
-      messageId: v.string(),
-    }),
-    v.object({
-      success: v.boolean(),
-      error: v.string(),
-    }),
-  ),
   handler: async (ctx, { threadId, prompt, canvasId }) => {
     const authUserId = await requireAuth(ctx);
-    if (!authUserId) {
-      return {
-        success: false,
-        error: "Utilisateur non authentifié",
-      };
-    }
 
     // Save the user message
     const { messageId } = await baseAgent.saveMessage(ctx, {
@@ -37,7 +23,7 @@ export const sendMessage = mutation({
     });
 
     // Schedule the streaming action (no await needed for scheduler)
-    void ctx.scheduler.runAfter(0, anyApi.ia.nole.streamResponse, {
+    void ctx.scheduler.runAfter(0, internal.ia.nole.streamResponse, {
       authUserId: authUserId,
       threadId,
       promptMessageId: messageId,

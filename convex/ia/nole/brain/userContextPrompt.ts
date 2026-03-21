@@ -1,14 +1,18 @@
 import { v } from "convex/values";
 import { internalQuery } from "../../../_generated/server";
 
-export const userContextPrompt = internalQuery({
+export const create = internalQuery({
   args: { userId: v.id("users") },
   returns: v.string(),
   handler: async (ctx, { userId }) => {
-    return `
-    ## User Context
+    const user = await ctx.db.get(userId);
 
-    The user is called Antoine.
-    `;
+    const userContext = "## User Context";
+
+    if (!user) {
+      return userContext + "\nNo user context found.";
+    }
+
+    return userContext + `\nUser name: ${user.name}`;
   },
 });

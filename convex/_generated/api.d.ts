@@ -46,6 +46,7 @@ import type * as lib_r2 from "../lib/r2.js";
 import type * as links from "../links.js";
 import type * as migrations from "../migrations.js";
 import type * as models_aiMemoryModels from "../models/aiMemoryModels.js";
+import type * as models_canvasModels from "../models/canvasModels.js";
 import type * as models_canvasNodeModels from "../models/canvasNodeModels.js";
 import type * as models_nodeDataModels from "../models/nodeDataModels.js";
 import type * as nodeDatas from "../nodeDatas.js";
@@ -110,6 +111,7 @@ declare const fullApi: ApiFromModules<{
   links: typeof links;
   migrations: typeof migrations;
   "models/aiMemoryModels": typeof models_aiMemoryModels;
+  "models/canvasModels": typeof models_canvasModels;
   "models/canvasNodeModels": typeof models_canvasNodeModels;
   "models/nodeDataModels": typeof models_nodeDataModels;
   nodeDatas: typeof nodeDatas;

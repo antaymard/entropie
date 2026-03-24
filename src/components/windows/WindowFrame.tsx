@@ -1,6 +1,11 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { cn } from "@/lib/utils";
-import { useWindowsStore, type OpenedWindow } from "@/stores/windowsStore";
+import {
+  useWindowsStore,
+  type OpenedWindow,
+  type SnapSide,
+  SNAP_EDGE_THRESHOLD,
+} from "@/stores/windowsStore";
 import { useNodeDataTitle } from "@/hooks/useNodeTitle";
 import { useNodeData } from "@/hooks/useNodeData";
 import { getNodeIcon } from "@/components/utils/nodeDataDisplayUtils";
@@ -48,9 +53,13 @@ const RESIZE_CURSOR: Record<ResizeDirection, string> = {
 
 interface WindowFrameProps {
   openedWindow: OpenedWindow;
+  onSnapPreviewChange?: (side: SnapSide | null) => void;
 }
 
-export default function WindowFrame({ openedWindow }: WindowFrameProps) {
+export default function WindowFrame({
+  openedWindow,
+  onSnapPreviewChange,
+}: WindowFrameProps) {
   const { xyNodeId, nodeDataId } = openedWindow;
   const [isDirty, setDirty] = useState(false);
   const [saveHandler, setSaveHandler] = useState<(() => void) | null>(null);
@@ -58,6 +67,7 @@ export default function WindowFrame({ openedWindow }: WindowFrameProps) {
   const resizeWindow = useWindowsStore((s) => s.resizeWindow);
   const closeWindow = useWindowsStore((s) => s.closeWindow);
   const toggleMinimizeWindow = useWindowsStore((s) => s.toggleMinimizeWindow);
+  const snapWindow = useWindowsStore((s) => s.snapWindow);
 
   const title = useNodeDataTitle(nodeDataId);
   const nodeData = useNodeData(nodeDataId);
@@ -94,6 +104,22 @@ export default function WindowFrame({ openedWindow }: WindowFrameProps) {
     [],
   );
 
+  // Ref to track current snap preview so the callback doesn't go stale
+  const snapPreviewRef = useRef<SnapSide | null>(null);
+  const onSnapPreviewChangeRef = useRef(onSnapPreviewChange);
+  onSnapPreviewChangeRef.current = onSnapPreviewChange;
+
+  const updateSnapPreview = useCallback((clientX: number) => {
+    let side: SnapSide | null = null;
+    if (clientX <= SNAP_EDGE_THRESHOLD) side = "left";
+    else if (clientX >= window.innerWidth - SNAP_EDGE_THRESHOLD) side = "right";
+
+    if (side !== snapPreviewRef.current) {
+      snapPreviewRef.current = side;
+      onSnapPreviewChangeRef.current?.(side);
+    }
+  }, []);
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (dragRef.current) {
@@ -103,6 +129,7 @@ export default function WindowFrame({ openedWindow }: WindowFrameProps) {
         };
         dragRef.current = { startX: e.clientX, startY: e.clientY };
         moveWindow(xyNodeId, delta);
+        updateSnapPreview(e.clientX);
         return;
       }
 
@@ -155,7 +182,20 @@ export default function WindowFrame({ openedWindow }: WindowFrameProps) {
       }
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e: MouseEvent) => {
+      // Snap detection on drop
+      if (dragRef.current || snapPreviewRef.current) {
+        const side = snapPreviewRef.current;
+        if (side) {
+          snapWindow(xyNodeId, side);
+        }
+        // Clear preview
+        if (snapPreviewRef.current) {
+          snapPreviewRef.current = null;
+          onSnapPreviewChangeRef.current?.(null);
+        }
+      }
+
       dragRef.current = null;
       resizeRef.current = null;
       document.body.style.cursor = "";
@@ -169,7 +209,7 @@ export default function WindowFrame({ openedWindow }: WindowFrameProps) {
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [xyNodeId, moveWindow, resizeWindow]);
+  }, [xyNodeId, moveWindow, resizeWindow, snapWindow, updateSnapPreview]);
 
   return (
     <WindowFrameContext.Provider value={{ setDirty, setSaveHandler }}>

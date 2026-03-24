@@ -27,6 +27,8 @@ function getDefaultWindowSize(nodeType: nodeTypes): WindowSize {
 
 const PLACEMENT_PADDING = 24;
 const PLACEMENT_STEP = 40;
+const SNAP_EDGE_THRESHOLD = 20;
+const SNAP_PADDING = 10;
 
 /**
  * Scans the viewport in a raster pattern to find a position for a new window
@@ -55,7 +57,13 @@ function findSmartPosition(
   );
 
   if (visibleWindows.length === 0) {
-    return { x: PLACEMENT_PADDING, y: PLACEMENT_PADDING };
+    return {
+      x: Math.max(
+        PLACEMENT_PADDING,
+        Math.round((viewportWidth - newWidth) / 2),
+      ),
+      y: 70,
+    };
   }
 
   const overlapsAny = (x: number, y: number): boolean =>
@@ -101,6 +109,8 @@ type OpenedWindowState = "normal" | "minimized" | "maximized";
 
 type Delta = { x: number; y: number };
 
+export type SnapSide = "left" | "right";
+
 export interface OpenedWindow {
   position: { x: number; y: number };
   width: number;
@@ -109,6 +119,7 @@ export interface OpenedWindow {
   nodeDataId: Id<"nodeDatas">;
   nodeType: nodeTypes;
   windowState: OpenedWindowState;
+  preSnapSize?: { width: number; height: number };
 }
 
 type OpenedWindowPayload = Pick<
@@ -130,6 +141,7 @@ interface WindowsStore {
   ) => void;
   setWindowState: (xyNodeId: string, state: OpenedWindowState) => void;
   toggleMinimizeWindow: (xyNodeId: string) => void;
+  snapWindow: (xyNodeId: string, side: SnapSide) => void;
 }
 
 export const useWindowsStore = create<WindowsStore>()(
@@ -233,20 +245,23 @@ export const useWindowsStore = create<WindowsStore>()(
           );
           if (windowToMoveIndex < 0) return store;
 
-          const windowToMove = store.openedWindows[windowToMoveIndex];
+          let windowToMove = store.openedWindows[windowToMoveIndex];
           if (windowToMove.windowState !== "normal") return store;
+
+          // Auto-unsnap: restore original dimensions on first drag delta
+          if (windowToMove.preSnapSize) {
+            windowToMove = {
+              ...windowToMove,
+              width: windowToMove.preSnapSize.width,
+              height: windowToMove.preSnapSize.height,
+              preSnapSize: undefined,
+            };
+          }
 
           const nextPosition = {
             x: windowToMove.position.x + delta.x,
             y: windowToMove.position.y + delta.y,
           };
-
-          if (
-            nextPosition.x === windowToMove.position.x &&
-            nextPosition.y === windowToMove.position.y
-          ) {
-            return store;
-          }
 
           const nextOpenedWindows = store.openedWindows.slice();
           nextOpenedWindows[windowToMoveIndex] = {
@@ -343,7 +358,42 @@ export const useWindowsStore = create<WindowsStore>()(
           return { openedWindows: nextOpenedWindows };
         });
       },
+      snapWindow: (xyNodeId: string, side: SnapSide) => {
+        set((store) => {
+          const index = store.openedWindows.findIndex(
+            (window) => window.xyNodeId === xyNodeId,
+          );
+          if (index < 0) return store;
+
+          const current = store.openedWindows[index];
+          const viewportWidth = window.innerWidth;
+          const viewportHeight = window.innerHeight;
+          const snapWidth = Math.round(viewportWidth * 0.4) - SNAP_PADDING * 2;
+
+          const nextOpenedWindows = store.openedWindows.slice();
+          nextOpenedWindows[index] = {
+            ...current,
+            preSnapSize: current.preSnapSize ?? {
+              width: current.width,
+              height: current.height,
+            },
+            position: {
+              x:
+                side === "left"
+                  ? SNAP_PADDING
+                  : viewportWidth - snapWidth - SNAP_PADDING,
+              y: SNAP_PADDING,
+            },
+            width: snapWidth,
+            height: viewportHeight - SNAP_PADDING * 2,
+            windowState: "normal",
+          };
+          return { openedWindows: nextOpenedWindows };
+        });
+      },
     }),
     { name: "windows-store" },
   ),
 );
+
+export { SNAP_EDGE_THRESHOLD };

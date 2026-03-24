@@ -34,12 +34,17 @@ export const getCanvasNodeDatasWithAbstracts = internalQuery({
       }),
     );
 
+    const edges = (canvas.edges || []).map((edge) => ({
+      source: edge.source,
+      target: edge.target,
+    }));
+
     return {
       canvasId: canvas._id,
       name: canvas.name ?? "Untitled",
       nodeCount: canvas.nodes?.length ?? 0,
-      edgeCount: canvas.edges?.length ?? 0,
       nodes,
+      edges,
     };
   },
 });

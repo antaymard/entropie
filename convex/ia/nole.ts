@@ -50,9 +50,7 @@ export const streamResponse = internalAction({
       ctx,
     });
 
-    const noleAgent = createNoleAgent({
-      readCanvasInternal: anyApi.ia.helpers.canvasHelpers.getCanvasInternal,
-    });
+    const noleAgent = createNoleAgent();
     const result = await noleAgent.streamText(
       ctx,
       { threadId, userId: authUserId },
@@ -62,7 +60,7 @@ export const streamResponse = internalAction({
       },
       {
         saveStreamDeltas: {
-          chunking: "word", // Stream word by word
+          chunking: "line", // Stream line by line
           throttleMs: 200, // 200ms between each update
         },
       },

@@ -55,7 +55,13 @@ function findSmartPosition(
   );
 
   if (visibleWindows.length === 0) {
-    return { x: PLACEMENT_PADDING, y: PLACEMENT_PADDING };
+    return {
+      x: Math.max(
+        PLACEMENT_PADDING,
+        Math.round((viewportWidth - newWidth) / 2),
+      ),
+      y: 70,
+    };
   }
 
   const overlapsAny = (x: number, y: number): boolean =>

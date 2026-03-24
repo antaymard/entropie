@@ -40,11 +40,18 @@ export const generate = internalAction({
     // 4. Appel LLM one-shot
     const { text } = await generateText({
       model: openrouter("mistralai/mistral-small-2603"),
-      prompt: `Résume le contenu suivant en un abstract concis.
-Ne fabrique pas d'information. Sois factuel et synthétique.
-${previousAbstractContext}
-Contenu :
-${llmFriendlyContent}`,
+      prompt: `Summarize the following content into a concise abstract.
+  Do not fabricate information. Be factual and synthetic.
+
+  Here is the current summary of the content (if applicable):
+  ${previousAbstractContext}
+
+  Here is the full content to summarize:
+  ${llmFriendlyContent}
+
+  The content may not have been modified since the last abstract generation. If the content has not been modified, you can respond with a more concise reformulation of the previous abstract or with the same abstract if you consider it already optimal.
+
+  If the content is very short (5 sentences maximum), you can consider that the abstract is the same as the content, and return the content as-is as the abstract.`,
     });
 
     // 5. Persister l'abstract via aiMemory

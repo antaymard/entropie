@@ -3,6 +3,7 @@ import { Agent } from "@convex-dev/agent";
 import { openrouter } from "@openrouter/ai-sdk-provider";
 import type { LanguageModel } from "ai";
 import { Id } from "../_generated/dataModel";
+import { readNodeDataTool } from "./tools/readNodeDataTool";
 
 export function createBaseAgent({ model }: { model?: LanguageModel } = {}) {
   return new Agent(components.agent, {
@@ -34,20 +35,24 @@ export function createAutomationAgent({
   });
 }
 
-export function createBrainAgent({ instructions }: { instructions: string }) {
-  return new Agent(components.agent, {
-    name: "Brain",
-    maxSteps: 15,
-    languageModel: openrouter("stepfun/step-3.5-flash:free"),
-    tools: {},
-    instructions,
-  });
-}
+// Not used for now
+// export function createBrainAgent({ instructions }: { instructions: string }) {
+//   return new Agent(components.agent, {
+//     name: "Brain",
+//     maxSteps: 15,
+//     languageModel: openrouter("stepfun/step-3.5-flash:free"),
+//     tools: {},
+//     instructions,
+//   });
+// }
 
-export function createNoleAgent({}) {
+export function createNoleAgent() {
   return new Agent(components.agent, {
     name: "Nolë",
-    maxSteps: 5,
-    languageModel: openrouter("xiaomi/mimo-v2-pro"),
+    maxSteps: 8,
+    languageModel: openrouter("minimax/minimax-m2.7"),
+    tools: {
+      readNodeDataTool,
+    },
   });
 }

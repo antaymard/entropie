@@ -10,13 +10,16 @@ type CanvasData = {
   canvasId: Id<"canvases">;
   name: string;
   nodeCount: number;
-  edgeCount: number;
   nodes: Array<{
     idOnCanvas: string;
     type: string;
     position: { x: number; y: number };
     nodeDataId: Id<"nodeDatas"> | null;
     abstract: string | null;
+  }>;
+  edges: Array<{
+    source: string;
+    target: string;
   }>;
 };
 
@@ -60,12 +63,25 @@ export const create = internalAction({
 // ── Helpers ─────────────────────────────────────────────────────────────
 
 function buildCanvasSummary(data: CanvasData): string {
+  // Build a map: source nodeId → list of target nodeIds
+  const targetsBySource = new Map<string, string[]>();
+  for (const edge of data.edges) {
+    const targets = targetsBySource.get(edge.source);
+    if (targets) {
+      targets.push(edge.target);
+    } else {
+      targetsBySource.set(edge.source, [edge.target]);
+    }
+  }
+
   const nodesSummary = encode(
     data.nodes.map((node) => ({
       idOnCanvas: node.idOnCanvas,
       type: node.type,
       position: JSON.stringify(node.position),
+      nodeDataId: node.nodeDataId,
       abstract: node.abstract ?? "No abstract available",
+      targetNodes: targetsBySource.get(node.idOnCanvas) ?? [],
     })),
   );
 
@@ -76,15 +92,13 @@ Here is the canvas that the user is currently working on:
 - Canvas ID: ${data.canvasId}
 - Canvas title: ${data.name}
 - Number of nodes: ${data.nodeCount}
-- Number of edges: ${data.edgeCount}
 
 ### Nodes summary
 ${nodesSummary}
 
 ### To know more
 If you want to know more about the canvas or its nodes, you can use the provided tools: 
-- canvasTool('your query here in natural language') 
-- nodeTool('your query here in natural language'). 
+- readNodeDataTool using the nodeDataId
 
 Give the tools the necessary information to retrieve the relevant data (nodeId, canvasId...). Those tools can also be used to update the canvas or its nodes, again, in a natural language way.`;
 }

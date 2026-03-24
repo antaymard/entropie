@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { nodeTypeValidator } from "./nodeTypeSchema";
 
 // ── Sub-validators ──────────────────────────────────────────────────────
 
@@ -40,7 +41,7 @@ const automationProgressValidator = v.optional(
 const nodeDatasValidator = v.object({
   templateId: v.optional(v.id("nodeTemplates")),
   template: v.optional(v.any()),
-  type: v.string(),
+  type: nodeTypeValidator,
   updatedAt: v.number(),
   removedFromCanvasAt: v.optional(v.number()),
   values: v.record(v.string(), v.any()),

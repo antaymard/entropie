@@ -5,6 +5,7 @@ import {
   plateJsonToMarkdown,
 } from "./plateMarkdownConverter";
 import { canvasesValidator } from "../../schemas/canvasesSchema";
+import { nodeTypeValidator } from "../../schemas/nodeTypeSchema";
 
 const canvasWithIdValidator = v.object({
   _id: v.id("canvases"),
@@ -95,7 +96,7 @@ export const editNodeInCanvasInternal = internalMutation({
     nodeId: v.string(),
     updates: v.object({
       name: v.optional(v.string()),
-      type: v.optional(v.string()),
+      type: v.optional(nodeTypeValidator),
       data: v.optional(v.any()),
       position: v.optional(v.object({ x: v.number(), y: v.number() })),
       width: v.optional(v.number()),

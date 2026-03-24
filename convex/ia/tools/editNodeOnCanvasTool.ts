@@ -1,7 +1,7 @@
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
-import { reportToolProgress } from "../../automation/progressReporter";
 
+// is v1
 export const editNodeOnCanvasTool = createTool({
   description:
     "Use this tools to resize, move or delete a node on the canvas. This tool does not allow to edit the nodeData content, only the node properties on the canvas (position, size, etc.).",

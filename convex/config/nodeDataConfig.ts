@@ -1,10 +1,20 @@
 import { z } from "zod";
+import { nodeTypeValues } from "../schemas/nodeTypeSchema";
 
-const nodeDataConfig = [
+const nodeTypeZodValidator = z.enum(nodeTypeValues);
+
+type NodeDataConfigItem = {
+  type: z.infer<typeof nodeTypeZodValidator>;
+  description: string;
+  dataValuesSchema: z.ZodTypeAny;
+  toolInputSchema?: z.ZodTypeAny;
+};
+
+const nodeDataConfig: Array<NodeDataConfigItem> = [
   {
     type: "link",
     description: "Node for storing a link.",
-    toolInputSchema: z.object({
+    dataValuesSchema: z.object({
       link: z.object({
         href: z
           .string()
@@ -18,7 +28,7 @@ const nodeDataConfig = [
   {
     type: "image",
     description: "Node for storing an image.",
-    toolInputSchema: z.object({
+    dataValuesSchema: z.object({
       images: z.array(
         z.object({
           url: z
@@ -33,6 +43,7 @@ const nodeDataConfig = [
   {
     type: "document",
     description: "Node for storing a markdown document.",
+    dataValuesSchema: z.any(),
     toolInputSchema: z.object({
       doc: z.string().describe("The markdown content of the document."),
     }),
@@ -40,7 +51,7 @@ const nodeDataConfig = [
   {
     type: "value",
     description: "Node for storing a value (text, number, boolean).",
-    toolInputSchema: z.object({
+    dataValuesSchema: z.object({
       value: z.object({
         type: z
           .enum(["text", "number", "boolean"])
@@ -63,4 +74,4 @@ const nodeDataConfig = [
   },
 ];
 
-export { nodeDataConfig };
+export { nodeDataConfig, nodeTypeZodValidator };

@@ -1,10 +1,7 @@
-"use node";
-
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
 import { openrouter } from "@openrouter/ai-sdk-provider";
 import { generateText } from "ai";
-import { reportToolProgress } from "../../automation/progressReporter";
 
 export const readPdfTool = createTool({
   description:
@@ -20,10 +17,6 @@ export const readPdfTool = createTool({
   handler: async (ctx, args): Promise<string> => {
     console.log(`📄 Analyzing pdf from URL: ${args.url}`);
     console.log(`📋 Objective: ${args.objective}`);
-
-    await reportToolProgress(ctx, {
-      stepType: "tool_launched=read_pdf",
-    });
 
     try {
       // Analyser le pdf avec Anthropic (supporte les URLs directement)
@@ -48,17 +41,10 @@ export const readPdfTool = createTool({
         ],
       });
 
-      await reportToolProgress(ctx, {
-        stepType: "tool_completed=read_pdf",
-      });
-
       console.log(`✅ PDF analysis complete`);
       return result.text;
     } catch (error) {
       console.error("View PDF error:", error);
-      await reportToolProgress(ctx, {
-        stepType: "tool_error=read_pdf",
-      });
       throw new Error(
         `Failed to analyze PDF: ${error instanceof Error ? error.message : "Unknown error"}. Please verify the URL and try again.`,
       );

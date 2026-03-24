@@ -1,7 +1,6 @@
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
 import Parallel from "parallel-web";
-import { reportToolProgress } from "../../automation/progressReporter";
 
 const client = new Parallel({
   apiKey: process.env.PARALLEL_API_KEY!,
@@ -31,15 +30,6 @@ export const openWebPageTool = createTool({
   handler: async (ctx, { urls, objective, search_queries = [] }) => {
     console.log(`🔍 Web extract: ${objective}, ${urls.join(", ")}`);
 
-    await reportToolProgress(ctx, {
-      stepType: "tool_launched=web_extract",
-      data: {
-        urls,
-        objective,
-        search_queries,
-      },
-    });
-
     try {
       const search = await client.beta.extract({
         urls,
@@ -51,11 +41,6 @@ export const openWebPageTool = createTool({
       if (!search.results || search.results.length === 0) {
         return `No results found for: "${objective}"`;
       }
-
-      await reportToolProgress(ctx, {
-        stepType: "tool_completed=web_extract",
-        data: {},
-      });
 
       return search.results;
     } catch (error: any) {

@@ -4,6 +4,8 @@ import { openrouter } from "@openrouter/ai-sdk-provider";
 import type { LanguageModel } from "ai";
 import { Id } from "../_generated/dataModel";
 import { readNodeDataTool } from "./tools/readNodeDataTool";
+import { openWebPageTool } from "./tools/openWebPageTool";
+import { websearchTool } from "./tools/websearchTool";
 
 export function createBaseAgent({ model }: { model?: LanguageModel } = {}) {
   return new Agent(components.agent, {
@@ -53,6 +55,8 @@ export function createNoleAgent() {
     languageModel: openrouter("minimax/minimax-m2.7"),
     tools: {
       readNodeDataTool,
+      openWebPageTool,
+      websearchTool,
     },
   });
 }

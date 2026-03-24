@@ -4,7 +4,7 @@ import { api, components, internal } from "./_generated/api";
 import { createAutomationAgent } from "./ia/agents";
 import { createThread } from "@convex-dev/agent";
 import { requireAuth } from "./lib/auth";
-import { nodeDataConfig } from "./schemas/nodeDataConfig";
+import { nodeDataConfig } from "./config/nodeDataConfig";
 import updateNodeDataValuesTool from "./ia/tools/updateNodeDataValuesTool";
 import {
   generateInputNodesContext,
@@ -45,11 +45,12 @@ export const trigger = action({
         },
       );
 
-      // Get the toolInputSchema for the current nodeData type,
-      // for the model to know how to use the updateNodeDataValuesTool
-      const inputSchema = nodeDataConfig.find(
+      // Prefer toolInputSchema when provided, otherwise fallback to dataValuesSchema.
+      const nodeConfig = nodeDataConfig.find(
         (ndc) => ndc.type === currentNodeData.type,
-      )?.toolInputSchema;
+      );
+      const inputSchema =
+        nodeConfig?.toolInputSchema ?? nodeConfig?.dataValuesSchema;
       if (!inputSchema) {
         throw new ConvexError(
           "Schéma d'entrée non trouvé pour le type de nodeData.",

@@ -34,11 +34,6 @@ export const websearchTool = createTool({
   ) => {
     console.log(`🔍 Web search: ${objective} with effort ${search_effort}`);
 
-    await reportToolProgress(ctx, {
-      stepType: "tool_launched=web_search",
-      data: { objective, search_queries, search_effort },
-    });
-
     try {
       let searchOptions = {};
       switch (search_effort) {
@@ -81,10 +76,9 @@ export const websearchTool = createTool({
         return `No results found for: "${objective}"`;
       }
 
-      await reportToolProgress(ctx, {
-        stepType: "tool_completed=web_search",
-        data: {},
-      });
+      console.log(
+        `✅ Web search complete with ${search.results.length} results.`,
+      );
 
       return search.results;
     } catch (error: any) {

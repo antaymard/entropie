@@ -72,6 +72,51 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
       }),
     }),
   },
+  {
+    type: "embed",
+    description: "Node for storing embedded content.",
+    dataValuesSchema: z.object({
+      embed: z.object({
+        url: z
+          .string()
+          .describe("The original URL or source used to create the embed."),
+        embedUrl: z
+          .string()
+          .describe("The embeddable URL used in the iframe source."),
+        title: z
+          .string()
+          .optional()
+          .describe("An optional title for the embedded content."),
+        type: z
+          .enum([
+            "youtube",
+            "google-docs",
+            "google-sheets",
+            "google-slides",
+            "generic",
+          ])
+          .describe("The embed provider/type inferred from the URL."),
+      }),
+    }),
+  },
+  {
+    type: "file",
+    description: "Node for storing uploaded files.",
+    dataValuesSchema: z.object({
+      files: z.array(
+        z.object({
+          url: z.string().describe("The public URL of the uploaded file."),
+          filename: z.string().describe("The display filename."),
+          mimeType: z.string().describe("The MIME type of the file."),
+          size: z.number().describe("The file size in bytes."),
+          uploadedAt: z
+            .number()
+            .describe("Upload timestamp (epoch milliseconds)."),
+          key: z.string().describe("The storage key/path of the file."),
+        }),
+      ),
+    }),
+  },
 ];
 
 export { nodeDataConfig, nodeTypeZodValidator };

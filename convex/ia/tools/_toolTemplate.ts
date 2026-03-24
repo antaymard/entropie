@@ -1,5 +1,3 @@
-"use node";
-
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
 import { openrouter } from "@openrouter/ai-sdk-provider";

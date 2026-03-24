@@ -8,8 +8,8 @@ import { nodeDataConfig } from "./config/nodeDataConfig";
 import updateNodeDataValuesTool from "./ia/tools/updateNodeDataValuesTool";
 import {
   generateInputNodesContext,
-  generateNodeContext,
-} from "./ia/helpers/contextGenerator";
+  makeNodeDataLLMFriendly,
+} from "./ia/helpers/makeNodeDataLLMFriendly";
 import { createProgressReporter } from "./automation/progressReporter";
 
 export const trigger = action({
@@ -85,7 +85,7 @@ export const trigger = action({
 ${generateInputNodesContext(inputNodeDatas)}
 
           Voici les données actuelles du noeud (saisies par l'utilisateur, ou par toi lors d'une exécution précédente) :
-${generateNodeContext(currentNodeData)}
+${makeNodeDataLLMFriendly(currentNodeData)}
           Si c'est pertinent, garde ces données à l'esprit pour produire ta réponse (structure, format, contraintes). Si les résultats de ton travail sont très différents, privilégie la qualité de ta réponse plutôt que la conformité aux données précédentes.
 
           ------

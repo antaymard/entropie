@@ -31,6 +31,7 @@ import type * as ia_nole_brain_getCanvasNodeDatasWithAbstracts from "../ia/nole/
 import type * as ia_nole_brain_introductionPrompt from "../ia/nole/brain/introductionPrompt.js";
 import type * as ia_nole_brain_userContextPrompt from "../ia/nole/brain/userContextPrompt.js";
 import type * as ia_tools__toolTemplate from "../ia/tools/_toolTemplate.js";
+import type * as ia_tools_editNodeOnCanvasTool from "../ia/tools/editNodeOnCanvasTool.js";
 import type * as ia_tools_openWebPageTool from "../ia/tools/openWebPageTool.js";
 import type * as ia_tools_readCanvasTool from "../ia/tools/readCanvasTool.js";
 import type * as ia_tools_readNodeConfigsTool from "../ia/tools/readNodeConfigsTool.js";
@@ -45,6 +46,7 @@ import type * as lib_r2 from "../lib/r2.js";
 import type * as links from "../links.js";
 import type * as migrations from "../migrations.js";
 import type * as models_aiMemoryModels from "../models/aiMemoryModels.js";
+import type * as models_canvasNodeModels from "../models/canvasNodeModels.js";
 import type * as models_nodeDataModels from "../models/nodeDataModels.js";
 import type * as nodeDatas from "../nodeDatas.js";
 import type * as schemas_aiMemorySchema from "../schemas/aiMemorySchema.js";
@@ -60,6 +62,7 @@ import type * as templates from "../templates.js";
 import type * as threads from "../threads.js";
 import type * as uploads from "../uploads.js";
 import type * as wrappers_aiMemoryWrappers from "../wrappers/aiMemoryWrappers.js";
+import type * as wrappers_canvasNodeWrappers from "../wrappers/canvasNodeWrappers.js";
 import type * as wrappers_nodeDataWrappers from "../wrappers/nodeDataWrappers.js";
 
 import type {
@@ -92,6 +95,7 @@ declare const fullApi: ApiFromModules<{
   "ia/nole/brain/introductionPrompt": typeof ia_nole_brain_introductionPrompt;
   "ia/nole/brain/userContextPrompt": typeof ia_nole_brain_userContextPrompt;
   "ia/tools/_toolTemplate": typeof ia_tools__toolTemplate;
+  "ia/tools/editNodeOnCanvasTool": typeof ia_tools_editNodeOnCanvasTool;
   "ia/tools/openWebPageTool": typeof ia_tools_openWebPageTool;
   "ia/tools/readCanvasTool": typeof ia_tools_readCanvasTool;
   "ia/tools/readNodeConfigsTool": typeof ia_tools_readNodeConfigsTool;
@@ -106,6 +110,7 @@ declare const fullApi: ApiFromModules<{
   links: typeof links;
   migrations: typeof migrations;
   "models/aiMemoryModels": typeof models_aiMemoryModels;
+  "models/canvasNodeModels": typeof models_canvasNodeModels;
   "models/nodeDataModels": typeof models_nodeDataModels;
   nodeDatas: typeof nodeDatas;
   "schemas/aiMemorySchema": typeof schemas_aiMemorySchema;
@@ -121,6 +126,7 @@ declare const fullApi: ApiFromModules<{
   threads: typeof threads;
   uploads: typeof uploads;
   "wrappers/aiMemoryWrappers": typeof wrappers_aiMemoryWrappers;
+  "wrappers/canvasNodeWrappers": typeof wrappers_canvasNodeWrappers;
   "wrappers/nodeDataWrappers": typeof wrappers_nodeDataWrappers;
 }>;
 

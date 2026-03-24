@@ -1,0 +1,246 @@
+import { ConvexError } from "convex/values";
+import type { Doc, Id } from "../_generated/dataModel";
+import type { MutationCtx, QueryCtx } from "../_generated/server";
+import errors from "../config/errorsConfig";
+
+type CanvasNode = NonNullable<Doc<"canvases">["nodes"]>[number];
+
+type NodeChange = {
+  id: string;
+  position?: {
+    x: number;
+    y: number;
+  };
+  dimensions?: {
+    width: number;
+    height: number;
+  };
+};
+
+type CanvasNodePropsUpdate = {
+  id: string;
+  props?: {
+    locked?: boolean;
+    hidden?: boolean;
+    zIndex?: number;
+    color?: string;
+    variant?: string;
+  };
+  data?: Record<string, unknown>;
+};
+
+async function getCanvas(
+  ctx: QueryCtx | MutationCtx,
+  canvasId: Id<"canvases">,
+): Promise<Doc<"canvases">> {
+  const canvas = await ctx.db.get("canvases", canvasId);
+  if (!canvas) throw new ConvexError(errors.CANVAS_NOT_FOUND);
+  return canvas;
+}
+
+export async function addCanvasNodes(
+  ctx: MutationCtx,
+  {
+    canvasId,
+    canvasNodes,
+  }: {
+    canvasId: Id<"canvases">;
+    canvasNodes: Array<CanvasNode>;
+  },
+): Promise<boolean> {
+  const canvas = await getCanvas(ctx, canvasId);
+
+  await ctx.db.patch("canvases", canvasId, {
+    nodes: [...(canvas.nodes ?? []), ...canvasNodes],
+  });
+
+  console.log(`✅ Added ${canvasNodes.length} nodes to canvas ${canvasId}`);
+
+  return true;
+}
+
+export async function updatePositionOrDimensions(
+  ctx: MutationCtx,
+  {
+    canvasId,
+    nodeChanges,
+  }: {
+    canvasId: Id<"canvases">;
+    nodeChanges: Array<NodeChange>;
+  },
+): Promise<boolean> {
+  const canvas = await getCanvas(ctx, canvasId);
+  const nodes = canvas.nodes ?? [];
+
+  const updatedNodes = nodes.map((node) => {
+    const change = nodeChanges.find((item) => item.id === node.id);
+    if (!change) return node;
+
+    const updatedNode = { ...node };
+
+    if (change.position) {
+      updatedNode.position = {
+        x: change.position.x,
+        y: change.position.y,
+      };
+    }
+
+    if (change.dimensions) {
+      updatedNode.width = change.dimensions.width;
+      updatedNode.height = change.dimensions.height;
+    }
+
+    return updatedNode;
+  });
+
+  await ctx.db.patch("canvases", canvasId, { nodes: updatedNodes });
+
+  console.log(
+    `✅ Updated position/dimensions for ${nodeChanges.length} nodes in canvas ${canvasId}`,
+  );
+
+  return true;
+}
+
+export async function updateCanvasNodes(
+  ctx: MutationCtx,
+  {
+    canvasId,
+    nodeProps,
+  }: {
+    canvasId: Id<"canvases">;
+    nodeProps: Array<CanvasNodePropsUpdate>;
+  },
+): Promise<boolean> {
+  const canvas = await getCanvas(ctx, canvasId);
+  const nodes = canvas.nodes ?? [];
+
+  const updatedNodes = nodes.map((node) => {
+    const nodeProp = nodeProps.find((item) => item.id === node.id);
+    if (!nodeProp) return node;
+
+    const updatedNode = { ...node };
+
+    if (nodeProp.props) {
+      if (nodeProp.props.locked !== undefined) {
+        updatedNode.locked = nodeProp.props.locked;
+      }
+
+      if (nodeProp.props.hidden !== undefined) {
+        updatedNode.hidden = nodeProp.props.hidden;
+      }
+
+      if (nodeProp.props.zIndex !== undefined) {
+        updatedNode.zIndex = nodeProp.props.zIndex;
+      }
+
+      if (nodeProp.props.color !== undefined) {
+        updatedNode.color = nodeProp.props.color;
+      }
+
+      if (nodeProp.props.variant !== undefined) {
+        updatedNode.variant = nodeProp.props.variant;
+      }
+    }
+
+    if (nodeProp.data !== undefined) {
+      updatedNode.data = {
+        ...(node.data ?? {}),
+        ...nodeProp.data,
+      };
+    }
+
+    return updatedNode;
+  });
+
+  await ctx.db.patch("canvases", canvasId, { nodes: updatedNodes });
+
+  console.log(
+    `✅ Updated display props for ${nodeProps.length} nodes in canvas ${canvasId}`,
+  );
+
+  return true;
+}
+
+export async function removeCanvasNodes(
+  ctx: MutationCtx,
+  {
+    authUserId,
+    canvasId,
+    nodeCanvasIds,
+  }: {
+    authUserId: Id<"users">;
+    canvasId: Id<"canvases">;
+    nodeCanvasIds: Array<string>;
+  },
+): Promise<boolean> {
+  const canvas = await getCanvas(ctx, canvasId);
+  const currentNodes = canvas.nodes ?? [];
+  const nodeCanvasIdSet = new Set(nodeCanvasIds);
+
+  const removedNodes = currentNodes.filter((node) =>
+    nodeCanvasIdSet.has(node.id),
+  );
+  const remainingNodes = currentNodes.filter(
+    (node) => !nodeCanvasIdSet.has(node.id),
+  );
+
+  const removedNodeDataIds = Array.from(
+    new Set(
+      removedNodes
+        .map((node) => node.nodeDataId)
+        .filter((id): id is Id<"nodeDatas"> => id !== undefined),
+    ),
+  );
+
+  await ctx.db.patch("canvases", canvasId, { nodes: remainingNodes });
+
+  if (removedNodeDataIds.length > 0) {
+    const stillUsedInCurrentCanvas = new Set(
+      remainingNodes
+        .map((node) => node.nodeDataId)
+        .filter((id): id is Id<"nodeDatas"> => id !== undefined),
+    );
+
+    const potentialOrphans = removedNodeDataIds.filter(
+      (id) => !stillUsedInCurrentCanvas.has(id),
+    );
+
+    if (potentialOrphans.length > 0) {
+      const allCanvases = await ctx.db
+        .query("canvases")
+        .withIndex("by_creator", (q) => q.eq("creatorId", authUserId))
+        .collect();
+
+      const nodeDataIdsInOtherCanvases = new Set<Id<"nodeDatas">>();
+
+      for (const otherCanvas of allCanvases) {
+        if (otherCanvas._id === canvasId) continue;
+
+        for (const node of otherCanvas.nodes ?? []) {
+          if (node.nodeDataId) {
+            nodeDataIdsInOtherCanvases.add(node.nodeDataId);
+          }
+        }
+      }
+
+      const orphanedIds = potentialOrphans.filter(
+        (id) => !nodeDataIdsInOtherCanvases.has(id),
+      );
+
+      for (const orphanedId of orphanedIds) {
+        await ctx.db.delete(orphanedId);
+      }
+
+      if (orphanedIds.length > 0) {
+        console.log(`🗑️ Deleted ${orphanedIds.length} orphaned nodeDatas`);
+      }
+    }
+  }
+
+  console.log(
+    `✅ Removed ${nodeCanvasIds.length} nodes from canvas ${canvasId}`,
+  );
+
+  return true;
+}

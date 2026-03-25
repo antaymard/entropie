@@ -1,13 +1,10 @@
-"use node";
-
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
-import { openrouter } from "@openrouter/ai-sdk-provider";
-import { generateText } from "ai";
 import { internal } from "../../_generated/api";
 import { Id } from "../../_generated/dataModel";
 import { makeNodeDataLLMFriendly } from "../helpers/makeNodeDataLLMFriendly";
 
+// is v1.0
 export const readNodeDataTool = createTool({
   description:
     "A tool to read node data from a onCanvasNodeId (not a canvasNodeId but the nodeDataId linked to it).",

@@ -5,6 +5,7 @@ import { Doc } from "../../_generated/dataModel";
 import { markdownToPlateJson } from "../helpers/plateMarkdownConverter";
 import { type ActionCtx } from "../../_generated/server";
 import { type ReportProgressFn } from "../../automation/progressReporter";
+import { validateNodeInputSchemaForLLM } from "../helpers/nodeInputSchemaValidatorForLLM";
 
 type UpdateValuesMutationRef = FunctionReference<
   "mutation",
@@ -45,6 +46,14 @@ export default function updateNodeDataValuesTool({
           typeof args === "object" && args !== null
             ? (args as Record<string, unknown>)
             : {};
+
+        const validationError = validateNodeInputSchemaForLLM({
+          nodeType: nodeData.type,
+          input: rawArgs,
+        });
+        if (validationError) {
+          return validationError;
+        }
 
         let updates: Record<string, unknown> = rawArgs;
 

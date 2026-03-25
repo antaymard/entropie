@@ -1,58 +1,63 @@
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
-import { nodeFields, nodeTypes } from "../helpers/nodeFieldsAndTypesHelper";
+import { nodeDataConfig } from "../../config/nodeConfig";
+import type { NodeDataConfigItem } from "../../config/nodeConfig";
 import { encode } from "@toon-format/toon";
+
+function serializeForLLM(config: NodeDataConfigItem) {
+  let inputSchema: unknown = null;
+  try {
+    const zodJs = z as unknown as {
+      toJSONSchema?: (s: z.ZodTypeAny) => unknown;
+    };
+    if (typeof zodJs.toJSONSchema === "function") {
+      inputSchema = zodJs.toJSONSchema(
+        config.toolInputSchema ?? config.dataValuesSchema,
+      );
+    }
+  } catch {
+    // ignore serialization errors
+  }
+  return {
+    type: config.type,
+    label: config.label,
+    description: config.description,
+    defaultDimensions: config.defaultDimensions,
+    variants: config.variants ?? null,
+    canHaveAutomation: config.canHaveAutomation,
+    inputSchema,
+  };
+}
 
 export const readNodeConfigsTool = createTool({
   description:
-    "Use this tool to retrieve the available node types or node fields. It returns a list of nodes or fields with their labels, types, and expected data structure. Use it before creating or editing nodes to ensure you have the correct data format.",
+    "Use this tool to retrieve the available node types. It returns a list of nodes with their labels, types, default dimensions, and expected data structure. Use it before creating or editing nodes to ensure you have the correct data format.",
   args: z.object({
     operation: z
-      .enum([
-        "listAllNodeTypes",
-        "readOneNodeType",
-        "listAllNodeFields",
-        "readOneNodeField",
-        // "readOneNodeTemplate",
-        // "listAllNodeTemplates",
-      ])
+      .enum(["listAllNodeTypes", "readOneNodeType"])
       .describe("The operation to perform."),
     itemType: z
       .string()
       .optional()
       .describe(
-        "The specific node type or field to read, required for readOneNodeType and readOneNodeField operations."
+        "The specific node type to read, required for readOneNodeType.",
       ),
   }),
   handler: async (ctx, { operation, itemType }) => {
     console.log("readNodeConfigsTool called with:", { operation, itemType });
     switch (operation) {
       case "listAllNodeTypes":
-        return encode(nodeTypes);
+        return encode(nodeDataConfig.map(serializeForLLM));
 
       case "readOneNodeType": {
         if (!itemType) {
-          return `Error: itemType is required. Available types: ${nodeTypes.map((n) => n.type).join(", ")}`;
+          return `Error: itemType is required. Available types: ${nodeDataConfig.map((n) => n.type).join(", ")}`;
         }
-        const nodeType = nodeTypes.find((n) => n.type === itemType);
-        if (!nodeType) {
-          return `Error: Node type "${itemType}" not found. Available types: ${nodeTypes.map((n) => n.type).join(", ")}`;
+        const nodeConfig = nodeDataConfig.find((n) => n.type === itemType);
+        if (!nodeConfig) {
+          return `Error: Node type "${itemType}" not found. Available types: ${nodeDataConfig.map((n) => n.type).join(", ")}`;
         }
-        return encode(nodeType);
-      }
-
-      case "listAllNodeFields":
-        return encode(nodeFields);
-
-      case "readOneNodeField": {
-        if (!itemType) {
-          return `Error: itemType is required. Available fields: ${nodeFields.map((f) => f.type).join(", ")}`;
-        }
-        const nodeField = nodeFields.find((f) => f.type === itemType);
-        if (!nodeField) {
-          return `Error: Node field "${itemType}" not found. Available fields: ${nodeFields.map((f) => f.type).join(", ")}`;
-        }
-        return encode(nodeField);
+        return encode(serializeForLLM(nodeConfig));
       }
 
       default:

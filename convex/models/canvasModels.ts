@@ -1,0 +1,154 @@
+import { ConvexError } from "convex/values";
+import type { Doc, Id } from "../_generated/dataModel";
+import type { MutationCtx, QueryCtx } from "../_generated/server";
+import errors from "../config/errorsConfig";
+
+type UserCanvasListItem = {
+  _id: Id<"canvases">;
+  name: string;
+  shared?: boolean;
+  permission?: "viewer" | "editor";
+};
+
+async function getCanvasOrThrow(
+  ctx: QueryCtx | MutationCtx,
+  canvasId: Id<"canvases">,
+): Promise<Doc<"canvases">> {
+  const canvas = await ctx.db.get("canvases", canvasId);
+  if (!canvas) throw new ConvexError(errors.CANVAS_NOT_FOUND);
+  return canvas;
+}
+
+export async function getLastModifiedForUser(
+  ctx: QueryCtx,
+  { authUserId }: { authUserId: Id<"users"> },
+): Promise<Doc<"canvases"> | null> {
+  return await ctx.db
+    .query("canvases")
+    .withIndex("by_creator_and_updatedAt", (q) => q.eq("creatorId", authUserId))
+    .order("desc")
+    .first();
+}
+
+export async function listUserCanvasesWithShares(
+  ctx: QueryCtx,
+  { authUserId }: { authUserId: Id<"users"> },
+): Promise<Array<UserCanvasListItem>> {
+  const ownCanvases = await ctx.db
+    .query("canvases")
+    .withIndex("by_creator", (q) => q.eq("creatorId", authUserId))
+    .collect();
+
+  const shares = await ctx.db
+    .query("shares")
+    .withIndex("by_user", (q) => q.eq("userId", authUserId))
+    .collect();
+
+  const sharedCanvases = await Promise.all(
+    shares
+      .filter((share) => share.resourceType === "canvas")
+      .map(async (share) => {
+        const canvas = await ctx.db.get("canvases", share.canvasId);
+        if (!canvas) return null;
+        return {
+          _id: canvas._id,
+          name: canvas.name,
+          shared: true as const,
+          permission: share.permission,
+        };
+      }),
+  );
+
+  return [
+    ...ownCanvases.map((canvas) => ({
+      _id: canvas._id,
+      name: canvas.name,
+    })),
+    ...sharedCanvases.filter((canvas) => canvas !== null),
+  ];
+}
+
+export async function readCanvasById(
+  ctx: QueryCtx,
+  { canvasId }: { canvasId: Id<"canvases"> },
+): Promise<Doc<"canvases">> {
+  return await getCanvasOrThrow(ctx, canvasId);
+}
+
+export async function setCanvasPublicState(
+  ctx: MutationCtx,
+  {
+    canvasId,
+    isPublic,
+  }: {
+    canvasId: Id<"canvases">;
+    isPublic: boolean;
+  },
+): Promise<null> {
+  await getCanvasOrThrow(ctx, canvasId);
+
+  await ctx.db.patch("canvases", canvasId, {
+    isPublic,
+    updatedAt: Date.now(),
+  });
+
+  return null;
+}
+
+export async function createCanvasForUser(
+  ctx: MutationCtx,
+  {
+    authUserId,
+    name,
+  }: {
+    authUserId: Id<"users">;
+    name: string;
+  },
+): Promise<Id<"canvases">> {
+  return await ctx.db.insert("canvases", {
+    creatorId: authUserId,
+    name,
+    nodes: [],
+    edges: [],
+    updatedAt: Date.now(),
+  });
+}
+
+export async function updateCanvasName(
+  ctx: MutationCtx,
+  {
+    canvasId,
+    name,
+  }: {
+    canvasId: Id<"canvases">;
+    name: string;
+  },
+): Promise<Id<"canvases">> {
+  await getCanvasOrThrow(ctx, canvasId);
+
+  await ctx.db.patch("canvases", canvasId, {
+    name,
+    updatedAt: Date.now(),
+  });
+
+  return canvasId;
+}
+
+export async function deleteCanvasAndShares(
+  ctx: MutationCtx,
+  { canvasId }: { canvasId: Id<"canvases"> },
+): Promise<Id<"canvases">> {
+  await getCanvasOrThrow(ctx, canvasId);
+
+  const shares = await ctx.db
+    .query("shares")
+    .withIndex("by_canvas", (q) => q.eq("canvasId", canvasId))
+    .collect();
+
+  for (const share of shares) {
+    await ctx.db.delete(share._id);
+  }
+
+  await ctx.db.delete(canvasId);
+  return canvasId;
+}

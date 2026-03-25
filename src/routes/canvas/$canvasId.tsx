@@ -6,6 +6,8 @@ import {
   SelectionMode,
   MarkerType,
   Panel,
+  Background,
+  BackgroundVariant,
 } from "@xyflow/react";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { api } from "@/../convex/_generated/api";
@@ -45,7 +47,7 @@ function RouteComponent() {
   const { isAuthenticated } = useConvexAuth();
 
   const canvasContent = (
-    <div className={cn("h-screen w-full bg-slate-50")}>
+    <div className={cn("h-screen w-full")}>
       <CanvasContent canvasId={canvasId} isAuthenticated={isAuthenticated} />
     </div>
   );
@@ -230,7 +232,6 @@ function CanvasContent({
         edges={edges}
         onEdgesChange={handleEdgeChange}
         onNodesChange={handleNodeChange}
-        // edgesReconnectable={true}
         onConnect={(params) => {
           handleEdgeChange([
             {
@@ -252,6 +253,13 @@ function CanvasContent({
           ]);
         }}
       >
+        <Background
+          variant={BackgroundVariant.Lines}
+          color="#e2e8f0"
+          bgColor="#f8fafc"
+          gap={20}
+          lineWidth={0.3}
+        />
         {isAuthenticated ? (
           <Panel position="top-right">
             <TopRightToolbar />

@@ -1,11 +1,12 @@
 import { v } from "convex/values";
+import { nodeTypeValidator } from "./nodeTypeSchema";
 
 // ── Sub-validators ──────────────────────────────────────────────────────
 
 const canvasNodesValidator = v.object({
   id: v.string(),
   nodeDataId: v.optional(v.id("nodeDatas")),
-  type: v.string(),
+  type: nodeTypeValidator,
   position: v.object({
     x: v.number(),
     y: v.number(),

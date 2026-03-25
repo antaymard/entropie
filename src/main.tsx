@@ -30,7 +30,7 @@ if (!rootElement.innerHTML) {
   const root = createRoot(rootElement);
   root.render(
     <StrictMode>
-      <TooltipProvider>
+      <TooltipProvider delayDuration={500}>
         <Toaster />
         <ConvexAuthProvider client={convex}>
           <RouterProvider router={router} />

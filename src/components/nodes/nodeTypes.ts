@@ -2,9 +2,10 @@ import CustomNode from "./CustomNode";
 import prebuiltNodesConfig from "./prebuilt-nodes/prebuiltNodesConfig";
 
 const nodeTypes = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ...prebuiltNodesConfig.reduce<Record<string, React.ComponentType<any>>>(
     (acc, node) => {
-      acc[node.node.type] = node.nodeComponent;
+      acc[node.type] = node.nodeComponent;
       return acc;
     },
     {},
@@ -12,11 +13,6 @@ const nodeTypes = {
   custom: CustomNode,
 };
 
-const nodeList = [
-  ...prebuiltNodesConfig.map((node) => {
-    const { initialValues, ...rest } = node;
-    return { ...rest };
-  }),
-];
+const nodeList = [...prebuiltNodesConfig];
 
 export { nodeTypes, nodeList };

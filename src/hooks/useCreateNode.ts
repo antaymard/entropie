@@ -3,7 +3,7 @@ import { useMutation } from "convex/react";
 import { api } from "@/../convex/_generated/api";
 import type { Node } from "@xyflow/react";
 import type { Id } from "@/../convex/_generated/dataModel";
-import type { nodeTypes } from "@/types/domain";
+import type { NodeType } from "@/types/domain";
 import { getDefaultNodeDataValues } from "@/../convex/config/nodeConfig";
 
 type CreateNodeOptions = {
@@ -33,11 +33,11 @@ export function useCreateNode() {
     let nodeDataId: Id<"nodeDatas"> | undefined;
 
     if (!skipNodeDataCreation) {
-      const defaults = getDefaultNodeDataValues(node.type as nodeTypes) ?? {};
+      const defaults = getDefaultNodeDataValues(node.type as NodeType) ?? {};
       const values =
         Object.keys(initialValues).length > 0 ? initialValues : defaults;
       nodeDataId = await createNodeData({
-        type: node.type as nodeTypes,
+        type: node.type as NodeType,
         values,
         updatedAt: Date.now(),
       });

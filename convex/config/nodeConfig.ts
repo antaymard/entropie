@@ -55,6 +55,7 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
       preview: { label: "Preview", defaultWidth: 320, defaultHeight: 120 },
     },
     canHaveAutomation: true,
+
     dataValuesSchema: z
       .object({
         link: z
@@ -80,6 +81,7 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
     description: "Node for storing an image.",
     defaultDimensions: { width: 320, height: 320, resizable: true },
     canHaveAutomation: true,
+
     dataValuesSchema: z
       .object({
         images: z
@@ -111,6 +113,7 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
       },
     },
     canHaveAutomation: true,
+
     dataValuesSchema: z
       .object({
         doc: z.any().default([]),
@@ -126,6 +129,7 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
     description: "Node for storing a value (text, number, boolean).",
     defaultDimensions: { width: 220, height: 120, resizable: true },
     canHaveAutomation: true,
+
     dataValuesSchema: z
       .object({
         value: z
@@ -162,6 +166,7 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
       "Node for storing embedded content (YouTube, Google Docs/Sheets/Slides, or generic iframe).",
     defaultDimensions: { width: 480, height: 320, resizable: true },
     canHaveAutomation: false,
+
     dataValuesSchema: z
       .object({
         embed: z
@@ -199,6 +204,7 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
     description: "Node for storing uploaded files.",
     defaultDimensions: { width: 220, height: 33, resizable: false },
     canHaveAutomation: true,
+
     dataValuesSchema: z
       .object({
         files: z
@@ -217,6 +223,39 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
           .default([]),
       })
       .default({ files: [] }),
+  },
+  {
+    type: "table",
+    label: "Table",
+    description:
+      "Node for structured tabular data with typed columns (text, number, checkbox).",
+    defaultDimensions: { width: 400, height: 300, resizable: true },
+    canHaveAutomation: false,
+
+    dataValuesSchema: z
+      .object({
+        columns: z
+          .array(
+            z.object({
+              id: z.string(),
+              name: z.string(),
+              type: z.enum(["text", "number", "checkbox"]),
+            }),
+          )
+          .default([]),
+        rows: z
+          .array(
+            z.object({
+              id: z.string(),
+              cells: z.record(
+                z.string(),
+                z.union([z.string(), z.number(), z.boolean(), z.null()]),
+              ),
+            }),
+          )
+          .default([]),
+      })
+      .default({ columns: [], rows: [] }),
   },
 ];
 

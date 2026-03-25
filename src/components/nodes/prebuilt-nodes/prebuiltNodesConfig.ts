@@ -1,5 +1,6 @@
 import type { IconType } from "react-icons";
 import type { XyNodeData } from "@/types/domain";
+import type { NodeType } from "@/types/domain";
 import type { Node } from "@xyflow/react";
 import { nodeDataConfig } from "@/../convex/config/nodeConfig";
 import type { NodeDataConfigItem } from "@/../convex/config/nodeConfig";
@@ -12,11 +13,13 @@ import ValueNode from "./ValueNode";
 import FetchNode from "./FetchNode";
 import FileNode from "./FileNode";
 import EmbedNode from "./EmbedNode";
+import TableNode from "./TableNode";
 
 type NodeUiConfigItem = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   nodeComponent: React.ComponentType<any>;
   nodeIcon: IconType;
+  canBeOpenInWindow: boolean;
 };
 
 type PrebuiltNodeConfig = NodeDataConfigItem &
@@ -26,35 +29,48 @@ const nodeUiConfig: Record<string, NodeUiConfigItem> = {
   floatingText: {
     nodeComponent: FloatingTextNode,
     nodeIcon: NODE_TYPE_ICON_MAP.floatingText,
+    canBeOpenInWindow: false,
   },
   link: {
     nodeComponent: LinkNode,
     nodeIcon: NODE_TYPE_ICON_MAP.link,
+    canBeOpenInWindow: false,
   },
   image: {
     nodeComponent: ImageNode,
     nodeIcon: NODE_TYPE_ICON_MAP.image,
+    canBeOpenInWindow: true,
   },
   document: {
     nodeComponent: DocumentNode,
     nodeIcon: NODE_TYPE_ICON_MAP.document,
+    canBeOpenInWindow: true,
   },
   value: {
     nodeComponent: ValueNode,
     nodeIcon: NODE_TYPE_ICON_MAP.value,
+    canBeOpenInWindow: false,
   },
   embed: {
     nodeComponent: EmbedNode,
     nodeIcon: NODE_TYPE_ICON_MAP.embed,
+    canBeOpenInWindow: true,
   },
   file: {
     nodeComponent: FileNode,
     nodeIcon: NODE_TYPE_ICON_MAP.file,
+    canBeOpenInWindow: true,
   },
   // fetch is frontend-only (not yet implemented as a backend node type)
   fetch: {
     nodeComponent: FetchNode,
     nodeIcon: NODE_TYPE_ICON_MAP.fetch,
+    canBeOpenInWindow: false,
+  },
+  table: {
+    nodeComponent: TableNode,
+    nodeIcon: NODE_TYPE_ICON_MAP.table,
+    canBeOpenInWindow: true,
   },
 };
 
@@ -82,5 +98,12 @@ const prebuiltNodesConfig: Array<PrebuiltNodeConfig> = nodeDataConfig
     };
   });
 
+const openableNodeTypes = new Set<NodeType>(
+  prebuiltNodesConfig
+    .filter((config) => config.canBeOpenInWindow)
+    .map((config) => config.type),
+);
+
 export default prebuiltNodesConfig;
+export { openableNodeTypes };
 export type { PrebuiltNodeConfig };

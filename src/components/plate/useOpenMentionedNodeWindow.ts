@@ -5,17 +5,11 @@ import toast from "react-hot-toast";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { useNodeDataStore } from "@/stores/nodeDataStore";
 import { useWindowsStore } from "@/stores/windowsStore";
-import type { nodeTypes } from "@/types/domain/nodeTypes";
+import type { NodeType } from "@/types/domain/nodeTypes";
+import { openableNodeTypes } from "@/components/nodes/prebuilt-nodes/prebuiltNodesConfig";
 
-const OPENABLE_WINDOW_TYPES: Set<nodeTypes> = new Set([
-  "document",
-  "embed",
-  "file",
-  "image",
-]);
-
-function isOpenableNodeType(type: string): type is nodeTypes {
-  return OPENABLE_WINDOW_TYPES.has(type as nodeTypes);
+function isOpenableNodeType(type: string): type is NodeType {
+  return openableNodeTypes.has(type as NodeType);
 }
 
 export function useOpenMentionedNodeWindow(

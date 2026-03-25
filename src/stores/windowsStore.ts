@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { useCanvasStore } from "./canvasStore";
 import type { Id } from "@/../convex/_generated/dataModel";
-import type { nodeTypes } from "@/types/domain/nodeTypes";
+import type { NodeType } from "@/types/domain/nodeTypes";
 
 const MIN_WINDOW_WIDTH = 320;
 const MIN_WINDOW_HEIGHT = 220;
@@ -11,7 +11,7 @@ type WindowSize = { width: number; height: number };
 
 const DEFAULT_WINDOW_SIZE: WindowSize = { width: 720, height: 520 };
 
-const WINDOW_SIZE_BY_TYPE: Partial<Record<nodeTypes, WindowSize>> = {
+const WINDOW_SIZE_BY_TYPE: Partial<Record<NodeType, WindowSize>> = {
   document: { width: 750, height: 520 },
   image: { width: 300, height: 300 },
   embed: { width: 500, height: 500 },
@@ -19,9 +19,10 @@ const WINDOW_SIZE_BY_TYPE: Partial<Record<nodeTypes, WindowSize>> = {
   file: { width: 480, height: 360 },
   value: { width: 400, height: 300 },
   floatingText: { width: 480, height: 320 },
+  table: { width: 720, height: 520 },
 };
 
-function getDefaultWindowSize(nodeType: nodeTypes): WindowSize {
+function getDefaultWindowSize(nodeType: NodeType): WindowSize {
   return WINDOW_SIZE_BY_TYPE[nodeType] ?? DEFAULT_WINDOW_SIZE;
 }
 
@@ -117,7 +118,7 @@ export interface OpenedWindow {
   height: number;
   xyNodeId: string;
   nodeDataId: Id<"nodeDatas">;
-  nodeType: nodeTypes;
+  nodeType: NodeType;
   windowState: OpenedWindowState;
   preSnapSize?: { width: number; height: number };
 }

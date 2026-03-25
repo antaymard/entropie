@@ -14,6 +14,7 @@ import DocumentWindow from "./prebuilt/DocumentWindow";
 import EmbedWindow from "./prebuilt/EmbedWindow";
 import FileWindow from "./prebuilt/FileWindow";
 import ImageWindow from "./prebuilt/ImageWindow";
+import TableWindow from "./prebuilt/TableWindow";
 import { WindowFrameContext } from "./WindowFrameContext";
 import ConfirmableButton from "@/components/ui/ConfirmableButton";
 
@@ -29,6 +30,8 @@ function WindowContent({ openedWindow }: { openedWindow: OpenedWindow }) {
       return <FileWindow nodeDataId={nodeDataId} />;
     case "image":
       return <ImageWindow nodeDataId={nodeDataId} />;
+    case "table":
+      return <TableWindow xyNodeId={xyNodeId} nodeDataId={nodeDataId} />;
     default:
       return (
         <div className="flex h-full items-center justify-center text-sm text-muted-foreground">

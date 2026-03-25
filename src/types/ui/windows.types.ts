@@ -1,10 +1,10 @@
 import type { Id } from "@/../convex/_generated/dataModel";
-import type { nodeTypes } from "../domain/nodeTypes";
+import type { NodeType } from "../domain/nodeTypes";
 
 export interface Window {
   nodeId: string; // Node Id (not _id)
   nodeDataId?: Id<"nodeDatas">;
-  type: nodeTypes;
+  type: NodeType;
   isMinimized?: boolean;
   isExpanded?: boolean;
 }

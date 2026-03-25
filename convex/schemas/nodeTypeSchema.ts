@@ -8,6 +8,7 @@ const nodeTypeValues = [
   "embed",
   "floatingText",
   "file",
+  "table",
 ] as const;
 
 const nodeTypeValidator = v.union(

@@ -1,17 +1,6 @@
 import type { Id } from "@/../convex/_generated/dataModel";
 import type { FieldType } from "../ui/field.types";
-
-/**
- * Node types enum - represents the different types of nodes available in the canvas
- */
-export type nodeTypes =
-  | "document"
-  | "floatingText"
-  | "image"
-  | "link"
-  | "value"
-  | "file"
-  | "embed";
+export type { NodeType } from "@/../convex/schemas/nodeTypeSchema";
 
 /**
  * Node field definition

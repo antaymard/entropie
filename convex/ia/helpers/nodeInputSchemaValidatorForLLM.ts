@@ -1,8 +1,5 @@
 import { z } from "zod";
-import {
-  nodeDataConfig,
-  nodeTypeZodValidator,
-} from "../../config/nodeDataConfig";
+import { nodeDataConfig, nodeTypeZodValidator } from "../../config/nodeConfig";
 
 type NodeType = z.infer<typeof nodeTypeZodValidator>;
 

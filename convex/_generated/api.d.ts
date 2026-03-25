@@ -15,7 +15,7 @@ import type * as canvasEdges from "../canvasEdges.js";
 import type * as canvasNodes from "../canvasNodes.js";
 import type * as canvases from "../canvases.js";
 import type * as config_errorsConfig from "../config/errorsConfig.js";
-import type * as config_nodeDataConfig from "../config/nodeDataConfig.js";
+import type * as config_nodeConfig from "../config/nodeConfig.js";
 import type * as http from "../http.js";
 import type * as ia_agents from "../ia/agents.js";
 import type * as ia_helpers_abstractGenerator from "../ia/helpers/abstractGenerator.js";
@@ -79,7 +79,7 @@ declare const fullApi: ApiFromModules<{
   canvasNodes: typeof canvasNodes;
   canvases: typeof canvases;
   "config/errorsConfig": typeof config_errorsConfig;
-  "config/nodeDataConfig": typeof config_nodeDataConfig;
+  "config/nodeConfig": typeof config_nodeConfig;
   http: typeof http;
   "ia/agents": typeof ia_agents;
   "ia/helpers/abstractGenerator": typeof ia_helpers_abstractGenerator;

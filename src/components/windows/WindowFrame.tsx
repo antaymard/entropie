@@ -295,7 +295,7 @@ export default function WindowFrame({
               disabled={!isDirty}
             >
               <Save size={12} />
-              Sauvegarder
+              Save
             </button>
           )}
           <button

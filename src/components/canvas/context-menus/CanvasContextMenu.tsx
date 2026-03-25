@@ -51,7 +51,7 @@ export default function ContextMenu({
               closeMenu();
             }}
           >
-            <Icon /> {nodeConfig.nodeLabel}
+            <Icon /> {nodeConfig.label}
           </DropdownMenuItem>
         );
       })}

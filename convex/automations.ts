@@ -4,7 +4,7 @@ import { api, components, internal } from "./_generated/api";
 import { createAutomationAgent } from "./ia/agents";
 import { createThread } from "@convex-dev/agent";
 import { requireAuth } from "./lib/auth";
-import { nodeDataConfig } from "./config/nodeDataConfig";
+import { nodeDataConfig } from "./config/nodeConfig";
 import updateNodeDataValuesTool from "./ia/tools/updateNodeDataValuesTool";
 import {
   generateInputNodesContext,

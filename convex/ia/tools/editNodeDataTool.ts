@@ -16,15 +16,8 @@ export const writeNodeTool = createTool({
     console.log(`🖼️ Writing node data with ID: ${args.nodeDataId}`);
 
     try {
-      const nodeData = await ctx.runQuery(
-        internal.wrappers.nodeDataWrappers.readNodeData,
-        {
-          _id: args.nodeId as Id<"nodeDatas">,
-        },
-      );
-
       console.log(`✅ Node data read complete`);
-      return makeNodeDataLLMFriendly(nodeData);
+      return "ok";
     } catch (error) {
       console.error("Read node data error:", error);
       throw new Error(

@@ -232,8 +232,6 @@ function CanvasContent({
         edges={edges}
         onEdgesChange={handleEdgeChange}
         onNodesChange={handleNodeChange}
-        onlyRenderVisibleElements
-        // edgesReconnectable={true}
         onConnect={(params) => {
           handleEdgeChange([
             {

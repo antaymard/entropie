@@ -58,6 +58,8 @@ export default function NoleCanvasPanel() {
 
   // Hotkeys management
   const isAltHeld = useKeyHold("Alt");
+  const isCtrlHeld = useKeyHold("Control");
+  const isRecordHotkeyHeld = isAltHeld && isCtrlHeld;
   useHotkey("C", () => setLayoutMode("text"), {
     enabled: layoutMode === "idle" || layoutMode === "responding",
   });
@@ -122,14 +124,22 @@ export default function NoleCanvasPanel() {
     setLayoutMode("transcribing");
   }, [stopRecording]);
 
-  // Alt hold-to-record: press Alt → start recording, release Alt → validate
+  // Alt+Ctrl hold-to-record: press both to start, release one to validate
   useEffect(() => {
-    if (isAltHeld && (layoutMode === "idle" || layoutMode === "responding")) {
+    if (
+      isRecordHotkeyHeld &&
+      (layoutMode === "idle" || layoutMode === "responding")
+    ) {
       handleStartRecording();
-    } else if (!isAltHeld && layoutMode === "recording") {
+    } else if (!isRecordHotkeyHeld && layoutMode === "recording") {
       handleValidateRecording();
     }
-  }, [isAltHeld, layoutMode, handleStartRecording, handleValidateRecording]);
+  }, [
+    isRecordHotkeyHeld,
+    layoutMode,
+    handleStartRecording,
+    handleValidateRecording,
+  ]);
 
   // Auto-transcribe when audioBlob is ready after validation
   useEffect(() => {
@@ -234,7 +244,7 @@ export default function NoleCanvasPanel() {
           <Separator />
           <Button variant="ghost" size="sm" onClick={handleStartRecording}>
             <TbMicrophone size={19} strokeWidth={2.5} />
-            <Kbd>Alt</Kbd>
+            <Kbd>Alt+Ctrl</Kbd>
           </Button>
           <Separator />
           <Button variant="ghost" size="icon-sm">
@@ -272,7 +282,7 @@ export default function NoleCanvasPanel() {
           <Separator />
           <Button variant="ghost" size="sm" onClick={handleStartRecording}>
             <TbMicrophone size={19} strokeWidth={2.5} />
-            <Kbd>Alt</Kbd>
+            <Kbd>Alt+Ctrl</Kbd>
           </Button>
           <Separator />
           <Button

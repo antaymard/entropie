@@ -106,22 +106,22 @@ export default function AutomationSettingsButton({
           setOpen(e);
         }}
       >
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            size="icon"
-            className={cn(hasAutomationEnabled && "text-amber-500")}
-          >
-            <Tooltip delayDuration={tooltipDelayDuration}>
-              <TooltipTrigger>
+        <Tooltip delayDuration={tooltipDelayDuration}>
+          <TooltipTrigger asChild>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className={cn(hasAutomationEnabled && "text-amber-500")}
+              >
                 {hasAutomationEnabled ? <TbBoltFilled /> : <TbBolt />}
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Automation settings</p>
-              </TooltipContent>
-            </Tooltip>
-          </Button>
-        </PopoverTrigger>
+              </Button>
+            </PopoverTrigger>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Automation settings</p>
+          </TooltipContent>
+        </Tooltip>
 
         <PopoverContent
           className="w-96"
@@ -194,8 +194,10 @@ export default function AutomationSettingsButton({
         >
           {(automationStatus === "idle" || !automationStatus) && (
             <Tooltip delayDuration={tooltipDelayDuration}>
-              <TooltipTrigger>
-                <TbPlayerPlayFilled />
+              <TooltipTrigger asChild>
+                <span>
+                  <TbPlayerPlayFilled />
+                </span>
               </TooltipTrigger>
               <TooltipContent>
                 <p>Run automation</p>
@@ -210,8 +212,10 @@ export default function AutomationSettingsButton({
               </span>
             ) : (
               <Tooltip delayDuration={tooltipDelayDuration}>
-                <TooltipTrigger>
-                  <Spinner />
+                <TooltipTrigger asChild>
+                  <span>
+                    <Spinner />
+                  </span>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>{automationStep}</p>

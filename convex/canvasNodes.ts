@@ -80,3 +80,23 @@ export const remove = mutation({
     });
   },
 });
+
+export const moveToCanvas = mutation({
+  args: {
+    sourceCanvasId: v.id("canvases"),
+    targetCanvasId: v.id("canvases"),
+    nodeCanvasIds: v.array(v.string()),
+  },
+  returns: v.boolean(),
+  handler: async (ctx, { sourceCanvasId, targetCanvasId, nodeCanvasIds }) => {
+    const authUserId = await requireAuth(ctx);
+    await requireCanvasAccess(ctx, sourceCanvasId, authUserId, "editor");
+    await requireCanvasAccess(ctx, targetCanvasId, authUserId, "editor");
+
+    return CanvasNodeModels.moveToCanvas(ctx, {
+      sourceCanvasId,
+      targetCanvasId,
+      nodeCanvasIds,
+    });
+  },
+});

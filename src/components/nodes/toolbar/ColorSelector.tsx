@@ -4,7 +4,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/shadcn/dropdown-menu";
-import { ButtonGroup } from "@/components/shadcn/button-group";
 import { Button } from "@/components/shadcn/button";
 import { TbPalette, TbCheck } from "react-icons/tb";
 import { memo, useCallback } from "react";
@@ -41,44 +40,42 @@ const ColorSelector = memo(function ColorSelector({
   const currentColor = (xyNode.data.color as colorsEnum) || "default";
 
   return (
-    <ButtonGroup>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon">
-            <TbPalette />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-[240px]">
-          <DropdownMenuLabel>Block color</DropdownMenuLabel>
-          <div className="grid grid-cols-5 gap-2 p-2">
-            {availableColors.map(([key, value]) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => handleColorChange(key as colorsEnum)}
-                className={cn(
-                  "relative w-10 h-10 rounded-full border-2 transition-all hover:scale-110",
-                  value.nodeBg,
-                  currentColor === key
-                    ? "border-primary shadow-md"
-                    : "border-border hover:border-primary/50",
-                )}
-                title={value.label}
-              >
-                {currentColor === key && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <TbCheck
-                      className="w-5 h-5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
-                      strokeWidth={3}
-                    />
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </ButtonGroup>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="icon">
+          <TbPalette />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-[240px]">
+        <DropdownMenuLabel>Block color</DropdownMenuLabel>
+        <div className="grid grid-cols-5 gap-2 p-2">
+          {availableColors.map(([key, value]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => handleColorChange(key as colorsEnum)}
+              className={cn(
+                "relative w-10 h-10 rounded-full border-2 transition-all hover:scale-110",
+                value.nodeBg,
+                currentColor === key
+                  ? "border-primary shadow-md"
+                  : "border-border hover:border-primary/50",
+              )}
+              title={value.label}
+            >
+              {currentColor === key && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <TbCheck
+                    className="w-5 h-5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
+                    strokeWidth={3}
+                  />
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 });
 

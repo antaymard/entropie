@@ -27,10 +27,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/shadcn/dropdown-menu";
-import { TbPlus, TbTrash, TbChevronDown } from "react-icons/tb";
+import { TbPlus, TbTrash, TbChevronDown, TbCalendar } from "react-icons/tb";
+import { Calendar } from "@/components/shadcn/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/shadcn/popover";
 import { cn } from "@/lib/utils";
 
-type ColumnType = "text" | "number" | "checkbox";
+type ColumnType = "text" | "number" | "checkbox" | "date";
 
 interface TableColumn {
   id: string;
@@ -57,6 +63,7 @@ const COLUMN_TYPE_LABELS: Record<ColumnType, string> = {
   text: "Text",
   number: "Number",
   checkbox: "Checkbox",
+  date: "Date",
 };
 
 function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
@@ -482,6 +489,60 @@ function CellEditor({
         disabled={disabled}
         className="block"
       />
+    );
+  }
+
+  if (type === "date") {
+    const dateValue =
+      value != null && value !== "" ? new Date(String(value)) : undefined;
+    const displayValue =
+      dateValue != null
+        ? dateValue.toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })
+        : "";
+
+    if (disabled) {
+      return (
+        <span className="block w-full min-h-[1.4em] text-sm rounded px-1">
+          {displayValue}
+        </span>
+      );
+    }
+
+    return (
+      <Popover open={isEditing} onOpenChange={(open) => !open && onBlur()}>
+        <PopoverTrigger asChild>
+          <span
+            className={cn(
+              "flex items-center gap-1 w-full min-h-[1.4em] text-sm rounded px-1 cursor-pointer hover:bg-muted/50",
+            )}
+            onClick={onClick}
+          >
+            <TbCalendar size={13} className="shrink-0 text-muted-foreground" />
+            {displayValue || (
+              <span className="text-muted-foreground">Pick a date…</span>
+            )}
+          </span>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={dateValue}
+            onSelect={(date) => {
+              if (date) {
+                const iso = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+                onChange(iso);
+              } else {
+                onChange(null);
+              }
+              onBlur();
+            }}
+          />
+        </PopoverContent>
+      </Popover>
     );
   }
 

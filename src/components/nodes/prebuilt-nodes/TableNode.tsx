@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/shadcn/table";
 
-type ColumnType = "text" | "number" | "checkbox";
+type ColumnType = "text" | "number" | "checkbox" | "date";
 
 interface TableColumn {
   id: string;
@@ -47,6 +47,14 @@ function renderCellValue(
         className="pointer-events-none"
       />
     );
+  }
+  if (type === "date" && value != null && value !== "") {
+    const d = new Date(String(value));
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   }
   return value != null ? String(value) : "";
 }

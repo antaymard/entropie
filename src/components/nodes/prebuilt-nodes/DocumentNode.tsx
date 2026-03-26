@@ -34,6 +34,22 @@ function DocumentNode(xyNode: Node) {
   const currentValue: Value =
     (values?.doc as Value | undefined) ?? defaultValue;
 
+  const isDocEmpty = currentValue.every((node) => {
+    const getText = (n: unknown): string => {
+      if (n && typeof n === "object") {
+        if ("text" in n && typeof (n as { text: unknown }).text === "string")
+          return (n as { text: string }).text;
+        if (
+          "children" in n &&
+          Array.isArray((n as { children: unknown }).children)
+        )
+          return (n as { children: unknown[] }).children.map(getText).join("");
+      }
+      return "";
+    };
+    return getText(node) === "";
+  });
+
   const documentTitle = useNodeDataTitle(nodeDataId) ?? "Document";
 
   return (
@@ -52,10 +68,17 @@ function DocumentNode(xyNode: Node) {
         {!xyNode.data.variant ||
           (xyNode.data.variant === "default" && (
             <div className="h-full overflow-auto">
-              <DocumentStaticField
-                value={{ doc: currentValue }}
-                allowDrag={!xyNode.selected}
-              />
+              {isDocEmpty ? (
+                <div className="h-full flex flex-col items-center justify-center gap-1.5 text-muted-foreground/40 select-none pointer-events-none">
+                  <TbNews size={22} />
+                  <span className="text-xs">Double-clic pour éditer</span>
+                </div>
+              ) : (
+                <DocumentStaticField
+                  value={{ doc: currentValue }}
+                  allowDrag={!xyNode.selected}
+                />
+              )}
             </div>
           ))}
         {xyNode.data.variant === "title" && (

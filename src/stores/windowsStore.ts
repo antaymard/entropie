@@ -6,13 +6,19 @@ import type { NodeType } from "@/types/domain/nodeTypes";
 
 const MIN_WINDOW_WIDTH = 320;
 const MIN_WINDOW_HEIGHT = 220;
+const VIEWPORT_SIZE_PADDING = 24;
 
 type WindowSize = { width: number; height: number };
+type ViewportWindowSize = {
+  widthRatio: number;
+  heightRatio: number;
+};
+type WindowSizePreset = WindowSize | ViewportWindowSize;
 
-const DEFAULT_WINDOW_SIZE: WindowSize = { width: 720, height: 520 };
+const DEFAULT_WINDOW_SIZE: WindowSizePreset = { width: 720, height: 520 };
 
-const WINDOW_SIZE_BY_TYPE: Partial<Record<NodeType, WindowSize>> = {
-  document: { width: 750, height: 520 },
+const WINDOW_SIZE_BY_TYPE: Partial<Record<NodeType, WindowSizePreset>> = {
+  document: { widthRatio: 1 / 2.66, heightRatio: 0.9 },
   image: { width: 300, height: 300 },
   embed: { width: 500, height: 500 },
   link: { width: 480, height: 360 },
@@ -22,8 +28,41 @@ const WINDOW_SIZE_BY_TYPE: Partial<Record<NodeType, WindowSize>> = {
   table: { width: 720, height: 520 },
 };
 
+function resolveWindowSize(preset: WindowSizePreset): WindowSize {
+  if ("widthRatio" in preset && "heightRatio" in preset) {
+    const maxWidth = Math.max(
+      MIN_WINDOW_WIDTH,
+      window.innerWidth - VIEWPORT_SIZE_PADDING * 2,
+    );
+    const maxHeight = Math.max(
+      MIN_WINDOW_HEIGHT,
+      window.innerHeight - VIEWPORT_SIZE_PADDING * 2,
+    );
+
+    return {
+      width: Math.min(
+        maxWidth,
+        Math.max(
+          MIN_WINDOW_WIDTH,
+          Math.round(window.innerWidth * preset.widthRatio),
+        ),
+      ),
+      height: Math.min(
+        maxHeight,
+        Math.max(
+          MIN_WINDOW_HEIGHT,
+          Math.round(window.innerHeight * preset.heightRatio),
+        ),
+      ),
+    };
+  }
+
+  return preset;
+}
+
 function getDefaultWindowSize(nodeType: NodeType): WindowSize {
-  return WINDOW_SIZE_BY_TYPE[nodeType] ?? DEFAULT_WINDOW_SIZE;
+  const preset = WINDOW_SIZE_BY_TYPE[nodeType] ?? DEFAULT_WINDOW_SIZE;
+  return resolveWindowSize(preset);
 }
 
 const PLACEMENT_PADDING = 24;

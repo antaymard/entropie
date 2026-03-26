@@ -1,10 +1,13 @@
 import { NodeResizer, type Node } from "@xyflow/react";
-import { memo } from "react";
+import { memo, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { colors } from "@/components/ui/styles";
 import type { colorsEnum } from "@/types/domain";
+import type { Id } from "@/../convex/_generated/dataModel";
 import NodeHandles from "./NodeHandles";
 import AutomationIndicator from "./toolbar/AutomationIndicator";
+import { useWindowsStore } from "@/stores/windowsStore";
+import { canNodeTypeBeOpenedInWindow } from "@/components/nodes/prebuilt-nodes/prebuiltNodesConfig";
 
 function NodeFrame({
   xyNode,
@@ -17,6 +20,20 @@ function NodeFrame({
 }) {
   const nodeColor = colors[(xyNode?.data?.color as colorsEnum) || "default"];
   const canDrag = true;
+  const openWindow = useWindowsStore((state) => state.openWindow);
+
+  const handleDoubleClick = useCallback(() => {
+    const nodeType = xyNode.type;
+    const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
+
+    if (nodeDataId && canNodeTypeBeOpenedInWindow(nodeType)) {
+      openWindow({
+        xyNodeId: xyNode.id,
+        nodeDataId,
+        nodeType: nodeType as any,
+      });
+    }
+  }, [xyNode, openWindow]);
 
   if (!xyNode) return null;
   return (
@@ -46,6 +63,7 @@ function NodeFrame({
             ? "ring-2 ring-blue-500/70"
             : "hover:ring-1 hover:ring-blue-400/60"
         )}
+        onDoubleClick={handleDoubleClick}
       >
         <div
           className={cn(

@@ -244,3 +244,53 @@ export async function removeCanvasNodes(
 
   return true;
 }
+
+export async function moveToCanvas(
+  ctx: MutationCtx,
+  {
+    sourceCanvasId,
+    targetCanvasId,
+    nodeCanvasIds,
+  }: {
+    sourceCanvasId: Id<"canvases">;
+    targetCanvasId: Id<"canvases">;
+    nodeCanvasIds: Array<string>;
+  },
+): Promise<boolean> {
+  if (sourceCanvasId === targetCanvasId) {
+    throw new ConvexError(errors.SOURCE_AND_TARGET_CANVAS_MUST_BE_DIFFERENT);
+  }
+
+  const sourceCanvas = await getCanvas(ctx, sourceCanvasId);
+  const targetCanvas = await getCanvas(ctx, targetCanvasId);
+
+  const sourceNodes = sourceCanvas.nodes ?? [];
+  const sourceEdges = sourceCanvas.edges ?? [];
+  const targetNodes = targetCanvas.nodes ?? [];
+  const nodeCanvasIdSet = new Set(nodeCanvasIds);
+
+  const nodesToMove = sourceNodes.filter((node) =>
+    nodeCanvasIdSet.has(node.id),
+  );
+  const remainingSourceNodes = sourceNodes.filter(
+    (node) => !nodeCanvasIdSet.has(node.id),
+  );
+  const remainingSourceEdges = sourceEdges.filter(
+    (edge) =>
+      !nodeCanvasIdSet.has(edge.source) && !nodeCanvasIdSet.has(edge.target),
+  );
+
+  await ctx.db.patch("canvases", sourceCanvasId, {
+    nodes: remainingSourceNodes,
+    edges: remainingSourceEdges,
+  });
+  await ctx.db.patch("canvases", targetCanvasId, {
+    nodes: [...targetNodes, ...nodesToMove],
+  });
+
+  console.log(
+    `✅ Moved ${nodeCanvasIds.length} nodes from canvas ${sourceCanvasId} to canvas ${targetCanvasId}`,
+  );
+
+  return true;
+}

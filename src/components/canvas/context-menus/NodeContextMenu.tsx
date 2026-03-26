@@ -18,18 +18,42 @@ import { useNodeDataStore } from "@/stores/nodeDataStore";
 
 // Icons
 import { HiOutlineTrash } from "react-icons/hi";
-import { TbCopyPlus, TbCopyPlusFilled, TbSpaces } from "react-icons/tb";
+import {
+  TbArrowFork,
+  TbArrowLeftFromArc,
+  TbCopyPlus,
+  TbSpaces,
+} from "react-icons/tb";
 import { useUpdateCanvasNode } from "@/hooks/useUpdateCanvasNode";
+import { useState } from "react";
+import type { IconType } from "react-icons";
+import MoveNodeToCanvasModal from "./MoveNodeToCanvasModal";
+import { createPortal } from "react-dom";
+
+type NodeSubMenuItem = {
+  label: string;
+  onClick: () => void | Promise<void>;
+  preventAutoClose?: boolean;
+};
+
+type NodeOption = {
+  hidden?: boolean;
+  label: string;
+  icon: IconType;
+  subMenu?: NodeSubMenuItem[];
+  onClick?: () => void | Promise<void>;
+  preventAutoClose?: boolean;
+};
 
 export default function NodeContextMenu({
   closeMenu,
-  position,
   xyNode,
 }: {
   closeMenu: () => void;
   position: { x: number; y: number };
   xyNode: Node;
 }) {
+  const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
   const { deleteElements, updateNode } = useReactFlow();
   const { createNode } = useCreateNode();
   const { updateCanvasNode } = useUpdateCanvasNode();
@@ -45,7 +69,7 @@ export default function NodeContextMenu({
     (config) => config.node.type === xyNode.type,
   )?.variants;
 
-  const nodeOptions = [
+  const nodeOptions: NodeOption[] = [
     {
       hidden: !variants || Object.keys(variants).length === 0,
       label: "Appearance",
@@ -88,10 +112,6 @@ export default function NodeContextMenu({
       onClick: () => {
         const nodeToDuplicate = xyNode;
         if (nodeToDuplicate) {
-          const nodeConfig = prebuiltNodesConfig.find(
-            (config) => config.node.type === nodeToDuplicate.type,
-          );
-
           // Get the values from the existing nodeData to duplicate them
           let initialValues: Record<string, unknown> | undefined;
           const nodeDataId = nodeToDuplicate.data?.nodeDataId as
@@ -117,7 +137,7 @@ export default function NodeContextMenu({
     },
     {
       label: "Duplicate Synced",
-      icon: TbCopyPlusFilled,
+      icon: TbArrowFork,
       onClick: () => {
         const nodeToDuplicate = xyNode;
         if (nodeToDuplicate) {
@@ -130,6 +150,14 @@ export default function NodeContextMenu({
             skipNodeDataCreation: true,
           });
         }
+      },
+    },
+    {
+      label: "Move to another canvas",
+      icon: TbArrowLeftFromArc,
+      preventAutoClose: true,
+      onClick: () => {
+        setIsMoveModalOpen(true);
       },
     },
     {
@@ -163,7 +191,9 @@ export default function NodeContextMenu({
                     key={j}
                     onClick={() => {
                       sub.onClick();
-                      closeMenu();
+                      if (!sub.preventAutoClose) {
+                        closeMenu();
+                      }
                     }}
                   >
                     {sub.label}
@@ -175,15 +205,34 @@ export default function NodeContextMenu({
             <DropdownMenuItem
               className="whitespace-nowrap"
               key={i}
-              onClick={() => {
+              onClick={(e) => {
+                if (option.preventAutoClose) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }
                 option.onClick?.();
-                closeMenu();
+                if (!option.preventAutoClose) {
+                  closeMenu();
+                }
               }}
             >
               {option.icon({ size: 16 })} {option.label}
             </DropdownMenuItem>
           ),
         )}
+
+      {createPortal(
+        <MoveNodeToCanvasModal
+          open={isMoveModalOpen}
+          onOpenChange={setIsMoveModalOpen}
+          nodeCanvasId={xyNode.id}
+          onSuccess={() => {
+            setIsMoveModalOpen(false);
+            closeMenu();
+          }}
+        />,
+        document.body,
+      )}
     </>
   );
 }

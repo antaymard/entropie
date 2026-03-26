@@ -52,6 +52,7 @@ export async function addCanvasNodes(
 
   await ctx.db.patch("canvases", canvasId, {
     nodes: [...(canvas.nodes ?? []), ...canvasNodes],
+    updatedAt: Date.now(),
   });
 
   console.log(`✅ Added ${canvasNodes.length} nodes to canvas ${canvasId}`);
@@ -93,7 +94,10 @@ export async function updatePositionOrDimensions(
     return updatedNode;
   });
 
-  await ctx.db.patch("canvases", canvasId, { nodes: updatedNodes });
+  await ctx.db.patch("canvases", canvasId, {
+    nodes: updatedNodes,
+    updatedAt: Date.now(),
+  });
 
   console.log(
     `✅ Updated position/dimensions for ${nodeChanges.length} nodes in canvas ${canvasId}`,
@@ -153,7 +157,10 @@ export async function updateCanvasNodes(
     return updatedNode;
   });
 
-  await ctx.db.patch("canvases", canvasId, { nodes: updatedNodes });
+  await ctx.db.patch("canvases", canvasId, {
+    nodes: updatedNodes,
+    updatedAt: Date.now(),
+  });
 
   console.log(
     `✅ Updated display props for ${nodeProps.length} nodes in canvas ${canvasId}`,
@@ -193,7 +200,10 @@ export async function removeCanvasNodes(
     ),
   );
 
-  await ctx.db.patch("canvases", canvasId, { nodes: remainingNodes });
+  await ctx.db.patch("canvases", canvasId, {
+    nodes: remainingNodes,
+    updatedAt: Date.now(),
+  });
 
   if (removedNodeDataIds.length > 0) {
     const stillUsedInCurrentCanvas = new Set(
@@ -283,9 +293,11 @@ export async function moveToCanvas(
   await ctx.db.patch("canvases", sourceCanvasId, {
     nodes: remainingSourceNodes,
     edges: remainingSourceEdges,
+    updatedAt: Date.now(),
   });
   await ctx.db.patch("canvases", targetCanvasId, {
     nodes: [...targetNodes, ...nodesToMove],
+    updatedAt: Date.now(),
   });
 
   console.log(

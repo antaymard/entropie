@@ -22,6 +22,7 @@ export const add = mutation({
     // Ajouter les edges au canvas
     await ctx.db.patch(canvasId, {
       edges: [...(canvas.edges || []), ...edges],
+      updatedAt: Date.now(),
     });
 
     // Mettre à jour les dependencies des nodeDatas
@@ -112,7 +113,10 @@ export const update = mutation({
       };
     });
 
-    await ctx.db.patch(canvasId, { edges: updatedEdges });
+    await ctx.db.patch(canvasId, {
+      edges: updatedEdges,
+      updatedAt: Date.now(),
+    });
     console.log(`✅ Updated ${edgeUpdates.length} edges in canvas ${canvasId}`);
     return true;
   },
@@ -179,6 +183,7 @@ export const remove = mutation({
 
     await ctx.db.patch(canvasId, {
       edges: edges.filter((edge) => !edgeIds.includes(edge.id)),
+      updatedAt: Date.now(),
     });
 
     console.log(`✅ Removed ${edgeIds.length} edges from canvas ${canvasId}`);

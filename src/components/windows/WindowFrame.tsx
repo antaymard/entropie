@@ -320,6 +320,7 @@ export default function WindowFrame({
             shouldConfirm={isDirty}
             cancelLabel="Fermer sans sauvegarder"
             confirmLabel="Sauvegarder et fermer"
+            autoFocusConfirm
           >
             <button
               className="shrink-0 rounded p-0.5 opacity-50 hover:bg-red-500/15 hover:text-red-600 hover:opacity-100"

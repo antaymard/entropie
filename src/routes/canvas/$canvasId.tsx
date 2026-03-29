@@ -217,8 +217,10 @@ function CanvasContent({
         defaultViewport={{
           x: 0,
           y: 0,
-          zoom: 1,
+          zoom: 0.75,
         }}
+        minZoom={0.1}
+        maxZoom={4}
         selectNodesOnDrag={false}
         selectionMode={SelectionMode.Partial}
         selectionOnDrag={!isMobile}

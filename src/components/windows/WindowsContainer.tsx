@@ -6,6 +6,7 @@ import WindowFrame from "./WindowFrame";
 
 export default function WindowsContainer() {
   const openedWindows = useWindowsStore((s) => s.openedWindows);
+  const bringWindowToFront = useWindowsStore((s) => s.bringWindowToFront);
   const existingNodeIds = useStore((state) =>
     state.nodes.map((node) => node.id),
   );
@@ -24,7 +25,7 @@ export default function WindowsContainer() {
       {/* Snap preview overlay */}
       {snapPreview && (
         <div
-          className="pointer-events-none absolute z-50 rounded-lg border-2 border-blue-400/60 bg-blue-400/15 transition-all duration-150"
+          className="pointer-events-none absolute z-200 rounded-lg border-2 border-blue-400/60 bg-blue-400/15 transition-all duration-150"
           style={{
             width: `calc(40% - 40px)`,
             top: 10,
@@ -39,18 +40,20 @@ export default function WindowsContainer() {
         .filter((openedWindow) =>
           existingNodeIds.includes(openedWindow.xyNodeId),
         )
-        .map((openedWindow) => (
+        .map((openedWindow, index) => (
           <div
             key={openedWindow.xyNodeId}
             className={cn(
               "pointer-events-auto absolute",
               openedWindow.windowState === "minimized" && "hidden",
             )}
+            onMouseDownCapture={() => bringWindowToFront(openedWindow.xyNodeId)}
             style={{
               left: openedWindow.position.x,
               top: openedWindow.position.y,
               width: openedWindow.width,
               height: openedWindow.height,
+              zIndex: 100 + index,
             }}
           >
             <WindowFrame

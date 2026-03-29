@@ -1,5 +1,5 @@
-import { Formik } from "formik";
-import TextInput from "../form-ui/TextInput";
+import { useForm } from "@tanstack/react-form";
+import TextInput from "@/components/ts-form/TextInput";
 import toast from "react-hot-toast";
 import { useMutation } from "convex/react";
 import { api } from "@/../convex/_generated/api";
@@ -18,54 +18,55 @@ export default function CanvasCreationModal() {
   const createCanvas = useMutation(api.canvases.createCanvas);
   const navigate = useNavigate();
 
-  return (
-    <Formik
-      initialValues={{ name: "" }}
-      validate={(values) => {
-        const errors: { name?: string } = {};
-        if (!values.name.trim()) {
-          errors.name = "Name cannot be empty";
-        }
-        return errors;
-      }}
-      onSubmit={async (values) => {
-        try {
-          console.log("omf");
-          const newCanvasId = await createCanvas({
-            name: values.name,
+  const form = useForm({
+    defaultValues: { name: "" },
+    onSubmit: async ({ value }) => {
+      if (!value.name.trim()) return;
+      try {
+        const newCanvasId = await createCanvas({ name: value.name });
+        if (newCanvasId) {
+          toast.success(`Workspace "${value.name}" created successfully!`);
+          navigate({
+            to: `/canvas/${newCanvasId}`,
+            params: { canvasId: newCanvasId },
           });
-          if (newCanvasId) {
-            toast.success(`Workspace "${values.name}" created successfully!`);
-            navigate({
-              to: `/canvas/${newCanvasId}`,
-              params: { canvasId: newCanvasId },
-            });
-          } else {
-            throw new Error("Failed to create workspace.");
-          }
-        } catch (error) {
-          toastError(error, "Error while creating workspace.");
+        } else {
+          throw new Error("Failed to create workspace.");
         }
-      }}
-    >
-      {({ submitForm }) => (
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create a workspace</DialogTitle>
-            <DialogDescription>
-              Give this new workspace a name.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="my-3">
-            <TextInput name="name" label="Workspace name" placeholder="" />
-          </div>
-          <DialogFooter>
-            <Button type="button" onClick={submitForm}>
-              Create
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      )}
-    </Formik>
+      } catch (error) {
+        toastError(error, "Error while creating workspace.");
+      }
+    },
+  });
+
+  return (
+    <DialogContent>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          form.handleSubmit();
+        }}
+      >
+        <DialogHeader>
+          <DialogTitle>Create a workspace</DialogTitle>
+          <DialogDescription>Give this new workspace a name.</DialogDescription>
+        </DialogHeader>
+        <div className="my-3">
+          <TextInput
+            form={form}
+            name="name"
+            label="Workspace name"
+            placeholder=""
+            validators={{
+              onChange: ({ value }: { value: string }) =>
+                !value.trim() ? "Name cannot be empty" : undefined,
+            }}
+          />
+        </div>
+        <DialogFooter>
+          <Button type="submit">Create</Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
   );
 }

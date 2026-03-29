@@ -170,6 +170,7 @@ type OpenedWindowPayload = Pick<
 interface WindowsStore {
   openedWindows: OpenedWindow[];
   openWindow: (payload: OpenedWindowPayload) => void;
+  bringWindowToFront: (xyNodeId: string) => void;
   closeWindow: (xyNodeId: string) => void;
   closeWindowsForNodeIds: (xyNodeIds: string[]) => void;
   closeAllWindows: () => void;
@@ -233,6 +234,26 @@ export const useWindowsStore = create<WindowsStore>()(
           return {
             openedWindows: [...store.openedWindows, newWindow],
           };
+        });
+      },
+      bringWindowToFront: (xyNodeId: string) => {
+        set((store) => {
+          const existingWindowIndex = store.openedWindows.findIndex(
+            (window) => window.xyNodeId === xyNodeId,
+          );
+
+          if (existingWindowIndex < 0) return store;
+          if (existingWindowIndex === store.openedWindows.length - 1) {
+            return store;
+          }
+
+          const windowToBring = store.openedWindows[existingWindowIndex];
+          const nextOpenedWindows = [
+            ...store.openedWindows.filter((w) => w.xyNodeId !== xyNodeId),
+            windowToBring,
+          ];
+
+          return { openedWindows: nextOpenedWindows };
         });
       },
       closeWindow: (xyNodeId: string) => {

@@ -37,6 +37,7 @@ import TopRightToolbar from "@/components/canvas/on-canvas-ui/TopRightToolbar";
 import BottomToolbar from "@/components/canvas/on-canvas-ui/BottomToolbar";
 import AuthUpgradeBanner from "@/components/canvas/on-canvas-ui/AuthUpgradeBanner";
 import { useConvexAuth } from "convex/react";
+import OnboardingModal from "@/components/ui/OnboardingModal";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -54,6 +55,7 @@ function RouteComponent() {
 
   return (
     <div className="bg-white">
+      <OnboardingModal />
       <ReactFlowProvider key={canvasId}>
         {isAuthenticated ? (
           <CanvasSidebar canvasId={canvasId}>{canvasContent}</CanvasSidebar>

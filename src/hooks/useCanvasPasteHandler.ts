@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { useReactFlow, useViewport } from "@xyflow/react";
 import { useFileUpload } from "./useFilesUpload";
 import { useCreateNode } from "./useCreateNode";
@@ -8,6 +8,46 @@ import { useAction, useMutation } from "convex/react";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { useCanvasStore } from "@/stores/canvasStore";
+import { markdownToPlateValue } from "@/lib/plateMarkdownConverter";
+
+const PASTE_GUARD_WINDOW_MS = 300;
+
+type PasteGuardState = {
+  inFlight: boolean;
+  lastSignature: string;
+  lastAt: number;
+};
+
+function runWithPasteGuard(
+  guardState: PasteGuardState,
+  signature: string,
+  action: () => Promise<void>,
+): boolean {
+  const now = Date.now();
+  const inGuardWindow = now - guardState.lastAt < PASTE_GUARD_WINDOW_MS;
+
+  if (
+    (guardState.inFlight && inGuardWindow) ||
+    (guardState.lastSignature === signature && inGuardWindow)
+  ) {
+    return false;
+  }
+
+  guardState.inFlight = true;
+  guardState.lastSignature = signature;
+  guardState.lastAt = now;
+
+  void (async () => {
+    try {
+      await action();
+    } finally {
+      guardState.inFlight = false;
+      guardState.lastAt = Date.now();
+    }
+  })();
+
+  return true;
+}
 
 /**
  * Hook to handle paste events on the canvas
@@ -22,6 +62,11 @@ export function useCanvasPasteHandler() {
   const fetchLinkMetadata = useAction(api.links.fetchLinkMetadata);
   const updateNodeDataValues = useMutation(api.nodeDatas.updateValues);
   const focus = useCanvasStore((s) => s.focus);
+  const pasteGuardRef = useRef<PasteGuardState>({
+    inFlight: false,
+    lastSignature: "",
+    lastAt: 0,
+  });
   /**
    * Calculate the center position of the current viewport
    */
@@ -144,6 +189,32 @@ export function useCanvasPasteHandler() {
   );
 
   /**
+   * Create a DocumentNode with plain text content
+   */
+  const createDocumentNode = useCallback(
+    async (text: string) => {
+      const position = getViewportCenter();
+
+      const documentNodeConfig = prebuiltNodesConfig.find(
+        (config) => config.node.type === "document",
+      );
+      if (!documentNodeConfig) {
+        toast.error("Error: DocumentNode configuration not found");
+        return null;
+      }
+
+      const doc = markdownToPlateValue(text);
+
+      await createNode({
+        node: documentNodeConfig.node,
+        position,
+        initialValues: { doc },
+      });
+    },
+    [getViewportCenter, createNode],
+  );
+
+  /**
    * Handle image file paste
    */
   const handleImageFilePaste = useCallback(
@@ -225,27 +296,43 @@ export function useCanvasPasteHandler() {
       if (files && files.length > 0) {
         const file = files[0];
         if (file.type.startsWith("image/")) {
+          const signature = `image:${file.type}:${file.size}:${file.lastModified}`;
           e.preventDefault();
-          handleImageFilePaste(file);
+          runWithPasteGuard(pasteGuardRef.current, signature, async () => {
+            await handleImageFilePaste(file);
+          });
           return;
         }
       }
 
-      // Check for text (URL)
+      // Check for text (URL or plain text)
       const text = e.clipboardData?.getData("text");
       if (text && text.trim()) {
         const trimmedText = text.trim();
-        // Only handle if it looks like a URL (starts with http:// or https://)
+        const signature = `text:${trimmedText.slice(0, 500)}`;
+        e.preventDefault();
+
         if (
           trimmedText.startsWith("http://") ||
           trimmedText.startsWith("https://")
         ) {
-          e.preventDefault();
-          handleUrlPaste(trimmedText);
+          runWithPasteGuard(pasteGuardRef.current, signature, async () => {
+            await handleUrlPaste(trimmedText);
+          });
+        } else {
+          runWithPasteGuard(pasteGuardRef.current, signature, async () => {
+            await createDocumentNode(trimmedText);
+            toast.success("Document created");
+          });
         }
       }
     },
-    [handleImageFilePaste, handleUrlPaste],
+    [
+      focus,
+      handleImageFilePaste,
+      handleUrlPaste,
+      createDocumentNode,
+    ],
   );
 
   // Register paste event listener

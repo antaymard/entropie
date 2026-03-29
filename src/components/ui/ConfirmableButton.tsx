@@ -2,6 +2,7 @@ import {
   cloneElement,
   isValidElement,
   useMemo,
+  useRef,
   useState,
   type MouseEventHandler,
   type ReactElement,
@@ -29,6 +30,7 @@ interface ConfirmableButtonProps {
   confirmLabel?: string;
   cancelLabel?: string;
   showCloseButton?: boolean;
+  autoFocusConfirm?: boolean;
 }
 
 export default function ConfirmableButton({
@@ -41,8 +43,10 @@ export default function ConfirmableButton({
   confirmLabel = "Confirmer",
   cancelLabel = "Annuler",
   showCloseButton = true,
+  autoFocusConfirm = false,
 }: ConfirmableButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const confirmRef = useRef<HTMLButtonElement>(null);
 
   const childWithDirectConfirm = useMemo(() => {
     if (!isValidElement(children) || shouldConfirm) {
@@ -67,7 +71,14 @@ export default function ConfirmableButton({
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent
+        onOpenAutoFocus={(e) => {
+          if (autoFocusConfirm) {
+            e.preventDefault();
+            confirmRef.current?.focus();
+          }
+        }}
+      >
         {showCloseButton && (
           <AlertDialogCancel
             className="absolute right-3 top-3 h-7 w-7 p-0"
@@ -84,7 +95,7 @@ export default function ConfirmableButton({
           <AlertDialogCancel onClick={() => onCancel?.()}>
             {cancelLabel}
           </AlertDialogCancel>
-          <AlertDialogAction onClick={() => onConfirm()}>
+          <AlertDialogAction ref={confirmRef} onClick={() => onConfirm()}>
             {confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>

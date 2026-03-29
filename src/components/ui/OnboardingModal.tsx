@@ -16,7 +16,7 @@ import slide5 from "@/assets/onboarding/Slide5.png";
 
 const slides = [
   {
-    title: "Click and drag to move, Ctrl + scroll to zoom",
+    title: "Use mouse wheel to move, Ctrl + scroll to zoom",
     image: slide1,
   },
   {

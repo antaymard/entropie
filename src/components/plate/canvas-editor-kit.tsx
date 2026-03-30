@@ -14,7 +14,6 @@ import { CursorOverlayKit } from "@/components/plate/cursor-overlay-kit";
 import { DateKit } from "@/components/plate/date-kit";
 import { DndKit } from "@/components/plate/dnd-kit";
 import { DocxKit } from "@/components/plate/docx-kit";
-import { EmojiKit } from "@/components/plate/emoji-kit";
 import { ExitBreakKit } from "@/components/plate/exit-break-kit";
 import { FloatingToolbarKit } from "@/components/plate/floating-toolbar-kit";
 import { FontKit } from "@/components/plate/font-kit";
@@ -60,7 +59,6 @@ export const CanvasEditorKit = [
   ...AutoformatKit,
   ...CursorOverlayKit,
   ...DndKit,
-  ...EmojiKit,
   ...ExitBreakKit,
   TrailingBlockPlugin,
 

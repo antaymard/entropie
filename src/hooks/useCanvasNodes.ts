@@ -75,12 +75,19 @@ export function useCanvasNodes(
     null,
   );
 
-  // Cache: dragged node ID -> list of descendant IDs + prebuilt Set
+  // Cache: dragged node ID -> descendants + their initial offsets from parent
   const draggedChildrenCache = useRef<{
     draggedNodeId: string | null;
     descendantIds: string[];
     descendantSet: Set<string>;
-  }>({ draggedNodeId: null, descendantIds: [], descendantSet: new Set() });
+    // offset = descendant.initialPosition - parent.initialPosition
+    initialOffsets: Map<string, { x: number; y: number }>;
+  }>({
+    draggedNodeId: null,
+    descendantIds: [],
+    descendantSet: new Set(),
+    initialOffsets: new Map(),
+  });
 
   // CONVEX MUTATIONS
   const addCanvasNodesToConvex = useMutation(api.canvasNodes.add);
@@ -153,7 +160,7 @@ export function useCanvasNodes(
       // Move children along with dragged parent (unless Ctrl is held)
       // Compute delta BEFORE onNodesChange applies the parent's new position
       const isDragging = positionChanges.some((change) => change.dragging);
-      let childDelta: { x: number; y: number } | null = null;
+      let parentNewPosition: { x: number; y: number } | null = null;
       let descendantIds: string[] = [];
 
       if (isDragging && !isCtrlHeld) {
@@ -168,6 +175,7 @@ export function useCanvasNodes(
           const cacheKey = [...draggedIds].sort().join(",");
           if (draggedChildrenCache.current.draggedNodeId !== cacheKey) {
             const edges = getEdges();
+            const currentNodes = getNodes();
             const childrenMap = buildChildrenMap(edges);
             const allDescendants = new Set<string>();
             for (const draggedId of draggedIds) {
@@ -182,28 +190,39 @@ export function useCanvasNodes(
             for (const id of draggedIds) {
               allDescendants.delete(id);
             }
+
+            // Store initial offsets: descendant position - parent position at drag start
+            const firstDraggedNode = currentNodes.find(
+              (n) => n.id === draggedChanges[0].id,
+            );
+            const initialOffsets = new Map<string, { x: number; y: number }>();
+            if (firstDraggedNode) {
+              const nodesMap = new Map(currentNodes.map((n) => [n.id, n]));
+              for (const descId of allDescendants) {
+                const descNode = nodesMap.get(descId);
+                if (descNode) {
+                  initialOffsets.set(descId, {
+                    x: descNode.position.x - firstDraggedNode.position.x,
+                    y: descNode.position.y - firstDraggedNode.position.y,
+                  });
+                }
+              }
+            }
+
             draggedChildrenCache.current = {
               draggedNodeId: cacheKey,
               descendantIds: [...allDescendants],
               descendantSet: allDescendants,
+              initialOffsets,
             };
           }
 
           descendantIds = draggedChildrenCache.current.descendantIds;
 
           if (descendantIds.length > 0) {
-            // Compute delta before onNodesChange updates the parent position
             const firstChange = draggedChanges[0];
-            const currentNodes = getNodes();
-            const currentNode = currentNodes.find(
-              (n) => n.id === firstChange.id,
-            );
-            if (currentNode && firstChange.position) {
-              const dx = firstChange.position.x - currentNode.position.x;
-              const dy = firstChange.position.y - currentNode.position.y;
-              if (dx !== 0 || dy !== 0) {
-                childDelta = { x: dx, y: dy };
-              }
+            if (firstChange.position) {
+              parentNewPosition = firstChange.position;
             }
           }
         }
@@ -212,20 +231,24 @@ export function useCanvasNodes(
       // Apply parent's position change
       onNodesChange(changes);
 
-      // Apply delta to descendants
-      if (childDelta && descendantIds.length > 0) {
-        const delta = childDelta;
-        const { descendantSet } = draggedChildrenCache.current;
+      // Set absolute positions for descendants based on initial offsets
+      if (parentNewPosition && descendantIds.length > 0) {
+        const newPos = parentNewPosition;
+        const { descendantSet, initialOffsets } =
+          draggedChildrenCache.current;
         setNodes((currentNodes) =>
           currentNodes.map((node) => {
             if (descendantSet.has(node.id)) {
-              return {
-                ...node,
-                position: {
-                  x: node.position.x + delta.x,
-                  y: node.position.y + delta.y,
-                },
-              };
+              const offset = initialOffsets.get(node.id);
+              if (offset) {
+                return {
+                  ...node,
+                  position: {
+                    x: newPos.x + offset.x,
+                    y: newPos.y + offset.y,
+                  },
+                };
+              }
             }
             return node;
           }),
@@ -326,6 +349,7 @@ export function useCanvasNodes(
               draggedNodeId: null,
               descendantIds: [],
               descendantSet: new Set(),
+              initialOffsets: new Map(),
             };
             return updateCanvasNodesPositionOrDimensionsInConvex({
               canvasId,

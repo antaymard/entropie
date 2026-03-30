@@ -20,6 +20,7 @@ import { DiscussionKit } from "@/components/plate/discussion-kit";
 import { DndKit } from "@/components/plate/dnd-kit";
 import { DocxKit } from "@/components/plate/docx-kit";
 import { EmojiKit } from "@/components/plate/emoji-kit";
+import { StripFontOnPastePlugin } from "@/components/plate/strip-font-on-paste-plugin";
 import { ExitBreakKit } from "@/components/plate/exit-break-kit";
 import { FixedToolbarKit } from "@/components/plate/fixed-toolbar-kit";
 import { FloatingToolbarKit } from "@/components/plate/floating-toolbar-kit";
@@ -79,6 +80,7 @@ export const EditorKit = [
   // Parsers
   ...DocxKit,
   ...MarkdownKit,
+  StripFontOnPastePlugin,
 
   // UI
   ...BlockPlaceholderKit,

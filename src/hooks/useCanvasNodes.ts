@@ -75,11 +75,12 @@ export function useCanvasNodes(
     null,
   );
 
-  // Cache: dragged node ID -> list of descendant IDs
+  // Cache: dragged node ID -> list of descendant IDs + prebuilt Set
   const draggedChildrenCache = useRef<{
     draggedNodeId: string | null;
     descendantIds: string[];
-  }>({ draggedNodeId: null, descendantIds: [] });
+    descendantSet: Set<string>;
+  }>({ draggedNodeId: null, descendantIds: [], descendantSet: new Set() });
 
   // CONVEX MUTATIONS
   const addCanvasNodesToConvex = useMutation(api.canvasNodes.add);
@@ -184,6 +185,7 @@ export function useCanvasNodes(
             draggedChildrenCache.current = {
               draggedNodeId: cacheKey,
               descendantIds: [...allDescendants],
+              descendantSet: allDescendants,
             };
           }
 
@@ -213,7 +215,7 @@ export function useCanvasNodes(
       // Apply delta to descendants
       if (childDelta && descendantIds.length > 0) {
         const delta = childDelta;
-        const descendantSet = new Set(descendantIds);
+        const { descendantSet } = draggedChildrenCache.current;
         setNodes((currentNodes) =>
           currentNodes.map((node) => {
             if (descendantSet.has(node.id)) {
@@ -301,10 +303,10 @@ export function useCanvasNodes(
         } else {
           // Envoi direct à Convex quand le drag est fini
           // Include descendant position changes when drag ends
-          const descendantIds = draggedChildrenCache.current.descendantIds;
+          const { descendantIds, descendantSet } =
+            draggedChildrenCache.current;
           if (descendantIds.length > 0) {
             const currentNodes = getNodes();
-            const descendantSet = new Set(descendantIds);
             const positionChangeIds = new Set(
               positionChanges.map((c) => c.id),
             );
@@ -323,6 +325,7 @@ export function useCanvasNodes(
             draggedChildrenCache.current = {
               draggedNodeId: null,
               descendantIds: [],
+              descendantSet: new Set(),
             };
             return updateCanvasNodesPositionOrDimensionsInConvex({
               canvasId,

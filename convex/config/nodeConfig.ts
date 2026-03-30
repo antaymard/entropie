@@ -228,34 +228,38 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
     type: "table",
     label: "Table",
     description:
-      "Node for structured tabular data with typed columns (text, number, checkbox).",
+      "Node for structured tabular data with typed columns (text, number, checkbox, date).",
     defaultDimensions: { width: 400, height: 300, resizable: true },
     canHaveAutomation: false,
 
     dataValuesSchema: z
       .object({
-        columns: z
-          .array(
-            z.object({
-              id: z.string(),
-              name: z.string(),
-              type: z.enum(["text", "number", "checkbox"]),
-            }),
-          )
-          .default([]),
-        rows: z
-          .array(
-            z.object({
-              id: z.string(),
-              cells: z.record(
-                z.string(),
-                z.union([z.string(), z.number(), z.boolean(), z.null()]),
-              ),
-            }),
-          )
-          .default([]),
+        table: z
+          .object({
+            columns: z
+              .array(
+                z.object({
+                  id: z.string(),
+                  name: z.string(),
+                  type: z.enum(["text", "number", "checkbox", "date"]),
+                }),
+              )
+              .default([]),
+            rows: z
+              .array(
+                z.object({
+                  id: z.string(),
+                  cells: z.record(
+                    z.string(),
+                    z.union([z.string(), z.number(), z.boolean(), z.null()]),
+                  ),
+                }),
+              )
+              .default([]),
+          })
+          .default({ columns: [], rows: [] }),
       })
-      .default({ columns: [], rows: [] }),
+      .default({ table: { columns: [], rows: [] } }),
   },
 ];
 

@@ -122,6 +122,13 @@ async function syncDependenciesForRemovedEdges(
   }
 }
 
+const DEFAULT_MARKER_END = {
+  type: "arrow",
+  width: 30,
+  height: 30,
+  strokeWidth: 1,
+};
+
 export async function addCanvasEdges(
   ctx: MutationCtx,
   {
@@ -134,12 +141,17 @@ export async function addCanvasEdges(
 ): Promise<boolean> {
   const canvas = await getCanvas(ctx, canvasId);
 
+  const edgesWithDefaults = edges.map((edge) => ({
+    ...edge,
+    markerEnd: edge.markerEnd ?? DEFAULT_MARKER_END,
+  }));
+
   await ctx.db.patch("canvases", canvasId, {
-    edges: [...(canvas.edges ?? []), ...edges],
+    edges: [...(canvas.edges ?? []), ...edgesWithDefaults],
     updatedAt: Date.now(),
   });
 
-  await syncDependenciesForAddedEdges(ctx, canvas, edges);
+  await syncDependenciesForAddedEdges(ctx, canvas, edgesWithDefaults);
 
   console.log(`✅ Added ${edges.length} edges to canvas ${canvasId}`);
   return true;

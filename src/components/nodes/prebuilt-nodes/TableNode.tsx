@@ -6,7 +6,7 @@ import type { Id } from "@/../convex/_generated/dataModel";
 import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
 import NodeFrame from "../NodeFrame";
 import { Button } from "@/components/shadcn/button";
-import { TbMaximize } from "react-icons/tb";
+import { TbMaximize, TbTable } from "react-icons/tb";
 import { useWindowsStore } from "@/stores/windowsStore";
 import {
   TableBody,
@@ -73,6 +73,8 @@ function TableNode(xyNode: Node) {
     columns: [],
     rows: [],
   };
+  const isTableEmpty =
+    tableData.columns.length === 0 && tableData.rows.length === 0;
 
   return (
     <>
@@ -88,26 +90,33 @@ function TableNode(xyNode: Node) {
       </CanvasNodeToolbar>
       <NodeFrame xyNode={xyNode}>
         <div className="h-full overflow-auto">
-          <table className="w-full caption-bottom text-sm">
-            <TableHeader>
-              <TableRow>
-                {tableData.columns.map((col) => (
-                  <TableHead key={col.id}>{col.name}</TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {tableData.rows.map((row) => (
-                <TableRow key={row.id}>
+          {isTableEmpty ? (
+            <div className="h-full flex flex-col items-center justify-center gap-1.5 text-muted-foreground/40 select-none pointer-events-none">
+              <TbTable size={22} />
+              <span className="text-xs">Double-clic pour éditer</span>
+            </div>
+          ) : (
+            <table className="w-full caption-bottom text-sm">
+              <TableHeader>
+                <TableRow>
                   {tableData.columns.map((col) => (
-                    <TableCell key={col.id}>
-                      {renderCellValue(row.cells[col.id], col.type)}
-                    </TableCell>
+                    <TableHead key={col.id}>{col.name}</TableHead>
                   ))}
                 </TableRow>
-              ))}
-            </TableBody>
-          </table>
+              </TableHeader>
+              <TableBody>
+                {tableData.rows.map((row) => (
+                  <TableRow key={row.id}>
+                    {tableData.columns.map((col) => (
+                      <TableCell key={col.id}>
+                        {renderCellValue(row.cells[col.id], col.type)}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </table>
+          )}
         </div>
       </NodeFrame>
     </>

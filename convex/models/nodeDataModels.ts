@@ -116,6 +116,7 @@ export async function updateValues(
     values: Record<string, unknown>;
   },
 ): Promise<boolean> {
+  console.log(`🔄 Updating values for nodeData ${_id} with:`, values);
   const existing = await ctx.db.get("nodeDatas", _id);
   if (!existing) throw new ConvexError("NodeData non trouvé");
 

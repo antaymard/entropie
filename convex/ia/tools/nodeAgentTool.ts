@@ -36,6 +36,9 @@ export default function nodeAgentTool({
       nodeType: string;
       response: string;
     }> => {
+      console.log(
+        `🚀 Launching node agent subagent for canvas ${canvasId} with query: ${query}`,
+      );
       const subAgent = createToolAgent({
         modelName: "mistralai/mistral-small-2603",
         instructions:
@@ -66,6 +69,10 @@ export default function nodeAgentTool({
         {
           prompt: query,
         },
+      );
+
+      console.log(
+        `✅ Node agent subagent completed for canvas ${canvasId} : ${result.text}`,
       );
 
       return {

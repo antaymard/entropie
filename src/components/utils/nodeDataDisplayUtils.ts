@@ -44,6 +44,10 @@ export function getNodeDataTitle(nodeData: Doc<"nodeDatas">): string {
         | undefined;
       return images?.[0]?.filename || "Image";
     }
+    case "floatingText": {
+      const text = nodeData.values.text as string | undefined;
+      return text || "Text";
+    }
     default:
       return nodeData.type ?? "Node";
   }

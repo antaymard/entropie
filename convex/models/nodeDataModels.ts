@@ -11,6 +11,23 @@ export async function readNodeData(
   return nodeData;
 }
 
+export async function createNodeData(
+  ctx: MutationCtx,
+  {
+    type,
+    values,
+  }: {
+    type: Doc<"nodeDatas">["type"];
+    values: Record<string, unknown>;
+  },
+): Promise<Id<"nodeDatas">> {
+  return ctx.db.insert("nodeDatas", {
+    type,
+    values,
+    updatedAt: Date.now(),
+  });
+}
+
 export async function listNodeDataDependencies(
   ctx: QueryCtx,
   {

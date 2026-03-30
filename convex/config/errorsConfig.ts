@@ -1,5 +1,8 @@
 const errors = {
   CANVAS_NOT_FOUND: "This canvas does not exist.",
+  NODE_NOT_FOUND: "This node does not exist in this canvas.",
+  NODE_DATA_NOT_FOUND_FOR_NODE: "No nodeData is linked to this node.",
+  NODE_DATA_NOT_FOUND: "This nodeData does not exist.",
   UNAUTHORIZED_USER: "You are not authenticated or do not have access.",
   USER_NOT_FOUND: "This user does not exist.",
   EMAIL_NOT_FOUND: "No user found with this email address.",

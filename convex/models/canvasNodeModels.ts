@@ -306,3 +306,35 @@ export async function moveToCanvas(
 
   return true;
 }
+
+export async function getNodeWithNodeData(
+  ctx: QueryCtx,
+  {
+    canvasId,
+    nodeId,
+  }: {
+    canvasId: Id<"canvases">;
+    nodeId: string;
+  },
+): Promise<{
+  node: CanvasNode;
+  nodeData: Doc<"nodeDatas">;
+}> {
+  const canvas = await getCanvas(ctx, canvasId);
+  const node = (canvas.nodes ?? []).find((item) => item.id === nodeId);
+
+  if (!node) {
+    throw new ConvexError(errors.NODE_NOT_FOUND);
+  }
+
+  if (!node.nodeDataId) {
+    throw new ConvexError(errors.NODE_DATA_NOT_FOUND_FOR_NODE);
+  }
+
+  const nodeData = await ctx.db.get("nodeDatas", node.nodeDataId);
+  if (!nodeData) {
+    throw new ConvexError(errors.NODE_DATA_NOT_FOUND);
+  }
+
+  return { node, nodeData };
+}

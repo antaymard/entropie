@@ -12,8 +12,8 @@ Each canvas contains nodes (blocks). Several types of nodes exist
 * DocumentNode: for richly formatted text in markdown, based on plateJ
 * LinkNode: to display a web link with the page title
 * FloatingTextNode: to display simple, unformatted text, mainly for zone titles or quick annotations
-* ImageNode: to display an image
-* ValueNode: to display a value (number + unit, boolean) with a label
+* ImageNode: to display an image, from a URL.
+* ValueNode: to display a value (number, text, boolean) with a label and an optional unit.
 
 ### How You Work
 

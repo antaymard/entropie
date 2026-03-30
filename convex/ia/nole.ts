@@ -1,10 +1,10 @@
 import { v } from "convex/values";
 import { internalAction, mutation } from "../_generated/server";
 import { baseAgent, createNoleAgent } from "./agents";
-import { anyApi } from "convex/server";
 import { requireAuth } from "../lib/auth";
 import { generateBrainSystemPrompt } from "./nole/brain/brainAgent";
 import { internal } from "../_generated/api";
+import nodeAgentTool from "./tools/nodeAgentTool";
 
 // Save user message, then stream response asynchronously
 export const saveMessage = mutation({
@@ -50,7 +50,11 @@ export const streamResponse = internalAction({
       ctx,
     });
 
-    const noleAgent = createNoleAgent();
+    const noleAgent = createNoleAgent({
+      tools: {
+        nodeAgentTool: nodeAgentTool({ authUserId, canvasId }),
+      },
+    });
     const result = await noleAgent.streamText(
       ctx,
       { threadId, userId: authUserId },

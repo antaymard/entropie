@@ -1,8 +1,8 @@
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
 import { mutation } from "./_generated/server";
 import { requireAuth, requireCanvasAccess } from "./lib/auth";
+import * as CanvasEdgeModels from "./models/canvasEdgeModels";
 import { edgesValidator } from "./schemas/canvasesSchema";
-import errors from "./config/errorsConfig";
 
 export const add = mutation({
   args: {
@@ -12,72 +12,9 @@ export const add = mutation({
   returns: v.boolean(),
   handler: async (ctx, { edges, canvasId }) => {
     const authUserId = await requireAuth(ctx);
-    const { canvas } = await requireCanvasAccess(
-      ctx,
-      canvasId,
-      authUserId,
-      "editor",
-    );
+    await requireCanvasAccess(ctx, canvasId, authUserId, "editor");
 
-    // Ajouter les edges au canvas
-    await ctx.db.patch(canvasId, {
-      edges: [...(canvas.edges || []), ...edges],
-      updatedAt: Date.now(),
-    });
-
-    // Mettre à jour les dependencies des nodeDatas
-    const nodes = canvas.nodes || [];
-
-    for (const edge of edges) {
-      const sourceNode = nodes.find((n) => n.id === edge.source);
-      const targetNode = nodes.find((n) => n.id === edge.target);
-
-      const sourceNodeDataId = sourceNode?.nodeDataId;
-      const targetNodeDataId = targetNode?.nodeDataId;
-
-      if (!sourceNodeDataId || !targetNodeDataId) {
-        continue; // Skip si un des nodeDataId n'existe pas
-      }
-
-      // Mettre à jour le nodeData target avec le source comme dépendance input
-      const targetNodeData = await ctx.db.get(targetNodeDataId);
-      if (targetNodeData) {
-        const existingDeps = targetNodeData.dependencies || [];
-        const alreadyExists = existingDeps.some(
-          (dep) => dep.nodeDataId === sourceNodeDataId && dep.type === "input",
-        );
-        if (!alreadyExists) {
-          await ctx.db.patch(targetNodeDataId, {
-            dependencies: [
-              ...existingDeps,
-              { nodeDataId: sourceNodeDataId, type: "input" as const },
-            ],
-            updatedAt: Date.now(),
-          });
-        }
-      }
-
-      // Mettre à jour le nodeData source avec le target comme dépendance output
-      const sourceNodeData = await ctx.db.get(sourceNodeDataId);
-      if (sourceNodeData) {
-        const existingDeps = sourceNodeData.dependencies || [];
-        const alreadyExists = existingDeps.some(
-          (dep) => dep.nodeDataId === targetNodeDataId && dep.type === "output",
-        );
-        if (!alreadyExists) {
-          await ctx.db.patch(sourceNodeDataId, {
-            dependencies: [
-              ...existingDeps,
-              { nodeDataId: targetNodeDataId, type: "output" as const },
-            ],
-            updatedAt: Date.now(),
-          });
-        }
-      }
-    }
-
-    console.log(`✅ Added ${edges.length} edges to canvas ${canvasId}`);
-    return true;
+    return CanvasEdgeModels.addCanvasEdges(ctx, { canvasId, edges });
   },
 });
 
@@ -94,31 +31,9 @@ export const update = mutation({
   returns: v.boolean(),
   handler: async (ctx, { canvasId, edgeUpdates }) => {
     const authUserId = await requireAuth(ctx);
-    const { canvas } = await requireCanvasAccess(
-      ctx,
-      canvasId,
-      authUserId,
-      "editor",
-    );
+    await requireCanvasAccess(ctx, canvasId, authUserId, "editor");
 
-    const edges = canvas.edges || [];
-
-    const updatedEdges = edges.map((edge) => {
-      const update = edgeUpdates.find((u) => u.id === edge.id);
-      if (!update) return edge;
-
-      return {
-        ...edge,
-        data: update.data ? { ...edge.data, ...update.data } : edge.data,
-      };
-    });
-
-    await ctx.db.patch(canvasId, {
-      edges: updatedEdges,
-      updatedAt: Date.now(),
-    });
-    console.log(`✅ Updated ${edgeUpdates.length} edges in canvas ${canvasId}`);
-    return true;
+    return CanvasEdgeModels.updateCanvasEdges(ctx, { canvasId, edgeUpdates });
   },
 });
 
@@ -130,63 +45,8 @@ export const remove = mutation({
   returns: v.boolean(),
   handler: async (ctx, { canvasId, edgeIds }) => {
     const authUserId = await requireAuth(ctx);
-    const { canvas } = await requireCanvasAccess(
-      ctx,
-      canvasId,
-      authUserId,
-      "editor",
-    );
+    await requireCanvasAccess(ctx, canvasId, authUserId, "editor");
 
-    const nodes = canvas.nodes || [];
-    const edges = canvas.edges || [];
-
-    // Trouver les edges à supprimer pour retirer les dependencies
-    const edgesToRemove = edges.filter((edge) => edgeIds.includes(edge.id));
-
-    for (const edge of edgesToRemove) {
-      const sourceNode = nodes.find((n) => n.id === edge.source);
-      const targetNode = nodes.find((n) => n.id === edge.target);
-
-      const sourceNodeDataId = sourceNode?.nodeDataId;
-      const targetNodeDataId = targetNode?.nodeDataId;
-
-      if (!sourceNodeDataId || !targetNodeDataId) {
-        continue;
-      }
-
-      // Retirer la dépendance input du target
-      const targetNodeData = await ctx.db.get(targetNodeDataId);
-      if (targetNodeData) {
-        const filteredDeps = (targetNodeData.dependencies || []).filter(
-          (dep) =>
-            !(dep.nodeDataId === sourceNodeDataId && dep.type === "input"),
-        );
-        await ctx.db.patch(targetNodeDataId, {
-          dependencies: filteredDeps,
-          updatedAt: Date.now(),
-        });
-      }
-
-      // Retirer la dépendance output du source
-      const sourceNodeData = await ctx.db.get(sourceNodeDataId);
-      if (sourceNodeData) {
-        const filteredDeps = (sourceNodeData.dependencies || []).filter(
-          (dep) =>
-            !(dep.nodeDataId === targetNodeDataId && dep.type === "output"),
-        );
-        await ctx.db.patch(sourceNodeDataId, {
-          dependencies: filteredDeps,
-          updatedAt: Date.now(),
-        });
-      }
-    }
-
-    await ctx.db.patch(canvasId, {
-      edges: edges.filter((edge) => !edgeIds.includes(edge.id)),
-      updatedAt: Date.now(),
-    });
-
-    console.log(`✅ Removed ${edgeIds.length} edges from canvas ${canvasId}`);
-    return true;
+    return CanvasEdgeModels.removeCanvasEdges(ctx, { canvasId, edgeIds });
   },
 });

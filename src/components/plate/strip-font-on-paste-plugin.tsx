@@ -8,38 +8,33 @@ import { createPlatePlugin } from "platejs/react";
  */
 export const StripFontOnPastePlugin = createPlatePlugin({
   key: "strip-font-on-paste",
-}).extendEditor(({ editor }) => {
-  const { insertData } = editor;
+  handlers: {
+    onPaste: ({ editor, event }) => {
+      const html = event.clipboardData?.getData("text/html");
+      if (!html) return;
 
-  editor.insertData = (data: DataTransfer) => {
-    const html = data.getData("text/html");
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
 
-    if (html) {
-      try {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
-
-        doc.querySelectorAll<HTMLElement>("[style]").forEach((el) => {
+      let hasFont = false;
+      doc.querySelectorAll<HTMLElement>("[style]").forEach((el) => {
+        if (el.style.fontFamily) {
           el.style.removeProperty("font-family");
-          // Remove empty style attribute to keep the DOM clean
+          hasFont = true;
           if (!el.getAttribute("style")?.trim()) {
             el.removeAttribute("style");
           }
-        });
-
-        const fragment = editor.api.html.deserialize({ element: doc.body });
-
-        if (fragment && fragment.length > 0) {
-          editor.tf.insertFragment(fragment);
-          return;
         }
-      } catch {
-        // Fall through to default paste handling
+      });
+
+      if (!hasFont) return;
+
+      event.preventDefault();
+
+      const fragment = editor.api.html.deserialize({ element: doc.body });
+      if (fragment?.length) {
+        editor.tf.insertFragment(fragment);
       }
-    }
-
-    insertData(data);
-  };
-
-  return editor;
+    },
+  },
 });

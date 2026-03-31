@@ -52,7 +52,10 @@ export const streamResponse = internalAction({
 
     const noleAgent = createNoleAgent({
       tools: {
-        nodeAgentTool: nodeAgentTool({ authUserId, canvasId }),
+        node_and_edge_manipulation_tool: nodeAgentTool({
+          authUserId,
+          canvasId,
+        }),
       },
     });
     const result = await noleAgent.streamText(

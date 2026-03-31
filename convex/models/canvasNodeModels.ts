@@ -2,6 +2,7 @@ import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import errors from "../config/errorsConfig";
+import { nodeDataConfig } from "../config/nodeConfig";
 
 type CanvasNode = NonNullable<Doc<"canvases">["nodes"]>[number];
 
@@ -50,8 +51,20 @@ export async function addCanvasNodes(
 ): Promise<boolean> {
   const canvas = await getCanvas(ctx, canvasId);
 
+  // Add default node variant if not provided
+  const nodesWithDefaults = canvasNodes.map((node) => {
+    if (node.variant !== undefined) return node;
+    const config = nodeDataConfig.find((c) => c.type === node.type);
+    if (!config?.variants) return node;
+    const defaultVariantKey = Object.entries(config.variants).find(
+      ([, v]) => v.isDefault,
+    )?.[0];
+    if (!defaultVariantKey) return node;
+    return { ...node, variant: defaultVariantKey };
+  });
+
   await ctx.db.patch("canvases", canvasId, {
-    nodes: [...(canvas.nodes ?? []), ...canvasNodes],
+    nodes: [...(canvas.nodes ?? []), ...nodesWithDefaults],
     updatedAt: Date.now(),
   });
 

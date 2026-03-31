@@ -8,6 +8,7 @@ type NodeVariant = {
   defaultWidth: number;
   defaultHeight: number;
   resizable?: boolean;
+  isDefault?: boolean;
 };
 
 type NodeDataConfigItem = {
@@ -51,8 +52,17 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
     description: "Node for storing a link.",
     defaultDimensions: { width: 220, height: 33, resizable: false },
     variants: {
-      default: { label: "Default", defaultWidth: 220, defaultHeight: 33 },
-      preview: { label: "Preview", defaultWidth: 320, defaultHeight: 120 },
+      default: {
+        label: "Default",
+        defaultWidth: 220,
+        defaultHeight: 33,
+        isDefault: true,
+      },
+      preview: {
+        label: "Preview",
+        defaultWidth: 320,
+        defaultHeight: 120,
+      },
     },
     canHaveAutomation: true,
 
@@ -104,7 +114,12 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
     description: "Node for storing a rich text document (Plate.js / markdown).",
     defaultDimensions: { width: 320, height: 320, resizable: true },
     variants: {
-      default: { label: "Preview", defaultWidth: 320, defaultHeight: 320 },
+      default: {
+        label: "Preview",
+        defaultWidth: 320,
+        defaultHeight: 320,
+        isDefault: true,
+      },
       title: {
         label: "Title",
         defaultWidth: 220,

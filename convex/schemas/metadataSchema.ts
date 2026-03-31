@@ -12,7 +12,7 @@ const memoryTypeValidator = v.union(
   v.literal("one-liner"),
   v.literal("insight"),
   v.literal("preference"),
-  v.literal("relationship"),
+  v.literal("transcript"),
 );
 
 const subjectIdValidator = v.union(
@@ -27,6 +27,7 @@ const metadataValidator = v.object({
   subjectType: subjectTypeValidator,
   subjectId: subjectIdValidator,
   memoryType: memoryTypeValidator,
+  parentId: v.optional(v.id("metadata")),
   content: v.string(),
   updatedAt: v.number(),
 });

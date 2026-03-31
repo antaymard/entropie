@@ -17,9 +17,9 @@ export const getCanvasNodeDatasWithAbstracts = internalQuery({
         const nodeDataId = node.nodeDataId ?? null;
         if (nodeDataId) {
           const memory = await ctx.db
-            .query("aiMemory")
+            .query("metadata")
             .withIndex("by_subject_and_type", (q) =>
-              q.eq("subjectId", nodeDataId).eq("memoryType", "abstract"),
+              q.eq("subjectId", nodeDataId).eq("memoryType", "one-liner"),
             )
             .unique();
           abstract = memory?.content ?? null;

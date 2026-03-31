@@ -1,8 +1,7 @@
 import { components } from "../_generated/api";
 import { Agent } from "@convex-dev/agent";
 import { openrouter } from "@openrouter/ai-sdk-provider";
-import type { LanguageModel } from "ai";
-import { Id } from "../_generated/dataModel";
+import type { LanguageModel, ToolSet } from "ai";
 import { readNodeDataTool } from "./tools/readNodeDataTool";
 import { openWebPageTool } from "./tools/openWebPageTool";
 import { websearchTool } from "./tools/websearchTool";
@@ -48,7 +47,11 @@ export function createAutomationAgent({
 //   });
 // }
 
-export function createNoleAgent() {
+export function createNoleAgent({
+  tools = {},
+}: {
+  tools?: ToolSet;
+} = {}) {
   return new Agent(components.agent, {
     name: "Nolë",
     maxSteps: 8,
@@ -57,6 +60,26 @@ export function createNoleAgent() {
       readNodeDataTool,
       openWebPageTool,
       websearchTool,
+      ...tools,
     },
+  });
+}
+
+export function createToolAgent({
+  modelName = "mistralai/mistral-small-2603",
+  tools = {},
+  instructions,
+}: {
+  modelName?: string;
+  tools?: ToolSet;
+  instructions?: string;
+} = {}) {
+  const model = openrouter(modelName);
+  return new Agent(components.agent, {
+    name: "tool-agent",
+    languageModel: model,
+    tools,
+    instructions,
+    maxSteps: 5,
   });
 }

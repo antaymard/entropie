@@ -79,7 +79,7 @@ function buildCanvasSummary(data: CanvasData): string {
       idOnCanvas: node.idOnCanvas,
       type: node.type,
       position: JSON.stringify(node.position),
-      nodeDataId: node.nodeDataId,
+      // nodeDataId: node.nodeDataId,
       abstract: node.abstract ?? "No abstract available",
       targetNodes: targetsBySource.get(node.idOnCanvas) ?? [],
     })),

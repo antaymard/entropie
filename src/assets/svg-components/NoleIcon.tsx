@@ -18,7 +18,7 @@ export default function NoleIcon({ size = "1em" }: NoleIconProps) {
         height="6.3572"
         rx="2.25"
         stroke="#475569"
-        stroke-width="1.5"
+        strokeWidth="1.5"
       />
       <line
         x1="0.750244"

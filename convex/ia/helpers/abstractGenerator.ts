@@ -14,14 +14,15 @@ export const generate = internalAction({
       internal.wrappers.nodeDataWrappers.readNodeData,
       { _id: nodeDataId },
     );
+    const nodeType = nodeData?.type ?? "unknown";
 
     // 2. Générer le contexte markdown
     const llmFriendlyContent = makeNodeDataLLMFriendly(nodeData);
 
     // 3. Récupérer l'abstract existant (si présent)
     const existingMemory = await ctx.runQuery(
-      internal.wrappers.aiMemoryWrappers.read,
-      { subjectId: nodeDataId, memoryType: "abstract" },
+      internal.wrappers.metadataWrappers.read,
+      { subjectId: nodeDataId, memoryType: "one-liner" },
     );
 
     // If abstract.updateAt is newer thant nodeData.updatedAt, we can skip regeneration
@@ -34,31 +35,33 @@ export const generate = internalAction({
     console.log("🚧 Generating abstract for nodeDataId:", nodeDataId);
 
     const previousAbstractContext = existingMemory
-      ? `\nAbstract précédent :\n${existingMemory.content}\n`
+      ? `\nOne-liner précédent :\n${existingMemory.content}\n`
       : "";
 
     // 4. Appel LLM one-shot
     const { text } = await generateText({
       model: openrouter("mistralai/mistral-small-2603"),
-      prompt: `Summarize the following content into a concise abstract.
-  Do not fabricate information. Be factual and synthetic.
+      prompt: `Summarize the following content into a one-liner. Do not fabricate information. Be factual and synthetic.
 
-  Here is the current summary of the content (if applicable):
-  ${previousAbstractContext}
+      Here is the current one-liner of the content (if applicable):
+      ${previousAbstractContext}
 
-  Here is the full content to summarize:
-  ${llmFriendlyContent}
+      Here is the full content to summarize:
+      ${llmFriendlyContent}
 
-  The content may not have been modified since the last abstract generation. If the content has not been modified, you can respond with a more concise reformulation of the previous abstract or with the same abstract if you consider it already optimal.
+      The content may not have been modified since the last one-liner generation. If the content has not been modified, you can respond with a more concise reformulation of the previous one-liner or with the same one-liner if you consider it already optimal.
 
-  If the content is very short (5 sentences maximum), you can consider that the abstract is the same as the content, and return the content as-is as the abstract.`,
+      <examples of outputs>
+      ${getExamplesFromNodeType(nodeType)}
+      </examples of outputs>
+`,
     });
 
-    // 5. Persister l'abstract via aiMemory
-    await ctx.runMutation(internal.wrappers.aiMemoryWrappers.upsert, {
+    // 5. Persister l'abstract via metadata
+    await ctx.runMutation(internal.wrappers.metadataWrappers.upsert, {
       subjectType: "nodeData",
       subjectId: nodeDataId,
-      memoryType: "abstract",
+      memoryType: "one-liner",
       content: text,
     });
 
@@ -82,3 +85,35 @@ export const generateMany = internalAction({
     return null;
   },
 });
+
+function getExamplesFromNodeType(nodeType: string): string {
+  const examplesByType: Record<string, string> = {
+    text: `- The document (h1 as title, or generate one) contains a meeting note about the project timeline and deliverables.`,
+    image: `- The image (imageUrl) represents a chart showing the sales growth of the company over the last quarter.`,
+    link: `- The link (https://example.com | pageTitle) leads to a research paper discussing the impact of climate change on polar bear populations.`,
+    value: `- The value ($value + $unit) is a numerical representation of the average customer satisfaction score for the month of June.`,
+    file: `- The file (fileName.pdf) is a financial report detailing the quarterly earnings and expenses of the company.`,
+    floatingText: `For floatingtext, return the text if short (< 100 chars) or a concise summary if long (e.g. "a long note about project updates").`,
+    embed: `- An embed of a YouTube video entitled "10 signs of a healthy relationship".`,
+    table: `- The table contains $nb rows of team members, their roles, and contact information`,
+  };
+  return (
+    examplesByType[nodeType] || `- No specific example available for this type.`
+  );
+}
+function getGuidelinesFromNodeType(nodeType: string): string {
+  const guidelinesByType: Record<string, string> = {
+    text: `The document is passed to you as markdown. Read it and summarize it in one line.`,
+    image: `The image is passed to you. First, describe objectively what the image represents (without interpretation). Then, if possible, summarize it in one line. If the image is a diagram or chart, focus on the key insights it conveys rather than describing every element.`,
+    link: `The link is passed to you with its URL and page title. First, go to the site using the URL and read its content. Then, describe objectively what the page represents (without interpretation). Finally, summarize it in one line.`,
+    value: `The value is passed to you. First, describe objectively what the value represents (without interpretation). Then, if possible, summarize it in one line.`,
+    file: `The file is passed to you. First, describe objectively what the file represents (without interpretation). Then, if possible, summarize it in one line.`,
+    floatingText: `For floatingtext, return the text if short (< 100 chars) or a concise summary if long (e.g. "a long note about project updates").`,
+    embed: `The embed is passed to you. First, describe objectively what the embed represents (without interpretation). Then, if possible, summarize it in one line.`,
+    table: `The table is passed to you in a tanstack-table compatible format. Use the columns names to understand the structure. Check how many rows are already in the table. Don't hallucinate the purpose of the table, just describe it objectively, even if it does not make sense to you.`,
+  };
+  return (
+    guidelinesByType[nodeType] ||
+    `- No specific guideline available for this type.`
+  );
+}

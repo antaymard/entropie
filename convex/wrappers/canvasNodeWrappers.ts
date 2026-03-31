@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalMutation } from "../_generated/server";
+import { internalMutation, internalQuery } from "../_generated/server";
 import * as CanvasNodeModels from "../models/canvasNodeModels";
 import { canvasNodesValidator } from "../schemas/canvasesSchema";
 
@@ -72,5 +72,15 @@ export const remove = internalMutation({
       canvasId: args.canvasId,
       nodeCanvasIds: args.nodeCanvasIds,
     });
+  },
+});
+
+export const getNodeWithNodeData = internalQuery({
+  args: {
+    canvasId: v.id("canvases"),
+    nodeId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return CanvasNodeModels.getNodeWithNodeData(ctx, args);
   },
 });

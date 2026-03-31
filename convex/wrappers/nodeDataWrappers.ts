@@ -4,8 +4,20 @@ import {
   automationProgressValidator,
   nodeDataStatusValidator,
 } from "../schemas/nodeDatasSchema";
+import { nodeTypeValidator } from "../schemas/nodeTypeSchema";
 
 import * as NodeDataModels from "../models/nodeDataModels";
+
+export const create = internalMutation({
+  args: {
+    type: nodeTypeValidator,
+    values: v.record(v.string(), v.any()),
+  },
+  returns: v.id("nodeDatas"),
+  handler: async (ctx, args) => {
+    return NodeDataModels.createNodeData(ctx, args);
+  },
+});
 
 export const updateStatus = internalMutation({
   args: {
@@ -26,6 +38,17 @@ export const updateAutomationProgress = internalMutation({
   returns: v.boolean(),
   handler: async (ctx, args) => {
     return NodeDataModels.updateAutomationProgress(ctx, args);
+  },
+});
+
+export const updateValues = internalMutation({
+  args: {
+    _id: v.id("nodeDatas"),
+    values: v.record(v.string(), v.any()),
+  },
+  returns: v.boolean(),
+  handler: async (ctx, args) => {
+    return NodeDataModels.updateValues(ctx, args);
   },
 });
 

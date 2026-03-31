@@ -163,7 +163,7 @@ export function useCanvasNodes(
       let parentNewPosition: { x: number; y: number } | null = null;
       let descendantIds: string[] = [];
 
-      if (isDragging && !isCtrlHeld) {
+      if (isDragging && isCtrlHeld) {
         const draggedChanges = positionChanges.filter(
           (c) => c.dragging && c.position,
         );
@@ -234,8 +234,7 @@ export function useCanvasNodes(
       // Set absolute positions for descendants based on initial offsets
       if (parentNewPosition && descendantIds.length > 0) {
         const newPos = parentNewPosition;
-        const { descendantSet, initialOffsets } =
-          draggedChildrenCache.current;
+        const { descendantSet, initialOffsets } = draggedChildrenCache.current;
         setNodes((currentNodes) =>
           currentNodes.map((node) => {
             if (descendantSet.has(node.id)) {
@@ -326,13 +325,10 @@ export function useCanvasNodes(
         } else {
           // Envoi direct à Convex quand le drag est fini
           // Include descendant position changes when drag ends
-          const { descendantIds, descendantSet } =
-            draggedChildrenCache.current;
+          const { descendantIds, descendantSet } = draggedChildrenCache.current;
           if (descendantIds.length > 0) {
             const currentNodes = getNodes();
-            const positionChangeIds = new Set(
-              positionChanges.map((c) => c.id),
-            );
+            const positionChangeIds = new Set(positionChanges.map((c) => c.id));
             const descendantChanges: NodePositionChange[] = currentNodes
               .filter(
                 (node) =>

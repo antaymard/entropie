@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from "react";
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { cn } from "@/lib/utils";
 import {
   useWindowsStore,
@@ -75,6 +76,17 @@ export default function WindowFrame({
   const title = useNodeDataTitle(nodeDataId);
   const nodeData = useNodeData(nodeDataId);
   const NodeIcon = getNodeIcon(nodeData?.type);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useHotkey(
+    "Mod+S",
+    (e) => {
+      e.preventDefault();
+      saveHandler?.();
+    },
+    { target: containerRef, enabled: !!saveHandler && isDirty },
+  );
 
   // Stored as refs to avoid stale closures in the event listeners
   const dragRef = useRef<{ startX: number; startY: number } | null>(null);
@@ -216,7 +228,7 @@ export default function WindowFrame({
 
   return (
     <WindowFrameContext.Provider value={{ setDirty, setSaveHandler }}>
-      <div className="relative flex h-full w-full flex-col overflow-hidden rounded-lg border bg-white shadow-2xl/10">
+      <div ref={containerRef} className="relative flex h-full w-full flex-col overflow-hidden rounded-lg border bg-white shadow-2xl/10">
         {/* ── Resize handles ───────────────────────────────────────── */}
 
         {/* Corners (12×12, priority z-20) */}

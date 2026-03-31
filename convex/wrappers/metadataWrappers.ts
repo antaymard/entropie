@@ -1,11 +1,11 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery } from "../_generated/server";
-import * as AiMemoryModels from "../models/aiMemoryModels";
+import * as MetadataModels from "../models/metadataModels";
 import {
   subjectTypeValidator,
   subjectIdValidator,
   memoryTypeValidator,
-} from "../schemas/aiMemorySchema";
+} from "../schemas/metadataSchema";
 
 export const upsert = internalMutation({
   args: {
@@ -15,7 +15,7 @@ export const upsert = internalMutation({
     content: v.string(),
   },
   returns: v.boolean(),
-  handler: async (ctx, args) => AiMemoryModels.upsert(ctx, args),
+  handler: async (ctx, args) => MetadataModels.upsert(ctx, args),
 });
 
 export const read = internalQuery({
@@ -23,12 +23,12 @@ export const read = internalQuery({
     subjectId: subjectIdValidator,
     memoryType: memoryTypeValidator,
   },
-  handler: async (ctx, args) => AiMemoryModels.read(ctx, args),
+  handler: async (ctx, args) => MetadataModels.read(ctx, args),
 });
 
 export const list = internalQuery({
   args: {
     subjectId: subjectIdValidator,
   },
-  handler: async (ctx, args) => AiMemoryModels.list(ctx, args),
+  handler: async (ctx, args) => MetadataModels.list(ctx, args),
 });

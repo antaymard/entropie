@@ -8,12 +8,14 @@ type NodeVariant = {
   defaultWidth: number;
   defaultHeight: number;
   resizable?: boolean;
+  isDefault?: boolean;
 };
 
 type NodeDataConfigItem = {
   type: z.infer<typeof nodeTypeZodValidator>;
   label: string;
   description: string;
+  llmDescription: string;
   defaultDimensions: {
     width: number;
     height: number;
@@ -31,7 +33,9 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
     type: "floatingText",
     label: "Floating text",
     description:
-      "Node for free text labels on the canvas. Supports h1/h2/h3/p heading levels. Does not support rich markdown.",
+      "Node for free text labels on the canvas. Supports h1/h2/h3/p heading levels for the whole text. Does not support rich markdown.",
+    llmDescription:
+      "For free text labels and sections headings. Use this node for titles (for branches in trees of thought), subtitles, or any standalone text that doesn't require rich formatting. If you need rich text formatting (bold, italic, lists, etc.), use the Document node instead. \nThe required data values for this node are 'text' (the content of the label) and 'level' (the heading level, which can be 'h1', 'h2', 'h3', or 'p').",
     defaultDimensions: { width: 220, height: 33, resizable: true },
     canHaveAutomation: true,
     defaultColor: "transparent",
@@ -49,10 +53,21 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
     type: "link",
     label: "Link",
     description: "Node for storing a link.",
+    llmDescription:
+      "For storing/displaying a link. \nThe required data values for this node are 'href' and 'pageTitle'.",
     defaultDimensions: { width: 220, height: 33, resizable: false },
     variants: {
-      default: { label: "Default", defaultWidth: 220, defaultHeight: 33 },
-      preview: { label: "Preview", defaultWidth: 320, defaultHeight: 120 },
+      default: {
+        label: "Default",
+        defaultWidth: 220,
+        defaultHeight: 33,
+        isDefault: true,
+      },
+      preview: {
+        label: "Preview",
+        defaultWidth: 320,
+        defaultHeight: 120,
+      },
     },
     canHaveAutomation: true,
 
@@ -79,6 +94,8 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
     type: "image",
     label: "Image",
     description: "Node for storing an image.",
+    llmDescription:
+      "For storing/displaying an image. Use this node to display images on the canvas, including the ones you extracted or generated via others tools or sources. \nThe required data value for this node is 'url' (the URL of the image).",
     defaultDimensions: { width: 320, height: 320, resizable: true },
     canHaveAutomation: true,
 
@@ -102,9 +119,16 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
     type: "document",
     label: "Document",
     description: "Node for storing a rich text document (Plate.js / markdown).",
+    llmDescription:
+      "For storing/displaying rich text content. Use this node for any text content that requires rich formatting (bold, headings, lists, links, imgs (using url), callouts, files, etc.). \nThe required data value for this node is 'doc' (the markdown content of the document).",
     defaultDimensions: { width: 320, height: 320, resizable: true },
     variants: {
-      default: { label: "Preview", defaultWidth: 320, defaultHeight: 320 },
+      default: {
+        label: "Preview",
+        defaultWidth: 320,
+        defaultHeight: 320,
+        isDefault: true,
+      },
       title: {
         label: "Title",
         defaultWidth: 220,
@@ -127,6 +151,8 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
     type: "value",
     label: "Value",
     description: "Node for storing a value (text, number, boolean).",
+    llmDescription:
+      "For storing a value that can be of type text, number, or boolean. Use this node to store and display any discrete piece of data in a dashboard / KPI way. \nThe required data value for this node are 'type' (the type of the value: 'text', 'number', or 'boolean'), 'value' (the actual value stored in the node), and an optional 'unit' (the unit of the value, if applicable) and 'label' (an optional label for the value).",
     defaultDimensions: { width: 220, height: 120, resizable: true },
     canHaveAutomation: true,
 
@@ -164,6 +190,8 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
     label: "Embed",
     description:
       "Node for storing embedded content (YouTube, Google Docs/Sheets/Slides, or generic iframe).",
+    llmDescription:
+      "For storing/displaying embedded content such as YouTube videos, Google Docs/Sheets/Slides, or any generic iframe content. Use this node to embed external content directly onto the canvas. \nThe required data value are 'url' (the original URL used to create the embed), 'embedUrl' (the embeddable URL used in the iframe source), 'title' (an optional title for the embedded content), and 'type' (the embed provider/type inferred from the URL, which can be 'youtube', 'google-docs', 'google-sheets', 'google-slides', or 'generic').",
     defaultDimensions: { width: 480, height: 320, resizable: true },
     canHaveAutomation: false,
 
@@ -202,6 +230,8 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
     type: "file",
     label: "File",
     description: "Node for storing uploaded files.",
+    llmDescription:
+      "For storing/displaying uploaded PDF files. The user can read them directly within Nolënor, double-clicking on the file to open it. \nThe required data value are 'url' (the public URL of the uploaded file), 'filename' (the display filename), 'mimeType' (the MIME type of the file), 'size' (the file size in bytes), 'uploadedAt' (the upload timestamp in epoch milliseconds), and 'key' (the storage key/path of the file).",
     defaultDimensions: { width: 220, height: 33, resizable: false },
     canHaveAutomation: true,
 
@@ -228,34 +258,40 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
     type: "table",
     label: "Table",
     description:
-      "Node for structured tabular data with typed columns (text, number, checkbox).",
+      "Node for structured tabular data with typed columns (text, number, checkbox, date).",
+    llmDescription:
+      "For structured tabular data with typed columns. Use this node to store and display any structured data in a table format, where you can define the columns and their types (text, number, checkbox, date). When updating a file, you can ask the agentTool to add rows, update specific rows or remove them, to make the update more reliable. \nThe required data value are tanstack-table compatible : 'columns' (an array of column definitions, each with an 'id', 'name', and 'type') and 'rows' (an array of row objects, each with an 'id' and 'cells' that map column ids to their respective values).",
     defaultDimensions: { width: 400, height: 300, resizable: true },
     canHaveAutomation: false,
 
     dataValuesSchema: z
       .object({
-        columns: z
-          .array(
-            z.object({
-              id: z.string(),
-              name: z.string(),
-              type: z.enum(["text", "number", "checkbox"]),
-            }),
-          )
-          .default([]),
-        rows: z
-          .array(
-            z.object({
-              id: z.string(),
-              cells: z.record(
-                z.string(),
-                z.union([z.string(), z.number(), z.boolean(), z.null()]),
-              ),
-            }),
-          )
-          .default([]),
+        table: z
+          .object({
+            columns: z
+              .array(
+                z.object({
+                  id: z.string(),
+                  name: z.string(),
+                  type: z.enum(["text", "number", "checkbox", "date"]),
+                }),
+              )
+              .default([]),
+            rows: z
+              .array(
+                z.object({
+                  id: z.string(),
+                  cells: z.record(
+                    z.string(),
+                    z.union([z.string(), z.number(), z.boolean(), z.null()]),
+                  ),
+                }),
+              )
+              .default([]),
+          })
+          .default({ columns: [], rows: [] }),
       })
-      .default({ columns: [], rows: [] }),
+      .default({ table: { columns: [], rows: [] } }),
   },
 ];
 

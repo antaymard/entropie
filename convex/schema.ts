@@ -5,7 +5,7 @@ import { canvasesValidator } from "./schemas/canvasesSchema";
 import { nodeDatasValidator } from "./schemas/nodeDatasSchema";
 import { scheduledJobsValidator } from "./schemas/scheduledJobsSchema";
 import { sharesValidator } from "./schemas/sharesSchema";
-import { aiMemoryValidator } from "./schemas/aiMemorySchema";
+import { metadataValidator } from "./schemas/metadataSchema";
 
 const schema = defineSchema({
   ...authTables,
@@ -35,7 +35,7 @@ const schema = defineSchema({
     "nodesDataId",
   ]),
 
-  aiMemory: defineTable(aiMemoryValidator).index("by_subject_and_type", [
+  metadata: defineTable(metadataValidator).index("by_subject_and_type", [
     "subjectId",
     "memoryType",
   ]),

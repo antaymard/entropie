@@ -61,16 +61,20 @@ function NodeFrame({
           !canDrag && "nodrag",
           xyNode.selected
             ? "ring-2 ring-blue-500/70"
-            : "hover:ring-1 hover:ring-blue-400/60"
+            : "hover:ring-1 hover:ring-blue-400/60",
         )}
         onDoubleClick={handleDoubleClick}
+        onClick={() => {
+          console.log("Node clicked:", xyNode.id);
+          console.log("NodeData clicked:", xyNode.data?.nodeDataId);
+        }}
       >
         <div
           className={cn(
             "h-full rounded-[4px]",
             xyNode.data.color === "transparent"
               ? "bg-transparent"
-              : "bg-white/80"
+              : "bg-white/80",
           )}
         >
           {children}

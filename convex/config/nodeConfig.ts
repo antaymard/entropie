@@ -23,6 +23,7 @@ type NodeDataConfigItem = {
   };
   variants?: Record<string, NodeVariant>;
   canHaveAutomation: boolean;
+  shouldTriggerTranscribeFields?: string;
   defaultColor?: string;
   dataValuesSchema: z.ZodTypeAny;
   toolInputSchema?: z.ZodTypeAny; // Optional schema specifically for tool inputs, if different from dataValuesSchema
@@ -98,6 +99,7 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
       "For storing/displaying an image. Use this node to display images on the canvas, including the ones you extracted or generated via others tools or sources. \nThe required data value for this node is 'url' (the URL of the image).",
     defaultDimensions: { width: 320, height: 320, resizable: true },
     canHaveAutomation: true,
+    shouldTriggerTranscribeFields: "images",
 
     dataValuesSchema: z
       .object({
@@ -137,6 +139,7 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
       },
     },
     canHaveAutomation: true,
+    shouldTriggerTranscribeFields: "doc",
 
     dataValuesSchema: z
       .object({
@@ -234,6 +237,7 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
       "For storing/displaying uploaded PDF files. The user can read them directly within Nolënor, double-clicking on the file to open it. \nThe required data value are 'url' (the public URL of the uploaded file), 'filename' (the display filename), 'mimeType' (the MIME type of the file), 'size' (the file size in bytes), 'uploadedAt' (the upload timestamp in epoch milliseconds), and 'key' (the storage key/path of the file).",
     defaultDimensions: { width: 220, height: 33, resizable: false },
     canHaveAutomation: true,
+    shouldTriggerTranscribeFields: "files",
 
     dataValuesSchema: z
       .object({

@@ -19,7 +19,7 @@ export const getCanvasNodeDatasWithOneLiners = internalQuery({
           const memory = await ctx.db
             .query("metadata")
             .withIndex("by_subject_and_type", (q) =>
-              q.eq("subjectId", nodeDataId).eq("memoryType", "one-liner"),
+              q.eq("subjectId", nodeDataId).eq("type", "one-liner"),
             )
             .unique();
           oneLiner = memory?.content ?? null;

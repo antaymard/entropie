@@ -18,14 +18,14 @@ type WindowSizePreset = WindowSize | ViewportWindowSize;
 const DEFAULT_WINDOW_SIZE: WindowSizePreset = { width: 720, height: 520 };
 
 const WINDOW_SIZE_BY_TYPE: Partial<Record<NodeType, WindowSizePreset>> = {
-  document: { widthRatio: 1 / 2.66, heightRatio: 0.85 },
+  document: { widthRatio: 1 / 2.66, heightRatio: 0.9 },
   image: { width: 600, height: 600 },
   embed: { width: 500, height: 500 },
   link: { width: 480, height: 360 },
-  file: { widthRatio: 1 / 2.66, heightRatio: 0.85 },
+  file: { widthRatio: 1 / 2.66, heightRatio: 0.9 },
   value: { width: 400, height: 300 },
   floatingText: { width: 480, height: 320 },
-  table: { widthRatio: 1 / 2.66, heightRatio: 0.85 },
+  table: { widthRatio: 1 / 2.66, heightRatio: 0.9 },
 };
 
 function resolveWindowSize(preset: WindowSizePreset): WindowSize {

@@ -24,6 +24,7 @@ import type * as ia_helpers_nodeInputSchemaValidatorForLLM from "../ia/helpers/n
 import type * as ia_helpers_oneLinerGenerator from "../ia/helpers/oneLinerGenerator.js";
 import type * as ia_helpers_pillMarkdownRules from "../ia/helpers/pillMarkdownRules.js";
 import type * as ia_helpers_plateMarkdownConverter from "../ia/helpers/plateMarkdownConverter.js";
+import type * as ia_helpers_transcriptGenerator from "../ia/helpers/transcriptGenerator.js";
 import type * as ia_nole from "../ia/nole.js";
 import type * as ia_nole_brain_brainAgent from "../ia/nole/brain/brainAgent.js";
 import type * as ia_nole_brain_canvasContextPrompt from "../ia/nole/brain/canvasContextPrompt.js";
@@ -93,6 +94,7 @@ declare const fullApi: ApiFromModules<{
   "ia/helpers/oneLinerGenerator": typeof ia_helpers_oneLinerGenerator;
   "ia/helpers/pillMarkdownRules": typeof ia_helpers_pillMarkdownRules;
   "ia/helpers/plateMarkdownConverter": typeof ia_helpers_plateMarkdownConverter;
+  "ia/helpers/transcriptGenerator": typeof ia_helpers_transcriptGenerator;
   "ia/nole": typeof ia_nole;
   "ia/nole/brain/brainAgent": typeof ia_nole_brain_brainAgent;
   "ia/nole/brain/canvasContextPrompt": typeof ia_nole_brain_canvasContextPrompt;

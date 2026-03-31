@@ -1,6 +1,7 @@
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { nodeDataConfig } from "../config/nodeConfig";
 
 export async function readNodeData(
   ctx: QueryCtx,
@@ -127,4 +128,23 @@ export async function updateValues(
   });
 
   return true;
+}
+
+// Transcribe trigger logic. Only triggers for specific node types, and only when specific fields are updated (ex: for a pdf, only trigger when the "url" field is updated, not when we update the "title" field)
+const transcriptFieldKeyByType: Partial<
+  Record<Doc<"nodeDatas">["type"], string>
+> = Object.fromEntries(
+  nodeDataConfig.flatMap((config) =>
+    config.shouldTriggerTranscribeFields === undefined
+      ? []
+      : [[config.type, config.shouldTriggerTranscribeFields]],
+  ),
+) as Partial<Record<Doc<"nodeDatas">["type"], string>>;
+
+export function shouldTranscribe(
+  type: Doc<"nodeDatas">["type"],
+  updateKeys: string[],
+): boolean {
+  const trigger = transcriptFieldKeyByType[type];
+  return trigger !== undefined && updateKeys.includes(trigger);
 }

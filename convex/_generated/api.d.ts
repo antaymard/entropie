@@ -47,14 +47,14 @@ import type * as lib_auth from "../lib/auth.js";
 import type * as lib_r2 from "../lib/r2.js";
 import type * as links from "../links.js";
 import type * as migrations from "../migrations.js";
-import type * as models_aiMemoryModels from "../models/aiMemoryModels.js";
 import type * as models_canvasEdgeModels from "../models/canvasEdgeModels.js";
 import type * as models_canvasModels from "../models/canvasModels.js";
 import type * as models_canvasNodeModels from "../models/canvasNodeModels.js";
+import type * as models_metadataModels from "../models/metadataModels.js";
 import type * as models_nodeDataModels from "../models/nodeDataModels.js";
 import type * as nodeDatas from "../nodeDatas.js";
-import type * as schemas_aiMemorySchema from "../schemas/aiMemorySchema.js";
 import type * as schemas_canvasesSchema from "../schemas/canvasesSchema.js";
+import type * as schemas_metadataSchema from "../schemas/metadataSchema.js";
 import type * as schemas_nodeDatasSchema from "../schemas/nodeDatasSchema.js";
 import type * as schemas_nodeTypeSchema from "../schemas/nodeTypeSchema.js";
 import type * as schemas_scheduledJobsSchema from "../schemas/scheduledJobsSchema.js";
@@ -65,9 +65,9 @@ import type * as speech from "../speech.js";
 import type * as templates from "../templates.js";
 import type * as threads from "../threads.js";
 import type * as uploads from "../uploads.js";
-import type * as wrappers_aiMemoryWrappers from "../wrappers/aiMemoryWrappers.js";
 import type * as wrappers_canvasEdgeWrappers from "../wrappers/canvasEdgeWrappers.js";
 import type * as wrappers_canvasNodeWrappers from "../wrappers/canvasNodeWrappers.js";
+import type * as wrappers_metadataWrappers from "../wrappers/metadataWrappers.js";
 import type * as wrappers_nodeDataWrappers from "../wrappers/nodeDataWrappers.js";
 
 import type {
@@ -116,14 +116,14 @@ declare const fullApi: ApiFromModules<{
   "lib/r2": typeof lib_r2;
   links: typeof links;
   migrations: typeof migrations;
-  "models/aiMemoryModels": typeof models_aiMemoryModels;
   "models/canvasEdgeModels": typeof models_canvasEdgeModels;
   "models/canvasModels": typeof models_canvasModels;
   "models/canvasNodeModels": typeof models_canvasNodeModels;
+  "models/metadataModels": typeof models_metadataModels;
   "models/nodeDataModels": typeof models_nodeDataModels;
   nodeDatas: typeof nodeDatas;
-  "schemas/aiMemorySchema": typeof schemas_aiMemorySchema;
   "schemas/canvasesSchema": typeof schemas_canvasesSchema;
+  "schemas/metadataSchema": typeof schemas_metadataSchema;
   "schemas/nodeDatasSchema": typeof schemas_nodeDatasSchema;
   "schemas/nodeTypeSchema": typeof schemas_nodeTypeSchema;
   "schemas/scheduledJobsSchema": typeof schemas_scheduledJobsSchema;
@@ -134,9 +134,9 @@ declare const fullApi: ApiFromModules<{
   templates: typeof templates;
   threads: typeof threads;
   uploads: typeof uploads;
-  "wrappers/aiMemoryWrappers": typeof wrappers_aiMemoryWrappers;
   "wrappers/canvasEdgeWrappers": typeof wrappers_canvasEdgeWrappers;
   "wrappers/canvasNodeWrappers": typeof wrappers_canvasNodeWrappers;
+  "wrappers/metadataWrappers": typeof wrappers_metadataWrappers;
   "wrappers/nodeDataWrappers": typeof wrappers_nodeDataWrappers;
 }>;
 

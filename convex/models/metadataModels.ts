@@ -1,10 +1,10 @@
 import type { Doc } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 
-type AiMemory = Doc<"aiMemory">;
+type Metadata = Doc<"metadata">;
 
 /**
- * Upsert: si une aiMemory avec le même subjectId + memoryType existe, on patch.
+ * Upsert: si une metadata avec le même subjectId + memoryType existe, on patch.
  * Sinon, on insère.
  */
 export async function upsert(
@@ -14,10 +14,10 @@ export async function upsert(
     subjectId,
     memoryType,
     content,
-  }: Pick<AiMemory, "subjectType" | "subjectId" | "memoryType" | "content">,
+  }: Pick<Metadata, "subjectType" | "subjectId" | "memoryType" | "content">,
 ): Promise<boolean> {
   const existing = await ctx.db
-    .query("aiMemory")
+    .query("metadata")
     .withIndex("by_subject_and_type", (q) =>
       q.eq("subjectId", subjectId).eq("memoryType", memoryType),
     )
@@ -32,7 +32,7 @@ export async function upsert(
       updatedAt: now,
     });
   } else {
-    await ctx.db.insert("aiMemory", {
+    await ctx.db.insert("metadata", {
       subjectType,
       subjectId,
       memoryType,
@@ -46,10 +46,10 @@ export async function upsert(
 
 export async function read(
   ctx: QueryCtx,
-  { subjectId, memoryType }: Pick<AiMemory, "subjectId" | "memoryType">,
+  { subjectId, memoryType }: Pick<Metadata, "subjectId" | "memoryType">,
 ) {
   return await ctx.db
-    .query("aiMemory")
+    .query("metadata")
     .withIndex("by_subject_and_type", (q) =>
       q.eq("subjectId", subjectId).eq("memoryType", memoryType),
     )
@@ -58,10 +58,10 @@ export async function read(
 
 export async function list(
   ctx: QueryCtx,
-  { subjectId }: Pick<AiMemory, "subjectId">,
+  { subjectId }: Pick<Metadata, "subjectId">,
 ) {
   return await ctx.db
-    .query("aiMemory")
+    .query("metadata")
     .withIndex("by_subject_and_type", (q) => q.eq("subjectId", subjectId))
     .collect();
 }

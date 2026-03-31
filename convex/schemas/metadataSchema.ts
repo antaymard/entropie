@@ -9,7 +9,7 @@ const subjectTypeValidator = v.union(
 );
 
 const memoryTypeValidator = v.union(
-  v.literal("abstract"),
+  v.literal("one-liner"),
   v.literal("insight"),
   v.literal("preference"),
   v.literal("relationship"),
@@ -23,7 +23,7 @@ const subjectIdValidator = v.union(
 
 // ── Main validator ──────────────────────────────────────────────────────
 
-const aiMemoryValidator = v.object({
+const metadataValidator = v.object({
   subjectType: subjectTypeValidator,
   subjectId: subjectIdValidator,
   memoryType: memoryTypeValidator,
@@ -32,7 +32,7 @@ const aiMemoryValidator = v.object({
 });
 
 export {
-  aiMemoryValidator,
+  metadataValidator,
   subjectTypeValidator,
   subjectIdValidator,
   memoryTypeValidator,

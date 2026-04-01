@@ -231,7 +231,10 @@ export default function WindowFrame({
 
   return (
     <WindowFrameContext.Provider value={{ setDirty, setSaveHandler }}>
-      <div ref={containerRef} className="relative flex h-full w-full flex-col overflow-hidden rounded-lg border bg-white shadow-2xl/10">
+      <div
+        ref={containerRef}
+        className="relative flex h-full w-full flex-col overflow-hidden rounded-lg border bg-white shadow-2xl/10"
+      >
         {/* ── Resize handles ───────────────────────────────────────── */}
 
         {/* Corners (12×12, priority z-20) */}
@@ -307,7 +310,7 @@ export default function WindowFrame({
           </span>
           {saveHandler && (
             <button
-              className="flex shrink-0 items-center gap-1.5 rounded px-2 py-1 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 disabled:pointer-events-none disabled:opacity-30"
+              className="flex shrink-0 items-center gap-1.5 rounded px-2 py-1 text-xs font-medium text-slate-500 transition-colors hover:bg-green-100 hover:text-green-800 disabled:pointer-events-none disabled:opacity-30 h-full"
               onMouseDown={(e) => e.stopPropagation()}
               onClick={saveHandler}
               disabled={!isDirty}
@@ -317,17 +320,17 @@ export default function WindowFrame({
             </button>
           )}
           <button
-            className="shrink-0 rounded p-0.5 opacity-50 hover:bg-blue-500/15 hover:text-blue-600 hover:opacity-100"
+            className="shrink-0 rounded p-0.5 opacity-50 hover:bg-blue-500/15 hover:text-blue-600 hover:opacity-100 h-full aspect-square flex items-center justify-center"
             onMouseDown={(e) => e.stopPropagation()}
             onClick={() =>
               fitView({ nodes: [{ id: xyNodeId }], duration: 500 })
             }
             aria-label="Go to node"
           >
-            <TbLocation size={14} />
+            <TbLocation size={13} />
           </button>
           <button
-            className="shrink-0 rounded p-0.5 opacity-50 hover:bg-black/10 hover:opacity-100"
+            className="shrink-0 rounded p-0.5 opacity-50 hover:bg-black/10 hover:opacity-100 h-full aspect-square flex items-center justify-center"
             onMouseDown={(e) => e.stopPropagation()}
             onClick={() => toggleMinimizeWindow(xyNodeId)}
             aria-label="Minimize"
@@ -348,7 +351,7 @@ export default function WindowFrame({
             autoFocusConfirm
           >
             <button
-              className="shrink-0 rounded p-0.5 opacity-50 hover:bg-red-500/15 hover:text-red-600 hover:opacity-100"
+              className="shrink-0 rounded p-0.5 opacity-50 hover:bg-red-500/15 hover:text-red-600 hover:opacity-100 h-full aspect-square flex items-center justify-center"
               onMouseDown={(e) => e.stopPropagation()}
               aria-label="Close"
             >

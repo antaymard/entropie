@@ -11,6 +11,8 @@ import { useNodeDataTitle } from "@/hooks/useNodeTitle";
 import { useNodeData } from "@/hooks/useNodeData";
 import { getNodeIcon } from "@/components/utils/nodeDataDisplayUtils";
 import { X, Minus, Save } from "lucide-react";
+import { TbLocation } from "react-icons/tb";
+import { useReactFlow } from "@xyflow/react";
 import DocumentWindow from "./prebuilt/DocumentWindow";
 import EmbedWindow from "./prebuilt/EmbedWindow";
 import FileWindow from "./prebuilt/FileWindow";
@@ -72,6 +74,7 @@ export default function WindowFrame({
   const closeWindow = useWindowsStore((s) => s.closeWindow);
   const toggleMinimizeWindow = useWindowsStore((s) => s.toggleMinimizeWindow);
   const snapWindow = useWindowsStore((s) => s.snapWindow);
+  const { fitView } = useReactFlow();
 
   const title = useNodeDataTitle(nodeDataId);
   const nodeData = useNodeData(nodeDataId);
@@ -313,6 +316,16 @@ export default function WindowFrame({
               Save
             </button>
           )}
+          <button
+            className="shrink-0 rounded p-0.5 opacity-50 hover:bg-blue-500/15 hover:text-blue-600 hover:opacity-100"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={() =>
+              fitView({ nodes: [{ id: xyNodeId }], duration: 500 })
+            }
+            aria-label="Go to node"
+          >
+            <TbLocation size={14} />
+          </button>
           <button
             className="shrink-0 rounded p-0.5 opacity-50 hover:bg-black/10 hover:opacity-100"
             onMouseDown={(e) => e.stopPropagation()}

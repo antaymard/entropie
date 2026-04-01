@@ -262,14 +262,15 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
     type: "table",
     label: "Table",
     description:
-      "Node for structured tabular data with typed columns (text, number, checkbox, date).",
+      "Node for structured tabular data with typed columns (text, number, checkbox, date, link).",
     llmDescription:
-      "For structured tabular data with typed columns. Use this node to store and display any structured data in a table format, where you can define the columns and their types (text, number, checkbox, date). When updating a file, you can ask the agentTool to add rows, update specific rows or remove them, to make the update more reliable. \nThe required data value are tanstack-table compatible : 'columns' (an array of column definitions, each with an 'id', 'name', and 'type') and 'rows' (an array of row objects, each with an 'id' and 'cells' that map column ids to their respective values).",
+      "For structured tabular data with typed columns. Use this node to store and display any structured data in a table format, where you can define the columns and their types (text, number, checkbox, date, link). When updating a file, you can ask the agentTool to add rows, update specific rows or remove them, to make the update more reliable. \nThe required data value are tanstack-table compatible : 'columns' (an array of column definitions, each with an 'id', 'name', and 'type') and 'rows' (an array of row objects, each with an 'id' and 'cells' that map column ids to their respective values). An optional 'title' field (string) can be set to give the table a title.",
     defaultDimensions: { width: 400, height: 300, resizable: true },
     canHaveAutomation: false,
 
     dataValuesSchema: z
       .object({
+        title: z.string().optional(),
         table: z
           .object({
             columns: z
@@ -277,7 +278,7 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
                 z.object({
                   id: z.string(),
                   name: z.string(),
-                  type: z.enum(["text", "number", "checkbox", "date"]),
+                  type: z.enum(["text", "number", "checkbox", "date", "link"]),
                 }),
               )
               .default([]),
@@ -287,7 +288,18 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
                   id: z.string(),
                   cells: z.record(
                     z.string(),
-                    z.union([z.string(), z.number(), z.boolean(), z.null()]),
+                    z.union([
+                      z.string(),
+                      z.number(),
+                      z.boolean(),
+                      z.null(),
+                      z.object({
+                        href: z.string(),
+                        pageTitle: z.string(),
+                        pageImage: z.string().optional(),
+                        pageDescription: z.string().optional(),
+                      }),
+                    ]),
                   ),
                 }),
               )

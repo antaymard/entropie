@@ -34,7 +34,7 @@ function WindowContent({ openedWindow }: { openedWindow: OpenedWindow }) {
     case "image":
       return <ImageWindow nodeDataId={nodeDataId} />;
     case "table":
-      return <TableWindow xyNodeId={xyNodeId} nodeDataId={nodeDataId} />;
+      return <TableWindow nodeDataId={nodeDataId} />;
     default:
       return (
         <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
@@ -200,7 +200,7 @@ export default function WindowFrame({
       }
     };
 
-    const handleMouseUp = (e: MouseEvent) => {
+    const handleMouseUp = () => {
       // Snap detection on drop
       if (dragRef.current || snapPreviewRef.current) {
         const side = snapPreviewRef.current;

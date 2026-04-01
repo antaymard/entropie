@@ -98,8 +98,8 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const initialTitre = useMemo(() => {
-    return (nodeDataValues?.titre as string | undefined) ?? "";
+  const initialTitle = useMemo(() => {
+    return (nodeDataValues?.title as string | undefined) ?? "";
     // Only initialize on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -108,7 +108,7 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
     initialData.columns,
   );
   const [localRows, setLocalRows] = useState<TableRowData[]>(initialData.rows);
-  const [localTitre, setLocalTitre] = useState<string>(initialTitre);
+  const [localTitle, setLocalTitle] = useState<string>(initialTitle);
   const [isDirty, setIsDirty] = useState(false);
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
   const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
@@ -117,7 +117,7 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
   // Keep latest refs to avoid stale closures in save handler
   const columnsRef = useRef(localColumns);
   const rowsRef = useRef(localRows);
-  const titreRef = useRef(localTitre);
+  const titleRef = useRef(localTitle);
   useEffect(() => {
     columnsRef.current = localColumns;
   }, [localColumns]);
@@ -125,8 +125,8 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
     rowsRef.current = localRows;
   }, [localRows]);
   useEffect(() => {
-    titreRef.current = localTitre;
-  }, [localTitre]);
+    titleRef.current = localTitle;
+  }, [localTitle]);
 
   useEffect(() => {
     setDirty(isDirty && !isLocked);
@@ -136,7 +136,7 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
     updateNodeDataValues({
       nodeDataId,
       values: {
-        titre: titreRef.current,
+        title: titleRef.current,
         table: { columns: columnsRef.current, rows: rowsRef.current },
       },
     });
@@ -341,9 +341,9 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
     <div ref={tableRootRef} tabIndex={-1} className="flex flex-col h-full outline-none">
       <div className="flex items-center justify-between gap-2 p-2 border-b shrink-0">
         <InlineEditableText
-          value={localTitre}
+          value={localTitle}
           onSave={(val) => {
-            setLocalTitre(val);
+            setLocalTitle(val);
             markDirty();
           }}
           placeholder="Sans titre"

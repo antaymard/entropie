@@ -6,7 +6,7 @@ import type { Id } from "@/../convex/_generated/dataModel";
 import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
 import NodeFrame from "../NodeFrame";
 import { Button } from "@/components/shadcn/button";
-import { TbMaximize, TbTable } from "react-icons/tb";
+import { TbMaximize, TbTable, TbLink } from "react-icons/tb";
 import { useWindowsStore } from "@/stores/windowsStore";
 import {
   TableBody,
@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/shadcn/table";
 
-type ColumnType = "text" | "number" | "checkbox" | "date";
+type ColumnType = "text" | "number" | "checkbox" | "date" | "link";
 
 interface TableColumn {
   id: string;
@@ -55,6 +55,28 @@ function renderCellValue(
       month: "short",
       day: "numeric",
     });
+  }
+  if (type === "link" && value != null && value !== "") {
+    let domainLabel = String(value);
+    try {
+      domainLabel = new URL(String(value)).hostname.replace(/^www\./, "");
+    } catch {
+      // keep raw value if not a valid URL
+    }
+    return (
+      <span className="flex items-center gap-1">
+        <TbLink size={13} className="shrink-0 text-muted-foreground" />
+        <a
+          href={String(value)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:underline truncate"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {domainLabel}
+        </a>
+      </span>
+    );
   }
   return value != null ? String(value) : "";
 }

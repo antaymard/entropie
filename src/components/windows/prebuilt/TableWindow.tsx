@@ -27,7 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/shadcn/dropdown-menu";
-import { TbPlus, TbTrash, TbChevronDown, TbCalendar } from "react-icons/tb";
+import { TbPlus, TbTrash, TbChevronDown, TbCalendar, TbLink } from "react-icons/tb";
 import { Calendar } from "@/components/shadcn/calendar";
 import {
   Popover,
@@ -36,7 +36,7 @@ import {
 } from "@/components/shadcn/popover";
 import { cn } from "@/lib/utils";
 
-type ColumnType = "text" | "number" | "checkbox" | "date";
+type ColumnType = "text" | "number" | "checkbox" | "date" | "link";
 
 interface TableColumn {
   id: string;
@@ -64,6 +64,7 @@ const COLUMN_TYPE_LABELS: Record<ColumnType, string> = {
   number: "Number",
   checkbox: "Checkbox",
   date: "Date",
+  link: "Link",
 };
 
 function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
@@ -543,6 +544,65 @@ function CellEditor({
           />
         </PopoverContent>
       </Popover>
+    );
+  }
+
+  if (type === "link") {
+    if (isEditing) {
+      return (
+        <Input
+          autoFocus
+          type="url"
+          placeholder="https://example.com"
+          defaultValue={value != null ? String(value) : ""}
+          className="h-7 text-sm"
+          onBlur={(e) => {
+            onChange(e.target.value || null);
+            onBlur();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") e.currentTarget.blur();
+            if (e.key === "Escape") onBlur();
+          }}
+        />
+      );
+    }
+
+    const linkStr = value != null && value !== "" ? String(value) : "";
+    let domainLabel = linkStr;
+    try {
+      if (linkStr) {
+        domainLabel = new URL(linkStr).hostname.replace(/^www\./, "");
+      }
+    } catch {
+      // keep raw value if not a valid URL
+    }
+
+    return (
+      <span
+        className={cn(
+          "flex items-center gap-1 w-full min-h-[1.4em] text-sm rounded px-1",
+          !disabled && "cursor-text hover:bg-muted/50",
+        )}
+        onClick={disabled ? undefined : onClick}
+      >
+        {linkStr ? (
+          <>
+            <TbLink size={13} className="shrink-0 text-muted-foreground" />
+            <a
+              href={linkStr}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline truncate"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {domainLabel}
+            </a>
+          </>
+        ) : !disabled ? (
+          <span className="text-muted-foreground">Add a link…</span>
+        ) : null}
+      </span>
     );
   }
 

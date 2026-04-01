@@ -43,10 +43,7 @@ interface TableData {
   rows: TableRowData[];
 }
 
-function renderCellValue(
-  value: CellValue | undefined,
-  type: ColumnType,
-) {
+function renderCellValue(value: CellValue | undefined, type: ColumnType) {
   if (type === "checkbox") {
     return (
       <input
@@ -126,7 +123,9 @@ function TableNode(xyNode: Node) {
       <NodeFrame xyNode={xyNode}>
         <div className="h-full overflow-auto">
           {title && (
-            <p className="px-2 pt-1.5 pb-0.5 font-semibold truncate">{title}</p>
+            <p className="px-2 pt-1.5 pb-0.5 font-semibold truncate text-lg">
+              {title}
+            </p>
           )}
           {isTableEmpty ? (
             <div className="h-full flex flex-col items-center justify-center gap-1.5 text-muted-foreground/40 select-none pointer-events-none">

@@ -283,7 +283,18 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
                   id: z.string(),
                   cells: z.record(
                     z.string(),
-                    z.union([z.string(), z.number(), z.boolean(), z.null()]),
+                    z.union([
+                      z.string(),
+                      z.number(),
+                      z.boolean(),
+                      z.null(),
+                      z.object({
+                        href: z.string(),
+                        pageTitle: z.string(),
+                        pageImage: z.string().optional(),
+                        pageDescription: z.string().optional(),
+                      }),
+                    ]),
                   ),
                 }),
               )

@@ -18,6 +18,15 @@ import {
 
 type ColumnType = "text" | "number" | "checkbox" | "date" | "link";
 
+interface LinkCellValue {
+  href: string;
+  pageTitle: string;
+  pageImage?: string;
+  pageDescription?: string;
+}
+
+type CellValue = string | number | boolean | LinkCellValue | null;
+
 interface TableColumn {
   id: string;
   name: string;
@@ -26,7 +35,7 @@ interface TableColumn {
 
 interface TableRowData {
   id: string;
-  cells: Record<string, string | number | boolean | null>;
+  cells: Record<string, CellValue>;
 }
 
 interface TableData {
@@ -35,7 +44,7 @@ interface TableData {
 }
 
 function renderCellValue(
-  value: string | number | boolean | null | undefined,
+  value: CellValue | undefined,
   type: ColumnType,
 ) {
   if (type === "checkbox") {
@@ -56,24 +65,27 @@ function renderCellValue(
       day: "numeric",
     });
   }
-  if (type === "link" && value != null && value !== "") {
-    let domainLabel = String(value);
-    try {
-      domainLabel = new URL(String(value)).hostname.replace(/^www\./, "");
-    } catch {
-      // keep raw value if not a valid URL
+  if (type === "link" && value != null && typeof value === "object") {
+    const linkVal = value as LinkCellValue;
+    let displayLabel = linkVal.pageTitle;
+    if (!displayLabel) {
+      try {
+        displayLabel = new URL(linkVal.href).hostname.replace(/^www\./, "");
+      } catch {
+        displayLabel = linkVal.href;
+      }
     }
     return (
       <span className="flex items-center gap-1">
         <TbLink size={13} className="shrink-0 text-muted-foreground" />
         <a
-          href={String(value)}
+          href={linkVal.href}
           target="_blank"
           rel="noopener noreferrer"
           className="text-blue-500 hover:underline truncate"
           onClick={(e) => e.stopPropagation()}
         >
-          {domainLabel}
+          {displayLabel}
         </a>
       </span>
     );

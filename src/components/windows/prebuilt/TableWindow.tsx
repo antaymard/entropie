@@ -38,6 +38,7 @@ import {
   PopoverTrigger,
 } from "@/components/shadcn/popover";
 import { cn } from "@/lib/utils";
+import InlineEditableText from "@/components/form-ui/InlineEditableText";
 
 type ColumnType = "text" | "number" | "checkbox" | "date" | "link";
 
@@ -97,10 +98,17 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const initialTitre = useMemo(() => {
+    return (nodeDataValues?.titre as string | undefined) ?? "";
+    // Only initialize on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [localColumns, setLocalColumns] = useState<TableColumn[]>(
     initialData.columns,
   );
   const [localRows, setLocalRows] = useState<TableRowData[]>(initialData.rows);
+  const [localTitre, setLocalTitre] = useState<string>(initialTitre);
   const [isDirty, setIsDirty] = useState(false);
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
   const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
@@ -109,12 +117,16 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
   // Keep latest refs to avoid stale closures in save handler
   const columnsRef = useRef(localColumns);
   const rowsRef = useRef(localRows);
+  const titreRef = useRef(localTitre);
   useEffect(() => {
     columnsRef.current = localColumns;
   }, [localColumns]);
   useEffect(() => {
     rowsRef.current = localRows;
   }, [localRows]);
+  useEffect(() => {
+    titreRef.current = localTitre;
+  }, [localTitre]);
 
   useEffect(() => {
     setDirty(isDirty && !isLocked);
@@ -124,6 +136,7 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
     updateNodeDataValues({
       nodeDataId,
       values: {
+        titre: titreRef.current,
         table: { columns: columnsRef.current, rows: rowsRef.current },
       },
     });
@@ -326,25 +339,37 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
 
   return (
     <div ref={tableRootRef} tabIndex={-1} className="flex flex-col h-full outline-none">
-      <div className="flex gap-2 p-2 border-b shrink-0">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={addColumn}
+      <div className="flex items-center justify-between gap-2 p-2 border-b shrink-0">
+        <InlineEditableText
+          value={localTitre}
+          onSave={(val) => {
+            setLocalTitre(val);
+            markDirty();
+          }}
+          placeholder="Sans titre"
+          className="font-semibold text-lg min-w-0 flex-1"
           disabled={isLocked}
-        >
-          <TbPlus size={14} className="mr-1" />
-          Add column
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={addRow}
-          disabled={isLocked}
-        >
-          <TbPlus size={14} className="mr-1" />
-          Add row
-        </Button>
+        />
+        <div className="flex gap-2 shrink-0">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={addColumn}
+            disabled={isLocked}
+          >
+            <TbPlus size={14} className="mr-1" />
+            Add column
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={addRow}
+            disabled={isLocked}
+          >
+            <TbPlus size={14} className="mr-1" />
+            Add row
+          </Button>
+        </div>
       </div>
       <div className="flex-1 overflow-auto">
         <Table>
@@ -435,7 +460,7 @@ function ColHeader({
       ) : (
         <span
           className={cn(
-            "truncate text-sm font-medium",
+            "truncate font-medium",
             !disabled && "cursor-pointer hover:underline",
           )}
           onClick={disabled ? undefined : onEditStart}
@@ -526,7 +551,7 @@ function CellEditor({
 
     if (disabled) {
       return (
-        <span className="block w-full min-h-[1.4em] text-sm rounded px-1">
+        <span className="block w-full min-h-[1.4em] rounded px-1">
           {displayValue}
         </span>
       );
@@ -537,7 +562,7 @@ function CellEditor({
         <PopoverTrigger asChild>
           <span
             className={cn(
-              "flex items-center gap-1 w-full min-h-[1.4em] text-sm rounded px-1 cursor-pointer hover:bg-muted/50",
+              "flex items-center gap-1 w-full min-h-[1.4em] rounded px-1 cursor-pointer hover:bg-muted/50",
             )}
             onClick={onClick}
           >
@@ -585,7 +610,7 @@ function CellEditor({
         autoFocus
         type={type === "number" ? "number" : "text"}
         defaultValue={value != null ? String(value) : ""}
-        className="h-7 text-sm"
+        className="h-7"
         onBlur={(e) => {
           if (type === "number") {
             const num = e.target.value !== "" ? Number(e.target.value) : null;
@@ -606,7 +631,7 @@ function CellEditor({
   return (
     <span
       className={cn(
-        "block w-full min-h-[1.4em] text-sm rounded px-1",
+        "block w-full min-h-[1.4em] rounded px-1",
         !disabled && "cursor-text hover:bg-muted/50",
       )}
       onClick={disabled ? undefined : onClick}
@@ -697,7 +722,7 @@ function LinkCellEditor({
 
   if (disabled) {
     return (
-      <span className="flex items-center gap-1 w-full min-h-[1.4em] text-sm rounded px-1">
+      <span className="flex items-center gap-1 w-full min-h-[1.4em] rounded px-1">
         {displayLabel ? (
           <>
             <TbLink size={13} className="shrink-0 text-muted-foreground" />
@@ -719,7 +744,7 @@ function LinkCellEditor({
       <PopoverTrigger asChild>
         <span
           className={cn(
-            "flex items-center gap-1 w-full min-h-[1.4em] text-sm rounded px-1 cursor-pointer hover:bg-muted/50",
+            "flex items-center gap-1 w-full min-h-[1.4em] rounded px-1 cursor-pointer hover:bg-muted/50",
           )}
           onClick={onClick}
         >

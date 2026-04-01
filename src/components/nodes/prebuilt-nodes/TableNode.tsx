@@ -107,6 +107,7 @@ function TableNode(xyNode: Node) {
     columns: [],
     rows: [],
   };
+  const titre = (values?.titre as string | undefined) ?? "";
   const isTableEmpty =
     tableData.columns.length === 0 && tableData.rows.length === 0;
 
@@ -124,13 +125,16 @@ function TableNode(xyNode: Node) {
       </CanvasNodeToolbar>
       <NodeFrame xyNode={xyNode}>
         <div className="h-full overflow-auto">
+          {titre && (
+            <p className="px-2 pt-1.5 pb-0.5 font-semibold truncate">{titre}</p>
+          )}
           {isTableEmpty ? (
             <div className="h-full flex flex-col items-center justify-center gap-1.5 text-muted-foreground/40 select-none pointer-events-none">
               <TbTable size={22} />
               <span className="text-xs">Double-clic pour éditer</span>
             </div>
           ) : (
-            <table className="w-full caption-bottom text-sm">
+            <table className="w-full caption-bottom">
               <TableHeader>
                 <TableRow>
                   {tableData.columns.map((col) => (

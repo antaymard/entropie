@@ -91,6 +91,7 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
   const [isDirty, setIsDirty] = useState(false);
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
   const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
+  const tableRootRef = useRef<HTMLDivElement>(null);
 
   // Keep latest refs to avoid stale closures in save handler
   const columnsRef = useRef(localColumns);
@@ -230,7 +231,10 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
               col={col}
               isEditing={editingColumnId === col.id}
               onEditStart={() => !isLocked && setEditingColumnId(col.id)}
-              onEditEnd={() => setEditingColumnId(null)}
+              onEditEnd={() => {
+                setEditingColumnId(null);
+                tableRootRef.current?.focus();
+              }}
               onNameChange={(name) => updateColumnName(col.id, name)}
               onTypeChange={(type) => updateColumnType(col.id, type)}
               onDelete={() => deleteColumn(col.id)}
@@ -260,7 +264,10 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
                   }
                 }}
                 onChange={(val) => updateCell(row.original.id, col.id, val)}
-                onBlur={() => setEditingCell(null)}
+                onBlur={() => {
+                  setEditingCell(null);
+                  tableRootRef.current?.focus();
+                }}
               />
             );
           },
@@ -305,7 +312,7 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
   if (!nodeDataValues) return null;
 
   return (
-    <div className="flex flex-col h-full">
+    <div ref={tableRootRef} tabIndex={-1} className="flex flex-col h-full outline-none">
       <div className="flex gap-2 p-2 border-b shrink-0">
         <Button
           size="sm"

@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/shadcn/table";
 
-type ColumnType = "text" | "number" | "checkbox" | "date";
+type ColumnType = "text" | "number" | "checkbox" | "date" | "link";
 
 interface TableColumn {
   id: string;
@@ -55,6 +55,24 @@ function renderCellValue(
       month: "short",
       day: "numeric",
     });
+  }
+  if (type === "link" && value != null && value !== "") {
+    try {
+      const url = new URL(String(value));
+      return (
+        <a
+          href={String(value)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:underline"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {url.hostname.replace(/^www\./, "")}
+        </a>
+      );
+    } catch {
+      return String(value);
+    }
   }
   return value != null ? String(value) : "";
 }

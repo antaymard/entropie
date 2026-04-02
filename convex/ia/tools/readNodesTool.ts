@@ -19,6 +19,12 @@ export default function readNodesTool({
         .array(z.string())
         .min(1)
         .describe("The list of node IDs to read"),
+      withPosition: z
+        .boolean()
+        .optional()
+        .describe(
+          "Whether to include x/y position attributes in each node tag",
+        ),
     }),
     handler: async (ctx, args): Promise<string> => {
       console.log(
@@ -26,6 +32,8 @@ export default function readNodesTool({
       );
 
       try {
+        const withPosition = args.withPosition ?? true;
+
         const nodes = await Promise.all(
           args.nodeIds.map(async (nodeId) => {
             const { node, nodeData } = await ctx.runQuery(
@@ -39,6 +47,8 @@ export default function readNodesTool({
             return {
               nodeId,
               nodeType: node.type,
+              positionX: Math.trunc(node.position.x),
+              positionY: Math.trunc(node.position.y),
               title: getNodeDataTitle(nodeData),
               content: makeNodeDataLLMFriendly(nodeData),
             };
@@ -48,8 +58,10 @@ export default function readNodesTool({
         const xml = [
           "<nodes>",
           ...nodes.map(
-            ({ nodeId, nodeType, title, content }) =>
-              `<node id=\"${escapeXmlAttribute(nodeId)}\" type=\"${escapeXmlAttribute(nodeType)}\" title=\"${escapeXmlAttribute(title)}\">\n${toXmlCdata(content)}\n</node>`,
+            ({ nodeId, nodeType, positionX, positionY, title, content }) =>
+              `<node id="${escapeXmlAttribute(nodeId)}" type="${escapeXmlAttribute(nodeType)}"${withPosition ? ` x="${escapeXmlAttribute(String(positionX))}" y="${escapeXmlAttribute(String(positionY))}"` : ""} title="${escapeXmlAttribute(title)}">
+${toXmlCdata(content)}
+</node>`,
           ),
           "</nodes>",
         ].join("\n");

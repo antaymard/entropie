@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { internalMutation } from "./_generated/server";
-import { generateLlmId } from "./lib/generateLlmId";
+import { generateLlmId } from "./lib/llmId";
 
 const llmIdRegex = /^\d{3}[a-zA-Z]\d{3}[a-zA-Z]$/;
 

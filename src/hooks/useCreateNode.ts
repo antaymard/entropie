@@ -5,7 +5,7 @@ import type { Node } from "@xyflow/react";
 import type { Id } from "@/../convex/_generated/dataModel";
 import type { NodeType } from "@/types/domain";
 import { getDefaultNodeDataValues } from "@/../convex/config/nodeConfig";
-import { generateLlmId } from "@/../convex/lib/generateLlmId";
+import { generateLlmId } from "@/../convex/lib/llmId";
 
 type CreateNodeOptions = {
   node: Node;

@@ -48,6 +48,10 @@ export function getNodeDataTitle(nodeData: Doc<"nodeDatas">): string {
       const text = nodeData.values.text as string | undefined;
       return text || "Text";
     }
+    case "table": {
+      const title = nodeData.values.title as string | undefined;
+      return title || "Table";
+    }
     default:
       return nodeData.type ?? "Node";
   }

@@ -7,7 +7,7 @@ import {
 } from "@xyflow/react";
 
 export default function NodeHandles({
-  hasDataHandles = false,
+  // hasDataHandles = false,
   showSourceHandles = false,
   nodeId,
 }: {
@@ -22,49 +22,49 @@ export default function NodeHandles({
       type: "source" as const,
       position: Position.Left,
       visible: showSourceHandles,
-      id: nodeId + "sl",
+      id: `${nodeId}_sl`,
     },
     {
       type: "source" as const,
       position: Position.Right,
       visible: showSourceHandles,
-      id: nodeId + "sr",
+      id: `${nodeId}_sr`,
     },
     {
       type: "source" as const,
       position: Position.Top,
       visible: showSourceHandles,
-      id: nodeId + "st",
+      id: `${nodeId}_st`,
     },
     {
       type: "source" as const,
       position: Position.Bottom,
       visible: showSourceHandles,
-      id: nodeId + "sb",
+      id: `${nodeId}_sb`,
     },
     {
       type: "target" as const,
       position: Position.Left,
       visible: connection.inProgress,
-      id: nodeId + "tl",
+      id: `${nodeId}_tl`,
     },
     {
       type: "target" as const,
       position: Position.Right,
       visible: connection.inProgress,
-      id: nodeId + "tr",
+      id: `${nodeId}_tr`,
     },
     {
       type: "target" as const,
       position: Position.Top,
       visible: connection.inProgress,
-      id: nodeId + "tt",
+      id: `${nodeId}_tt`,
     },
     {
       type: "target" as const,
       position: Position.Bottom,
       visible: connection.inProgress,
-      id: nodeId + "tb",
+      id: `${nodeId}_tb`,
     },
   ];
 

@@ -5,6 +5,7 @@ import type { Node } from "@xyflow/react";
 import type { Id } from "@/../convex/_generated/dataModel";
 import type { NodeType } from "@/types/domain";
 import { getDefaultNodeDataValues } from "@/../convex/config/nodeConfig";
+import { generateLlmId } from "@/../convex/lib/generateLlmId";
 
 type CreateNodeOptions = {
   node: Node;
@@ -28,7 +29,7 @@ export function useCreateNode() {
     skipNodeDataCreation = false,
     initialValues = {},
   }: CreateNodeOptions): Promise<CreateNodeResult> => {
-    const nodeId = crypto.randomUUID();
+    const nodeId = generateLlmId();
 
     let nodeDataId: Id<"nodeDatas"> | undefined;
 

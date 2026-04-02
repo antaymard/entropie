@@ -38,6 +38,7 @@ import BottomToolbar from "@/components/canvas/on-canvas-ui/BottomToolbar";
 import AuthUpgradeBanner from "@/components/canvas/on-canvas-ui/AuthUpgradeBanner";
 import { useConvexAuth } from "convex/react";
 import OnboardingModal from "@/components/ui/OnboardingModal";
+import { generateLlmId } from "@/../convex/lib/generateLlmId";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -241,7 +242,7 @@ function CanvasContent({
             {
               type: "add" as const,
               item: {
-                id: crypto.randomUUID(),
+                id: generateLlmId(),
                 source: params.source,
                 target: params.target,
                 sourceHandle: params.sourceHandle ?? undefined,

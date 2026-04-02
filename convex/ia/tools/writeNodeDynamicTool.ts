@@ -6,6 +6,7 @@ import { nodeDataConfig } from "../../config/nodeConfig";
 import { markdownToPlateJson } from "../helpers/plateMarkdownConverter";
 import { validateNodeInputSchemaForLLM } from "../helpers/nodeInputSchemaValidatorForLLM";
 import { type NodeType } from "../../schemas/nodeTypeSchema";
+import { generateLlmId } from "../../lib/generateLlmId";
 import z from "zod";
 
 function getNodeDataValuesSchema(nodeType: NodeType): z.ZodTypeAny {
@@ -96,7 +97,7 @@ export default function writeNodeDynamicTool({
             },
           );
 
-          const newNodeId = crypto.randomUUID();
+          const newNodeId = generateLlmId();
 
           await ctx.runMutation(internal.wrappers.canvasNodeWrappers.add, {
             canvasId,

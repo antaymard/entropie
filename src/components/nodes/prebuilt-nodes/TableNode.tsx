@@ -1,4 +1,4 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useRef } from "react";
 import type { Node } from "@xyflow/react";
 import { areNodePropsEqual } from "../areNodePropsEqual";
 import { useNodeDataValues } from "@/hooks/useNodeData";
@@ -9,6 +9,7 @@ import NodeFrame from "../NodeFrame";
 import { Button } from "@/components/shadcn/button";
 import { TbMaximize, TbTable, TbLink } from "react-icons/tb";
 import { useWindowsStore } from "@/stores/windowsStore";
+import { useNoWheelUnlessZoom } from "@/hooks/useNoWheelUnlessZoom";
 import {
   TableBody,
   TableCell,
@@ -102,6 +103,9 @@ function TableNode(xyNode: Node) {
     openWindow({ xyNodeId: xyNode.id, nodeDataId, nodeType: "table" });
   }, [nodeDataId, openWindow, xyNode.id]);
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useNoWheelUnlessZoom(scrollRef);
+
   const tableData = (values?.table as TableData | undefined) ?? {
     columns: [],
     rows: [],
@@ -132,7 +136,7 @@ function TableNode(xyNode: Node) {
             </p>
           </div>
         ) : (
-          <div className="h-full overflow-auto">
+          <div ref={scrollRef} className="h-full overflow-auto">
             {title && (
               <p className="px-2 pt-1.5 pb-0.5 font-semibold truncate text-lg">
                 {title}

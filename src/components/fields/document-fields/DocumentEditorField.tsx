@@ -44,6 +44,8 @@ const DocumentEditorField = forwardRef<
   const initialValue: Value = value?.doc as Value;
   const setFocus = useCanvasStore((s) => s.setFocus);
   const skipNextChangeRef = useRef(false);
+  const editorScrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const lastAppliedValueKeyRef = useRef<string | null>(null);
 
   const editor = usePlateEditor({
     id: editorId ? `doc-${editorId}` : undefined,
@@ -51,11 +53,28 @@ const DocumentEditorField = forwardRef<
     value: initialValue,
   });
 
-  // Last Write Wins: server value always overrides local content unconditionally
+  // Last Write Wins, but avoid resetting the editor when content is unchanged.
   useEffect(() => {
     if (!initialValue) return;
+
+    const valueKey = JSON.stringify(initialValue);
+    if (lastAppliedValueKeyRef.current === valueKey) {
+      return;
+    }
+
+    const previousScrollTop = editorScrollContainerRef.current?.scrollTop ?? null;
     skipNextChangeRef.current = true;
     editor.tf.setValue(initialValue);
+    lastAppliedValueKeyRef.current = valueKey;
+
+    if (previousScrollTop !== null) {
+      requestAnimationFrame(() => {
+        if (editorScrollContainerRef.current) {
+          editorScrollContainerRef.current.scrollTop = previousScrollTop;
+        }
+      });
+    }
+
     onDirtyChange?.(false);
   }, [initialValue, editor, onDirtyChange]);
 
@@ -79,14 +98,22 @@ const DocumentEditorField = forwardRef<
     setFocus("platejs");
   }, [setFocus, isLocked]);
 
-  const handleBlur = useCallback(() => {
-    setFocus("canvas");
-  }, [setFocus]);
+  const handleBlur = useCallback(
+    (e: React.FocusEvent<HTMLDivElement>) => {
+      if (e.currentTarget.contains(e.relatedTarget as Node | null)) {
+        return;
+      }
+
+      setFocus("canvas");
+    },
+    [setFocus],
+  );
 
   return (
     <div className="relative h-full" onFocus={handleFocus} onBlur={handleBlur}>
       <Plate editor={editor} onValueChange={handleChange}>
         <EditorContainer
+          ref={editorScrollContainerRef}
           variant="default"
           className={cn(
             "nodrag h-full overflow-auto",

@@ -6,7 +6,7 @@ import { nodeDataConfig } from "../../config/nodeConfig";
 import { markdownToPlateJson } from "../helpers/plateMarkdownConverter";
 import { validateNodeInputSchemaForLLM } from "../helpers/nodeInputSchemaValidatorForLLM";
 import { type NodeType } from "../../schemas/nodeTypeSchema";
-import { generateLlmId } from "../../lib/generateLlmId";
+import { generateLlmId } from "../../lib/llmId";
 import z from "zod";
 
 function getNodeDataValuesSchema(nodeType: NodeType): z.ZodTypeAny {

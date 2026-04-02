@@ -1,8 +1,9 @@
 import { v } from "convex/values";
 import { encode } from "@toon-format/toon";
-import type { Doc, Id } from "../../_generated/dataModel";
+import type { Id } from "../../_generated/dataModel";
 import { internalQuery } from "../../_generated/server";
 import type { QueryCtx } from "../../_generated/server";
+import { getNodeDataTitle } from "../../lib/getNodeDataTitle";
 
 type SpatialNodeOverview = {
   nodeId: string;
@@ -46,9 +47,7 @@ export const generate = internalQuery({
           clusterSizes: [] as number[],
         },
         hybridToon:
-          '<spatialCanvasOverview name="unknown"></spatialCanvasOverview>',
-        markdownXml:
-          '<spatialCanvasOverview canvasId="unknown"></spatialCanvasOverview>',
+          '<canvas_overview name="unknown" description=""></canvas_overview>',
       };
     }
 
@@ -86,8 +85,11 @@ export const generate = internalQuery({
       canvasId: canvas._id,
       clusters,
       count,
-      hybridToon: formatHybridToonForLLM(canvas.name ?? "Untitled", clusters),
-      markdownXml: formatClustersForLLM(canvas._id, clusters),
+      hybridToon: formatHybridToonForLLM(
+        canvas.name ?? "Untitled",
+        canvas.description ?? "",
+        clusters,
+      ),
     };
   },
 });
@@ -103,7 +105,7 @@ async function buildEligibleTitlesByNodeId(
       const nodeData = await ctx.db.get("nodeDatas", node.nodeDataId);
       if (!nodeData) return null;
 
-      const title = extractNodeDataTitle(nodeData);
+      const title = getNodeDataTitle(nodeData);
       if (!title) return null;
 
       return [node.id, title] as const;
@@ -113,110 +115,6 @@ async function buildEligibleTitlesByNodeId(
   return new Map(
     entries.filter((entry): entry is readonly [string, string] => !!entry),
   );
-}
-
-function extractNodeDataTitle(nodeData: Doc<"nodeDatas">): string | null {
-  if (nodeData.type === "floatingText") {
-    const text = nodeData.values.text;
-    return typeof text === "string" && text.trim().length > 0
-      ? text.trim()
-      : null;
-  }
-
-  if (nodeData.type === "document") {
-    const doc = nodeData.values.doc;
-    if (!Array.isArray(doc) || doc.length === 0) return null;
-
-    const firstBlock = doc[0] as {
-      type?: string;
-      children?: Array<{ text?: unknown }>;
-    };
-
-    if (!firstBlock || (firstBlock.type !== "h1" && firstBlock.type !== "h2")) {
-      return null;
-    }
-
-    const title = (firstBlock.children ?? [])
-      .map((child) => (typeof child.text === "string" ? child.text : ""))
-      .join(" ")
-      .trim();
-
-    return title.length > 0 ? title : null;
-  }
-
-  if (nodeData.type === "link") {
-    const link = nodeData.values.link as
-      | { pageTitle?: unknown; href?: unknown }
-      | undefined;
-
-    if (
-      typeof link?.pageTitle === "string" &&
-      link.pageTitle.trim().length > 0
-    ) {
-      return link.pageTitle.trim();
-    }
-
-    if (typeof link?.href === "string" && link.href.trim().length > 0) {
-      return link.href.trim();
-    }
-
-    return "Link";
-  }
-
-  if (nodeData.type === "embed") {
-    const embed = nodeData.values.embed as { title?: unknown } | undefined;
-    if (typeof embed?.title === "string" && embed.title.trim().length > 0) {
-      return embed.title.trim();
-    }
-
-    return "Embed";
-  }
-
-  if (nodeData.type === "value") {
-    const value = nodeData.values.value as { label?: unknown } | undefined;
-    if (typeof value?.label === "string" && value.label.trim().length > 0) {
-      return value.label.trim();
-    }
-
-    return "Value";
-  }
-
-  if (nodeData.type === "file") {
-    const files = nodeData.values.files as
-      | Array<{ filename?: unknown }>
-      | undefined;
-    const firstFilename = files?.[0]?.filename;
-
-    if (typeof firstFilename === "string" && firstFilename.trim().length > 0) {
-      return firstFilename.trim();
-    }
-
-    return "File";
-  }
-
-  if (nodeData.type === "image") {
-    const images = nodeData.values.images as
-      | Array<{ filename?: unknown }>
-      | undefined;
-    const firstFilename = images?.[0]?.filename;
-
-    if (typeof firstFilename === "string" && firstFilename.trim().length > 0) {
-      return firstFilename.trim();
-    }
-
-    return "Image";
-  }
-
-  if (nodeData.type === "table") {
-    const title = nodeData.values.title;
-    if (typeof title === "string" && title.trim().length > 0) {
-      return title.trim();
-    }
-
-    return "Table";
-  }
-
-  return nodeData.type;
 }
 
 function clusterNodesByPriority(
@@ -512,34 +410,9 @@ function roundTo2(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
-function formatClustersForLLM(
-  canvasId: Id<"canvases">,
-  clusters: SpatialCluster[],
-): string {
-  const clusterXml = clusters
-    .map((cluster) => {
-      const nodesXml = cluster.nodes
-        .map((node) => {
-          const titleTag =
-            node.title !== null
-              ? `<title>${escapeXml(node.title)}</title>`
-              : "";
-
-          return `<node id="${escapeXml(node.nodeId)}" type="${escapeXml(node.nodeType)}">${titleTag}</node>`;
-        })
-        .join("\n      ");
-
-      return `<cluster id="${escapeXml(cluster.clusterId)}" size="${cluster.nodes.length}">\n      ${nodesXml}\n    </cluster>`;
-    })
-    .join("\n    ");
-
-  return `
-<spatialCanvasOverview canvasId="${escapeXml(String(canvasId))}">\n    ${clusterXml}\n</spatialCanvasOverview>
-  `.trim();
-}
-
 function formatHybridToonForLLM(
   canvasName: string,
+  canvasDescription: string,
   clusters: SpatialCluster[],
 ): string {
   const clusterXml = clusters
@@ -557,7 +430,7 @@ function formatHybridToonForLLM(
     .join("\n");
 
   return `
-<spatialCanvasOverview name="${escapeXml(canvasName)}">\n${clusterXml}\n</spatialCanvasOverview>
+<canvas_overview name="${escapeXml(canvasName)}" description="${escapeXml(canvasDescription)}">\n${clusterXml}\n</canvas_overview>
   `.trim();
 }
 

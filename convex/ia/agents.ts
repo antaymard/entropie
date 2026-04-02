@@ -2,7 +2,9 @@ import { components } from "../_generated/api";
 import { Agent } from "@convex-dev/agent";
 import { openrouter } from "@openrouter/ai-sdk-provider";
 import type { LanguageModel, ToolSet } from "ai";
-import { readNodeDataTool } from "./tools/readNodeDataTool";
+import type { NoleToolRuntimeContext } from "./noleToolRuntimeContext";
+import nodeAgentTool from "./tools/nodeAgentTool";
+import readNodesTool from "./tools/readNodesTool";
 import { openWebPageTool } from "./tools/openWebPageTool";
 import { websearchTool } from "./tools/websearchTool";
 
@@ -48,18 +50,21 @@ export function createAutomationAgent({
 // }
 
 export function createNoleAgent({
+  runtimeContext,
   tools = {},
 }: {
+  runtimeContext: NoleToolRuntimeContext;
   tools?: ToolSet;
-} = {}) {
+}) {
   return new Agent(components.agent, {
     name: "Nolë",
     maxSteps: 8,
-    languageModel: openrouter("minimax/minimax-m2.7"),
+    languageModel: openrouter("arcee-ai/trinity-large-thinking"),
     tools: {
-      readNodeDataTool,
-      openWebPageTool,
-      websearchTool,
+      read_nodes: readNodesTool(runtimeContext),
+      node_and_edge_manipulation: nodeAgentTool(runtimeContext),
+      open_webpage: openWebPageTool,
+      websearch: websearchTool,
       ...tools,
     },
   });

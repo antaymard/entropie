@@ -2,9 +2,8 @@ import { v } from "convex/values";
 import { internalAction, mutation } from "../_generated/server";
 import { baseAgent, createNoleAgent } from "./agents";
 import { requireAuth } from "../lib/auth";
-import { generateBrainSystemPrompt } from "./nole/brain/brainAgent";
+import { generateNoleSystemPrompt } from "./nole/noleSystemPrompt";
 import { internal } from "../_generated/api";
-import nodeAgentTool from "./tools/nodeAgentTool";
 
 // Save user message, then stream response asynchronously
 export const saveMessage = mutation({
@@ -43,19 +42,17 @@ export const streamResponse = internalAction({
     canvasId: v.id("canvases"),
   },
   handler: async (ctx, { authUserId, promptMessageId, threadId, canvasId }) => {
-    // Generate brain context (canvas + user context)
-    const brainInstructions = await generateBrainSystemPrompt({
+    // Generate nole context (canvas + user context)
+    const brainInstructions = await generateNoleSystemPrompt({
       canvasId,
       userId: authUserId,
       ctx,
     });
 
     const noleAgent = createNoleAgent({
-      tools: {
-        node_and_edge_manipulation_tool: nodeAgentTool({
-          authUserId,
-          canvasId,
-        }),
+      runtimeContext: {
+        authUserId,
+        canvasId,
       },
     });
     const result = await noleAgent.streamText(

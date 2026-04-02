@@ -38,7 +38,7 @@ import BottomToolbar from "@/components/canvas/on-canvas-ui/BottomToolbar";
 import AuthUpgradeBanner from "@/components/canvas/on-canvas-ui/AuthUpgradeBanner";
 import { useConvexAuth } from "convex/react";
 import OnboardingModal from "@/components/ui/OnboardingModal";
-import { generateLlmId } from "@/../convex/lib/generateLlmId";
+import { generateLlmId } from "@/../convex/lib/llmId";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,

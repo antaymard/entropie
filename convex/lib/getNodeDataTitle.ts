@@ -1,0 +1,78 @@
+import type { Doc } from "../_generated/dataModel";
+
+export function getNodeDataTitle(nodeData: Doc<"nodeDatas">): string {
+  switch (nodeData.type) {
+    case "document": {
+      const doc = nodeData.values.doc;
+      if (!Array.isArray(doc) || doc.length === 0) return "Document";
+
+      const firstBlock = doc[0] as {
+        type?: string;
+        children?: Array<{ text?: unknown }>;
+      };
+
+      if (firstBlock.type === "h1" || firstBlock.type === "h2") {
+        const title = (firstBlock.children ?? [])
+          .map((child) => (typeof child.text === "string" ? child.text : ""))
+          .join(" ")
+          .trim();
+        return title || "Document";
+      }
+
+      return "Document";
+    }
+
+    case "link": {
+      const link = nodeData.values.link as
+        | { pageTitle?: unknown; href?: unknown }
+        | undefined;
+
+      return (
+        (typeof link?.pageTitle === "string" ? link.pageTitle : undefined) ||
+        (typeof link?.href === "string" ? link.href : undefined) ||
+        "Link"
+      );
+    }
+
+    case "embed": {
+      const embed = nodeData.values.embed as { title?: unknown } | undefined;
+      return typeof embed?.title === "string" ? embed.title : "Embed";
+    }
+
+    case "value": {
+      const val = nodeData.values.value as { label?: unknown } | undefined;
+      return typeof val?.label === "string" ? val.label : "Value";
+    }
+
+    case "file": {
+      const files = nodeData.values.files as
+        | Array<{ filename?: unknown }>
+        | undefined;
+      return typeof files?.[0]?.filename === "string"
+        ? files[0].filename
+        : "File";
+    }
+
+    case "image": {
+      const images = nodeData.values.images as
+        | Array<{ filename?: unknown }>
+        | undefined;
+      return typeof images?.[0]?.filename === "string"
+        ? images[0].filename
+        : "Image";
+    }
+
+    case "floatingText": {
+      const text = nodeData.values.text;
+      return typeof text === "string" && text.length > 0 ? text : "Text";
+    }
+
+    case "table": {
+      const title = nodeData.values.title;
+      return typeof title === "string" ? title : "Table";
+    }
+
+    default:
+      return nodeData.type ?? "Node";
+  }
+}

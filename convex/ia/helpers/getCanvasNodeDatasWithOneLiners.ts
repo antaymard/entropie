@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalQuery } from "../../../_generated/server";
+import { internalQuery } from "../../_generated/server";
 
 export const getCanvasNodeDatasWithOneLiners = internalQuery({
   args: { canvasId: v.id("canvases") },

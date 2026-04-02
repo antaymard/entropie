@@ -1,20 +1,18 @@
 import { createTool, createThread } from "@convex-dev/agent";
 import { z } from "zod";
-import { components } from "../../_generated/api";
-import type { Id } from "../../_generated/dataModel";
+import { components, internal } from "../../_generated/api";
 import type { ActionCtx } from "../../_generated/server";
+import { matchLlmIdsInText } from "../../lib/llmId";
 import { nodeTypeValues } from "../../schemas/nodeTypeSchema";
 import { createToolAgent } from "../agents";
+import type { NoleToolRuntimeContext } from "../noleToolRuntimeContext";
 import writeEdgeDynamicTool from "./writeEdgeDynamicTool";
 import writeNodeDynamicTool from "./writeNodeDynamicTool";
 
 export default function nodeAgentTool({
   authUserId,
   canvasId,
-}: {
-  authUserId: Id<"users">;
-  canvasId: Id<"canvases">;
-}) {
+}: NoleToolRuntimeContext) {
   return createTool({
     description:
       "Launch a focused subagent to create/update/delete nodes and edges on the current canvas.",
@@ -25,7 +23,7 @@ export default function nodeAgentTool({
       query: z
         .string()
         .describe(
-          "Natural-language instruction for the subagent describing what to build or modify. Please provide the required details in the query : nodeId (onCanvas, not NodeDataId) if you want to update a specific node, source and target nodeIds if you want to create an edge, etc. And give the proper data you want to be written in the node regarding the nodeType. This tool has no context of previous canvas state, so the query should be self-sufficient in describing the required changes to the canvas. This tool is a bridge between natural language instructions and canvas modifications, so the more precise and detailed the query is, the better the subagent will perform. See it as your secretary on the canvas, with no intelligence but perfect execution of your orders, so you need to be very clear and explicit in your instructions. If the query is not clear, the subagent might ask for clarifications, so it's better to be as detailed as possible from the start.",
+          "Natural-language instruction for the subagent describing what to build or modify. This tool is a bridge between natural language instructions and canvas modifications, so the more precise and detailed the query is, the better the subagent will perform. The subagent has the positions and dimensions of the nodes you mention in the query as context, so you can refer to them in the instruction.",
         ),
     }),
     handler: async (
@@ -39,6 +37,43 @@ export default function nodeAgentTool({
       console.log(
         `🚀 Launching node agent subagent for canvas ${canvasId} with query: ${query}`,
       );
+
+      const referencedNodeIds = matchLlmIdsInText(query);
+      const referencedNodes = await Promise.all(
+        referencedNodeIds.map(async (nodeId) => {
+          try {
+            const nodeWithNodeData = await ctx.runQuery(
+              internal.wrappers.canvasNodeWrappers.getNodeWithNodeData,
+              {
+                canvasId,
+                nodeId,
+              },
+            );
+
+            return {
+              nodeId,
+              node: nodeWithNodeData.node,
+            };
+          } catch {
+            return null;
+          }
+        }),
+      );
+
+      const resolvedReferencedNodes = referencedNodes.filter(
+        (entry): entry is NonNullable<typeof entry> => entry !== null,
+      );
+
+      const promptWithNodeContext =
+        resolvedReferencedNodes.length > 0
+          ? `${query}\n\nHere are some relevant informations for your context.\n<nodes>\n${resolvedReferencedNodes
+              .map(
+                ({ nodeId, node }) =>
+                  `<node id="${nodeId}" position="${node.position.x},${node.position.y}" height="${node.height}" width="${node.width}" context="mentionned in the query"/>`,
+              )
+              .join("\n")}\n</nodes>`
+          : query;
+
       const subAgent = createToolAgent({
         modelName: "mistralai/mistral-small-2603",
         instructions:
@@ -67,7 +102,7 @@ export default function nodeAgentTool({
           userId: authUserId,
         },
         {
-          prompt: query,
+          prompt: promptWithNodeContext,
         },
       );
 

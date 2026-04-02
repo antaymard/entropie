@@ -27,11 +27,10 @@ import type * as ia_helpers_plateMarkdownConverter from "../ia/helpers/plateMark
 import type * as ia_helpers_spatialCanvasOverviewGenerator from "../ia/helpers/spatialCanvasOverviewGenerator.js";
 import type * as ia_helpers_transcriptGenerator from "../ia/helpers/transcriptGenerator.js";
 import type * as ia_nole from "../ia/nole.js";
-import type * as ia_nole_brain_brainAgent from "../ia/nole/brain/brainAgent.js";
 import type * as ia_nole_brain_canvasContextPrompt from "../ia/nole/brain/canvasContextPrompt.js";
 import type * as ia_nole_brain_getCanvasNodeDatasWithOneLiners from "../ia/nole/brain/getCanvasNodeDatasWithOneLiners.js";
 import type * as ia_nole_brain_introductionPrompt from "../ia/nole/brain/introductionPrompt.js";
-import type * as ia_nole_brain_userContextPrompt from "../ia/nole/brain/userContextPrompt.js";
+import type * as ia_nole_brain_noleSystemPrompt from "../ia/nole/brain/noleSystemPrompt.js";
 import type * as ia_tools__toolTemplate from "../ia/tools/_toolTemplate.js";
 import type * as ia_tools_editNodeDataTool from "../ia/tools/editNodeDataTool.js";
 import type * as ia_tools_editNodeOnCanvasTool from "../ia/tools/editNodeOnCanvasTool.js";
@@ -74,6 +73,7 @@ import type * as wrappers_canvasEdgeWrappers from "../wrappers/canvasEdgeWrapper
 import type * as wrappers_canvasNodeWrappers from "../wrappers/canvasNodeWrappers.js";
 import type * as wrappers_metadataWrappers from "../wrappers/metadataWrappers.js";
 import type * as wrappers_nodeDataWrappers from "../wrappers/nodeDataWrappers.js";
+import type * as wrappers_userWrappers from "../wrappers/userWrappers.js";
 
 import type {
   ApiFromModules,
@@ -101,11 +101,10 @@ declare const fullApi: ApiFromModules<{
   "ia/helpers/spatialCanvasOverviewGenerator": typeof ia_helpers_spatialCanvasOverviewGenerator;
   "ia/helpers/transcriptGenerator": typeof ia_helpers_transcriptGenerator;
   "ia/nole": typeof ia_nole;
-  "ia/nole/brain/brainAgent": typeof ia_nole_brain_brainAgent;
   "ia/nole/brain/canvasContextPrompt": typeof ia_nole_brain_canvasContextPrompt;
   "ia/nole/brain/getCanvasNodeDatasWithOneLiners": typeof ia_nole_brain_getCanvasNodeDatasWithOneLiners;
   "ia/nole/brain/introductionPrompt": typeof ia_nole_brain_introductionPrompt;
-  "ia/nole/brain/userContextPrompt": typeof ia_nole_brain_userContextPrompt;
+  "ia/nole/brain/noleSystemPrompt": typeof ia_nole_brain_noleSystemPrompt;
   "ia/tools/_toolTemplate": typeof ia_tools__toolTemplate;
   "ia/tools/editNodeDataTool": typeof ia_tools_editNodeDataTool;
   "ia/tools/editNodeOnCanvasTool": typeof ia_tools_editNodeOnCanvasTool;
@@ -148,6 +147,7 @@ declare const fullApi: ApiFromModules<{
   "wrappers/canvasNodeWrappers": typeof wrappers_canvasNodeWrappers;
   "wrappers/metadataWrappers": typeof wrappers_metadataWrappers;
   "wrappers/nodeDataWrappers": typeof wrappers_nodeDataWrappers;
+  "wrappers/userWrappers": typeof wrappers_userWrappers;
 }>;
 
 /**

@@ -55,7 +55,7 @@ export function createNoleAgent({
   return new Agent(components.agent, {
     name: "Nolë",
     maxSteps: 8,
-    languageModel: openrouter("minimax/minimax-m2.7"),
+    languageModel: openrouter("arcee-ai/trinity-large-thinking"),
     tools: {
       readNodeDataTool,
       openWebPageTool,

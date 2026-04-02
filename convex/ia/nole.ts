@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { internalAction, mutation } from "../_generated/server";
 import { baseAgent, createNoleAgent } from "./agents";
 import { requireAuth } from "../lib/auth";
-import { generateBrainSystemPrompt } from "./nole/brain/brainAgent";
+import { generateNoleSystemPrompt } from "./nole/brain/noleSystemPrompt";
 import { internal } from "../_generated/api";
 import nodeAgentTool from "./tools/nodeAgentTool";
 
@@ -43,8 +43,8 @@ export const streamResponse = internalAction({
     canvasId: v.id("canvases"),
   },
   handler: async (ctx, { authUserId, promptMessageId, threadId, canvasId }) => {
-    // Generate brain context (canvas + user context)
-    const brainInstructions = await generateBrainSystemPrompt({
+    // Generate nole context (canvas + user context)
+    const brainInstructions = await generateNoleSystemPrompt({
       canvasId,
       userId: authUserId,
       ctx,

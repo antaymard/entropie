@@ -46,9 +46,7 @@ export const generate = internalQuery({
           clusterSizes: [] as number[],
         },
         hybridToon:
-          '<spatialCanvasOverview name="unknown"></spatialCanvasOverview>',
-        markdownXml:
-          '<spatialCanvasOverview canvasId="unknown"></spatialCanvasOverview>',
+          '<canvas_overview name="unknown" description=""></canvas_overview>',
       };
     }
 
@@ -86,8 +84,11 @@ export const generate = internalQuery({
       canvasId: canvas._id,
       clusters,
       count,
-      hybridToon: formatHybridToonForLLM(canvas.name ?? "Untitled", clusters),
-      markdownXml: formatClustersForLLM(canvas._id, clusters),
+      hybridToon: formatHybridToonForLLM(
+        canvas.name ?? "Untitled",
+        canvas.description ?? "",
+        clusters,
+      ),
     };
   },
 });
@@ -512,34 +513,9 @@ function roundTo2(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
-function formatClustersForLLM(
-  canvasId: Id<"canvases">,
-  clusters: SpatialCluster[],
-): string {
-  const clusterXml = clusters
-    .map((cluster) => {
-      const nodesXml = cluster.nodes
-        .map((node) => {
-          const titleTag =
-            node.title !== null
-              ? `<title>${escapeXml(node.title)}</title>`
-              : "";
-
-          return `<node id="${escapeXml(node.nodeId)}" type="${escapeXml(node.nodeType)}">${titleTag}</node>`;
-        })
-        .join("\n      ");
-
-      return `<cluster id="${escapeXml(cluster.clusterId)}" size="${cluster.nodes.length}">\n      ${nodesXml}\n    </cluster>`;
-    })
-    .join("\n    ");
-
-  return `
-<spatialCanvasOverview canvasId="${escapeXml(String(canvasId))}">\n    ${clusterXml}\n</spatialCanvasOverview>
-  `.trim();
-}
-
 function formatHybridToonForLLM(
   canvasName: string,
+  canvasDescription: string,
   clusters: SpatialCluster[],
 ): string {
   const clusterXml = clusters
@@ -557,7 +533,7 @@ function formatHybridToonForLLM(
     .join("\n");
 
   return `
-<spatialCanvasOverview name="${escapeXml(canvasName)}">\n${clusterXml}\n</spatialCanvasOverview>
+<canvas_overview name="${escapeXml(canvasName)}" description="${escapeXml(canvasDescription)}">\n${clusterXml}\n</canvas_overview>
   `.trim();
 }
 

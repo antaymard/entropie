@@ -23,7 +23,7 @@ export default function readNodesTool({
         .boolean()
         .optional()
         .describe(
-          "Whether to include x/y position attributes in each node tag",
+          "Whether to include x/y position and dimensions attributes in each node tag",
         ),
     }),
     handler: async (ctx, args): Promise<string> => {
@@ -49,6 +49,12 @@ export default function readNodesTool({
               nodeType: node.type,
               positionX: Math.trunc(node.position.x),
               positionY: Math.trunc(node.position.y),
+              width:
+                typeof node.width === "number" ? Math.trunc(node.width) : null,
+              height:
+                typeof node.height === "number"
+                  ? Math.trunc(node.height)
+                  : null,
               title: getNodeDataTitle(nodeData),
               content: makeNodeDataLLMFriendly(nodeData),
             };
@@ -58,8 +64,17 @@ export default function readNodesTool({
         const xml = [
           "<nodes>",
           ...nodes.map(
-            ({ nodeId, nodeType, positionX, positionY, title, content }) =>
-              `<node id="${escapeXmlAttribute(nodeId)}" type="${escapeXmlAttribute(nodeType)}"${withPosition ? ` x="${escapeXmlAttribute(String(positionX))}" y="${escapeXmlAttribute(String(positionY))}"` : ""} title="${escapeXmlAttribute(title)}">
+            ({
+              nodeId,
+              nodeType,
+              positionX,
+              positionY,
+              width,
+              height,
+              title,
+              content,
+            }) =>
+              `<node id="${escapeXmlAttribute(nodeId)}" type="${escapeXmlAttribute(nodeType)}"${withPosition ? ` x="${escapeXmlAttribute(String(positionX))}" y="${escapeXmlAttribute(String(positionY))}"${width !== null ? ` width="${escapeXmlAttribute(String(width))}"` : ""}${height !== null ? ` height="${escapeXmlAttribute(String(height))}"` : ""}` : ""} title="${escapeXmlAttribute(title)}">
 ${toXmlCdata(content)}
 </node>`,
           ),

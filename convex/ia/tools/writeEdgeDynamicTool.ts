@@ -2,6 +2,7 @@ import { dynamicTool } from "ai";
 import { internal } from "../../_generated/api";
 import { type Id } from "../../_generated/dataModel";
 import { type ActionCtx } from "../../_generated/server";
+import { generateLlmId } from "../../lib/generateLlmId";
 import z from "zod";
 
 export default function writeEdgeDynamicTool({
@@ -42,7 +43,7 @@ export default function writeEdgeDynamicTool({
             return "Create operation requires sourceNodeId and targetNodeId.";
           }
 
-          const newEdgeId = parsedArgs.edgeId ?? crypto.randomUUID();
+          const newEdgeId = parsedArgs.edgeId ?? generateLlmId();
 
           await ctx.runMutation(internal.wrappers.canvasEdgeWrappers.add, {
             canvasId,

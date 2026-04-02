@@ -16,7 +16,7 @@ const PUBLIC_URL = process.env.R2_PUBLIC_URL!; // ex: https://files.entropie.app
 
 export async function generatePresignedUrl(
   key: string,
-  mimeType: string
+  mimeType: string,
 ): Promise<string> {
   const command = new PutObjectCommand({
     Bucket: BUCKET_NAME,
@@ -26,6 +26,23 @@ export async function generatePresignedUrl(
 
   // URL valide 15 minutes
   return await getSignedUrl(r2Client, command, { expiresIn: 900 });
+}
+
+// Directly upload a buffer to R2 and return the public URL
+// (bypassing presigned URL step, for server-side uploads)
+export async function uploadBuffer(
+  key: string,
+  buffer: ArrayBuffer,
+  mimeType: string,
+): Promise<string> {
+  const command = new PutObjectCommand({
+    Bucket: BUCKET_NAME,
+    Key: key,
+    Body: new Uint8Array(buffer),
+    ContentType: mimeType,
+  });
+  await r2Client.send(command);
+  return getPublicUrl(key);
 }
 
 export function getPublicUrl(key: string): string {

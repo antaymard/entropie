@@ -1,11 +1,11 @@
 import { v } from "convex/values";
 import { internalQuery } from "../../../_generated/server";
 
-export const getCanvasNodeDatasWithAbstracts = internalQuery({
+export const getCanvasNodeDatasWithOneLiners = internalQuery({
   args: { canvasId: v.id("canvases") },
   handler: async (ctx, { canvasId }) => {
     console.log(
-      "🚧 Fetching canvas node datas with abstracts for canvasId:",
+      "🚧 Fetching canvas node datas with one-liners for canvasId:",
       canvasId,
     );
     const canvas = await ctx.db.get(canvasId);
@@ -13,23 +13,23 @@ export const getCanvasNodeDatasWithAbstracts = internalQuery({
 
     const nodes = await Promise.all(
       (canvas.nodes || []).map(async (node) => {
-        let abstract: string | null = null;
+        let oneLiner: string | null = null;
         const nodeDataId = node.nodeDataId ?? null;
         if (nodeDataId) {
           const memory = await ctx.db
             .query("metadata")
             .withIndex("by_subject_and_type", (q) =>
-              q.eq("subjectId", nodeDataId).eq("memoryType", "one-liner"),
+              q.eq("subjectId", nodeDataId).eq("type", "one-liner"),
             )
             .unique();
-          abstract = memory?.content ?? null;
+          oneLiner = memory?.content ?? null;
         }
         return {
           idOnCanvas: node.id,
           type: node.type,
           position: node.position,
           nodeDataId,
-          abstract,
+          oneLiner,
         };
       }),
     );

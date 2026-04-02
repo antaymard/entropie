@@ -19,23 +19,23 @@ export const generate = internalAction({
     // 2. Générer le contexte markdown
     const llmFriendlyContent = makeNodeDataLLMFriendly(nodeData);
 
-    // 3. Récupérer l'abstract existant (si présent)
-    const existingMemory = await ctx.runQuery(
+    // 3. Récupérer le one-liner existant (si présent)
+    const existingOneLiner = await ctx.runQuery(
       internal.wrappers.metadataWrappers.read,
-      { subjectId: nodeDataId, memoryType: "one-liner" },
+      { subjectId: nodeDataId, type: "one-liner" },
     );
 
-    // If abstract.updateAt is newer thant nodeData.updatedAt, we can skip regeneration
+    // If the one-liner is newer than the nodeData, we can skip regeneration.
     if (
-      existingMemory &&
-      existingMemory.updatedAt > (nodeData?.updatedAt ?? 0)
+      existingOneLiner &&
+      existingOneLiner.updatedAt > (nodeData?.updatedAt ?? 0)
     ) {
       return null;
     }
-    console.log("🚧 Generating abstract for nodeDataId:", nodeDataId);
+    console.log("🚧 Generating one-liner for nodeDataId:", nodeDataId);
 
-    const previousAbstractContext = existingMemory
-      ? `\nOne-liner précédent :\n${existingMemory.content}\n`
+    const previousOneLinerContext = existingOneLiner
+      ? `\nOne-liner précédent :\n${existingOneLiner.content}\n`
       : "";
 
     // 4. Appel LLM one-shot
@@ -44,12 +44,16 @@ export const generate = internalAction({
       prompt: `Summarize the following content into a one-liner. Do not fabricate information. Be factual and synthetic.
 
       Here is the current one-liner of the content (if applicable):
-      ${previousAbstractContext}
+      ${previousOneLinerContext}
 
       Here is the full content to summarize:
       ${llmFriendlyContent}
 
       The content may not have been modified since the last one-liner generation. If the content has not been modified, you can respond with a more concise reformulation of the previous one-liner or with the same one-liner if you consider it already optimal.
+
+      <guidelines for summarization>
+      ${getGuidelinesFromNodeType(nodeType)}
+      </guidelines for summarization>
 
       <examples of outputs>
       ${getExamplesFromNodeType(nodeType)}
@@ -57,15 +61,15 @@ export const generate = internalAction({
 `,
     });
 
-    // 5. Persister l'abstract via metadata
+    // 5. Persister le one-liner via metadata
     await ctx.runMutation(internal.wrappers.metadataWrappers.upsert, {
       subjectType: "nodeData",
       subjectId: nodeDataId,
-      memoryType: "one-liner",
+      type: "one-liner",
       content: text,
     });
 
-    console.log("✅ Generated abstract for nodeDataId:", nodeDataId);
+    console.log("✅ Generated one-liner for nodeDataId:", nodeDataId);
 
     return null;
   },
@@ -77,7 +81,7 @@ export const generateMany = internalAction({
   handler: async (ctx, { nodeDataIds }) => {
     await Promise.all(
       nodeDataIds.map((nodeDataId) =>
-        ctx.runAction(internal.ia.helpers.abstractGenerator.generate, {
+        ctx.runAction(internal.ia.helpers.oneLinerGenerator.generate, {
           nodeDataId,
         }),
       ),

@@ -323,7 +323,12 @@ export default function WindowFrame({
             className="shrink-0 rounded p-0.5 opacity-50 hover:bg-blue-500/15 hover:text-blue-600 hover:opacity-100 h-full aspect-square flex items-center justify-center"
             onMouseDown={(e) => e.stopPropagation()}
             onClick={() =>
-              fitView({ nodes: [{ id: xyNodeId }], duration: 500 })
+              fitView({
+                nodes: [{ id: xyNodeId }],
+                duration: 500,
+                minZoom: 0.5,
+                maxZoom: 1,
+              })
             }
             aria-label="Go to node"
           >

@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery } from "../_generated/server";
+import { internal } from "../_generated/api";
 import {
   automationProgressValidator,
   nodeDataStatusValidator,
@@ -7,6 +8,7 @@ import {
 import { nodeTypeValidator } from "../schemas/nodeTypeSchema";
 
 import * as NodeDataModels from "../models/nodeDataModels";
+import { shouldTranscribe } from "../models/nodeDataModels";
 
 export const create = internalMutation({
   args: {
@@ -48,7 +50,18 @@ export const updateValues = internalMutation({
   },
   returns: v.boolean(),
   handler: async (ctx, args) => {
-    return NodeDataModels.updateValues(ctx, args);
+    const result = await NodeDataModels.updateValues(ctx, args);
+
+    const nodeData = await ctx.db.get(args._id);
+    if (nodeData && shouldTranscribe(nodeData.type, Object.keys(args.values))) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.ia.helpers.transcriptGenerator.transcribeNode,
+        { nodeDataId: args._id },
+      );
+    }
+
+    return result;
   },
 });
 

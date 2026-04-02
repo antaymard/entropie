@@ -4,14 +4,14 @@ import * as MetadataModels from "../models/metadataModels";
 import {
   subjectTypeValidator,
   subjectIdValidator,
-  memoryTypeValidator,
+  typeValidator,
 } from "../schemas/metadataSchema";
 
 export const upsert = internalMutation({
   args: {
     subjectType: subjectTypeValidator,
     subjectId: subjectIdValidator,
-    memoryType: memoryTypeValidator,
+    type: typeValidator,
     content: v.string(),
   },
   returns: v.boolean(),
@@ -21,7 +21,7 @@ export const upsert = internalMutation({
 export const read = internalQuery({
   args: {
     subjectId: subjectIdValidator,
-    memoryType: memoryTypeValidator,
+    type: typeValidator,
   },
   handler: async (ctx, args) => MetadataModels.read(ctx, args),
 });

@@ -4,7 +4,7 @@ import type { MutationCtx, QueryCtx } from "../_generated/server";
 type Metadata = Doc<"metadata">;
 
 /**
- * Upsert: si une metadata avec le même subjectId + memoryType existe, on patch.
+ * Upsert: si une metadata avec le même subjectId + type existe, on patch.
  * Sinon, on insère.
  */
 export async function upsert(
@@ -12,14 +12,14 @@ export async function upsert(
   {
     subjectType,
     subjectId,
-    memoryType,
+    type,
     content,
-  }: Pick<Metadata, "subjectType" | "subjectId" | "memoryType" | "content">,
+  }: Pick<Metadata, "subjectType" | "subjectId" | "type" | "content">,
 ): Promise<boolean> {
   const existing = await ctx.db
     .query("metadata")
     .withIndex("by_subject_and_type", (q) =>
-      q.eq("subjectId", subjectId).eq("memoryType", memoryType),
+      q.eq("subjectId", subjectId).eq("type", type),
     )
     .unique();
 
@@ -35,7 +35,7 @@ export async function upsert(
     await ctx.db.insert("metadata", {
       subjectType,
       subjectId,
-      memoryType,
+      type,
       content,
       updatedAt: now,
     });
@@ -46,12 +46,12 @@ export async function upsert(
 
 export async function read(
   ctx: QueryCtx,
-  { subjectId, memoryType }: Pick<Metadata, "subjectId" | "memoryType">,
+  { subjectId, type }: Pick<Metadata, "subjectId" | "type">,
 ) {
   return await ctx.db
     .query("metadata")
     .withIndex("by_subject_and_type", (q) =>
-      q.eq("subjectId", subjectId).eq("memoryType", memoryType),
+      q.eq("subjectId", subjectId).eq("type", type),
     )
     .unique();
 }

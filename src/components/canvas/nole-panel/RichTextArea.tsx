@@ -3,6 +3,7 @@
 import { useNodeDataStore } from "@/stores/nodeDataStore";
 import { useCallback, useRef } from "react";
 import { MentionsInput, Mention } from "react-mentions";
+import { useNodes } from "@xyflow/react";
 import {
   getNodeDataTitle,
   getNodeIcon,
@@ -22,13 +23,18 @@ export default function RichTextArea({
   onSubmit,
 }: RichTextAreaProps) {
   const nodeDatas = useNodeDataStore((state) => state.nodeDatas);
+  const canvasNodes = useNodes();
 
-  const nodeDatasToMention = Array.from(nodeDatas.entries()).map(
-    ([id, nd]) => ({
-      id,
-      display: getNodeDataTitle(nd),
-    }),
-  );
+  const nodesToMention = canvasNodes
+    .filter((node) => node.data?.nodeDataId)
+    .map((node) => {
+      const nodeDataId = node.data.nodeDataId as Id<"nodeDatas">;
+      const nodeData = nodeDatas.get(nodeDataId);
+      return {
+        id: node.id,
+        display: nodeData ? getNodeDataTitle(nodeData) : node.id,
+      };
+    });
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -79,7 +85,7 @@ export default function RichTextArea({
       >
         <Mention
           trigger="@"
-          data={nodeDatasToMention}
+          data={nodesToMention}
           markup="@{{__id__||__display__}}"
           displayTransform={(_id, display) => `@${display}`}
           renderSuggestion={(
@@ -89,8 +95,14 @@ export default function RichTextArea({
             _index,
             focused,
           ) => {
-            const nd = nodeDatas.get(entry.id as Id<"nodeDatas">);
-            const Icon = getNodeIcon(nd?.type);
+            const node = canvasNodes.find(
+              (candidate) => candidate.id === entry.id,
+            );
+            const nodeDataId = node?.data?.nodeDataId as
+              | Id<"nodeDatas">
+              | undefined;
+            const nodeData = nodeDataId ? nodeDatas.get(nodeDataId) : undefined;
+            const Icon = getNodeIcon(nodeData?.type);
             return (
               <div
                 className={cn(

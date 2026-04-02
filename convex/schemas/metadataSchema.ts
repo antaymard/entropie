@@ -8,11 +8,11 @@ const subjectTypeValidator = v.union(
   v.literal("user"),
 );
 
-const memoryTypeValidator = v.union(
+const typeValidator = v.union(
   v.literal("one-liner"),
   v.literal("insight"),
   v.literal("preference"),
-  v.literal("relationship"),
+  v.literal("transcript"),
 );
 
 const subjectIdValidator = v.union(
@@ -26,14 +26,18 @@ const subjectIdValidator = v.union(
 const metadataValidator = v.object({
   subjectType: subjectTypeValidator,
   subjectId: subjectIdValidator,
-  memoryType: memoryTypeValidator,
+  type: typeValidator,
   content: v.string(),
   updatedAt: v.number(),
 });
+
+/*
+  Plus tard, on fera du chunking des réponses de l'IA, et un système de parentId. Les pdf transcripted très longs auront un parent de content vide, et des children avec des chunks de contenu. Mieux pour le RAG. Et pareil, les images extraites des pdf seront des enfants, avec un content_type "image" ou "extracted_image". Et un champs metadata pour stocker les infos d'extraction (page, position, url sur R2)...
+*/
 
 export {
   metadataValidator,
   subjectTypeValidator,
   subjectIdValidator,
-  memoryTypeValidator,
+  typeValidator,
 };

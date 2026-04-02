@@ -1,12 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlateEditor } from "platejs";
-import {
-  MarkdownPlugin,
-  remarkMdx,
-  remarkMention,
-  convertChildrenDeserialize,
-} from "@platejs/markdown";
-import type { MdMdxJsxTextElement } from "@platejs/markdown";
+import { MarkdownPlugin, remarkMdx, remarkMention } from "@platejs/markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import { pillMarkdownRules } from "./pillMarkdownRules";
@@ -58,7 +52,24 @@ export function markdownToPlateJson(markdown: string): any[] {
 
 /**
  * Convertit du Plate.js JSON (Slate Value) en chaîne Markdown.
+ * Avec `withBlockId: true`, préfixe chaque bloc de premier niveau par `[block:id]`.
  */
-export function plateJsonToMarkdown(nodes: any[]): string {
-  return converter.api.markdown.serialize({ value: nodes });
+export function plateJsonToMarkdown(
+  nodes: any[],
+  options?: { withBlockId?: boolean },
+): string {
+  if (!options?.withBlockId) {
+    return converter.api.markdown.serialize({ value: nodes });
+  }
+
+  return nodes
+    .map((node) => {
+      const md = converter.api.markdown.serialize({ value: [node] }).trim();
+      if (node.id && md) {
+        return `[block:${node.id}]\n${md}`;
+      }
+      return md;
+    })
+    .filter(Boolean)
+    .join("\n\n");
 }

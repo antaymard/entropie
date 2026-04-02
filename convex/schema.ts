@@ -35,10 +35,12 @@ const schema = defineSchema({
     "nodesDataId",
   ]),
 
-  metadata: defineTable(metadataValidator).index("by_subject_and_type", [
-    "subjectId",
-    "memoryType",
-  ]),
+  metadata: defineTable(metadataValidator)
+    .index("by_subject_and_type", ["subjectId", "type"])
+    .searchIndex("search_content", {
+      searchField: "content",
+      filterFields: ["subjectType", "subjectId", "type"],
+    }),
 
   // ============================================================================
   // NODE TEMPLATES

@@ -15,7 +15,7 @@ type CanvasData = {
     type: string;
     position: { x: number; y: number };
     nodeDataId: Id<"nodeDatas"> | null;
-    abstract: string | null;
+    oneLiner: string | null;
   }>;
   edges: Array<{
     source: string;
@@ -30,27 +30,27 @@ export const create = internalAction({
     console.log("🚧 Creating canvas context for canvasId:", canvasId);
     // 1. Récupérer les données du canvas pour extraire les nodeDataIds
     const canvasData = await ctx.runQuery(
-      internal.ia.nole.brain.getCanvasNodeDatasWithAbstracts
-        .getCanvasNodeDatasWithAbstracts,
+      internal.ia.nole.brain.getCanvasNodeDatasWithOneLiners
+        .getCanvasNodeDatasWithOneLiners,
       { canvasId },
     );
     if (!canvasData) return "No canvas found.";
 
-    // 2. Générer / rafraîchir les abstracts (skip auto si déjà à jour)
+    // 2. Générer / rafraîchir les one-liners (skip auto si déjà à jour)
     const nodeDataIds = canvasData.nodes
       .map((n) => n.nodeDataId)
       .filter((id): id is Id<"nodeDatas"> => id !== null);
 
     if (nodeDataIds.length > 0) {
-      await ctx.runAction(internal.ia.helpers.abstractGenerator.generateMany, {
+      await ctx.runAction(internal.ia.helpers.oneLinerGenerator.generateMany, {
         nodeDataIds,
       });
     }
 
-    // 3. Re-fetch avec les abstracts frais
+    // 3. Re-fetch avec les one-liners frais
     const freshData = await ctx.runQuery(
-      internal.ia.nole.brain.getCanvasNodeDatasWithAbstracts
-        .getCanvasNodeDatasWithAbstracts,
+      internal.ia.nole.brain.getCanvasNodeDatasWithOneLiners
+        .getCanvasNodeDatasWithOneLiners,
       { canvasId },
     );
     if (!freshData) return "No canvas found.";
@@ -80,7 +80,7 @@ function buildCanvasSummary(data: CanvasData): string {
       type: node.type,
       position: JSON.stringify(node.position),
       // nodeDataId: node.nodeDataId,
-      abstract: node.abstract ?? "No abstract available",
+      oneLiner: node.oneLiner ?? "No one-liner available",
       targetNodes: targetsBySource.get(node.idOnCanvas) ?? [],
     })),
   );

@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { internalAction, mutation } from "../_generated/server";
 import { baseAgent, createNoleAgent } from "./agents";
 import { requireAuth } from "../lib/auth";
-import { generateNoleSystemPrompt } from "./nole/brain/noleSystemPrompt";
+import { generateNoleSystemPrompt } from "./nole/noleSystemPrompt";
 import { internal } from "../_generated/api";
 import nodeAgentTool from "./tools/nodeAgentTool";
 

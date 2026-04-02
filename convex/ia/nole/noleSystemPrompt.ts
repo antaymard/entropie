@@ -1,7 +1,7 @@
-import { nodeDataConfig } from "../../../config/nodeConfig";
-import { ActionCtx } from "../../../_generated/server";
-import { Id } from "../../../_generated/dataModel";
-import { internal } from "../../../_generated/api";
+import { nodeDataConfig } from "../../config/nodeConfig";
+import { ActionCtx } from "../../_generated/server";
+import { Id } from "../../_generated/dataModel";
+import { internal } from "../../_generated/api";
 
 const nodeTypesContext = nodeDataConfig
   .map((item) => `- ${item.type} : ${item.llmDescription}`)

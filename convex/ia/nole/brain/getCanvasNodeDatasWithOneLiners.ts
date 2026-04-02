@@ -17,7 +17,7 @@ export const getCanvasNodeDatasWithOneLiners = internalQuery({
         const nodeDataId = node.nodeDataId ?? null;
         if (nodeDataId) {
           const memory = await ctx.db
-            .query("metadata")
+            .query("metadatas")
             .withIndex("by_subject_and_type", (q) =>
               q.eq("subjectId", nodeDataId).eq("type", "one-liner"),
             )

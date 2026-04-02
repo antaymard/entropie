@@ -1,0 +1,16 @@
+import { v } from "convex/values";
+import { query } from "./_generated/server";
+import { requireAuth } from "./lib/auth";
+
+export const listNodeDataMetadatas = query({
+  args: {
+    nodeDataId: v.id("nodeDatas"),
+  },
+  returns: v.any(),
+  handler: async (ctx, args) => {
+    const authUserId = await requireAuth(ctx);
+    if (!authUserId) return null;
+
+    return {};
+  },
+});

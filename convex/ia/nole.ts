@@ -5,6 +5,19 @@ import { requireAuth } from "../lib/auth";
 import { generateNoleSystemPrompt } from "./nole/noleSystemPrompt";
 import { internal } from "../_generated/api";
 
+function isExpectedAbortedStreamError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  return (
+    message.includes("stream") &&
+    message.includes("aborted") &&
+    (message.includes("trying to finish") || message.includes("finish"))
+  );
+}
+
 // Save user message, then stream response asynchronously
 export const saveMessage = mutation({
   args: {
@@ -55,23 +68,31 @@ export const streamResponse = internalAction({
         canvasId,
       },
     });
-    const result = await noleAgent.streamText(
-      ctx,
-      { threadId, userId: authUserId },
-      {
-        promptMessageId,
-        system: brainInstructions,
-      },
-      {
-        saveStreamDeltas: {
-          chunking: "line", // Stream line by line
-          throttleMs: 200, // 200ms between each update
+    try {
+      const result = await noleAgent.streamText(
+        ctx,
+        { threadId, userId: authUserId },
+        {
+          promptMessageId,
+          system: brainInstructions,
         },
-      },
-    );
+        {
+          saveStreamDeltas: {
+            chunking: "line", // Stream line by line
+            throttleMs: 200, // 200ms between each update
+          },
+        },
+      );
 
-    // Consume the stream to ensure it finishes
-    await result.consumeStream();
+      // Consume the stream to ensure it finishes.
+      await result.consumeStream();
+    } catch (error) {
+      if (isExpectedAbortedStreamError(error)) {
+        return null;
+      }
+      throw error;
+    }
+
     return null;
   },
 });

@@ -175,7 +175,14 @@ export default function NoleCanvasPanel() {
   }, [layoutMode, audioBlob, transcribeAction, reset]);
 
   const sendMessage = useCallback(async () => {
-    if (!threadId || richTextValue.trim() === "" || isSending) return;
+    if (
+      !threadId ||
+      richTextValue.trim() === "" ||
+      isSending ||
+      isAssistantResponding
+    ) {
+      return;
+    }
 
     const prompt = richTextValue;
     setRichTextValue("");
@@ -346,7 +353,11 @@ export default function NoleCanvasPanel() {
 
   if (layoutMode === "text") {
     const threadTitle = threadInfo?.title || "New Session";
-    const canSend = richTextValue.trim() !== "" && !isSending && !!threadId;
+    const canSend =
+      richTextValue.trim() !== "" &&
+      !isSending &&
+      !isAssistantResponding &&
+      !!threadId;
 
     return (
       <div className="bg-white rounded p-3 w-2xl border shadow-md/5 flex flex-col gap-3">

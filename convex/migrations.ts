@@ -1,97 +1,225 @@
 import { v } from "convex/values";
 import { internalMutation } from "./_generated/server";
+import { generateLlmId } from "./lib/generateLlmId";
 
-type FloatingTextLevel = "h1" | "h2" | "h3" | "p";
+const llmIdRegex = /^\d{3}[a-zA-Z]\d{3}[a-zA-Z]$/;
 
-function normalizeFloatingTextLevel(level: unknown): FloatingTextLevel {
-	if (level === "h1" || level === "h2" || level === "h3" || level === "p") {
-		return level;
-	}
-	return "p";
+function createUniqueLlmId(usedIds: Set<string>) {
+  let id = generateLlmId();
+  while (usedIds.has(id)) {
+    id = generateLlmId();
+  }
+
+  usedIds.add(id);
+  return id;
 }
 
-export const migrateFloatingTextToNodeData = internalMutation({
-	args: {
-		dryRun: v.optional(v.boolean()),
-	},
-	returns: v.object({
-		dryRun: v.boolean(),
-		canvasesScanned: v.number(),
-		canvasesUpdated: v.number(),
-		floatingTextNodesFound: v.number(),
-		nodeDatasCreated: v.number(),
-		nodesAlreadyMigrated: v.number(),
-	}),
-	handler: async (ctx, { dryRun }) => {
-		const isDryRun = dryRun ?? true;
-		const canvases = await ctx.db.query("canvases").collect();
+function normalizeHandle({
+  handle,
+  oldNodeId,
+  newNodeId,
+  expectedKind,
+}: {
+  handle: string | undefined;
+  oldNodeId: string;
+  newNodeId: string;
+  expectedKind: "s" | "t";
+}) {
+  if (!handle) {
+    return undefined;
+  }
 
-		let canvasesUpdated = 0;
-		let floatingTextNodesFound = 0;
-		let nodeDatasCreated = 0;
-		let nodesAlreadyMigrated = 0;
+  if (handle.startsWith(oldNodeId)) {
+    const tail = handle.slice(oldNodeId.length);
+    const normalizedTail = tail.replace(/^_/, "");
+    if (
+      /^[st][lrbt]$/.test(normalizedTail) &&
+      normalizedTail[0] === expectedKind
+    ) {
+      return `${newNodeId}_${normalizedTail}`;
+    }
 
-		for (const canvas of canvases) {
-			const nodes = canvas.nodes ?? [];
-			let canvasChanged = false;
+    return `${newNodeId}${tail}`;
+  }
 
-			const nextNodes = await Promise.all(
-				nodes.map(async (node) => {
-					if (node.type !== "floatingText") return node;
+  const suffixMatch = handle.match(/_?([st][lrbt])$/);
+  if (suffixMatch && suffixMatch[1][0] === expectedKind) {
+    return `${newNodeId}_${suffixMatch[1]}`;
+  }
 
-					floatingTextNodesFound += 1;
+  return handle;
+}
 
-					if (node.nodeDataId) {
-						nodesAlreadyMigrated += 1;
-						return node;
-					}
+export const migrateCanvasNodeAndEdgeIds = internalMutation({
+  args: {
+    dryRun: v.optional(v.boolean()),
+    canvasId: v.optional(v.id("canvases")),
+  },
+  returns: v.object({
+    dryRun: v.boolean(),
+    canvasesScanned: v.number(),
+    canvasesChanged: v.number(),
+    canvasesUpdated: v.number(),
+    nodeIdsChanged: v.number(),
+    edgeIdsChanged: v.number(),
+    edgesRewired: v.number(),
+    handlesNormalized: v.number(),
+    nodesWithParentRewired: v.number(),
+  }),
+  handler: async (ctx, { dryRun, canvasId }) => {
+    const isDryRun = dryRun ?? true;
+    let canvases;
+    if (canvasId) {
+      const canvas = await ctx.db.get(canvasId);
+      canvases = canvas ? [canvas] : [];
+    } else {
+      canvases = await ctx.db.query("canvases").collect();
+    }
 
-					const rawData = node.data ?? {};
-					const text = typeof rawData.text === "string" ? rawData.text : "";
-					const level = normalizeFloatingTextLevel(rawData.level);
+    const existingCanvases = canvases.filter((canvas) => canvas !== null);
 
-					let nodeDataId = node.nodeDataId;
+    let canvasesUpdated = 0;
+    let canvasesChanged = 0;
+    let nodeIdsChanged = 0;
+    let edgeIdsChanged = 0;
+    let edgesRewired = 0;
+    let handlesNormalized = 0;
+    let nodesWithParentRewired = 0;
 
-					if (!isDryRun) {
-						nodeDataId = await ctx.db.insert("nodeDatas", {
-							type: "floatingText",
-							values: {
-								text,
-								level,
-							},
-							updatedAt: Date.now(),
-						});
-						nodeDatasCreated += 1;
-					}
+    for (const canvas of existingCanvases) {
+      const nodes = canvas.nodes ?? [];
+      const edges = canvas.edges ?? [];
 
-					const { text: _text, level: _level, ...remainingData } = rawData;
-					const hasRemainingData = Object.keys(remainingData).length > 0;
+      const usedNodeIds = new Set<string>();
+      const nodeIdMap = new Map<string, string>();
 
-					canvasChanged = true;
-					return {
-						...node,
-						...(nodeDataId ? { nodeDataId } : {}),
-						...(hasRemainingData ? { data: remainingData } : { data: undefined }),
-					};
-				}),
-			);
+      for (const node of nodes) {
+        const isStableLlmId =
+          llmIdRegex.test(node.id) && !usedNodeIds.has(node.id);
+        const nextNodeId = isStableLlmId
+          ? node.id
+          : createUniqueLlmId(usedNodeIds);
+        nodeIdMap.set(node.id, nextNodeId);
+        if (nextNodeId !== node.id) {
+          nodeIdsChanged += 1;
+        }
+        if (isStableLlmId) {
+          usedNodeIds.add(node.id);
+        }
+      }
 
-			if (!isDryRun && canvasChanged) {
-				await ctx.db.patch(canvas._id, {
-					nodes: nextNodes,
-					updatedAt: Date.now(),
-				});
-				canvasesUpdated += 1;
-			}
-		}
+      const usedEdgeIds = new Set<string>();
+      const edgeIdMap = new Map<string, string>();
 
-		return {
-			dryRun: isDryRun,
-			canvasesScanned: canvases.length,
-			canvasesUpdated,
-			floatingTextNodesFound,
-			nodeDatasCreated,
-			nodesAlreadyMigrated,
-		};
-	},
+      for (const edge of edges) {
+        const isStableLlmId =
+          llmIdRegex.test(edge.id) && !usedEdgeIds.has(edge.id);
+        const nextEdgeId = isStableLlmId
+          ? edge.id
+          : createUniqueLlmId(usedEdgeIds);
+        edgeIdMap.set(edge.id, nextEdgeId);
+        if (nextEdgeId !== edge.id) {
+          edgeIdsChanged += 1;
+        }
+        if (isStableLlmId) {
+          usedEdgeIds.add(edge.id);
+        }
+      }
+
+      let canvasChanged = false;
+
+      const migratedNodes = nodes.map((node) => {
+        const nextNodeId = nodeIdMap.get(node.id) ?? node.id;
+        const nextParentId = node.parentId
+          ? (nodeIdMap.get(node.parentId) ?? node.parentId)
+          : undefined;
+
+        if (nextNodeId !== node.id || nextParentId !== node.parentId) {
+          canvasChanged = true;
+        }
+
+        if (nextParentId !== node.parentId && node.parentId) {
+          nodesWithParentRewired += 1;
+        }
+
+        return {
+          ...node,
+          id: nextNodeId,
+          parentId: nextParentId,
+        };
+      });
+
+      const migratedEdges = edges.map((edge) => {
+        const nextEdgeId = edgeIdMap.get(edge.id) ?? edge.id;
+        const nextSource = nodeIdMap.get(edge.source) ?? edge.source;
+        const nextTarget = nodeIdMap.get(edge.target) ?? edge.target;
+        const nextSourceHandle = normalizeHandle({
+          handle: edge.sourceHandle,
+          oldNodeId: edge.source,
+          newNodeId: nextSource,
+          expectedKind: "s",
+        });
+        const nextTargetHandle = normalizeHandle({
+          handle: edge.targetHandle,
+          oldNodeId: edge.target,
+          newNodeId: nextTarget,
+          expectedKind: "t",
+        });
+
+        if (
+          nextEdgeId !== edge.id ||
+          nextSource !== edge.source ||
+          nextTarget !== edge.target
+        ) {
+          canvasChanged = true;
+        }
+
+        if (nextSource !== edge.source || nextTarget !== edge.target) {
+          edgesRewired += 1;
+        }
+
+        if (
+          nextSourceHandle !== edge.sourceHandle ||
+          nextTargetHandle !== edge.targetHandle
+        ) {
+          handlesNormalized += 1;
+          canvasChanged = true;
+        }
+
+        return {
+          ...edge,
+          id: nextEdgeId,
+          source: nextSource,
+          target: nextTarget,
+          sourceHandle: nextSourceHandle,
+          targetHandle: nextTargetHandle,
+        };
+      });
+
+      if (canvasChanged) {
+        canvasesChanged += 1;
+      }
+
+      if (!isDryRun && canvasChanged) {
+        await ctx.db.patch(canvas._id, {
+          nodes: migratedNodes,
+          edges: migratedEdges,
+          updatedAt: Date.now(),
+        });
+        canvasesUpdated += 1;
+      }
+    }
+
+    return {
+      dryRun: isDryRun,
+      canvasesScanned: existingCanvases.length,
+      canvasesChanged,
+      canvasesUpdated,
+      nodeIdsChanged,
+      edgeIdsChanged,
+      edgesRewired,
+      handlesNormalized,
+      nodesWithParentRewired,
+    };
+  },
 });

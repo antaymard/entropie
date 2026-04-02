@@ -46,6 +46,7 @@ import type * as ia_tools_websearchTool from "../ia/tools/websearchTool.js";
 import type * as ia_tools_writeEdgeDynamicTool from "../ia/tools/writeEdgeDynamicTool.js";
 import type * as ia_tools_writeNodeDynamicTool from "../ia/tools/writeNodeDynamicTool.js";
 import type * as lib_auth from "../lib/auth.js";
+import type * as lib_generateLlmId from "../lib/generateLlmId.js";
 import type * as lib_r2 from "../lib/r2.js";
 import type * as links from "../links.js";
 import type * as migrations from "../migrations.js";
@@ -117,6 +118,7 @@ declare const fullApi: ApiFromModules<{
   "ia/tools/writeEdgeDynamicTool": typeof ia_tools_writeEdgeDynamicTool;
   "ia/tools/writeNodeDynamicTool": typeof ia_tools_writeNodeDynamicTool;
   "lib/auth": typeof lib_auth;
+  "lib/generateLlmId": typeof lib_generateLlmId;
   "lib/r2": typeof lib_r2;
   links: typeof links;
   migrations: typeof migrations;

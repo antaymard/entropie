@@ -11,6 +11,7 @@ import DocumentStaticField from "@/components/fields/document-fields/DocumentSta
 import { Button } from "@/components/shadcn/button";
 import { TbMaximize, TbNews } from "react-icons/tb";
 import { useWindowsStore } from "@/stores/windowsStore";
+import { parseStoredPlateDocument } from "@/../convex/lib/plateDocumentStorage";
 
 const defaultValue: Value = normalizeNodeId([
   {
@@ -31,8 +32,10 @@ function DocumentNode(xyNode: Node) {
   }, [nodeDataId, openWindow, xyNode.id]);
 
   // Récupère la valeur depuis le store NodeData
-  const currentValue: Value =
-    (values?.doc as Value | undefined) ?? defaultValue;
+  const parsedDoc = parseStoredPlateDocument(values?.doc);
+  const currentValue: Value = parsedDoc
+    ? normalizeNodeId(parsedDoc as Value)
+    : defaultValue;
 
   const isDocEmpty = currentValue.every((node) => {
     const getText = (n: unknown): string => {

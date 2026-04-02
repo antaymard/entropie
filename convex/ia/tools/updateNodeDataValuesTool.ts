@@ -6,6 +6,7 @@ import { markdownToPlateJson } from "../helpers/plateMarkdownConverter";
 import { type ActionCtx } from "../../_generated/server";
 import { type ReportProgressFn } from "../../automation/progressReporter";
 import { validateNodeInputSchemaForLLM } from "../helpers/nodeInputSchemaValidatorForLLM";
+import { stringifyPlateDocumentForStorage } from "../../lib/plateDocumentStorage";
 
 type UpdateValuesMutationRef = FunctionReference<
   "mutation",
@@ -59,7 +60,10 @@ export default function updateNodeDataValuesTool({
 
         if (nodeData.type === "document" && typeof rawArgs.doc === "string") {
           const platejsContent = markdownToPlateJson(rawArgs.doc);
-          updates = { ...rawArgs, doc: platejsContent };
+          updates = {
+            ...rawArgs,
+            doc: stringifyPlateDocumentForStorage(platejsContent),
+          };
         }
 
         await ctx.runMutation(updateValuesMutation, {

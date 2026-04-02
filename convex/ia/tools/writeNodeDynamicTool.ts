@@ -7,6 +7,7 @@ import { markdownToPlateJson } from "../helpers/plateMarkdownConverter";
 import { validateNodeInputSchemaForLLM } from "../helpers/nodeInputSchemaValidatorForLLM";
 import { type NodeType } from "../../schemas/nodeTypeSchema";
 import { generateLlmId } from "../../lib/llmId";
+import { stringifyPlateDocumentForStorage } from "../../lib/plateDocumentStorage";
 import z from "zod";
 
 function getNodeDataValuesSchema(nodeType: NodeType): z.ZodTypeAny {
@@ -80,7 +81,9 @@ export default function writeNodeDynamicTool({
         if (nodeType === "document" && typeof nodeDataValues.doc === "string") {
           nodeDataValues = {
             ...nodeDataValues,
-            doc: markdownToPlateJson(nodeDataValues.doc),
+            doc: stringifyPlateDocumentForStorage(
+              markdownToPlateJson(nodeDataValues.doc),
+            ),
           };
         }
 

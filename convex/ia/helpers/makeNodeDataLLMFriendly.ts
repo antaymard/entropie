@@ -1,5 +1,6 @@
 import { Doc } from "../../_generated/dataModel";
 import { plateJsonToMarkdown } from "./plateMarkdownConverter";
+import { parseStoredPlateDocument } from "../../lib/plateDocumentStorage";
 
 /**
  * Formate les values d'un seul nodeData en markdown lisible pour un LLM.
@@ -11,8 +12,9 @@ export function makeNodeDataLLMFriendly(nodeData: Doc<"nodeDatas">): string {
   switch (nodeData.type) {
     case "document": {
       const doc = values.doc;
-      if (Array.isArray(doc)) {
-        return plateJsonToMarkdown(doc);
+      const parsedDoc = parseStoredPlateDocument(doc);
+      if (parsedDoc) {
+        return plateJsonToMarkdown(parsedDoc);
       }
       return typeof doc === "string" ? doc : JSON.stringify(doc);
     }

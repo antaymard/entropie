@@ -1,4 +1,4 @@
-import type { Value } from "platejs";
+import { normalizeNodeId, type Value } from "platejs";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DocumentEditorField, {
   type DocumentEditorFieldHandle,
@@ -7,6 +7,7 @@ import { useNodeData, useNodeDataValues } from "@/hooks/useNodeData";
 import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { useWindowFrameContext } from "@/components/windows/WindowFrameContext";
+import { parseStoredPlateDocument } from "@/../convex/lib/plateDocumentStorage";
 
 interface DocumentWindowProps {
   xyNodeId: string;
@@ -45,10 +46,10 @@ function DocumentWindow({ xyNodeId, nodeDataId }: DocumentWindowProps) {
     [nodeDataId, updateNodeDataValues],
   );
 
-  const editorValue = useMemo(
-    () => ({ doc: (nodeDataValues?.doc as Value) || [] }),
-    [nodeDataValues?.doc],
-  );
+  const editorValue = useMemo(() => {
+    const parsedDoc = parseStoredPlateDocument(nodeDataValues?.doc);
+    return { doc: parsedDoc ? normalizeNodeId(parsedDoc as Value) : [] };
+  }, [nodeDataValues?.doc]);
 
   if (!nodeDataValues) return null;
 

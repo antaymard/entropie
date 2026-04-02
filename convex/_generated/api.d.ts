@@ -47,6 +47,7 @@ import type * as lib_auth from "../lib/auth.js";
 import type * as lib_generateLlmId from "../lib/generateLlmId.js";
 import type * as lib_getNodeDataTitle from "../lib/getNodeDataTitle.js";
 import type * as lib_llmId from "../lib/llmId.js";
+import type * as lib_plateDocumentStorage from "../lib/plateDocumentStorage.js";
 import type * as lib_r2 from "../lib/r2.js";
 import type * as lib_xml from "../lib/xml.js";
 import type * as links from "../links.js";
@@ -123,6 +124,7 @@ declare const fullApi: ApiFromModules<{
   "lib/generateLlmId": typeof lib_generateLlmId;
   "lib/getNodeDataTitle": typeof lib_getNodeDataTitle;
   "lib/llmId": typeof lib_llmId;
+  "lib/plateDocumentStorage": typeof lib_plateDocumentStorage;
   "lib/r2": typeof lib_r2;
   "lib/xml": typeof lib_xml;
   links: typeof links;

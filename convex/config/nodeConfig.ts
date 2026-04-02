@@ -143,9 +143,9 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
 
     dataValuesSchema: z
       .object({
-        doc: z.any().default([]),
+        doc: z.string().default("[]"),
       })
-      .default({ doc: [] }),
+      .default({ doc: "[]" }),
     toolInputSchema: z.object({
       doc: z.string().describe("The markdown content of the document."),
     }),

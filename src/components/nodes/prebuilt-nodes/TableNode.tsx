@@ -2,6 +2,7 @@ import { memo, useCallback } from "react";
 import type { Node } from "@xyflow/react";
 import { areNodePropsEqual } from "../areNodePropsEqual";
 import { useNodeDataValues } from "@/hooks/useNodeData";
+import { useNodeDataTitle } from "@/hooks/useNodeTitle";
 import type { Id } from "@/../convex/_generated/dataModel";
 import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
 import NodeFrame from "../NodeFrame";
@@ -93,6 +94,7 @@ function renderCellValue(value: CellValue | undefined, type: ColumnType) {
 function TableNode(xyNode: Node) {
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
   const values = useNodeDataValues(nodeDataId);
+  const tableTitle = useNodeDataTitle(nodeDataId) ?? "Table";
   const openWindow = useWindowsStore((s) => s.openWindow);
 
   const handleOpenWindow = useCallback(() => {
@@ -105,6 +107,7 @@ function TableNode(xyNode: Node) {
     rows: [],
   };
   const title = (values?.title as string | undefined) ?? "";
+  const isTitleVariant = xyNode.data.variant === "title";
   const isTableEmpty =
     tableData.columns.length === 0 && tableData.rows.length === 0;
 
@@ -120,41 +123,50 @@ function TableNode(xyNode: Node) {
           <TbMaximize />
         </Button>
       </CanvasNodeToolbar>
-      <NodeFrame xyNode={xyNode}>
-        <div className="h-full overflow-auto">
-          {title && (
-            <p className="px-2 pt-1.5 pb-0.5 font-semibold truncate text-lg">
-              {title}
+      <NodeFrame xyNode={xyNode} resizable={!isTitleVariant}>
+        {isTitleVariant ? (
+          <div className="flex items-center gap-2 px-2 min-w-0 h-full relative">
+            <TbTable size={18} className="shrink-0" />
+            <p className="truncate flex-1 min-w-0" title={tableTitle}>
+              {tableTitle}
             </p>
-          )}
-          {isTableEmpty ? (
-            <div className="h-full flex flex-col items-center justify-center gap-1.5 text-muted-foreground/40 select-none pointer-events-none">
-              <TbTable size={22} />
-              <span className="text-xs">Double-clic pour éditer</span>
-            </div>
-          ) : (
-            <table className="w-full caption-bottom">
-              <TableHeader>
-                <TableRow>
-                  {tableData.columns.map((col) => (
-                    <TableHead key={col.id}>{col.name}</TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {tableData.rows.map((row) => (
-                  <TableRow key={row.id}>
+          </div>
+        ) : (
+          <div className="h-full overflow-auto">
+            {title && (
+              <p className="px-2 pt-1.5 pb-0.5 font-semibold truncate text-lg">
+                {title}
+              </p>
+            )}
+            {isTableEmpty ? (
+              <div className="h-full flex flex-col items-center justify-center gap-1.5 text-muted-foreground/40 select-none pointer-events-none">
+                <TbTable size={22} />
+                <span className="text-xs">Double-clic pour éditer</span>
+              </div>
+            ) : (
+              <table className="w-full caption-bottom">
+                <TableHeader>
+                  <TableRow>
                     {tableData.columns.map((col) => (
-                      <TableCell key={col.id}>
-                        {renderCellValue(row.cells[col.id], col.type)}
-                      </TableCell>
+                      <TableHead key={col.id}>{col.name}</TableHead>
                     ))}
                   </TableRow>
-                ))}
-              </TableBody>
-            </table>
-          )}
-        </div>
+                </TableHeader>
+                <TableBody>
+                  {tableData.rows.map((row) => (
+                    <TableRow key={row.id}>
+                      {tableData.columns.map((col) => (
+                        <TableCell key={col.id}>
+                          {renderCellValue(row.cells[col.id], col.type)}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </table>
+            )}
+          </div>
+        )}
       </NodeFrame>
     </>
   );

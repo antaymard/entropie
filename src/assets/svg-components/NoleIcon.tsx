@@ -2,11 +2,11 @@ interface NoleIconProps {
   size?: number | string;
 }
 
-export default function NoleIcon({ size = "1.2em" }: NoleIconProps) {
+export default function NoleIcon({ size = "1.3em" }: NoleIconProps) {
   return (
     <svg
       style={{ width: size, height: size }}
-      viewBox="0 0 10 10"
+      viewBox="0 0 10 11"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
@@ -21,9 +21,9 @@ export default function NoleIcon({ size = "1.2em" }: NoleIconProps) {
       />
       <line
         x1="0.750244"
-        y1="9.25006"
+        y1="9.5"
         x2="9.25031"
-        y2="9.25006"
+        y2="9.5"
         stroke="#475569"
         strokeWidth="1.5"
         strokeLinecap="round"

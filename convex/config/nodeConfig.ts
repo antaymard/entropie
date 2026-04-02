@@ -266,6 +266,20 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
     llmDescription:
       "For structured tabular data with typed columns. Use this node to store and display any structured data in a table format, where you can define the columns and their types (text, number, checkbox, date, link). When updating a file, you can ask the agentTool to add rows, update specific rows or remove them, to make the update more reliable. \nThe required data value are tanstack-table compatible : 'columns' (an array of column definitions, each with an 'id', 'name', and 'type') and 'rows' (an array of row objects, each with an 'id' and 'cells' that map column ids to their respective values). An optional 'title' field (string) can be set to give the table a title.",
     defaultDimensions: { width: 400, height: 300, resizable: true },
+    variants: {
+      default: {
+        label: "Preview",
+        defaultWidth: 400,
+        defaultHeight: 300,
+        isDefault: true,
+      },
+      title: {
+        label: "Title",
+        defaultWidth: 220,
+        defaultHeight: 33,
+        resizable: false,
+      },
+    },
     canHaveAutomation: false,
 
     dataValuesSchema: z

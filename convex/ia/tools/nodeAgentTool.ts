@@ -1,20 +1,17 @@
 import { createTool, createThread } from "@convex-dev/agent";
 import { z } from "zod";
 import { components } from "../../_generated/api";
-import type { Id } from "../../_generated/dataModel";
 import type { ActionCtx } from "../../_generated/server";
 import { nodeTypeValues } from "../../schemas/nodeTypeSchema";
 import { createToolAgent } from "../agents";
+import type { NoleToolRuntimeContext } from "../noleToolRuntimeContext";
 import writeEdgeDynamicTool from "./writeEdgeDynamicTool";
 import writeNodeDynamicTool from "./writeNodeDynamicTool";
 
 export default function nodeAgentTool({
   authUserId,
   canvasId,
-}: {
-  authUserId: Id<"users">;
-  canvasId: Id<"canvases">;
-}) {
+}: NoleToolRuntimeContext) {
   return createTool({
     description:
       "Launch a focused subagent to create/update/delete nodes and edges on the current canvas.",

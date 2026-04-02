@@ -28,6 +28,7 @@ import type * as ia_helpers_plateMarkdownConverter from "../ia/helpers/plateMark
 import type * as ia_helpers_spatialCanvasOverviewGenerator from "../ia/helpers/spatialCanvasOverviewGenerator.js";
 import type * as ia_helpers_transcriptGenerator from "../ia/helpers/transcriptGenerator.js";
 import type * as ia_nole from "../ia/nole.js";
+import type * as ia_noleToolRuntimeContext from "../ia/noleToolRuntimeContext.js";
 import type * as ia_nole_noleSystemPrompt from "../ia/nole/noleSystemPrompt.js";
 import type * as ia_tools__toolTemplate from "../ia/tools/_toolTemplate.js";
 import type * as ia_tools_editNodeDataTool from "../ia/tools/editNodeDataTool.js";
@@ -35,7 +36,7 @@ import type * as ia_tools_editNodeOnCanvasTool from "../ia/tools/editNodeOnCanva
 import type * as ia_tools_nodeAgentTool from "../ia/tools/nodeAgentTool.js";
 import type * as ia_tools_openWebPageTool from "../ia/tools/openWebPageTool.js";
 import type * as ia_tools_readNodeConfigsTool from "../ia/tools/readNodeConfigsTool.js";
-import type * as ia_tools_readNodeDataTool from "../ia/tools/readNodeDataTool.js";
+import type * as ia_tools_readNodesTool from "../ia/tools/readNodesTool.js";
 import type * as ia_tools_readPdfTool from "../ia/tools/readPdfTool.js";
 import type * as ia_tools_updateNodeDataValuesTool from "../ia/tools/updateNodeDataValuesTool.js";
 import type * as ia_tools_viewImageTool from "../ia/tools/viewImageTool.js";
@@ -44,7 +45,9 @@ import type * as ia_tools_writeEdgeDynamicTool from "../ia/tools/writeEdgeDynami
 import type * as ia_tools_writeNodeDynamicTool from "../ia/tools/writeNodeDynamicTool.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_generateLlmId from "../lib/generateLlmId.js";
+import type * as lib_getNodeDataTitle from "../lib/getNodeDataTitle.js";
 import type * as lib_r2 from "../lib/r2.js";
+import type * as lib_xml from "../lib/xml.js";
 import type * as links from "../links.js";
 import type * as metadatas from "../metadatas.js";
 import type * as migrations from "../migrations.js";
@@ -100,6 +103,7 @@ declare const fullApi: ApiFromModules<{
   "ia/helpers/spatialCanvasOverviewGenerator": typeof ia_helpers_spatialCanvasOverviewGenerator;
   "ia/helpers/transcriptGenerator": typeof ia_helpers_transcriptGenerator;
   "ia/nole": typeof ia_nole;
+  "ia/noleToolRuntimeContext": typeof ia_noleToolRuntimeContext;
   "ia/nole/noleSystemPrompt": typeof ia_nole_noleSystemPrompt;
   "ia/tools/_toolTemplate": typeof ia_tools__toolTemplate;
   "ia/tools/editNodeDataTool": typeof ia_tools_editNodeDataTool;
@@ -107,7 +111,7 @@ declare const fullApi: ApiFromModules<{
   "ia/tools/nodeAgentTool": typeof ia_tools_nodeAgentTool;
   "ia/tools/openWebPageTool": typeof ia_tools_openWebPageTool;
   "ia/tools/readNodeConfigsTool": typeof ia_tools_readNodeConfigsTool;
-  "ia/tools/readNodeDataTool": typeof ia_tools_readNodeDataTool;
+  "ia/tools/readNodesTool": typeof ia_tools_readNodesTool;
   "ia/tools/readPdfTool": typeof ia_tools_readPdfTool;
   "ia/tools/updateNodeDataValuesTool": typeof ia_tools_updateNodeDataValuesTool;
   "ia/tools/viewImageTool": typeof ia_tools_viewImageTool;
@@ -116,7 +120,9 @@ declare const fullApi: ApiFromModules<{
   "ia/tools/writeNodeDynamicTool": typeof ia_tools_writeNodeDynamicTool;
   "lib/auth": typeof lib_auth;
   "lib/generateLlmId": typeof lib_generateLlmId;
+  "lib/getNodeDataTitle": typeof lib_getNodeDataTitle;
   "lib/r2": typeof lib_r2;
+  "lib/xml": typeof lib_xml;
   links: typeof links;
   metadatas: typeof metadatas;
   migrations: typeof migrations;

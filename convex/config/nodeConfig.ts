@@ -277,7 +277,6 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
         label: "Title",
         defaultWidth: 220,
         defaultHeight: 33,
-        resizable: false,
       },
     },
     canHaveAutomation: false,

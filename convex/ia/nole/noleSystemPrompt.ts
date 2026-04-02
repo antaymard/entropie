@@ -2,6 +2,7 @@ import { nodeDataConfig } from "../../config/nodeConfig";
 import { ActionCtx } from "../../_generated/server";
 import { Id } from "../../_generated/dataModel";
 import { internal } from "../../_generated/api";
+import { escapeXmlText } from "../../lib/xml";
 
 const nodeTypesContext = nodeDataConfig
   .map((item) => `- ${item.type} : ${item.llmDescription}`)
@@ -27,7 +28,7 @@ async function generateNoleSystemPrompt({
 
   const userContext = user
     ? `
-${user.name ? `The user's name is ${user.name}.` : "No name is known about the user."}
+${user.name ? `The user's name is ${escapeXmlText(user.name)}.` : "No name is known about the user."}
 `
     : "";
 

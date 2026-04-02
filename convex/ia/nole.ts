@@ -4,7 +4,6 @@ import { baseAgent, createNoleAgent } from "./agents";
 import { requireAuth } from "../lib/auth";
 import { generateNoleSystemPrompt } from "./nole/noleSystemPrompt";
 import { internal } from "../_generated/api";
-import nodeAgentTool from "./tools/nodeAgentTool";
 
 // Save user message, then stream response asynchronously
 export const saveMessage = mutation({
@@ -51,11 +50,9 @@ export const streamResponse = internalAction({
     });
 
     const noleAgent = createNoleAgent({
-      tools: {
-        node_and_edge_manipulation_tool: nodeAgentTool({
-          authUserId,
-          canvasId,
-        }),
+      runtimeContext: {
+        authUserId,
+        canvasId,
       },
     });
     const result = await noleAgent.streamText(

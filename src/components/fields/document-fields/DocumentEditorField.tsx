@@ -24,6 +24,7 @@ interface DocumentEditorFieldProps extends BaseFieldProps<{ doc: Value }> {
   plugins?: typeof EditorKit;
   isLocked?: boolean;
   onDirtyChange?: (isDirty: boolean) => void;
+  valueVersion?: number;
 }
 
 const DocumentEditorField = forwardRef<
@@ -38,12 +39,15 @@ const DocumentEditorField = forwardRef<
     plugins = EditorKit,
     isLocked,
     onDirtyChange,
+    valueVersion,
   },
   ref,
 ) {
   const initialValue: Value = value?.doc as Value;
   const setFocus = useCanvasStore((s) => s.setFocus);
   const skipNextChangeRef = useRef(false);
+  const editorScrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const lastAppliedVersionRef = useRef<number | null>(null);
 
   const editor = usePlateEditor({
     id: editorId ? `doc-${editorId}` : undefined,
@@ -51,13 +55,35 @@ const DocumentEditorField = forwardRef<
     value: initialValue,
   });
 
-  // Last Write Wins: server value always overrides local content unconditionally
+  // Last Write Wins, but only when server version changes.
   useEffect(() => {
     if (!initialValue) return;
+
+    if (
+      valueVersion !== undefined &&
+      lastAppliedVersionRef.current === valueVersion
+    ) {
+      return;
+    }
+
+    const previousScrollTop =
+      editorScrollContainerRef.current?.scrollTop ?? null;
     skipNextChangeRef.current = true;
     editor.tf.setValue(initialValue);
+    if (valueVersion !== undefined) {
+      lastAppliedVersionRef.current = valueVersion;
+    }
+
+    if (previousScrollTop !== null) {
+      requestAnimationFrame(() => {
+        if (editorScrollContainerRef.current) {
+          editorScrollContainerRef.current.scrollTop = previousScrollTop;
+        }
+      });
+    }
+
     onDirtyChange?.(false);
-  }, [initialValue, editor, onDirtyChange]);
+  }, [initialValue, valueVersion, editor, onDirtyChange]);
 
   const save = useCallback(() => {
     onChange?.({ doc: editor.children as Value });
@@ -79,14 +105,22 @@ const DocumentEditorField = forwardRef<
     setFocus("platejs");
   }, [setFocus, isLocked]);
 
-  const handleBlur = useCallback(() => {
-    setFocus("canvas");
-  }, [setFocus]);
+  const handleBlur = useCallback(
+    (e: React.FocusEvent<HTMLDivElement>) => {
+      if (e.currentTarget.contains(e.relatedTarget as Node | null)) {
+        return;
+      }
+
+      setFocus("canvas");
+    },
+    [setFocus],
+  );
 
   return (
     <div className="relative h-full" onFocus={handleFocus} onBlur={handleBlur}>
       <Plate editor={editor} onValueChange={handleChange}>
         <EditorContainer
+          ref={editorScrollContainerRef}
           variant="default"
           className={cn(
             "nodrag h-full overflow-auto",

@@ -6,6 +6,7 @@ import { internal } from "../../_generated/api";
 import { generateText } from "ai";
 import { openrouter } from "@openrouter/ai-sdk-provider";
 import { plateJsonToMarkdown } from "./plateMarkdownConverter";
+import { parseStoredPlateDocument } from "../../lib/plateDocumentStorage";
 import { uploadBuffer } from "../../lib/r2";
 
 // -- transcribeNode ------------------------------------------------------
@@ -222,9 +223,10 @@ async function transcribeFile(
 // -- Branch: DocumentNode ------------------------------------------------
 
 function transcribeDocument(values: Record<string, unknown>): string | null {
-  const doc = values.doc;
-  if (!Array.isArray(doc) || doc.length === 0) return null;
+  const docValue = parseStoredPlateDocument(values.doc);
 
-  const markdown = plateJsonToMarkdown(doc);
+  if (!docValue || docValue.length === 0) return null;
+
+  const markdown = plateJsonToMarkdown(docValue);
   return markdown && markdown.trim().length > 0 ? markdown : null;
 }

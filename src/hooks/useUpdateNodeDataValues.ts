@@ -5,6 +5,7 @@ import type { Id } from "@/../convex/_generated/dataModel";
 import { toastError } from "@/components/utils/errorUtils";
 import { useNodeDataStore } from "@/stores/nodeDataStore";
 import type { Doc } from "@/../convex/_generated/dataModel";
+import { stringifyPlateDocumentForStorage } from "@/../convex/lib/plateDocumentStorage";
 
 interface UpdateNodeDataInput {
   nodeDataId: Id<"nodeDatas">;
@@ -59,6 +60,14 @@ export function useUpdateNodeDataValues(): UseUpdateNodeDataValuesReturn {
   const updateNodeDataValues = useCallback(
     async (input: UpdateNodeDataInput): Promise<void> => {
       const { nodeDataId, values } = input;
+      const nodeData = getNodeData(nodeDataId);
+      const valuesForMutation =
+        nodeData?.type === "document"
+          ? {
+              ...values,
+              doc: stringifyPlateDocumentForStorage(values.doc),
+            }
+          : values;
 
       // Sauvegarder le snapshot pour rollback potentiel
       const snapshotSaved = saveSnapshot(nodeDataId);
@@ -73,7 +82,7 @@ export function useUpdateNodeDataValues(): UseUpdateNodeDataValuesReturn {
         // Exécution de la mutation serveur
         await updateValuesMutation({
           _id: nodeDataId,
-          values,
+          values: valuesForMutation,
         });
         // Succès : nettoyer le snapshot
         snapshotsRef.current.delete(nodeDataId);
@@ -85,7 +94,13 @@ export function useUpdateNodeDataValues(): UseUpdateNodeDataValuesReturn {
         isUpdatingRef.current = false;
       }
     },
-    [updateValuesMutation, updateStoreNodeData, saveSnapshot, revertNodeData],
+    [
+      getNodeData,
+      updateValuesMutation,
+      updateStoreNodeData,
+      saveSnapshot,
+      revertNodeData,
+    ],
   );
 
   return {

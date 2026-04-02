@@ -1,12 +1,15 @@
 import type { Doc } from "../_generated/dataModel";
+import { parseStoredPlateDocument } from "./plateDocumentStorage";
 
 export function getNodeDataTitle(nodeData: Doc<"nodeDatas">): string {
   switch (nodeData.type) {
     case "document": {
       const doc = nodeData.values.doc;
-      if (!Array.isArray(doc) || doc.length === 0) return "Document";
+      const docValue = parseStoredPlateDocument(doc);
 
-      const firstBlock = doc[0] as {
+      if (!docValue || docValue.length === 0) return "Document";
+
+      const firstBlock = docValue[0] as {
         type?: string;
         children?: Array<{ text?: unknown }>;
       };

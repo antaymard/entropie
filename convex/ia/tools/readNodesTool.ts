@@ -74,7 +74,7 @@ export default function readNodesTool({
               title,
               content,
             }) =>
-              `<node id="${escapeXmlAttribute(nodeId)}" type="${escapeXmlAttribute(nodeType)}"${withPosition ? ` x="${escapeXmlAttribute(String(positionX))}" y="${escapeXmlAttribute(String(positionY))}"${width !== null ? ` width="${escapeXmlAttribute(String(width))}"` : ""}${height !== null ? ` height="${escapeXmlAttribute(String(height))}"` : ""}` : ""} title="${escapeXmlAttribute(title)}">
+              `<node id="${escapeXmlAttribute(nodeId)}" type="${escapeXmlAttribute(nodeType)}"${withPosition ? ` x=${escapeXmlAttribute(String(positionX))} y=${escapeXmlAttribute(String(positionY))}${width !== null ? ` width=${escapeXmlAttribute(String(width))}` : "?"}${height !== null ? ` height=${escapeXmlAttribute(String(height))}` : "?"}` : ""} title="${escapeXmlAttribute(title)}">
 ${toXmlCdata(content)}
 </node>`,
           ),

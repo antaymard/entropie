@@ -58,6 +58,7 @@ function DocumentWindow({ xyNodeId, nodeDataId }: DocumentWindowProps) {
       ref={editorRef}
       editorId={xyNodeId}
       value={editorValue}
+      valueVersion={nodeData?.updatedAt}
       onChange={handleSave}
       isLocked={isLocked}
       onDirtyChange={setIsDirty}

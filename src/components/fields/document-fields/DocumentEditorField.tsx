@@ -24,6 +24,7 @@ interface DocumentEditorFieldProps extends BaseFieldProps<{ doc: Value }> {
   plugins?: typeof EditorKit;
   isLocked?: boolean;
   onDirtyChange?: (isDirty: boolean) => void;
+  valueVersion?: number;
 }
 
 const DocumentEditorField = forwardRef<
@@ -38,6 +39,7 @@ const DocumentEditorField = forwardRef<
     plugins = EditorKit,
     isLocked,
     onDirtyChange,
+    valueVersion,
   },
   ref,
 ) {
@@ -45,7 +47,7 @@ const DocumentEditorField = forwardRef<
   const setFocus = useCanvasStore((s) => s.setFocus);
   const skipNextChangeRef = useRef(false);
   const editorScrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const lastAppliedValueKeyRef = useRef<string | null>(null);
+  const lastAppliedVersionRef = useRef<number | null>(null);
 
   const editor = usePlateEditor({
     id: editorId ? `doc-${editorId}` : undefined,
@@ -53,19 +55,23 @@ const DocumentEditorField = forwardRef<
     value: initialValue,
   });
 
-  // Last Write Wins, but avoid resetting the editor when content is unchanged.
+  // Last Write Wins, but only when server version changes.
   useEffect(() => {
     if (!initialValue) return;
 
-    const valueKey = JSON.stringify(initialValue);
-    if (lastAppliedValueKeyRef.current === valueKey) {
+    if (
+      valueVersion !== undefined &&
+      lastAppliedVersionRef.current === valueVersion
+    ) {
       return;
     }
 
     const previousScrollTop = editorScrollContainerRef.current?.scrollTop ?? null;
     skipNextChangeRef.current = true;
     editor.tf.setValue(initialValue);
-    lastAppliedValueKeyRef.current = valueKey;
+    if (valueVersion !== undefined) {
+      lastAppliedVersionRef.current = valueVersion;
+    }
 
     if (previousScrollTop !== null) {
       requestAnimationFrame(() => {
@@ -76,7 +82,7 @@ const DocumentEditorField = forwardRef<
     }
 
     onDirtyChange?.(false);
-  }, [initialValue, editor, onDirtyChange]);
+  }, [initialValue, valueVersion, editor, onDirtyChange]);
 
   const save = useCallback(() => {
     onChange?.({ doc: editor.children as Value });

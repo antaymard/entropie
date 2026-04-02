@@ -5,7 +5,7 @@ import { canvasesValidator } from "./schemas/canvasesSchema";
 import { nodeDatasValidator } from "./schemas/nodeDatasSchema";
 import { scheduledJobsValidator } from "./schemas/scheduledJobsSchema";
 import { sharesValidator } from "./schemas/sharesSchema";
-import { metadataValidator } from "./schemas/metadataSchema";
+import { metadatasValidator } from "./schemas/metadatasSchema";
 
 const schema = defineSchema({
   ...authTables,
@@ -35,7 +35,7 @@ const schema = defineSchema({
     "nodesDataId",
   ]),
 
-  metadata: defineTable(metadataValidator)
+  metadatas: defineTable(metadatasValidator)
     .index("by_subject_and_type", ["subjectId", "type"])
     .searchIndex("search_content", {
       searchField: "content",

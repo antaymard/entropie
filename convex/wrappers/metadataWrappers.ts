@@ -5,7 +5,7 @@ import {
   subjectTypeValidator,
   subjectIdValidator,
   typeValidator,
-} from "../schemas/metadataSchema";
+} from "../schemas/metadatasSchema";
 
 export const upsert = internalMutation({
   args: {

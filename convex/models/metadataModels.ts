@@ -1,7 +1,7 @@
 import type { Doc } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 
-type Metadata = Doc<"metadata">;
+type Metadata = Doc<"metadatas">;
 
 /**
  * Upsert: si une metadata avec le même subjectId + type existe, on patch.
@@ -17,7 +17,7 @@ export async function upsert(
   }: Pick<Metadata, "subjectType" | "subjectId" | "type" | "content">,
 ): Promise<boolean> {
   const existing = await ctx.db
-    .query("metadata")
+    .query("metadatas")
     .withIndex("by_subject_and_type", (q) =>
       q.eq("subjectId", subjectId).eq("type", type),
     )
@@ -32,7 +32,7 @@ export async function upsert(
       updatedAt: now,
     });
   } else {
-    await ctx.db.insert("metadata", {
+    await ctx.db.insert("metadatas", {
       subjectType,
       subjectId,
       type,
@@ -49,7 +49,7 @@ export async function read(
   { subjectId, type }: Pick<Metadata, "subjectId" | "type">,
 ) {
   return await ctx.db
-    .query("metadata")
+    .query("metadatas")
     .withIndex("by_subject_and_type", (q) =>
       q.eq("subjectId", subjectId).eq("type", type),
     )
@@ -61,7 +61,7 @@ export async function list(
   { subjectId }: Pick<Metadata, "subjectId">,
 ) {
   return await ctx.db
-    .query("metadata")
+    .query("metadatas")
     .withIndex("by_subject_and_type", (q) => q.eq("subjectId", subjectId))
     .collect();
 }

@@ -139,7 +139,7 @@
 }
 
 .canvas-ui-container {
-  @apply bg-white rounded p-1 flex items-center gap-2 text-text border;
+  @apply bg-white rounded p-1 py-0 flex items-center gap-2 text-text border;
 }
 
 @layer base {

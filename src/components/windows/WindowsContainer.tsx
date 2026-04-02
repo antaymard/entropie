@@ -17,6 +17,20 @@ export default function WindowsContainer() {
     [],
   );
 
+  const handleWindowMouseDownCapture = useCallback(
+    (xyNodeId: string, e: React.MouseEvent<HTMLDivElement>) => {
+      if (e.button !== 0) return;
+
+      const target = e.target as HTMLElement | null;
+      const isWindowControl =
+        target?.closest('[data-window-control="true"]') !== null;
+      if (isWindowControl) return;
+
+      bringWindowToFront(xyNodeId);
+    },
+    [bringWindowToFront],
+  );
+
   return (
     <div
       data-slot="windows-container"
@@ -47,7 +61,9 @@ export default function WindowsContainer() {
               "pointer-events-auto absolute",
               openedWindow.windowState === "minimized" && "hidden",
             )}
-            onMouseDownCapture={() => bringWindowToFront(openedWindow.xyNodeId)}
+            onMouseDownCapture={(e) =>
+              handleWindowMouseDownCapture(openedWindow.xyNodeId, e)
+            }
             style={{
               left: openedWindow.position.x,
               top: openedWindow.position.y,

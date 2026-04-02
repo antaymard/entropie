@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { encode } from "@toon-format/toon";
 import type { Doc, Id } from "../../_generated/dataModel";
 import { internalQuery } from "../../_generated/server";
 import type { QueryCtx } from "../../_generated/server";
@@ -44,6 +45,8 @@ export const generate = internalQuery({
           clusterCount: 0,
           clusterSizes: [] as number[],
         },
+        hybridToon:
+          '<spatialCanvasOverview name="unknown"></spatialCanvasOverview>',
         markdownXml:
           '<spatialCanvasOverview canvasId="unknown"></spatialCanvasOverview>',
       };
@@ -83,6 +86,7 @@ export const generate = internalQuery({
       canvasId: canvas._id,
       clusters,
       count,
+      hybridToon: formatHybridToonForLLM(canvas.name ?? "Untitled", clusters),
       markdownXml: formatClustersForLLM(canvas._id, clusters),
     };
   },
@@ -531,6 +535,29 @@ function formatClustersForLLM(
 
   return `
 <spatialCanvasOverview canvasId="${escapeXml(String(canvasId))}">\n    ${clusterXml}\n</spatialCanvasOverview>
+  `.trim();
+}
+
+function formatHybridToonForLLM(
+  canvasName: string,
+  clusters: SpatialCluster[],
+): string {
+  const clusterXml = clusters
+    .map((cluster) => {
+      const encodedNodes = encode(
+        cluster.nodes.map((node) => ({
+          nodeId: node.nodeId,
+          nodeType: node.nodeType,
+          title: node.title,
+        })),
+      );
+
+      return `<cluster size="${cluster.nodes.length}">\n${encodedNodes}\n</cluster>`;
+    })
+    .join("\n");
+
+  return `
+<spatialCanvasOverview name="${escapeXml(canvasName)}">\n${clusterXml}\n</spatialCanvasOverview>
   `.trim();
 }
 

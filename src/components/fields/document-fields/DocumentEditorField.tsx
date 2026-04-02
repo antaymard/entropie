@@ -66,7 +66,8 @@ const DocumentEditorField = forwardRef<
       return;
     }
 
-    const previousScrollTop = editorScrollContainerRef.current?.scrollTop ?? null;
+    const previousScrollTop =
+      editorScrollContainerRef.current?.scrollTop ?? null;
     skipNextChangeRef.current = true;
     editor.tf.setValue(initialValue);
     if (valueVersion !== undefined) {

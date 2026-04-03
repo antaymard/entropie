@@ -1,7 +1,7 @@
 // Ici, textarea qui peut faire du @ et avoir un dropdown de suggestions de nodeData du canvas (utiliser le store) et afficher les ref sous forme de pill, qu'on peut X pour les supprimer. En gros, un textarea enrichi pour faire du rich text avec des références à d'autres nodes du canvas.
 
 import { useNodeDataStore } from "@/stores/nodeDataStore";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { MentionsInput, Mention } from "react-mentions";
 import { useNodes } from "@xyflow/react";
 import {
@@ -15,12 +15,14 @@ interface RichTextAreaProps {
   value: string;
   onChange: (value: string) => void;
   onSubmit?: () => void;
+  maxHeightPx?: number;
 }
 
 export default function RichTextArea({
   value,
   onChange,
   onSubmit,
+  maxHeightPx,
 }: RichTextAreaProps) {
   const nodeDatas = useNodeDataStore((state) => state.nodeDatas);
   const canvasNodes = useNodes();
@@ -41,10 +43,29 @@ export default function RichTextArea({
   const autoResize = useCallback(() => {
     const textarea = wrapperRef.current?.querySelector("textarea");
     if (textarea) {
+      const effectiveMaxHeightPx =
+        maxHeightPx ?? wrapperRef.current?.parentElement?.clientHeight;
+
       textarea.style.height = "auto";
-      textarea.style.height = `${textarea.scrollHeight}px`;
+
+      if (effectiveMaxHeightPx && effectiveMaxHeightPx > 0) {
+        const nextHeight = Math.min(
+          textarea.scrollHeight,
+          effectiveMaxHeightPx,
+        );
+        textarea.style.height = `${nextHeight}px`;
+        textarea.style.overflowY =
+          textarea.scrollHeight > effectiveMaxHeightPx ? "auto" : "hidden";
+      } else {
+        textarea.style.height = `${textarea.scrollHeight}px`;
+        textarea.style.overflowY = "hidden";
+      }
     }
-  }, []);
+  }, [maxHeightPx]);
+
+  useEffect(() => {
+    requestAnimationFrame(autoResize);
+  }, [autoResize, value]);
 
   return (
     <div ref={wrapperRef}>
@@ -53,15 +74,16 @@ export default function RichTextArea({
         style={{
           input: {
             resize: "none",
-            overflow: "hidden",
+            overflowY: "hidden",
             outline: "none",
             padding: "3px",
             minHeight: "2.5rem",
+            maxHeight: maxHeightPx ? `${maxHeightPx}px` : "100%",
           },
           highlighter: { outline: "none" },
         }}
         value={value}
-        placeholder="Mention nodes using '@'"
+        placeholder="Type your question, mention nodes using '@'"
         onKeyDown={(e: React.KeyboardEvent) => {
           if (e.key === "Enter") {
             if (e.shiftKey || e.ctrlKey || e.metaKey) {

@@ -1,12 +1,5 @@
-import { toConvexNodes } from "@/components/utils/nodeUtils";
-import { useNoleStore } from "@/stores/noleStore";
-import {
-  optimisticallySendMessage,
-  useUIMessages,
-  type UIMessage,
-} from "@convex-dev/agent/react";
+import { useUIMessages, type UIMessage } from "@convex-dev/agent/react";
 import { api } from "@/../convex/_generated/api";
-import { useMutation, useAction } from "convex/react";
 import {
   memo,
   useCallback,
@@ -15,20 +8,13 @@ import {
   useRef,
   useState,
 } from "react";
-import { PiPaperPlaneRightBold } from "react-icons/pi";
-import { AttachmentRenderer } from "./AttachmentRenderer";
+import { RiLoaderLine } from "react-icons/ri";
 import { Message } from "./Message";
-import { useCanvasStore } from "@/stores/canvasStore";
-import type { Canvas } from "@/types/convex";
 
 const ChatInterface = memo(function ChatInterface({
   threadId,
-  useAttachments = false,
-  autoUpdateThreadTitleAndSummary = false,
 }: {
   threadId: string;
-  useAttachments?: boolean;
-  autoUpdateThreadTitleAndSummary?: boolean;
 }) {
   const {
     results: messages,
@@ -40,46 +26,20 @@ const ChatInterface = memo(function ChatInterface({
     { initialNumItems: 20, stream: true },
   );
 
-  const sendMessage = useMutation(api.ia.nole.saveMessage).withOptimisticUpdate(
-    optimisticallySendMessage(api.threads.listMessages),
-  );
-
-  const updateThreadTitle = useAction(api.threads.updateThreadTitle);
-
-  const [prompt, setPrompt] = useState("");
   const scrollViewportRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const lastScrollTop = useRef<number>(0);
   const scrollingToBottomRef = useRef(false);
   const previousMessagesLengthRef = useRef(0);
   const previousLastMessageRef = useRef<UIMessage | null>(null);
-
-  // Vérifier si l'assistant est en train de répondre
-  const isAssistantResponding =
-    messages.length > 0 &&
-    messages[messages.length - 1].role === "assistant" &&
-    messages[messages.length - 1].status !== "success" &&
-    messages[messages.length - 1].status !== "failed";
-
-  useEffect(() => {
-    if (
-      messages.length === 2 &&
-      autoUpdateThreadTitleAndSummary &&
-      !isAssistantResponding
-    ) {
-      // Mettre à jour le titre et le résumé du thread après l'envoi du message
-      updateThreadTitle({
-        threadId,
-        onlyIfUntitled: true,
-      });
-    }
-  }, [
-    autoUpdateThreadTitleAndSummary,
-    messages.length,
-    threadId,
-    updateThreadTitle,
-    isAssistantResponding,
-  ]);
+  const lastMessage = messages[messages.length - 1];
+  const isAssistantThinking =
+    !!lastMessage &&
+    lastMessage.role === "assistant" &&
+    lastMessage.status !== "success" &&
+    lastMessage.status !== "failed";
+  const isWaitingForAssistant =
+    !!lastMessage && lastMessage.role === "user" && !isAssistantThinking;
 
   const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
     const div = scrollViewportRef.current;
@@ -146,49 +106,6 @@ const ChatInterface = memo(function ChatInterface({
     scrollToBottom("instant");
   }, [scrollToBottom]);
 
-  const onSendClicked = async () => {
-    if (prompt.trim() === "" || isAssistantResponding) return;
-    const currentPrompt = prompt;
-    setPrompt("");
-    // Forcer le scroll en bas lors de l'envoi
-    setIsAtBottom(true);
-    scrollingToBottomRef.current = true;
-    scrollToBottom("auto");
-    const canvas: Partial<Canvas> = useCanvasStore.getState().canvas;
-    const attachementsContext = useAttachments
-      ? {
-          attachedNodes: toConvexNodes(useNoleStore.getState().attachedNodes),
-          attachedPosition: useNoleStore.getState().attachedPosition,
-          canvas: {
-            _id: canvas?._id || "",
-            name: canvas?.name || "",
-            description: canvas?.description || "",
-            nodes:
-              canvas?.nodes?.map((n) => ({
-                id: n.id,
-                name: n.name,
-                position: n.position,
-                width: n.width,
-                height: n.height,
-              })) || [],
-            edges: canvas?.edges || [],
-          },
-        }
-      : undefined;
-    try {
-      console.log(attachementsContext);
-      await sendMessage({
-        threadId,
-        prompt: currentPrompt,
-        context: attachementsContext,
-      });
-      useNoleStore.getState().resetAttachments();
-    } catch (error) {
-      console.error("Erreur lors de l'envoi:", error);
-      setPrompt(currentPrompt);
-    }
-  };
-
   return (
     <div className="h-full flex flex-col w-full ">
       {/* Messages area - scrollable */}
@@ -210,6 +127,15 @@ const ChatInterface = memo(function ChatInterface({
             {messages.map((m) => (
               <Message key={m.key} message={m} />
             ))}
+            {(isAssistantThinking || isWaitingForAssistant) && (
+              <ThinkingIndicator
+                label={
+                  isAssistantThinking
+                    ? "Nole reflechit..."
+                    : "En attente de la reponse..."
+                }
+              />
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-gray-500">
@@ -217,42 +143,17 @@ const ChatInterface = memo(function ChatInterface({
           </div>
         )}
       </div>
-
-      {/* Fixed input area at bottom */}
-      <div className="p-2">
-        <form
-          className="w-full flex flex-col gap-2 p-3 rounded-md bg-white/10 hover:bg-white/20 focus:bg-white/20"
-          onSubmit={(e) => {
-            e.preventDefault();
-            void onSendClicked();
-          }}
-        >
-          {useAttachments && <AttachmentRenderer />}
-          <textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey) {
-                e.preventDefault();
-                void onSendClicked();
-              }
-            }}
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md bg-transparent text-base! shadow-xs transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm placeholder:text-white/60 flex-1 text-white resize-none "
-            placeholder="Ask your question..."
-          />
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="bottom-4 right-4 text-white p-1 rounded-xs hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={!prompt.trim() || isAssistantResponding}
-            >
-              <PiPaperPlaneRightBold size={12} />
-            </button>
-          </div>
-        </form>
-      </div>
     </div>
   );
 });
+
+function ThinkingIndicator({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-2 text-xs text-slate-500 px-2 py-1">
+      <RiLoaderLine size={14} className="animate-spin" />
+      <span>{label}</span>
+    </div>
+  );
+}
 
 export default ChatInterface;

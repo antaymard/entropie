@@ -7,8 +7,11 @@ import nodeAgentTool from "./tools/nodeAgentTool";
 import readNodesTool from "./tools/readNodesTool";
 import { openWebPageTool } from "./tools/openWebPageTool";
 import { websearchTool } from "./tools/websearchTool";
-import stringReplaceDocumentContentTool from "./tools/stringReplaceDocumentContentTool";
-import insertDocumentContentTool from "./tools/insertDocumentContentTool";
+import documentStringReplaceContentTool from "./tools/documentStringReplaceContentTool";
+import documentInsertContentTool from "./tools/documentInsertContentTool";
+import tableUpdateRowsTool from "./tools/tableUpdateRowsTool";
+import tableInsertRowsTool from "./tools/tableInsertRowsTool";
+import tableDeleteRowsTool from "./tools/tableDeleteRowsTools";
 
 export function createBaseAgent({ model }: { model?: LanguageModel } = {}) {
   return new Agent(components.agent, {
@@ -40,17 +43,6 @@ export function createAutomationAgent({
   });
 }
 
-// Not used for now
-// export function createBrainAgent({ instructions }: { instructions: string }) {
-//   return new Agent(components.agent, {
-//     name: "Brain",
-//     maxSteps: 15,
-//     languageModel: openrouter("stepfun/step-3.5-flash:free"),
-//     tools: {},
-//     instructions,
-//   });
-// }
-
 export function createNoleAgent({
   runtimeContext,
   tools = {},
@@ -67,10 +59,19 @@ export function createNoleAgent({
       node_and_edge_manipulation: nodeAgentTool(runtimeContext),
       open_webpage: openWebPageTool,
       websearch: websearchTool,
-      string_replace_document_content: stringReplaceDocumentContentTool({
+      string_replace_document_content: documentStringReplaceContentTool({
         canvasId: runtimeContext.canvasId,
       }),
-      insert_document_content: insertDocumentContentTool({
+      insert_document_content: documentInsertContentTool({
+        canvasId: runtimeContext.canvasId,
+      }),
+      table_update_rows: tableUpdateRowsTool({
+        canvasId: runtimeContext.canvasId,
+      }),
+      table_insert_rows: tableInsertRowsTool({
+        canvasId: runtimeContext.canvasId,
+      }),
+      table_delete_rows: tableDeleteRowsTool({
         canvasId: runtimeContext.canvasId,
       }),
       ...tools,

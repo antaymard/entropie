@@ -31,39 +31,36 @@ function countExactMatches(source: string, search: string): number {
   return count;
 }
 
-export default function insertDocumentContentTool({
+export default function documentStringReplaceContentTool({
   canvasId,
 }: {
   canvasId: Id<"canvases">;
 }) {
   return createTool({
     description:
-      "Insert new content into a document node from the current canvas.",
+      "Replace an exact string inside a document node content from the current canvas.",
     args: z.object({
       nodeId: z.string().describe("The node ID in the current canvas."),
-      anchor_text: z
+      old_string: z
         .string()
-        .optional()
+        .min(1)
         .describe(
-          "Exact anchor text. Provide just enough context to make it unique in the document. Include the exact original markdown formatting and whitespace. Empty for start/end insertions.",
+          "Exact string to replace. Provide just enough context to make it unique in the document. Include the exact original markdown formatting and whitespace. ",
         ),
-      position: z
-        .enum(["before", "after", "end", "start"])
-        .describe(
-          "Insertion position: before/after anchor_text, or start/end of whole document.",
-        ),
-      content: z
+      new_str: z
         .string()
-        .describe("The content to insert. Use markdown formatting."),
+        .describe(
+          "The replacement string to paste in place of old_string. Can be empty if you just want to delete the old_string. Use markdown formatting.",
+        ),
       explanation: z.string().describe("3-5 words explaining the edit intent."),
     }),
     handler: async (ctx, args): Promise<string> => {
       console.log(
-        `📝 Insert requested on node ${args.nodeId} (canvas ${canvasId}) at position ${args.position}`,
+        `📝 String replace requested on node ${args.nodeId} - old_string: "${args.old_string}", new_str: "${args.new_str}"`,
       );
 
       try {
-        const { nodeId, anchor_text, position, content } = args;
+        const { nodeId, old_string, new_str } = args;
 
         const { node, nodeData } = await ctx.runQuery(
           internal.wrappers.canvasNodeWrappers.getNodeWithNodeData,
@@ -85,46 +82,20 @@ export default function insertDocumentContentTool({
 
         const markdownSource = plateJsonToMarkdown(parsedDoc);
 
-        let updatedMarkdown: string;
+        const matches = countExactMatches(markdownSource, old_string);
+        console.log(
+          `🔎 Replacement search found ${matches} match(es) for node ${nodeId}`,
+        );
 
-        if (position === "start") {
-          updatedMarkdown = markdownSource
-            ? `${content}\n${markdownSource}`
-            : content;
-        } else if (position === "end") {
-          updatedMarkdown = markdownSource
-            ? `${markdownSource}\n${content}`
-            : content;
-        } else {
-          if (!anchor_text) {
-            return "Error: No match found insertion. Please check your text and try again.";
-          }
-
-          const matches = countExactMatches(markdownSource, anchor_text);
-          console.log(
-            `🔎 Insertion anchor search found ${matches} match(es) for node ${nodeId}`,
-          );
-
-          if (matches === 0) {
-            return "Error: No match found insertion. Please check your text and try again.";
-          }
-
-          if (matches > 1) {
-            return `Error: Found ${matches} matches. Please provide more context to make a unique match.`;
-          }
-
-          if (position === "after") {
-            updatedMarkdown = markdownSource.replace(
-              anchor_text,
-              `${anchor_text}\n${content}`,
-            );
-          } else {
-            updatedMarkdown = markdownSource.replace(
-              anchor_text,
-              `${content}\n${anchor_text}`,
-            );
-          }
+        if (matches === 0) {
+          return "Error: No match found for replacement. Please check your text and try again.";
         }
+
+        if (matches > 1) {
+          return `Error: Found ${matches} matches for replacement text. Please provide more context to make a unique match.`;
+        }
+
+        const updatedMarkdown = markdownSource.replace(old_string, new_str);
 
         const updatedPlateDocument = markdownToPlateJson(updatedMarkdown);
         const serializedUpdatedDocument =
@@ -138,11 +109,11 @@ export default function insertDocumentContentTool({
           },
         });
 
-        console.log(`✅ Insert complete for node ${nodeId}`);
+        console.log(`✅ String replace complete for node ${nodeId}`);
 
-        return "Successfully inserted text at exactly one location.";
+        return "Successfully replaced text at exactly one location.";
       } catch (error) {
-        console.error("Insert document tool error:", error);
+        console.error("String replace tool error:", error);
         return `Error: ${error instanceof Error ? error.message : String(error)}`;
       }
     },

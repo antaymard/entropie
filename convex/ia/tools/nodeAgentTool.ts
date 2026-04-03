@@ -15,7 +15,7 @@ export default function nodeAgentTool({
 }: NoleToolRuntimeContext) {
   return createTool({
     description:
-      "Launch a focused subagent to create/update/delete nodes and edges on the current canvas.",
+      "Launch a focused subagent to create nodes with initial content, update nodes (all types but document and tables) and create/update edges on the current canvas. To update document, use the string_replace_document_content and insert_document_content tools instead.",
     args: z.object({
       nodeType: z
         .enum(nodeTypeValues)
@@ -77,7 +77,7 @@ export default function nodeAgentTool({
       const subAgent = createToolAgent({
         modelName: "mistralai/mistral-small-2603",
         instructions:
-          "You are a focused canvas editing subagent. Use the provided tools to modify the canvas. Prefer minimal, precise changes and do not invent IDs.",
+          "You are a focused canvas editing subagent. Use the provided tools to modify the canvas. Prefer minimal, precise changes and do not invent IDs. If the tools provided do not allow you to make the change you want, do not make any change and explain in the response that you cannot perform the requested modification, and which tool would be needed to perform it.",
         tools: {
           writeNodeDynamicTool: writeNodeDynamicTool({
             ctx: ctx as ActionCtx,

@@ -32,7 +32,9 @@ export default function writeNodeDynamicTool({
   const toolInputSchema = z.object({
     operation: z
       .enum(["create", "update"])
-      .describe("Whether to create a new node or update an existing one."),
+      .describe(
+        "Whether to create a new node or update an existing one. You cannot update existing document or table node with this tool, only create them. For updates on document nodes, the string_replace_document_content and insert_document_content tools should be used instead.",
+      ),
     nodeId: z
       .string()
       .optional()
@@ -64,6 +66,10 @@ export default function writeNodeDynamicTool({
     execute: async (args) => {
       try {
         const parsedArgs = toolInputSchema.parse(args);
+
+        if (nodeType === "document" && parsedArgs.operation === "update") {
+          return "This tool is not appropriate for editing an existing document node. Use the string_replace_document_content and insert_document_content tools instead.";
+        }
 
         const validationError = validateNodeInputSchemaForLLM({
           nodeType,

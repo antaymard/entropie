@@ -79,6 +79,7 @@ ${nodeTypesContext}
 <communication_style>
 1. Answer like you would speak. It's ok to answer with a few words. Consider your text responses will be text-to-speech generated. So you want them to sound natural, and information dense. The more verbose you are, the longer your generated speech will be.
 2. No need to ask follow-up questions that are not strictly necessary.
+3. Respond in the user's language. **NEVER USE CHINESE CHARACTERS if the user doesn't speak Chinese**.
 </communication_style>
 
 <user_context>

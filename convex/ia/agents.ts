@@ -7,6 +7,8 @@ import nodeAgentTool from "./tools/nodeAgentTool";
 import readNodesTool from "./tools/readNodesTool";
 import { openWebPageTool } from "./tools/openWebPageTool";
 import { websearchTool } from "./tools/websearchTool";
+import stringReplaceDocumentContentTool from "./tools/stringReplaceDocumentContentTool";
+import insertDocumentContentTool from "./tools/insertDocumentContentTool";
 
 export function createBaseAgent({ model }: { model?: LanguageModel } = {}) {
   return new Agent(components.agent, {
@@ -59,12 +61,18 @@ export function createNoleAgent({
   return new Agent(components.agent, {
     name: "Nolë",
     maxSteps: 8,
-    languageModel: openrouter("arcee-ai/trinity-large-thinking"),
+    languageModel: openrouter("minimax/minimax-m2.7"),
     tools: {
       read_nodes: readNodesTool(runtimeContext),
       node_and_edge_manipulation: nodeAgentTool(runtimeContext),
       open_webpage: openWebPageTool,
       websearch: websearchTool,
+      string_replace_document_content: stringReplaceDocumentContentTool({
+        canvasId: runtimeContext.canvasId,
+      }),
+      insert_document_content: insertDocumentContentTool({
+        canvasId: runtimeContext.canvasId,
+      }),
       ...tools,
     },
   });

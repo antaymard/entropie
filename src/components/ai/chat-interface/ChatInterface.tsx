@@ -147,7 +147,7 @@ const ChatInterface = memo(function ChatInterface({
   }, [scrollToBottom]);
 
   const onSendClicked = async () => {
-    if (prompt.trim() === "") return;
+    if (prompt.trim() === "" || isAssistantResponding) return;
     const currentPrompt = prompt;
     setPrompt("");
     // Forcer le scroll en bas lors de l'envoi

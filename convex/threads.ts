@@ -14,6 +14,10 @@ import z from "zod";
 import { createBaseAgent } from "./ia/agents";
 import errors from "./config/errorsConfig";
 
+function isHiddenThread(title?: string): boolean {
+  return title?.startsWith("__") ?? false;
+}
+
 export const getLatestThread = query({
   args: {},
   returns: v.union(
@@ -30,7 +34,7 @@ export const getLatestThread = query({
       {
         userId: authUserId,
         order: "desc",
-        paginationOpts: { numItems: 1, cursor: null },
+        paginationOpts: { numItems: 15, cursor: null },
       },
     );
 
@@ -38,7 +42,8 @@ export const getLatestThread = query({
       return null;
     }
 
-    return { threadId: result.page[0]._id };
+    const visibleThread = result.page.find((t) => !isHiddenThread(t.title));
+    return visibleThread ? { threadId: visibleThread._id } : null;
   },
 });
 
@@ -77,7 +82,13 @@ export const listUserThreads = query({
       { userId: authUserId, paginationOpts: args.paginationOpts },
     );
 
-    return { success: true, threads };
+    return {
+      success: true,
+      threads: {
+        ...threads,
+        page: threads.page.filter((t) => !isHiddenThread(t.title)),
+      },
+    };
   },
 });
 

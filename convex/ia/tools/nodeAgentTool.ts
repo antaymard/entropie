@@ -93,6 +93,8 @@ export default function nodeAgentTool({
 
       const threadId = await createThread(ctx, components.agent, {
         userId: authUserId,
+        title:
+          "__subagent_thread__ - node agent subagent for canvas " + canvasId,
       });
 
       const result = await subAgent.generateText(

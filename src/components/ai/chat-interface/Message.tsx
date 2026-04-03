@@ -1,11 +1,12 @@
 import { useSmoothText, type UIMessage } from "@convex-dev/agent/react";
+import { useState } from "react";
 import { MarkdownText } from "../MarkdownText";
-import type { TextPart } from "@/types/message.types";
-import toolCardsConfig from "../tool-cards/toolCardsConfig";
-import ToolCardFrame from "../tool-cards/ToolCardFrame";
+import type { TextPart } from "@/types/domain/message.types";
 import { RiLoaderLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
-import { TbTool } from "react-icons/tb";
+import { TbChevronDown, TbTool } from "react-icons/tb";
+
+type ToolPartState = "input-streaming" | "output-available" | "output-error";
 
 export function Message({ message }: { message: UIMessage }) {
   const isUser = message.role === "user";
@@ -14,7 +15,7 @@ export function Message({ message }: { message: UIMessage }) {
   if (isUser) {
     return (
       <div className="flex justify-end">
-        <div className="rounded whitespace-pre-wrap shadow-sm p-3 bg-primary text-white max-w-4/5 border border-white/20">
+        <div className="rounded whitespace-pre-wrap p-3 bg-slate-200 border border-slate-400 text-text max-w-4/5">
           <MarkdownText>{message.text ?? ""}</MarkdownText>
         </div>
       </div>
@@ -25,16 +26,17 @@ export function Message({ message }: { message: UIMessage }) {
   const parts = message.parts ?? [];
   const isProcessing =
     message.status !== "success" && message.status !== "failed";
+  const messageError = getMessageErrorText(message);
 
   return (
     <div className="flex justify-start">
       <div
         className={cn(
-          "rounded whitespace-pre-wrap shadow-sm nole-chat-message flex flex-col gap-5 text-white",
-          "p-2 py-3 bg-white/10 rounded-sm border border-white/20 w-full",
+          "whitespace-pre-wrap flex flex-col gap-2",
+          "p-2 py-3 w-full",
           {
             "bg-red-100": message.status === "failed",
-          }
+          },
         )}
       >
         {parts.map((part, index) => {
@@ -48,46 +50,29 @@ export function Message({ message }: { message: UIMessage }) {
             return <TextPartRenderer key={index} part={part as TextPart} />;
           }
 
-          // Afficher les tool calls en utilisant la config
+          // Afficher un placeholder unique pour tous les tool calls
           if (part.type.startsWith("tool-")) {
-            const toolConfig = toolCardsConfig.find(
-              (tool) => tool.name === part.type
-            );
-
-            if (toolConfig && "state" in part) {
-              const ToolComponent = toolConfig.component;
-              const partState = part.state as
-                | "input-streaming"
-                | "output-available";
-              return (
-                <ToolComponent
-                  key={index}
-                  state={partState}
-                  input={
-                    partState === "output-available" && "input" in part
-                      ? part.input
-                      : undefined
-                  }
-                  output={
-                    partState === "output-available" && "output" in part
-                      ? part.output
-                      : undefined
-                  }
-                />
-              );
-            }
-
-            // Fallback pour les outils non configurés
-            const toolName = part.type.replace("tool-", "");
             const partState = (
               "state" in part ? part.state : "input-streaming"
-            ) as "input-streaming" | "output-available";
+            ) as ToolPartState;
+            const toolName = part.type.replace("tool-", "");
+            const toolError = getToolPartErrorText(part);
+            const debugInput =
+              isRecord(part) && "input" in part
+                ? (part.input as unknown)
+                : undefined;
+            const debugOutput =
+              isRecord(part) && "output" in part
+                ? (part.output as unknown)
+                : undefined;
             return (
-              <ToolCardFrame
+              <ToolPlaceholder
                 key={index}
-                icon={TbTool}
-                name={toolName}
                 state={partState}
+                name={toolName}
+                error={toolError}
+                input={debugInput}
+                output={debugOutput}
               />
             );
           }
@@ -100,9 +85,166 @@ export function Message({ message }: { message: UIMessage }) {
             <RiLoaderLine size={15} className="animate-spin text-white" />
           </div>
         )}
+
+        {message.status === "failed" && (
+          <ErrorInline message={messageError || "Une erreur est survenue."} />
+        )}
       </div>
     </div>
   );
+}
+
+function ToolPlaceholder({
+  state,
+  name,
+  error,
+  input,
+  output,
+}: {
+  state: ToolPartState;
+  name: string;
+  error?: string;
+  input?: unknown;
+  output?: unknown;
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const label =
+    state === "input-streaming"
+      ? "Tool en cours d'execution"
+      : state === "output-error"
+        ? `Tool en erreur: ${name}`
+        : `Tool execute: ${name}`;
+
+  const hasDebugData = input !== undefined || output !== undefined || !!error;
+
+  return (
+    <div className="py-2 text-sm text-text opacity-40 hover:opacity-100">
+      <button
+        type="button"
+        className="w-full flex items-center gap-1 text-left"
+        onClick={() => setIsExpanded((prev) => !prev)}
+      >
+        <TbTool
+          size={12}
+          className={cn(state === "input-streaming" && "animate-pulse")}
+        />
+        <span>{label}</span>
+        <TbChevronDown
+          size={12}
+          className={cn(
+            "ml-auto transition-transform",
+            isExpanded && "rotate-180",
+          )}
+        />
+      </button>
+      {isExpanded && hasDebugData ? (
+        <div className="mt-2 space-y-2 rounded border border-slate-300 bg-slate-50 p-2 text-xs text-slate-700">
+          <DebugBlock label="Args" value={input} />
+          <DebugBlock label="Result" value={output} />
+          <DebugBlock label="Error" value={error} />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function DebugBlock({ label, value }: { label: string; value: unknown }) {
+  if (value === undefined) {
+    return null;
+  }
+
+  return (
+    <div>
+      <p className="mb-1 font-medium text-slate-800">{label}</p>
+      <pre className="overflow-x-auto whitespace-pre-wrap rounded bg-white p-2 text-[11px] text-slate-700 border border-slate-200">
+        {stringifyForDebug(value)}
+      </pre>
+    </div>
+  );
+}
+
+function ErrorInline({
+  message,
+  className,
+}: {
+  message: string;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn("bg-red-100/90 px-2 py-1 text-xs text-red-800", className)}
+    >
+      {message}
+    </div>
+  );
+}
+
+function getMessageErrorText(message: UIMessage): string | undefined {
+  const candidate = message as unknown as Record<string, unknown>;
+  return readErrorLike(candidate.error);
+}
+
+function getToolPartErrorText(part: unknown): string | undefined {
+  if (!isRecord(part)) {
+    return undefined;
+  }
+
+  const directError = readErrorLike(part.error);
+  if (directError) {
+    return directError;
+  }
+
+  return readErrorLike(part.output);
+}
+
+function readErrorLike(value: unknown): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const nested = readErrorLike(item);
+      if (nested) {
+        return nested;
+      }
+    }
+    return undefined;
+  }
+
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  const keys = ["error", "message", "detail", "details"];
+  for (const key of keys) {
+    const candidate = value[key];
+    if (typeof candidate === "string" && candidate.trim()) {
+      return candidate;
+    }
+  }
+
+  return undefined;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function stringifyForDebug(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
+  }
 }
 
 export function TextPartRenderer({ part }: { part: TextPart }) {

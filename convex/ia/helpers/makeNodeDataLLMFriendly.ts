@@ -2,6 +2,100 @@ import { Doc } from "../../_generated/dataModel";
 import { plateJsonToMarkdown } from "./plateMarkdownConverter";
 import { parseStoredPlateDocument } from "../../lib/plateDocumentStorage";
 
+type TableColumn = {
+  id: string;
+  name: string;
+};
+
+type TableRow = {
+  id: string;
+  cells?: Record<string, unknown>;
+};
+
+type StoredTableValue = {
+  columns?: Array<TableColumn>;
+  rows?: Array<TableRow>;
+};
+
+function escapeMarkdownTableCell(value: string): string {
+  return value.replace(/\|/g, "\\|").replace(/\r?\n/g, "<br>");
+}
+
+function stringifyTableCellValue(value: unknown): string {
+  if (value === null || value === undefined) return "";
+
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+
+  if (typeof value === "object") {
+    const maybeLink = value as {
+      href?: unknown;
+      pageTitle?: unknown;
+    };
+    if (typeof maybeLink.href === "string") {
+      const title =
+        typeof maybeLink.pageTitle === "string" &&
+        maybeLink.pageTitle.length > 0
+          ? maybeLink.pageTitle
+          : maybeLink.href;
+      return `[${title}](${maybeLink.href})`;
+    }
+    return JSON.stringify(value);
+  }
+
+  return String(value);
+}
+
+function makeTableNodeDataLLMFriendly(
+  tableValue: unknown,
+  titleValue?: unknown,
+): string {
+  const table = (tableValue ?? {}) as StoredTableValue;
+  const columns = Array.isArray(table.columns) ? table.columns : [];
+  const rows = Array.isArray(table.rows) ? table.rows : [];
+  const title =
+    typeof titleValue === "string" && titleValue.trim().length > 0
+      ? titleValue.trim()
+      : null;
+
+  if (columns.length === 0 && rows.length === 0) {
+    return title ? `### ${title}\n\n(tableau vide)` : "(tableau vide)";
+  }
+
+  const headers = ["_rowId", ...columns.map((col) => col.name || col.id)];
+  const headerRow = `| ${headers.map(escapeMarkdownTableCell).join(" | ")} |`;
+  const separatorRow = `| ${headers.map(() => "---").join(" | ")} |`;
+
+  const bodyRows = rows.map((row) => {
+    const cells = columns.map((col) => {
+      const rawValue = row.cells?.[col.id];
+      return escapeMarkdownTableCell(stringifyTableCellValue(rawValue));
+    });
+    const rowId = escapeMarkdownTableCell(row.id ?? "");
+    return `| ${[rowId, ...cells].join(" | ")} |`;
+  });
+
+  const tableMarkdown =
+    bodyRows.length === 0
+      ? (() => {
+          const emptyCells = ["*(no rows)*", ...columns.map(() => "")];
+          return [
+            headerRow,
+            separatorRow,
+            `| ${emptyCells.map(escapeMarkdownTableCell).join(" | ")} |`,
+          ].join("\n");
+        })()
+      : [headerRow, separatorRow, ...bodyRows].join("\n");
+
+  if (title) {
+    return `### ${title}\n\n${tableMarkdown}`;
+  }
+
+  return tableMarkdown;
+}
+
 /**
  * Formate les values d'un seul nodeData en markdown lisible pour un LLM.
  * Convertit notamment le contenu PlateJS des nodes `document` en markdown.
@@ -66,6 +160,10 @@ export function makeNodeDataLLMFriendly(nodeData: Doc<"nodeDatas">): string {
             `- [${f.filename}](${f.url})${f.mimeType ? ` (${f.mimeType})` : ""}`,
         )
         .join("\n");
+    }
+
+    case "table": {
+      return makeTableNodeDataLLMFriendly(values.table, values.title);
     }
 
     default:

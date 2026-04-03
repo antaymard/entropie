@@ -70,6 +70,9 @@ export default function writeNodeDynamicTool({
         if (nodeType === "document" && parsedArgs.operation === "update") {
           return "This tool is not appropriate for editing an existing document node. Use the string_replace_document_content and insert_document_content tools instead.";
         }
+        if (nodeType === "table" && parsedArgs.operation === "update") {
+          return "This tool is not appropriate for editing an existing table node. Use the table_update_rows, table_insert_rows, and table_delete_rows tools instead.";
+        }
 
         const validationError = validateNodeInputSchemaForLLM({
           nodeType,

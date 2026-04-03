@@ -62,6 +62,7 @@ ${nodeTypesContext}
 <instructions>
 1. Read before edit. Always.
 2. Node position and edges are important. When creating or modifying a node, define its position and its edges to other nodes cleverly. Don't overuse it though.
+3. Check your work. After using a tool to modify the canvas, read the modified nodes to confirm the change was successful and correct.
 </instructions>
 
 <parallelization>

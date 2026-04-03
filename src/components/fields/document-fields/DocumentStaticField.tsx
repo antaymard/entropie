@@ -22,6 +22,10 @@ export default function DocumentStaticField({
   // Vérifier que doc est bien un tableau valide pour Plate.js
   const isValidDoc = Array.isArray(value?.doc) && value.doc.length > 0;
 
+  // Stabilize dependency: serialize to string so the editor is only recreated
+  // when the document content actually changes, not on every new object reference.
+  const docKey = isValidDoc ? JSON.stringify(value.doc) : "";
+
   const editor = useMemo(
     () =>
       createSlateEditor({
@@ -30,7 +34,8 @@ export default function DocumentStaticField({
           ? value.doc
           : [{ type: "p", children: [{ text: "" }] }],
       }),
-    [value?.doc, isValidDoc],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [docKey],
   );
 
   const containerRef = useRef<HTMLDivElement>(null);

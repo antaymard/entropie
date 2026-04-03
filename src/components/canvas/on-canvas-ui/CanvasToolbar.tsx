@@ -3,7 +3,7 @@ import type { Id } from "@/../convex/_generated/dataModel";
 import { useCanvasStore } from "@/stores/canvasStore";
 import SlideshowContainer from "./slideshow/SlideshowContainer";
 import { BiSlideshow } from "react-icons/bi";
-import { TbClick } from "react-icons/tb";
+import { TbPlus, TbSearch, TbUpload } from "react-icons/tb";
 
 export default function CanvasToolbar({
   canvasId,
@@ -14,19 +14,27 @@ export default function CanvasToolbar({
   const setTool = useCanvasStore((state) => state.setTool);
 
   return (
-    <div className="flex items-start gap-3">
-      <div className="canvas-ui-container flex-col">
-        <Button
-          variant={tool === "edit" ? "default" : "ghost"}
-          size="icon"
-          onClick={() => setTool("edit")}
-        >
-          <TbClick size={20} />
+    <div className="flex flex-col-reverse items-center gap-3">
+      <div className="canvas-ui-container px-0!">
+        <Button variant="default" size="icon">
+          <TbPlus size={20} />
+        </Button>
+        <Button variant="ghost" size="icon">
+          <TbUpload size={20} />
+        </Button>
+        <Button variant="ghost" size="icon">
+          <TbSearch size={20} />
         </Button>
         <Button
           variant={tool === "slides" ? "default" : "ghost"}
           size="icon"
-          onClick={() => setTool("slides")}
+          onClick={() => {
+            if (tool === "slides") {
+              setTool("edit");
+            } else {
+              setTool("slides");
+            }
+          }}
         >
           <BiSlideshow size={20} />
         </Button>

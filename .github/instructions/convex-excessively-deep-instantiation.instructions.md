@@ -1,24 +1,16 @@
-# Concernant les problèmes de "Convex Excessively Deep Instantiation"
+# Convex excessively deep instantiation (focused)
 
-## Architecture à suivre
+Objectif: limiter la complexité de types et éviter les cycles d'import.
 
-schemas/ — La structure des données. Validateurs Zod et Convex, types TypeScript exportés. Zéro import depuis \_generated. Pas de ctx. C'est le socle que tout le monde importe.
+## Couches
 
-model/ — La logique métier. Des fonctions TypeScript pures qui reçoivent ctx: QueryCtx ou MutationCtx en paramètre. Elles accèdent à ctx.db directement. Seul import type depuis \_generated/server est autorisé (pour les types de contexte). Jamais d'import de api/internal/components.
+- `schemas/`: contrats + validateurs + types, sans import `_generated/api`.
+- `model/`: logique métier pure, peut utiliser `ctx`/`ctx.db`, sans `api/internal/components`.
+- `convex/*.ts` (wrappers): auth + validation + orchestration légère.
+- `convex/ia/tools/*`: closures paramétrées par refs passées depuis l'assemblage, pas d'import direct `_generated/api`.
 
-API publique + interne (canvases.ts, nodeDatas.ts...) — Des wrappers fins. Chaque mutation/query/action fait auth + appelle le model. Ces fichiers ont le droit d'importer api, internal, components car ils exportent des fonctions Convex.
+## Règles
 
-tools/ (closures) — Chaque tool est une factory/closure qui retourne un createTool(...). Le schéma zod et la description sont définis ici. Le handler fait ctx.runQuery/ctx.runMutation avec des refs reçues en paramètre. Aucun import de \_generated/api.
-
-nole.ts / automations.ts — Le point d'assemblage. Ces fichiers exportent des actions Convex, donc ils ont le droit d'importer internal et components. C'est ici qu'on instancie les tools en leur passant les refs : createReadCanvasTool({ getCanvas: internal.ia.helpers... }).
-
-Client React — Consomme l'API publique via api.\*.
-La règle d'import est unidirectionnelle : chaque couche ne dépend que des couches au-dessus d'elle. Aucun cycle.
-
-## A éviter
-
-Eviter de passer par anyApi de convex.
-
-## Vérifier
-
-Utiliser yarn convex codegen pour vérifier les erreurs convex.
+- Dépendances unidirectionnelles, pas de cycles.
+- Éviter `anyApi`.
+- Vérifier avec `yarn convex codegen` après changements structurels.

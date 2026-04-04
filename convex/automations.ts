@@ -69,6 +69,7 @@ export const trigger = action({
       });
       const threadId = await createThread(ctx, components.agent, {
         userId,
+        title: "__automation_thread__ - automation for nodeData " + nodeDataId,
       });
       const response = await automationAgent.generateText(
         {

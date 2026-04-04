@@ -77,7 +77,7 @@ export default function nodeAgentTool({
       const subAgent = createToolAgent({
         modelName: "mistralai/mistral-small-2603",
         instructions:
-          "You are a focused canvas editing subagent. Use the provided tools to modify the canvas. Prefer minimal, precise changes and do not invent IDs. If the tools provided do not allow you to make the change you want, do not make any change and explain in the response that you cannot perform the requested modification, and which tool would be needed to perform it.",
+          "You are a focused canvas editing subagent. \nUse the provided tools to modify the canvas. \nPrefer minimal, precise changes and do not invent IDs. \n\nIf the tools provided do not allow you to make the change you want, do not make any change and explain in the response that you cannot perform the requested modification, and which tool would be needed to perform it. \n\nIf an error occurs while executing a tool, fix it by yourself if you can (formatting error, wrong parameter, etc). But if you cannot fix it by yourself, return the error to the main agent. Also include the actions you have already performed (node creation with created id, move position...) so the main agent does not repeat them, and explain what you were not able to do and why.",
         tools: {
           writeNodeDynamicTool: writeNodeDynamicTool({
             ctx: ctx as ActionCtx,
@@ -93,6 +93,8 @@ export default function nodeAgentTool({
 
       const threadId = await createThread(ctx, components.agent, {
         userId: authUserId,
+        title:
+          "__subagent_thread__ - node agent subagent for canvas " + canvasId,
       });
 
       const result = await subAgent.generateText(

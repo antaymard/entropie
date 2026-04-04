@@ -67,6 +67,7 @@ export const generate = internalAction({
       subjectId: nodeDataId,
       type: "one-liner",
       content: text,
+      canvasId: nodeData?.canvasId,
     });
 
     console.log("✅ Generated one-liner for nodeDataId:", nodeDataId);

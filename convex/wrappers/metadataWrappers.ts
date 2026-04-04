@@ -13,6 +13,7 @@ export const upsert = internalMutation({
     subjectId: subjectIdValidator,
     type: typeValidator,
     content: v.string(),
+    canvasId: v.optional(v.id("canvases")),
   },
   returns: v.boolean(),
   handler: async (ctx, args) => MetadataModels.upsert(ctx, args),

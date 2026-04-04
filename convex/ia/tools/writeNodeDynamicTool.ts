@@ -106,6 +106,7 @@ export default function writeNodeDynamicTool({
             {
               type: nodeType,
               values: nodeDataValues,
+              canvasId,
             },
           );
 

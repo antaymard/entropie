@@ -21,7 +21,9 @@ const schema = defineSchema({
       filterFields: ["creatorId"],
     }),
 
-  nodeDatas: defineTable(nodeDatasValidator),
+  nodeDatas: defineTable(nodeDatasValidator).index("by_canvasId", [
+    "canvasId",
+  ]),
 
   // ============================================================================
   // SHARES

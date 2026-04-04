@@ -17,14 +17,17 @@ export async function createNodeData(
   {
     type,
     values,
+    canvasId,
   }: {
     type: Doc<"nodeDatas">["type"];
     values: Record<string, unknown>;
+    canvasId?: Id<"canvases">;
   },
 ): Promise<Id<"nodeDatas">> {
   return ctx.db.insert("nodeDatas", {
     type,
     values,
+    canvasId,
     updatedAt: Date.now(),
   });
 }

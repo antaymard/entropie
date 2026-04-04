@@ -39,6 +39,7 @@ const schema = defineSchema({
 
   metadatas: defineTable(metadatasValidator)
     .index("by_subject_and_type", ["subjectId", "type"])
+    .index("by_canvasId", ["canvasId"])
     .searchIndex("search_content", {
       searchField: "content",
       filterFields: ["subjectType", "subjectId", "type"],

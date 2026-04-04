@@ -1,11 +1,13 @@
 import { createSlateEditor, normalizeNodeId, type Value } from "platejs";
 import { MarkdownPlugin, remarkMdx, remarkMention } from "@platejs/markdown";
+import { BaseListPlugin } from "@platejs/list";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import { pillMarkdownRules } from "@/components/plate/pillMarkdownRules";
 
 const converter = createSlateEditor({
   plugins: [
+    BaseListPlugin,
     MarkdownPlugin.configure({
       options: {
         remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],

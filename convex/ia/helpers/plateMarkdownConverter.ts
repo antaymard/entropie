@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlateEditor } from "platejs";
 import { MarkdownPlugin, remarkMdx, remarkMention } from "@platejs/markdown";
+import { BaseListPlugin } from "@platejs/list";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import { pillMarkdownRules } from "./pillMarkdownRules";
@@ -11,9 +12,14 @@ import { pillMarkdownRules } from "./pillMarkdownRules";
  *
  * Configuré avec les mêmes remark plugins que le front-end (markdown-kit.tsx)
  * pour garantir un round-trip cohérent.
+ *
+ * BaseListPlugin est nécessaire pour que le MarkdownPlugin utilise le modèle
+ * de listes indent-based (listStyleType + indent) au lieu du modèle nested
+ * (ul > li > lic) qui n'est pas rendu correctement par l'éditeur.
  */
 const converter = createSlateEditor({
   plugins: [
+    BaseListPlugin,
     MarkdownPlugin.configure({
       options: {
         remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],

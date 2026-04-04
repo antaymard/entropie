@@ -1,4 +1,4 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { type Node } from "@xyflow/react";
 import { areNodePropsEqual } from "../areNodePropsEqual";
 import { useNodeDataValues } from "@/hooks/useNodeData";
@@ -31,11 +31,12 @@ function DocumentNode(xyNode: Node) {
     openWindow({ xyNodeId: xyNode.id, nodeDataId, nodeType: "document" });
   }, [nodeDataId, openWindow, xyNode.id]);
 
-  // Récupère la valeur depuis le store NodeData
-  const parsedDoc = parseStoredPlateDocument(values?.doc);
-  const currentValue: Value = parsedDoc
-    ? normalizeNodeId(parsedDoc as Value)
-    : defaultValue;
+  // Memoize parsing + normalisation – values?.doc is a stable string reference
+  // from the Zustand store, so this only recomputes when the document actually changes.
+  const currentValue: Value = useMemo(() => {
+    const parsedDoc = parseStoredPlateDocument(values?.doc);
+    return parsedDoc ? normalizeNodeId(parsedDoc as Value) : defaultValue;
+  }, [values?.doc]);
 
   const isDocEmpty = currentValue.every((node) => {
     const getText = (n: unknown): string => {

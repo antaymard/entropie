@@ -12,7 +12,7 @@ import {
   TbArrowBack,
   TbTrash,
 } from "react-icons/tb";
-import { useAction, useMutation, useQuery } from "convex/react";
+import { useAction, useQuery } from "convex/react";
 import { useCanvasStore } from "@/stores/canvasStore";
 import { toastError } from "../utils/errorUtils";
 
@@ -99,11 +99,7 @@ export function NoleChat() {
       </div>
       <div className="flex-1 min-h-0">
         {!showHistory ? (
-          <ChatInterface
-            threadId={threadId}
-            useAttachments
-            autoUpdateThreadTitleAndSummary
-          />
+          <ChatInterface threadId={threadId} />
         ) : (
           <ChatHistory
             closeHistory={() => setShowHistory(false)}

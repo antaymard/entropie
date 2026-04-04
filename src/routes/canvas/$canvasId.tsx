@@ -270,11 +270,11 @@ function CanvasContent({
             <TopRightToolbar />
           </Panel>
         ) : null}
-        <Panel position="center-left">
+        <Panel position="bottom-center">
           <CanvasToolbar canvasId={canvasId} />
         </Panel>
         {isAuthenticated ? (
-          <Panel position="top-center">
+          <Panel position="bottom-left">
             <NoleCanvasPanel />
           </Panel>
         ) : (

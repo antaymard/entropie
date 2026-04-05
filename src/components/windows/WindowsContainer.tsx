@@ -39,7 +39,7 @@ export default function WindowsContainer() {
       {/* Snap preview overlay */}
       {snapPreview && (
         <div
-          className="pointer-events-none absolute z-200 rounded-lg border-2 border-blue-400/60 bg-blue-400/15 transition-all duration-150"
+          className="pointer-events-none absolute z-100 rounded-lg border-2 border-blue-400/60 bg-blue-400/15 transition-all duration-150"
           style={{
             width: `calc(40% - 40px)`,
             top: 10,

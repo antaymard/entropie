@@ -196,6 +196,21 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
     llmDescription:
       "For storing/displaying embedded content such as YouTube videos, Google Docs/Sheets/Slides, or any generic iframe content. Use this node to embed external content directly onto the canvas. \nThe required data value are 'url' (the original URL used to create the embed), 'embedUrl' (the embeddable URL used in the iframe source), 'title' (an optional title for the embedded content), and 'type' (the embed provider/type inferred from the URL, which can be 'youtube', 'google-docs', 'google-sheets', 'google-slides', or 'generic').",
     defaultDimensions: { width: 480, height: 320, resizable: true },
+    variants: {
+      preview: {
+        label: "Preview",
+        defaultWidth: 480,
+        defaultHeight: 320,
+        resizable: true,
+        isDefault: true,
+      },
+      title: {
+        label: "Title",
+        defaultWidth: 220,
+        defaultHeight: 33,
+        resizable: false,
+      },
+    },
     canHaveAutomation: false,
 
     dataValuesSchema: z

@@ -13,6 +13,7 @@ import { Input } from "@/components/shadcn/input";
 import { TbCode, TbMaximize, TbPencil } from "react-icons/tb";
 import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
 import { useNodeDataValues } from "@/hooks/useNodeData";
+import { useNodeDataTitle } from "@/hooks/useNodeTitle";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { useWindowsStore } from "@/stores/windowsStore";
 
@@ -106,12 +107,14 @@ function EmbedNode(xyNode: Node) {
   const values = useNodeDataValues(nodeDataId);
   const { updateNodeDataValues } = useUpdateNodeDataValues();
   const openWindow = useWindowsStore((s) => s.openWindow);
+  const embedTitle = useNodeDataTitle(nodeDataId) ?? "Embed";
 
   const [inputUrl, setInputUrl] = useState("");
   const [inputTitle, setInputTitle] = useState("");
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   const embedValue = values?.embed as EmbedValueType | undefined;
+  const isTitleVariant = xyNode.data.variant === "title";
 
   const handleOpenWindow = useCallback(() => {
     if (!nodeDataId) return;
@@ -158,44 +161,53 @@ function EmbedNode(xyNode: Node) {
         >
           <TbMaximize />
         </Button>
-        <Popover open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="icon" title="Edit embed URL">
-              <TbPencil />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent>
-            <div className="flex flex-col gap-2">
-              <Input
-                onDoubleClick={(e) => e.stopPropagation()}
-                type="text"
-                placeholder="URL or <iframe> embed code..."
-                value={inputUrl}
-                onChange={(e) => setInputUrl(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleSave();
-                }}
-              />
-              <Input
-                onDoubleClick={(e) => e.stopPropagation()}
-                type="text"
-                placeholder="Title (optional)"
-                value={inputTitle}
-                onChange={(e) => setInputTitle(e.target.value)}
-              />
-              <Button
-                onClick={handleSave}
-                size="sm"
-                disabled={!inputUrl.trim()}
-              >
-                Save
+        {!isTitleVariant && (
+          <Popover open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" title="Edit embed URL">
+                <TbPencil />
               </Button>
-            </div>
-          </PopoverContent>
-        </Popover>
+            </PopoverTrigger>
+            <PopoverContent>
+              <div className="flex flex-col gap-2">
+                <Input
+                  onDoubleClick={(e) => e.stopPropagation()}
+                  type="text"
+                  placeholder="URL or <iframe> embed code..."
+                  value={inputUrl}
+                  onChange={(e) => setInputUrl(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSave();
+                  }}
+                />
+                <Input
+                  onDoubleClick={(e) => e.stopPropagation()}
+                  type="text"
+                  placeholder="Title (optional)"
+                  value={inputTitle}
+                  onChange={(e) => setInputTitle(e.target.value)}
+                />
+                <Button
+                  onClick={handleSave}
+                  size="sm"
+                  disabled={!inputUrl.trim()}
+                >
+                  Save
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
       </CanvasNodeToolbar>
-      <NodeFrame xyNode={xyNode} resizable>
-        {embedValue?.embedUrl ? (
+      <NodeFrame xyNode={xyNode} resizable={!isTitleVariant}>
+        {isTitleVariant ? (
+          <div className="flex items-center gap-2 px-2 min-w-0 h-full relative">
+            <TbCode size={18} className="shrink-0" />
+            <p className="truncate flex-1 min-w-0" title={embedTitle}>
+              {embedTitle}
+            </p>
+          </div>
+        ) : embedValue?.embedUrl ? (
           <iframe
             src={embedValue.embedUrl}
             title={embedValue.title ?? "Embedded content"}

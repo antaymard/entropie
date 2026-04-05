@@ -30,11 +30,6 @@ const settingsSidebarSections: SettingsSidebarSection[] = [
     label: "Customization",
     buttons: [
       {
-        label: "Templates",
-        icon: "settings",
-        route: "/settings/templates",
-      },
-      {
         label: "Default nodes",
         icon: "settings",
         route: "/settings/",

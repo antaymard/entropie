@@ -2,19 +2,15 @@ import { v } from "convex/values";
 import { internalMutation, internalQuery } from "../_generated/server";
 import * as MetadataModels from "../models/metadataModels";
 import {
-  subjectTypeValidator,
+  metadatasValidator,
   subjectIdValidator,
   typeValidator,
 } from "../schemas/metadatasSchema";
 
+const { updatedAt: _, ...upsertArgs } = metadatasValidator.fields;
+
 export const upsert = internalMutation({
-  args: {
-    subjectType: subjectTypeValidator,
-    subjectId: subjectIdValidator,
-    type: typeValidator,
-    content: v.string(),
-    canvasId: v.optional(v.id("canvases")),
-  },
+  args: upsertArgs,
   returns: v.boolean(),
   handler: async (ctx, args) => MetadataModels.upsert(ctx, args),
 });

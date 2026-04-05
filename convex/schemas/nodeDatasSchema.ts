@@ -39,7 +39,7 @@ const automationProgressValidator = v.optional(
 // ── Main validator ──────────────────────────────────────────────────────
 
 const nodeDatasValidator = v.object({
-  canvasId: v.optional(v.id("canvases")),
+  canvasId: v.id("canvases"),
   templateId: v.optional(v.id("nodeTemplates")),
   template: v.optional(v.any()),
   type: nodeTypeValidator,

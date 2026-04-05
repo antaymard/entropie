@@ -21,7 +21,7 @@ export async function createNodeData(
   }: {
     type: Doc<"nodeDatas">["type"];
     values: Record<string, unknown>;
-    canvasId?: Id<"canvases">;
+    canvasId: Id<"canvases">;
   },
 ): Promise<Id<"nodeDatas">> {
   return ctx.db.insert("nodeDatas", {

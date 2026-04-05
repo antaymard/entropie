@@ -16,7 +16,7 @@ export async function upsert(
     content,
     canvasId,
   }: Pick<Metadata, "subjectType" | "subjectId" | "type" | "content"> & {
-    canvasId?: Id<"canvases">;
+    canvasId: Id<"canvases">;
   },
 ): Promise<boolean> {
   const existing = await ctx.db

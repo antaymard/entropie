@@ -1,4 +1,3 @@
-import CustomNode from "./CustomNode";
 import prebuiltNodesConfig from "./prebuilt-nodes/prebuiltNodesConfig";
 
 const nodeTypes = {
@@ -10,7 +9,6 @@ const nodeTypes = {
     },
     {},
   ),
-  custom: CustomNode,
 };
 
 const nodeList = [...prebuiltNodesConfig];

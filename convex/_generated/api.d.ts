@@ -70,7 +70,6 @@ import type * as schemas_sharesSchema from "../schemas/sharesSchema.js";
 import type * as shares from "../shares.js";
 import type * as slideshows from "../slideshows.js";
 import type * as speech from "../speech.js";
-import type * as templates from "../templates.js";
 import type * as threads from "../threads.js";
 import type * as uploads from "../uploads.js";
 import type * as wrappers_canvasEdgeWrappers from "../wrappers/canvasEdgeWrappers.js";
@@ -148,7 +147,6 @@ declare const fullApi: ApiFromModules<{
   shares: typeof shares;
   slideshows: typeof slideshows;
   speech: typeof speech;
-  templates: typeof templates;
   threads: typeof threads;
   uploads: typeof uploads;
   "wrappers/canvasEdgeWrappers": typeof wrappers_canvasEdgeWrappers;

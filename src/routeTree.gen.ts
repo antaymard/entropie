@@ -13,8 +13,6 @@ import { Route as SigninRouteImport } from './routes/signin'
 import { Route as SettingsRouteRouteImport } from './routes/settings/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CanvasCanvasIdRouteImport } from './routes/canvas/$canvasId'
-import { Route as SettingsTemplatesIndexRouteImport } from './routes/settings/templates/index'
-import { Route as SettingsTemplatesTemplateIdRouteImport } from './routes/settings/templates/$templateId'
 
 const SigninRoute = SigninRouteImport.update({
   id: '/signin',
@@ -36,73 +34,37 @@ const CanvasCanvasIdRoute = CanvasCanvasIdRouteImport.update({
   path: '/canvas/$canvasId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SettingsTemplatesIndexRoute = SettingsTemplatesIndexRouteImport.update({
-  id: '/templates/',
-  path: '/templates/',
-  getParentRoute: () => SettingsRouteRoute,
-} as any)
-const SettingsTemplatesTemplateIdRoute =
-  SettingsTemplatesTemplateIdRouteImport.update({
-    id: '/templates/$templateId',
-    path: '/templates/$templateId',
-    getParentRoute: () => SettingsRouteRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/settings': typeof SettingsRouteRouteWithChildren
+  '/settings': typeof SettingsRouteRoute
   '/signin': typeof SigninRoute
   '/canvas/$canvasId': typeof CanvasCanvasIdRoute
-  '/settings/templates/$templateId': typeof SettingsTemplatesTemplateIdRoute
-  '/settings/templates/': typeof SettingsTemplatesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/settings': typeof SettingsRouteRouteWithChildren
+  '/settings': typeof SettingsRouteRoute
   '/signin': typeof SigninRoute
   '/canvas/$canvasId': typeof CanvasCanvasIdRoute
-  '/settings/templates/$templateId': typeof SettingsTemplatesTemplateIdRoute
-  '/settings/templates': typeof SettingsTemplatesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/settings': typeof SettingsRouteRouteWithChildren
+  '/settings': typeof SettingsRouteRoute
   '/signin': typeof SigninRoute
   '/canvas/$canvasId': typeof CanvasCanvasIdRoute
-  '/settings/templates/$templateId': typeof SettingsTemplatesTemplateIdRoute
-  '/settings/templates/': typeof SettingsTemplatesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/settings'
-    | '/signin'
-    | '/canvas/$canvasId'
-    | '/settings/templates/$templateId'
-    | '/settings/templates/'
+  fullPaths: '/' | '/settings' | '/signin' | '/canvas/$canvasId'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/settings'
-    | '/signin'
-    | '/canvas/$canvasId'
-    | '/settings/templates/$templateId'
-    | '/settings/templates'
-  id:
-    | '__root__'
-    | '/'
-    | '/settings'
-    | '/signin'
-    | '/canvas/$canvasId'
-    | '/settings/templates/$templateId'
-    | '/settings/templates/'
+  to: '/' | '/settings' | '/signin' | '/canvas/$canvasId'
+  id: '__root__' | '/' | '/settings' | '/signin' | '/canvas/$canvasId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  SettingsRouteRoute: typeof SettingsRouteRouteWithChildren
+  SettingsRouteRoute: typeof SettingsRouteRoute
   SigninRoute: typeof SigninRoute
   CanvasCanvasIdRoute: typeof CanvasCanvasIdRoute
 }
@@ -137,40 +99,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CanvasCanvasIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/settings/templates/': {
-      id: '/settings/templates/'
-      path: '/templates'
-      fullPath: '/settings/templates/'
-      preLoaderRoute: typeof SettingsTemplatesIndexRouteImport
-      parentRoute: typeof SettingsRouteRoute
-    }
-    '/settings/templates/$templateId': {
-      id: '/settings/templates/$templateId'
-      path: '/templates/$templateId'
-      fullPath: '/settings/templates/$templateId'
-      preLoaderRoute: typeof SettingsTemplatesTemplateIdRouteImport
-      parentRoute: typeof SettingsRouteRoute
-    }
   }
 }
 
-interface SettingsRouteRouteChildren {
-  SettingsTemplatesTemplateIdRoute: typeof SettingsTemplatesTemplateIdRoute
-  SettingsTemplatesIndexRoute: typeof SettingsTemplatesIndexRoute
-}
-
-const SettingsRouteRouteChildren: SettingsRouteRouteChildren = {
-  SettingsTemplatesTemplateIdRoute: SettingsTemplatesTemplateIdRoute,
-  SettingsTemplatesIndexRoute: SettingsTemplatesIndexRoute,
-}
-
-const SettingsRouteRouteWithChildren = SettingsRouteRoute._addFileChildren(
-  SettingsRouteRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  SettingsRouteRoute: SettingsRouteRouteWithChildren,
+  SettingsRouteRoute: SettingsRouteRoute,
   SigninRoute: SigninRoute,
   CanvasCanvasIdRoute: CanvasCanvasIdRoute,
 }

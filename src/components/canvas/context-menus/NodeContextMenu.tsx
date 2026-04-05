@@ -19,7 +19,6 @@ import { useNodeDataStore } from "@/stores/nodeDataStore";
 // Icons
 import { HiOutlineTrash } from "react-icons/hi";
 import {
-  TbArrowFork,
   TbArrowLeftFromArc,
   TbCopyPlus,
   TbSpaces,
@@ -131,23 +130,6 @@ export default function NodeContextMenu({
               y: nodeToDuplicate.position.y + 50,
             },
             initialValues,
-          });
-        }
-      },
-    },
-    {
-      label: "Duplicate Synced",
-      icon: TbArrowFork,
-      onClick: () => {
-        const nodeToDuplicate = xyNode;
-        if (nodeToDuplicate) {
-          createNode({
-            node: nodeToDuplicate,
-            position: {
-              x: nodeToDuplicate.position.x + 50,
-              y: nodeToDuplicate.position.y + 50,
-            },
-            skipNodeDataCreation: true,
           });
         }
       },

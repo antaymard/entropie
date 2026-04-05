@@ -14,6 +14,7 @@ export const create = internalMutation({
   args: {
     type: nodeTypeValidator,
     values: v.record(v.string(), v.any()),
+    canvasId: v.id("canvases"),
   },
   returns: v.id("nodeDatas"),
   handler: async (ctx, args) => {

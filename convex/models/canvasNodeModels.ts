@@ -185,7 +185,6 @@ export async function updateCanvasNodes(
 export async function removeCanvasNodes(
   ctx: MutationCtx,
   {
-    authUserId,
     canvasId,
     nodeCanvasIds,
   }: {
@@ -205,60 +204,34 @@ export async function removeCanvasNodes(
     (node) => !nodeCanvasIdSet.has(node.id),
   );
 
-  const removedNodeDataIds = Array.from(
-    new Set(
-      removedNodes
-        .map((node) => node.nodeDataId)
-        .filter((id): id is Id<"nodeDatas"> => id !== undefined),
-    ),
-  );
+  const removedNodeDataIds = removedNodes
+    .map((node) => node.nodeDataId)
+    .filter((id): id is Id<"nodeDatas"> => id !== undefined);
 
   await ctx.db.patch("canvases", canvasId, {
     nodes: remainingNodes,
     updatedAt: Date.now(),
   });
 
-  if (removedNodeDataIds.length > 0) {
-    const stillUsedInCurrentCanvas = new Set(
-      remainingNodes
-        .map((node) => node.nodeDataId)
-        .filter((id): id is Id<"nodeDatas"> => id !== undefined),
-    );
-
-    const potentialOrphans = removedNodeDataIds.filter(
-      (id) => !stillUsedInCurrentCanvas.has(id),
-    );
-
-    if (potentialOrphans.length > 0) {
-      const allCanvases = await ctx.db
-        .query("canvases")
-        .withIndex("by_creator", (q) => q.eq("creatorId", authUserId))
-        .collect();
-
-      const nodeDataIdsInOtherCanvases = new Set<Id<"nodeDatas">>();
-
-      for (const otherCanvas of allCanvases) {
-        if (otherCanvas._id === canvasId) continue;
-
-        for (const node of otherCanvas.nodes ?? []) {
-          if (node.nodeDataId) {
-            nodeDataIdsInOtherCanvases.add(node.nodeDataId);
-          }
-        }
-      }
-
-      const orphanedIds = potentialOrphans.filter(
-        (id) => !nodeDataIdsInOtherCanvases.has(id),
-      );
-
-      for (const orphanedId of orphanedIds) {
-        await ctx.db.delete(orphanedId);
-      }
-
-      if (orphanedIds.length > 0) {
-        console.log(`🗑️ Deleted ${orphanedIds.length} orphaned nodeDatas`);
-      }
+  // 1:1 relationship: each nodeData belongs to exactly one canvas node,
+  // so we can delete them directly along with their associated metadatas.
+  for (const nodeDataId of removedNodeDataIds) {
+    // Delete associated metadatas
+    const metadatas = await ctx.db
+      .query("metadatas")
+      .withIndex("by_subject_and_type", (q) => q.eq("subjectId", nodeDataId))
+      .collect();
+    for (const metadata of metadatas) {
+      await ctx.db.delete(metadata._id);
     }
+
+    await ctx.db.delete(nodeDataId);
+  }
+
+  if (removedNodeDataIds.length > 0) {
+    console.log(
+      `🗑️ Deleted ${removedNodeDataIds.length} nodeDatas and their metadatas`,
+    );
   }
 
   console.log(
@@ -312,6 +285,23 @@ export async function moveToCanvas(
     nodes: [...targetNodes, ...nodesToMove],
     updatedAt: Date.now(),
   });
+
+  // Update canvasId on moved NodeDatas and their Metadatas
+  const movedNodeDataIds = nodesToMove
+    .map((node) => node.nodeDataId)
+    .filter((id): id is Id<"nodeDatas"> => id !== undefined);
+
+  for (const nodeDataId of movedNodeDataIds) {
+    await ctx.db.patch(nodeDataId, { canvasId: targetCanvasId });
+
+    const metadatas = await ctx.db
+      .query("metadatas")
+      .withIndex("by_subject_and_type", (q) => q.eq("subjectId", nodeDataId))
+      .collect();
+    for (const metadata of metadatas) {
+      await ctx.db.patch(metadata._id, { canvasId: targetCanvasId });
+    }
+  }
 
   console.log(
     `✅ Moved ${nodeCanvasIds.length} nodes from canvas ${sourceCanvasId} to canvas ${targetCanvasId}`,

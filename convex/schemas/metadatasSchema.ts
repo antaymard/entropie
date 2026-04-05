@@ -24,6 +24,7 @@ const subjectIdValidator = v.union(
 // ── Main validator ──────────────────────────────────────────────────────
 
 const metadatasValidator = v.object({
+  canvasId: v.id("canvases"),
   subjectType: subjectTypeValidator,
   subjectId: subjectIdValidator,
   type: typeValidator,

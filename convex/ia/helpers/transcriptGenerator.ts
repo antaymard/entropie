@@ -56,6 +56,7 @@ export const transcribeNode = internalAction({
       subjectId: nodeDataId,
       type: "transcript",
       content,
+      canvasId: nodeData.canvasId,
     });
 
     console.log(

@@ -6,43 +6,42 @@ import type { Id } from "@/../convex/_generated/dataModel";
 import type { NodeType } from "@/types/domain";
 import { getDefaultNodeDataValues } from "@/../convex/config/nodeConfig";
 import { generateLlmId } from "@/../convex/lib/llmId";
+import { useParams } from "@tanstack/react-router";
 
 type CreateNodeOptions = {
   node: Node;
   position: { x: number; y: number };
-  skipNodeDataCreation?: boolean;
   initialValues?: Record<string, unknown>;
 };
 
 type CreateNodeResult = {
   nodeId: string;
-  nodeDataId: Id<"nodeDatas"> | undefined;
+  nodeDataId: Id<"nodeDatas">;
 };
 
 export function useCreateNode() {
   const { addNodes, setNodes } = useReactFlow();
   const createNodeData = useMutation(api.nodeDatas.create);
+  const { canvasId }: { canvasId: Id<"canvases"> } = useParams({
+    from: "/canvas/$canvasId",
+  });
 
   const createNode = async ({
     node,
     position,
-    skipNodeDataCreation = false,
     initialValues = {},
   }: CreateNodeOptions): Promise<CreateNodeResult> => {
     const nodeId = generateLlmId();
 
-    let nodeDataId: Id<"nodeDatas"> | undefined;
-
-    if (!skipNodeDataCreation) {
-      const defaults = getDefaultNodeDataValues(node.type as NodeType) ?? {};
-      const values =
-        Object.keys(initialValues).length > 0 ? initialValues : defaults;
-      nodeDataId = await createNodeData({
-        type: node.type as NodeType,
-        values,
-        updatedAt: Date.now(),
-      });
-    }
+    const defaults = getDefaultNodeDataValues(node.type as NodeType) ?? {};
+    const values =
+      Object.keys(initialValues).length > 0 ? initialValues : defaults;
+    const nodeDataId = await createNodeData({
+      type: node.type as NodeType,
+      values,
+      updatedAt: Date.now(),
+      canvasId,
+    });
 
     // Déselectionner tous les nodes
     setNodes((nodes) => nodes.map((n) => ({ ...n, selected: false })));
@@ -62,7 +61,7 @@ export function useCreateNode() {
       data: {
         ...node.data,
         variant: node.data?.variant ?? "default",
-        ...(nodeDataId ? { nodeDataId } : {}),
+        nodeDataId,
       },
     });
 

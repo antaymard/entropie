@@ -1,4 +1,4 @@
-import type { Doc } from "../_generated/dataModel";
+import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 
 type Metadata = Doc<"metadatas">;
@@ -14,7 +14,10 @@ export async function upsert(
     subjectId,
     type,
     content,
-  }: Pick<Metadata, "subjectType" | "subjectId" | "type" | "content">,
+    canvasId,
+  }: Pick<Metadata, "subjectType" | "subjectId" | "type" | "content"> & {
+    canvasId: Id<"canvases">;
+  },
 ): Promise<boolean> {
   const existing = await ctx.db
     .query("metadatas")
@@ -29,6 +32,7 @@ export async function upsert(
     await ctx.db.patch(existing._id, {
       content,
       subjectType,
+      canvasId,
       updatedAt: now,
     });
   } else {
@@ -37,6 +41,7 @@ export async function upsert(
       subjectId,
       type,
       content,
+      canvasId,
       updatedAt: now,
     });
   }

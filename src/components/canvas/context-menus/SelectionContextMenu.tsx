@@ -17,11 +17,17 @@ import {
 } from "react-icons/ri";
 import { HiOutlineTrash } from "react-icons/hi";
 import {
-  TbKeyframeAlignCenter,
-  TbArrowAutofitWidth,
   TbArrowAutofitHeight,
+  TbArrowAutofitWidth,
+  TbCheck,
+  TbKeyframeAlignCenter,
+  TbPalette,
 } from "react-icons/tb";
 import { MdOutlineFitScreen } from "react-icons/md";
+import { useUpdateCanvasNode } from "@/hooks/useUpdateCanvasNode";
+import { colors } from "@/components/ui/styles";
+import type { colorsEnum } from "@/types/domain";
+import { cn } from "@/lib/utils";
 
 export default function SelectionContextMenu({
   closeMenu,
@@ -31,6 +37,8 @@ export default function SelectionContextMenu({
   elements: Node[] | object | null;
 }) {
   const { deleteElements, updateNode } = useReactFlow();
+  const { updateCanvasNode } = useUpdateCanvasNode();
+  const availableColors = Object.entries(colors);
 
   async function alignSelectedNodes(
     alignment: "left" | "right" | "top" | "bottom",
@@ -206,6 +214,39 @@ export default function SelectionContextMenu({
           </DropdownMenuSubContent>
         </DropdownMenuPortal>
       </DropdownMenuSub> */}
+
+      {/* Couleur */}
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger className="whitespace-nowrap">
+          <TbPalette size={16} /> Color
+        </DropdownMenuSubTrigger>
+        <DropdownMenuSubContent>
+          <div className="grid grid-cols-5 gap-2 p-2">
+            {availableColors.map(([key, value]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => {
+                  if (!Array.isArray(elements)) return;
+                  elements.forEach((node) => {
+                    updateCanvasNode({
+                      nodeId: node.id,
+                      props: { color: key as colorsEnum },
+                    });
+                  });
+                  closeMenu();
+                }}
+                className={cn(
+                  "relative w-10 h-10 rounded-full border-2 transition-all hover:scale-110",
+                  value.nodeBg,
+                  "border-border hover:border-primary/50",
+                )}
+                title={value.label}
+              />
+            ))}
+          </div>
+        </DropdownMenuSubContent>
+      </DropdownMenuSub>
 
       {/* Suppression */}
       <DropdownMenuItem

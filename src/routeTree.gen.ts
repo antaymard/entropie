@@ -56,23 +56,10 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/settings'
-    | '/signin'
-    | '/canvas/$canvasId'
+  fullPaths: '/' | '/settings' | '/signin' | '/canvas/$canvasId'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/settings'
-    | '/signin'
-    | '/canvas/$canvasId'
-  id:
-    | '__root__'
-    | '/'
-    | '/settings'
-    | '/signin'
-    | '/canvas/$canvasId'
+  to: '/' | '/settings' | '/signin' | '/canvas/$canvasId'
+  id: '__root__' | '/' | '/settings' | '/signin' | '/canvas/$canvasId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {

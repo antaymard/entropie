@@ -7,90 +7,11 @@ import type { Id } from "@/../convex/_generated/dataModel";
 import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
 import NodeFrame from "../NodeFrame";
 import { Button } from "@/components/shadcn/button";
-import { TbMaximize, TbTable, TbLink } from "react-icons/tb";
+import { TbMaximize, TbTable } from "react-icons/tb";
 import { useWindowsStore } from "@/stores/windowsStore";
 import { useNoWheelUnlessZoom } from "@/hooks/useNoWheelUnlessZoom";
-import {
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/shadcn/table";
-
-type ColumnType = "text" | "number" | "checkbox" | "date" | "link";
-
-interface LinkCellValue {
-  href: string;
-  pageTitle: string;
-  pageImage?: string;
-  pageDescription?: string;
-}
-
-type CellValue = string | number | boolean | LinkCellValue | null;
-
-interface TableColumn {
-  id: string;
-  name: string;
-  type: ColumnType;
-}
-
-interface TableRowData {
-  id: string;
-  cells: Record<string, CellValue>;
-}
-
-interface TableData {
-  columns: TableColumn[];
-  rows: TableRowData[];
-}
-
-function renderCellValue(value: CellValue | undefined, type: ColumnType) {
-  if (type === "checkbox") {
-    return (
-      <input
-        type="checkbox"
-        checked={!!value}
-        readOnly
-        className="pointer-events-none"
-      />
-    );
-  }
-  if (type === "date" && value != null && value !== "") {
-    const d = new Date(String(value));
-    return d.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  }
-  if (type === "link" && value != null && typeof value === "object") {
-    const linkVal = value as LinkCellValue;
-    let displayLabel = linkVal.pageTitle;
-    if (!displayLabel) {
-      try {
-        displayLabel = new URL(linkVal.href).hostname.replace(/^www\./, "");
-      } catch {
-        displayLabel = linkVal.href;
-      }
-    }
-    return (
-      <span className="flex items-center gap-1">
-        <TbLink size={13} className="shrink-0 text-muted-foreground" />
-        <a
-          href={linkVal.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-500 hover:underline truncate"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {displayLabel}
-        </a>
-      </span>
-    );
-  }
-  return value != null ? String(value) : "";
-}
+import { TablePreview } from "@/components/table";
+import type { TableData } from "@/components/table";
 
 function TableNode(xyNode: Node) {
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
@@ -148,26 +69,10 @@ function TableNode(xyNode: Node) {
                 <span className="text-xs">Double-clic pour éditer</span>
               </div>
             ) : (
-              <table className="w-full caption-bottom">
-                <TableHeader>
-                  <TableRow>
-                    {tableData.columns.map((col) => (
-                      <TableHead key={col.id}>{col.name}</TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {tableData.rows.map((row) => (
-                    <TableRow key={row.id}>
-                      {tableData.columns.map((col) => (
-                        <TableCell key={col.id}>
-                          {renderCellValue(row.cells[col.id], col.type)}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </table>
+              <TablePreview
+                columns={tableData.columns}
+                rows={tableData.rows}
+              />
             )}
           </div>
         )}

@@ -15,12 +15,17 @@ import { api } from "@/../convex/_generated/api";
 import { useParams } from "@tanstack/react-router";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { useNodeDataStore } from "@/stores/nodeDataStore";
+import { colors } from "@/components/ui/styles";
+import type { colorsEnum } from "@/types/domain";
+import { cn } from "@/lib/utils";
 
 // Icons
 import { HiOutlineTrash } from "react-icons/hi";
 import {
   TbArrowLeftFromArc,
+  TbCheck,
   TbCopyPlus,
+  TbPalette,
   TbSpaces,
 } from "react-icons/tb";
 import { useUpdateCanvasNode } from "@/hooks/useUpdateCanvasNode";
@@ -40,6 +45,7 @@ type NodeOption = {
   label: string;
   icon: IconType;
   subMenu?: NodeSubMenuItem[];
+  customSubContent?: React.ReactNode;
   onClick?: () => void | Promise<void>;
   preventAutoClose?: boolean;
 };
@@ -67,6 +73,9 @@ export default function NodeContextMenu({
   const variants = prebuiltNodesConfig.find(
     (config) => config.node.type === xyNode.type,
   )?.variants;
+
+  const availableColors = Object.entries(colors);
+  const currentColor = (xyNode.data.color as colorsEnum) || "default";
 
   const nodeOptions: NodeOption[] = [
     {
@@ -103,6 +112,45 @@ export default function NodeContextMenu({
             updateNode(xyNode.id, { resizing: false });
           },
         }),
+      ),
+    },
+    {
+      label: "Color",
+      icon: TbPalette,
+      preventAutoClose: true,
+      customSubContent: (
+        <div className="grid grid-cols-5 gap-2 p-2">
+          {availableColors.map(([key, value]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => {
+                updateCanvasNode({
+                  nodeId: xyNode.id,
+                  props: { color: key as colorsEnum },
+                });
+                closeMenu();
+              }}
+              className={cn(
+                "relative w-10 h-10 rounded-full border-2 transition-all hover:scale-110",
+                value.nodeBg,
+                currentColor === key
+                  ? "border-primary shadow-md"
+                  : "border-border hover:border-primary/50",
+              )}
+              title={value.label}
+            >
+              {currentColor === key && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <TbCheck
+                    className="w-5 h-5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
+                    strokeWidth={3}
+                  />
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
       ),
     },
     {
@@ -161,7 +209,16 @@ export default function NodeContextMenu({
       {nodeOptions
         .filter((option) => option.hidden !== true)
         .map((option, i) =>
-          option.subMenu && option.subMenu.length > 0 ? (
+          option.customSubContent ? (
+            <DropdownMenuSub key={i}>
+              <DropdownMenuSubTrigger className="whitespace-nowrap">
+                {option.icon({ size: 16 })} {option.label}
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                {option.customSubContent}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          ) : option.subMenu && option.subMenu.length > 0 ? (
             <DropdownMenuSub key={i}>
               <DropdownMenuSubTrigger className="whitespace-nowrap">
                 {option.icon({ size: 16 })} {option.label}

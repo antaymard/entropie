@@ -1,6 +1,5 @@
 import { NodeToolbar, type Node, useStore } from "@xyflow/react";
 import { memo } from "react";
-import ColorSelector from "./ColorSelector";
 import prebuiltNodesConfig from "../prebuilt-nodes/prebuiltNodesConfig";
 import AutomationSettingsButton from "./AutomationSettingsButton";
 
@@ -56,7 +55,6 @@ function ToolbarContent({
       {nodeConfig?.canHaveAutomation && (
         <AutomationSettingsButton xyNode={xyNode} automationStepAlwaysVisible />
       )}
-      <ColorSelector xyNode={xyNode} />
     </>
   );
 

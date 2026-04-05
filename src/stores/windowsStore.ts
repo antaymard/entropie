@@ -102,7 +102,7 @@ function findSmartPosition(
         PLACEMENT_PADDING,
         Math.round((viewportWidth - newWidth) / 2),
       ),
-      y: 70,
+      y: 20,
     };
   }
 

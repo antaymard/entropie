@@ -74,6 +74,8 @@ export default function WindowFrame({
   const closeWindow = useWindowsStore((s) => s.closeWindow);
   const toggleMinimizeWindow = useWindowsStore((s) => s.toggleMinimizeWindow);
   const snapWindow = useWindowsStore((s) => s.snapWindow);
+  const addDirtyNode = useWindowsStore((s) => s.addDirtyNode);
+  const removeDirtyNode = useWindowsStore((s) => s.removeDirtyNode);
   const { fitView } = useReactFlow();
 
   const title = useNodeDataTitle(nodeDataId);
@@ -90,6 +92,15 @@ export default function WindowFrame({
     },
     { target: containerRef, enabled: !!saveHandler && isDirty },
   );
+
+  useEffect(() => {
+    if (isDirty) {
+      addDirtyNode(xyNodeId);
+    } else {
+      removeDirtyNode(xyNodeId);
+    }
+    return () => removeDirtyNode(xyNodeId);
+  }, [isDirty, xyNodeId, addDirtyNode, removeDirtyNode]);
 
   // Stored as refs to avoid stale closures in the event listeners
   const dragRef = useRef<{ startX: number; startY: number } | null>(null);

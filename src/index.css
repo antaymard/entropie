@@ -7,6 +7,7 @@
 
 @theme {
   --radius: 15px;
+  --animate-shake: shake 0.5s ease-in-out;
   --font-sans: "Poppins", sans-serif;
   --color-text: #475569;
   --text-base: 13px;
@@ -250,6 +251,24 @@
 } */
 
 /* Styles pour le markdown dans les messages Nole */
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-10px);
+  }
+  50% {
+    transform: translateX(10px);
+  }
+  75% {
+    transform: translateX(-10px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
 @keyframes aui-pulse {
   50% {
     opacity: 0.5;

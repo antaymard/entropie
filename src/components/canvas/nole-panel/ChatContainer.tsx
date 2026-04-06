@@ -1,16 +1,11 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import RichTextArea from "./RichTextArea";
 import { Button } from "@/components/shadcn/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/shadcn/dropdown-menu";
-import {
-  TbBrain,
-  TbCheck,
+  TbCloudExclamation,
+  TbExclamationCircle,
   TbLoader,
+  TbMicrophone,
   TbPlus,
   TbSend,
   TbX,
@@ -33,14 +28,19 @@ import {
 } from "@convex-dev/agent/react";
 import { useParams } from "@tanstack/react-router";
 import ThreadSelector from "./ThreadSelector";
+import SoundWaveAnimation from "./SoundWaveAnimation";
+import { useSpeechToText } from "@/hooks/useSpeechToText";
+import { Kbd } from "@/components/shadcn/kbd";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/shadcn/tooltip";
+import toast from "react-hot-toast";
 
 const INPUT_MAX_HEIGHT_PX = 182;
 
 type Models = "default" | "best" | "fast";
-
-const MODEL_OPTIONS: Models[] = ["default", "best", "fast"];
-const formatModelLabel = (model: Models) =>
-  model.charAt(0).toUpperCase() + model.slice(1);
 
 type ChatContainerProps = {
   onClose?: () => void;
@@ -57,8 +57,65 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
 
   const [userInput, setUserInput] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [model, setModel] = useState<Models>("default");
   const [attachedNodes, setAttachedNodes] = useState<CanvasNode[]>([]);
+
+  // Speech-to-text: hold Ctrl+Alt to record
+  const onTranscript = useCallback(
+    (text: string) => setUserInput((prev) => (prev ? prev + " " + text : text)),
+    [],
+  );
+  const {
+    status: sttStatus,
+    start: startSTT,
+    stop: stopSTT,
+  } = useSpeechToText(onTranscript);
+  const isRecording = sttStatus === "recording";
+  const isTranscribing = sttStatus === "transcribing";
+  const sttBusy = isRecording || isTranscribing;
+
+  // Track Ctrl+Alt hold for push-to-talk
+  const keysHeldRef = useRef<Set<string>>(new Set());
+  const sttActiveRef = useRef(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      keysHeldRef.current.add(e.key);
+      if (
+        keysHeldRef.current.has("Control") &&
+        keysHeldRef.current.has("Alt") &&
+        !sttActiveRef.current
+      ) {
+        sttActiveRef.current = true;
+        void startSTT();
+      }
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      keysHeldRef.current.delete(e.key);
+      if (
+        sttActiveRef.current &&
+        (!keysHeldRef.current.has("Control") || !keysHeldRef.current.has("Alt"))
+      ) {
+        sttActiveRef.current = false;
+        stopSTT();
+      }
+    };
+    const handleBlur = () => {
+      keysHeldRef.current.clear();
+      if (sttActiveRef.current) {
+        sttActiveRef.current = false;
+        stopSTT();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("blur", handleBlur);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, [startSTT, stopSTT]);
 
   const { results: lastMessages } = useUIMessages(
     api.threads.listMessages,
@@ -100,7 +157,8 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
       !userInput.trim() ||
       isSending ||
       isAssistantResponding ||
-      hasDirtyWindows
+      hasDirtyWindows ||
+      sttBusy
     ) {
       return;
     }
@@ -191,7 +249,12 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
 
       {/* Input */}
       <div className="p-2 pt-0">
-        <div className="max-h-48 bg-slate-200 border border-slate-400 shadow-lg rounded-lg flex flex-col gap-2 mt-2">
+        <div
+          className={cn(
+            "max-h-48 bg-slate-200 border shadow-lg rounded-lg flex flex-col gap-2 mt-2",
+            hasDirtyWindows ? "border-red-300" : "border-slate-400",
+          )}
+        >
           {(selectableNodes.length > 0 || attachedNodes.length > 0) && (
             <div className="p-2 pb-0 flex flex-wrap gap-1">
               {selectableNodes.map((node) => (
@@ -235,47 +298,71 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
             />
           </div>
           <div className="flex items-center justify-between gap-2 pr-2 pb-2">
-            <div className="flex items-center">
-              {/* <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost">
-                    <TbBrain />
-                    {formatModelLabel(model)}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  {MODEL_OPTIONS.map((modelOption) => (
-                    <DropdownMenuItem
-                      key={modelOption}
-                      className="flex items-center justify-between gap-2 cursor-pointer"
-                      onSelect={() => setModel(modelOption)}
-                    >
-                      <span>{formatModelLabel(modelOption)}</span>
-                      {model === modelOption ? <TbCheck size={14} /> : null}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu> */}
+            <div className="flex items-center pl-2">
+              {!isRecording && !isTranscribing && (
+                <span className="text-slate-500 text-xs">
+                  <TbMicrophone size={14} className="inline-block mr-1" />
+                  <Kbd>Alt + Ctrl</Kbd>
+                </span>
+              )}
+              {isRecording && (
+                <div className="flex items-center gap-1.5 text-red-500 text-xs">
+                  <SoundWaveAnimation />
+                  <span>Écoute...</span>
+                </div>
+              )}
+              {isTranscribing && (
+                <div className="flex items-center gap-1.5 text-slate-500 text-xs">
+                  <TbLoader className="animate-spin" size={14} />
+                  <span>Transcription...</span>
+                </div>
+              )}
             </div>
-            <Button
-              disabled={
-                !userInput.trim() ||
-                !canvasId ||
-                isAssistantResponding ||
-                isSending ||
-                hasDirtyWindows
-              }
-              onClick={() => void onSendClicked()}
-            >
-              Envoyer
-              {isSending ? <TbLoader className="animate-spin" /> : <TbSend />}
-            </Button>
+            <div className="flex items-center gap-2">
+              {hasDirtyWindows && (
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <span className="rounded flex gap-1 bg-white/50 h-full px-2 py-1 text-red-400">
+                      <TbCloudExclamation size={16} className="stroke-2" />
+                      {dirtyNodeIds.length}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent className="text-sm">
+                    Veuillez enregistrer ou fermer les fenêtres modifiées avant
+                    d'envoyer votre message.
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              <Button
+                disabled={
+                  !userInput.trim() ||
+                  !canvasId ||
+                  isAssistantResponding ||
+                  isSending ||
+                  sttBusy
+                }
+                onClick={() => {
+                  if (hasDirtyWindows) {
+                    return toast.error(
+                      "Veuillez enregistrer ou fermer les fenêtres modifiées avant d'envoyer votre message.",
+                      { position: "bottom-left", duration: 5000 },
+                    );
+                  }
+                  void onSendClicked();
+                }}
+                className={cn(hasDirtyWindows && "")}
+              >
+                Envoyer
+                {isSending ? (
+                  <TbLoader className="animate-spin" />
+                ) : hasDirtyWindows ? (
+                  <TbExclamationCircle />
+                ) : (
+                  <TbSend />
+                )}
+              </Button>
+            </div>
           </div>
-          {hasDirtyWindows && (
-            <p className="text-xs text-red-500 px-3 pb-1">
-              Sauvegardez vos fenêtres ouvertes avant d&apos;envoyer un message.
-            </p>
-          )}
         </div>
       </div>
     </div>

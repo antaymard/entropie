@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useNodeData, useNodeDataValues } from "@/hooks/useNodeData";
 import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
 import type { Id } from "@/../convex/_generated/dataModel";
@@ -14,29 +14,22 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
   const { updateNodeDataValues } = useUpdateNodeDataValues();
   const isLocked = nodeData?.status === "working";
 
-  const initialData = useMemo(() => {
-    return (
-      (nodeDataValues?.table as TableData | undefined) ?? {
-        columns: [],
-        rows: [],
-      }
-    );
-    // Only initialize on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const initialTitle = useMemo(() => {
-    return (nodeDataValues?.title as string | undefined) ?? "";
-    // Only initialize on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const [localColumns, setLocalColumns] = useState<TableColumn[]>(
-    initialData.columns,
-  );
-  const [localRows, setLocalRows] = useState<TableRowData[]>(initialData.rows);
-  const [localTitle, setLocalTitle] = useState<string>(initialTitle);
+  const [localColumns, setLocalColumns] = useState<TableColumn[]>([]);
+  const [localRows, setLocalRows] = useState<TableRowData[]>([]);
+  const [localTitle, setLocalTitle] = useState<string>("");
   const [isDirty, setIsDirty] = useState(false);
+
+  // Sync local state with live data when the user hasn't made edits
+  useEffect(() => {
+    if (isDirty) return;
+    const table = (nodeDataValues?.table as TableData | undefined) ?? {
+      columns: [],
+      rows: [],
+    };
+    setLocalColumns(table.columns);
+    setLocalRows(table.rows);
+    setLocalTitle((nodeDataValues?.title as string | undefined) ?? "");
+  }, [nodeDataValues, isDirty]);
 
   // Keep latest refs to avoid stale closures in save handler
   const columnsRef = useRef(localColumns);

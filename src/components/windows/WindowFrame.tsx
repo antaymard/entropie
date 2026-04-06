@@ -350,7 +350,7 @@ export default function WindowFrame({
             text="Vous avez des modifications non sauvegardees. Voulez-vous fermer cette fenetre ?"
             onCancel={() => closeWindow(xyNodeId)}
             onConfirm={() => {
-              saveHandler?.();
+              if (isDirty) saveHandler?.();
               closeWindow(xyNodeId);
             }}
             shouldConfirm={isDirty}

@@ -9,6 +9,7 @@ import {
   type ColumnDef,
   type FilterFn,
   type Header,
+  type Row,
   type SortingState,
 } from "@tanstack/react-table";
 import {
@@ -21,12 +22,16 @@ import {
   useSensors,
   type DragEndEvent,
 } from "@dnd-kit/core";
-import { restrictToHorizontalAxis } from "@dnd-kit/modifiers";
+import {
+  restrictToHorizontalAxis,
+  restrictToVerticalAxis,
+} from "@dnd-kit/modifiers";
 import {
   SortableContext,
   arrayMove,
   horizontalListSortingStrategy,
   useSortable,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
@@ -63,6 +68,7 @@ export interface TableProps {
   onColumnNameChange?: (colId: string, name: string) => void;
   onColumnTypeChange?: (colId: string, type: ColumnType) => void;
   onColumnOrderChange?: (orderedIds: string[]) => void;
+  onRowOrderChange?: (orderedIds: string[]) => void;
   className?: string;
 }
 
@@ -144,6 +150,44 @@ function DraggableCell({
   );
 }
 
+function RowDragHandle({ rowId }: { rowId: string }) {
+  const { attributes, listeners } = useSortable({ id: rowId });
+  return (
+    <button
+      {...attributes}
+      {...listeners}
+      className="cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground px-0.5"
+      tabIndex={-1}
+    >
+      ⠿
+    </button>
+  );
+}
+
+function DraggableRow({
+  row,
+  children,
+}: {
+  row: Row<TableRowData>;
+  children: React.ReactNode;
+}) {
+  const { transform, transition, setNodeRef, isDragging } = useSortable({
+    id: row.original.id,
+  });
+  const style: CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.8 : 1,
+    zIndex: isDragging ? 1 : 0,
+    position: "relative",
+  };
+  return (
+    <TableRow ref={setNodeRef} style={style} className="group/tablerow">
+      {children}
+    </TableRow>
+  );
+}
+
 export function Table({
   columns: tableColumns,
   rows,
@@ -156,6 +200,7 @@ export function Table({
   onColumnNameChange,
   onColumnTypeChange,
   onColumnOrderChange,
+  onRowOrderChange,
   className,
 }: TableProps) {
   const tableRootRef = useRef<HTMLDivElement>(null);
@@ -163,12 +208,32 @@ export function Table({
   const [globalFilter, setGlobalFilter] = useState("");
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
   const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
-  const [columnOrder, setColumnOrder] = useState<string[]>(() =>
-    tableColumns.map((c) => c.id),
-  );
+  const [columnOrder, setColumnOrder] = useState<string[]>(() => [
+    ...(!readOnly ? ["__drag__"] : []),
+    ...tableColumns.map((c) => c.id),
+    ...(!readOnly ? ["__delete__"] : []),
+  ]);
+
+  // Hide row drag handle when sorting or filtering is active (order becomes ambiguous)
+  const canReorderRowsRef = useRef(true);
+  canReorderRowsRef.current = !readOnly && sorting.length === 0 && globalFilter === "";
 
   const columns = useMemo<ColumnDef<TableRowData>[]>(
     () => [
+      ...(!readOnly
+        ? [
+            {
+              id: "__drag__",
+              enableSorting: false,
+              enableGlobalFilter: false,
+              header: () => null,
+              cell: ({ row }: { row: Row<TableRowData> }) =>
+                canReorderRowsRef.current ? (
+                  <RowDragHandle rowId={row.original.id} />
+                ) : null,
+            } satisfies ColumnDef<TableRowData>,
+          ]
+        : []),
       ...tableColumns.map(
         (col): ColumnDef<TableRowData> => ({
           id: col.id,
@@ -288,6 +353,20 @@ export function Table({
     }
   }
 
+  function handleRowDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (active && over && active.id !== over.id) {
+      const allIds = rows.map((r) => r.id);
+      const oldIndex = allIds.indexOf(active.id as string);
+      const newIndex = allIds.indexOf(over.id as string);
+      if (oldIndex !== -1 && newIndex !== -1) {
+        onRowOrderChange?.(arrayMove(allIds, oldIndex, newIndex));
+      }
+    }
+  }
+
+  const rowIds = rows.map((r) => r.id);
+
   // Keep columnOrder in sync when columns are added/removed
   const prevColIds = useRef<string[]>(tableColumns.map((c) => c.id));
   const currentColIds = tableColumns.map((c) => c.id);
@@ -296,11 +375,17 @@ export function Table({
     currentColIds.some((id) => !prevColIds.current.includes(id));
   if (colIdsChanged) {
     prevColIds.current = currentColIds;
-    setColumnOrder(currentColIds);
+    setColumnOrder([
+      ...(!readOnly ? ["__drag__"] : []),
+      ...currentColIds,
+      ...(!readOnly ? ["__delete__"] : []),
+    ]);
   }
 
-  // IDs for SortableContext — exclude non-data columns like __delete__
-  const sortableIds = columnOrder.filter((id) => id !== "__delete__");
+  // IDs for column SortableContext — exclude utility columns
+  const sortableIds = columnOrder.filter(
+    (id) => id !== "__delete__" && id !== "__drag__",
+  );
 
   return (
     <DndContext
@@ -347,8 +432,11 @@ export function Table({
                     strategy={horizontalListSortingStrategy}
                   >
                     {headerGroup.headers.map((header) => {
-                      if (header.column.id === "__delete__") {
-                        return <TableHead key={header.id} />;
+                      if (
+                        header.column.id === "__delete__" ||
+                        header.column.id === "__drag__"
+                      ) {
+                        return <TableHead key={header.id} className="w-8" />;
                       }
                       return (
                         <DraggableHeader key={header.id} header={header}>
@@ -363,50 +451,67 @@ export function Table({
                 </TableRow>
               ))}
             </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={tableColumns.length + (readOnly ? 0 : 1)}
-                    className="text-center text-muted-foreground py-10"
-                  >
-                    {readOnly
-                      ? "No rows."
-                      : 'No rows yet. Click "Add row" to get started.'}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id} className="group/tablerow">
-                    <SortableContext
-                      items={sortableIds}
-                      strategy={horizontalListSortingStrategy}
+            <DndContext
+              collisionDetection={closestCenter}
+              modifiers={[restrictToVerticalAxis]}
+              onDragEnd={handleRowDragEnd}
+              sensors={sensors}
+            >
+              <TableBody>
+                {table.getRowModel().rows.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={
+                        tableColumns.length + (readOnly ? 0 : 2) /* drag + delete */
+                      }
+                      className="text-center text-muted-foreground py-10"
                     >
-                      {row.getVisibleCells().map((cell) => {
-                        if (cell.column.id === "__delete__") {
-                          return (
-                            <TableCell key={cell.id}>
-                              {flexRender(
-                                cell.column.columnDef.cell,
-                                cell.getContext(),
-                              )}
-                            </TableCell>
-                          );
-                        }
-                        return (
-                          <DraggableCell key={cell.id} cell={cell}>
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext(),
-                            )}
-                          </DraggableCell>
-                        );
-                      })}
-                    </SortableContext>
+                      {readOnly
+                        ? "No rows."
+                        : 'No rows yet. Click "Add row" to get started.'}
+                    </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
+                ) : (
+                  <SortableContext
+                    items={rowIds}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {table.getRowModel().rows.map((row) => (
+                      <DraggableRow key={row.id} row={row}>
+                        <SortableContext
+                          items={sortableIds}
+                          strategy={horizontalListSortingStrategy}
+                        >
+                          {row.getVisibleCells().map((cell) => {
+                            if (
+                              cell.column.id === "__delete__" ||
+                              cell.column.id === "__drag__"
+                            ) {
+                              return (
+                                <TableCell key={cell.id} className="w-8 px-1">
+                                  {flexRender(
+                                    cell.column.columnDef.cell,
+                                    cell.getContext(),
+                                  )}
+                                </TableCell>
+                              );
+                            }
+                            return (
+                              <DraggableCell key={cell.id} cell={cell}>
+                                {flexRender(
+                                  cell.column.columnDef.cell,
+                                  cell.getContext(),
+                                )}
+                              </DraggableCell>
+                            );
+                          })}
+                        </SortableContext>
+                      </DraggableRow>
+                    ))}
+                  </SortableContext>
+                )}
+              </TableBody>
+            </DndContext>
           </ShadcnTable>
         </div>
       </div>

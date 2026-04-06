@@ -168,6 +168,20 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
     [markDirty],
   );
 
+  const reorderRows = useCallback(
+    (orderedIds: string[]) => {
+      setLocalRows((rows) => {
+        const rowMap = new Map(rows.map((r) => [r.id, r]));
+        return orderedIds.flatMap((id) => {
+          const row = rowMap.get(id);
+          return row ? [row] : [];
+        });
+      });
+      markDirty();
+    },
+    [markDirty],
+  );
+
   const reorderColumns = useCallback(
     (orderedIds: string[]) => {
       setLocalColumns((cols) => {
@@ -210,6 +224,7 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
         onColumnNameChange={updateColumnName}
         onColumnTypeChange={updateColumnType}
         onColumnOrderChange={reorderColumns}
+        onRowOrderChange={reorderRows}
         className="flex-1 min-h-0"
       />
     </div>

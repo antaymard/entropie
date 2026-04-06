@@ -1,20 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import RichTextArea from "./RichTextArea";
 import { Button } from "@/components/shadcn/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/shadcn/dropdown-menu";
-import {
-  TbBrain,
-  TbCheck,
-  TbLoader,
-  TbPlus,
-  TbSend,
-  TbX,
-} from "react-icons/tb";
+import { TbLoader, TbMicrophone, TbPlus, TbSend, TbX } from "react-icons/tb";
 import { useNodes } from "@xyflow/react";
 import type { CanvasNode } from "@/types";
 import prebuiltNodesConfig from "@/components/nodes/prebuilt-nodes/prebuiltNodesConfig";
@@ -35,14 +22,11 @@ import { useParams } from "@tanstack/react-router";
 import ThreadSelector from "./ThreadSelector";
 import SoundWaveAnimation from "./SoundWaveAnimation";
 import { useSpeechToText } from "@/hooks/useSpeechToText";
+import { Kbd } from "@/components/shadcn/kbd";
 
 const INPUT_MAX_HEIGHT_PX = 182;
 
 type Models = "default" | "best" | "fast";
-
-const MODEL_OPTIONS: Models[] = ["default", "best", "fast"];
-const formatModelLabel = (model: Models) =>
-  model.charAt(0).toUpperCase() + model.slice(1);
 
 type ChatContainerProps = {
   onClose?: () => void;
@@ -67,8 +51,11 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
     (text: string) => setUserInput((prev) => (prev ? prev + " " + text : text)),
     [],
   );
-  const { status: sttStatus, start: startSTT, stop: stopSTT } =
-    useSpeechToText(onTranscript);
+  const {
+    status: sttStatus,
+    start: startSTT,
+    stop: stopSTT,
+  } = useSpeechToText(onTranscript);
   const isRecording = sttStatus === "recording";
   const isTranscribing = sttStatus === "transcribing";
   const sttBusy = isRecording || isTranscribing;
@@ -294,6 +281,12 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
           </div>
           <div className="flex items-center justify-between gap-2 pr-2 pb-2">
             <div className="flex items-center pl-2">
+              {!isRecording && !isTranscribing && (
+                <span className="text-slate-500 text-xs">
+                  <TbMicrophone size={14} className="inline-block mr-1" />
+                  <Kbd>Alt + Ctrl</Kbd>
+                </span>
+              )}
               {isRecording && (
                 <div className="flex items-center gap-1.5 text-red-500 text-xs">
                   <SoundWaveAnimation />

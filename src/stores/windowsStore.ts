@@ -169,6 +169,9 @@ type OpenedWindowPayload = Pick<
 
 interface WindowsStore {
   openedWindows: OpenedWindow[];
+  dirtyNodeIds: string[];
+  addDirtyNode: (xyNodeId: string) => void;
+  removeDirtyNode: (xyNodeId: string) => void;
   openWindow: (payload: OpenedWindowPayload) => void;
   bringWindowToFront: (xyNodeId: string) => void;
   closeWindow: (xyNodeId: string) => void;
@@ -189,6 +192,21 @@ export const useWindowsStore = create<WindowsStore>()(
   devtools(
     (set) => ({
       openedWindows: [],
+      dirtyNodeIds: [],
+      addDirtyNode: (xyNodeId: string) => {
+        set((store) => {
+          if (store.dirtyNodeIds.includes(xyNodeId)) return store;
+          return { dirtyNodeIds: [...store.dirtyNodeIds, xyNodeId] };
+        });
+      },
+      removeDirtyNode: (xyNodeId: string) => {
+        set((store) => {
+          if (!store.dirtyNodeIds.includes(xyNodeId)) return store;
+          return {
+            dirtyNodeIds: store.dirtyNodeIds.filter((id) => id !== xyNodeId),
+          };
+        });
+      },
       openWindow: ({ xyNodeId, nodeDataId, nodeType }: OpenedWindowPayload) => {
         set((store) => {
           const existingWindowIndex = store.openedWindows.findIndex(
@@ -269,6 +287,7 @@ export const useWindowsStore = create<WindowsStore>()(
 
           return {
             openedWindows: newOpenedWindows,
+            dirtyNodeIds: store.dirtyNodeIds.filter((id) => id !== xyNodeId),
           };
         });
       },
@@ -288,6 +307,9 @@ export const useWindowsStore = create<WindowsStore>()(
 
           return {
             openedWindows: nextOpenedWindows,
+            dirtyNodeIds: store.dirtyNodeIds.filter(
+              (id) => !idsToClose.has(id),
+            ),
           };
         });
       },
@@ -295,6 +317,7 @@ export const useWindowsStore = create<WindowsStore>()(
         useCanvasStore.getState().setFocus("canvas");
         set(() => ({
           openedWindows: [],
+          dirtyNodeIds: [],
         }));
       },
       moveWindow: (xyNodeId: string, delta: Delta) => {

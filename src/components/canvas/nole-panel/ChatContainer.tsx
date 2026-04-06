@@ -22,6 +22,7 @@ import { useNodeDataStore } from "@/stores/nodeDataStore";
 import { getNodeDataTitle } from "@/components/utils/nodeDataDisplayUtils";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
+import { useWindowsStore } from "@/stores/windowsStore";
 import ChatInterface from "@/components/ai/chat-interface/ChatInterface";
 import { useNoleThread } from "@/hooks/useNoleThread";
 import { api } from "@/../convex/_generated/api";
@@ -82,6 +83,9 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
     threadId ? { threadId } : "skip",
   );
 
+  const dirtyNodeIds = useWindowsStore((s) => s.dirtyNodeIds);
+  const hasDirtyWindows = dirtyNodeIds.length > 0;
+
   const nodes = useNodes();
   const selectedNodesOnCanvas = nodes.filter((n) => n.selected) as CanvasNode[];
   const attachedNodeIds = new Set(attachedNodes.map((node) => node.id));
@@ -95,7 +99,8 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
       !canvasId ||
       !userInput.trim() ||
       isSending ||
-      isAssistantResponding
+      isAssistantResponding ||
+      hasDirtyWindows
     ) {
       return;
     }
@@ -257,7 +262,8 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
                 !userInput.trim() ||
                 !canvasId ||
                 isAssistantResponding ||
-                isSending
+                isSending ||
+                hasDirtyWindows
               }
               onClick={() => void onSendClicked()}
             >
@@ -265,6 +271,11 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
               {isSending ? <TbLoader className="animate-spin" /> : <TbSend />}
             </Button>
           </div>
+          {hasDirtyWindows && (
+            <p className="text-xs text-red-500 px-3 pb-1">
+              Sauvegardez vos fenêtres ouvertes avant d&apos;envoyer un message.
+            </p>
+          )}
         </div>
       </div>
     </div>

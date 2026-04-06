@@ -168,6 +168,20 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
     [markDirty],
   );
 
+  const reorderColumns = useCallback(
+    (orderedIds: string[]) => {
+      setLocalColumns((cols) => {
+        const colMap = new Map(cols.map((c) => [c.id, c]));
+        return orderedIds.flatMap((id) => {
+          const col = colMap.get(id);
+          return col ? [col] : [];
+        });
+      });
+      markDirty();
+    },
+    [markDirty],
+  );
+
   if (!nodeDataValues) return null;
 
   return (
@@ -195,6 +209,7 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
         onDeleteColumn={deleteColumn}
         onColumnNameChange={updateColumnName}
         onColumnTypeChange={updateColumnType}
+        onColumnOrderChange={reorderColumns}
         className="flex-1 min-h-0"
       />
     </div>

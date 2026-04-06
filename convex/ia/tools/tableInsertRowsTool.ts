@@ -41,17 +41,23 @@ const cellValueSchema = z.union([
   linkValueSchema,
 ]);
 
-const rowValueSchema = z
-  .array(
-    z.object({
-      column: z
-        .string()
-        .min(1)
-        .describe("Column title or id from the table markdown header."),
-      newValue: cellValueSchema.describe("New value for this column."),
-    }),
-  )
-  .min(1);
+const cellUpdateSchema = z.object({
+  column: z
+    .string()
+    .min(1)
+    .describe("Column title or id from the table markdown header."),
+  newValue: cellValueSchema.describe("New value for this column."),
+});
+
+const rowValueSchema = z.array(cellUpdateSchema).min(1);
+
+const rowInputSchema = z
+  .object({
+    cells: rowValueSchema.describe(
+      "Column values for this row, as an array of {column, newValue} pairs.",
+    ),
+  })
+  .describe("A single row to insert.");
 
 function normalizeLookupKey(value: string): string {
   return value.trim().toLowerCase();
@@ -159,14 +165,9 @@ function normalizeCellValueForColumn({
 }
 
 function asRowsInput(
-  values:
-    | z.infer<typeof rowValueSchema>
-    | Array<z.infer<typeof rowValueSchema>>,
+  values: Array<z.infer<typeof rowInputSchema>>,
 ): Array<z.infer<typeof rowValueSchema>> {
-  if (Array.isArray(values) && values.length > 0 && Array.isArray(values[0])) {
-    return values as Array<z.infer<typeof rowValueSchema>>;
-  }
-  return [values as z.infer<typeof rowValueSchema>];
+  return values.map((row) => row.cells);
 }
 
 export default function tableInsertRowsTool({
@@ -185,18 +186,11 @@ export default function tableInsertRowsTool({
           "Row id after which new rows are inserted. If empty or omitted, insert at table start.",
         ),
       values: z
-        .union([
-          rowValueSchema.describe(
-            "Single row values as pairs {column, newValue}.",
-          ),
-          z
-            .array(rowValueSchema)
-            .min(1)
-            .describe(
-              "Multiple rows values, each row as pairs {column, newValue}.",
-            ),
-        ])
-        .describe("Row values to insert."),
+        .array(rowInputSchema)
+        .min(1)
+        .describe(
+          "Rows to insert. Each item is { cells: [{column, newValue}, ...] }. Always use this structure, even for a single row.",
+        ),
       explanation: z.string().describe("3-5 words explaining the edit intent."),
     }),
     handler: async (ctx, args): Promise<string> => {

@@ -231,7 +231,7 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
           </div>
           <div className="flex items-center justify-between gap-2 pr-2 pb-2">
             <div className="flex items-center">
-              <DropdownMenu>
+              {/* <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost">
                     <TbBrain />
@@ -250,7 +250,7 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
-              </DropdownMenu>
+              </DropdownMenu> */}
             </div>
             <Button
               disabled={

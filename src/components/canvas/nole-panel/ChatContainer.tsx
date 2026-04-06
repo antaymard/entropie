@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import RichTextArea from "./RichTextArea";
 import { Button } from "@/components/shadcn/button";
 import {
@@ -33,6 +33,8 @@ import {
 } from "@convex-dev/agent/react";
 import { useParams } from "@tanstack/react-router";
 import ThreadSelector from "./ThreadSelector";
+import SoundWaveAnimation from "./SoundWaveAnimation";
+import { useSpeechToText } from "@/hooks/useSpeechToText";
 
 const INPUT_MAX_HEIGHT_PX = 182;
 
@@ -59,6 +61,61 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
   const [isSending, setIsSending] = useState(false);
   const [model, setModel] = useState<Models>("default");
   const [attachedNodes, setAttachedNodes] = useState<CanvasNode[]>([]);
+
+  // Speech-to-text: hold Ctrl+Alt to record
+  const onTranscript = useCallback(
+    (text: string) => setUserInput((prev) => (prev ? prev + " " + text : text)),
+    [],
+  );
+  const { status: sttStatus, start: startSTT, stop: stopSTT } =
+    useSpeechToText(onTranscript);
+  const isRecording = sttStatus === "recording";
+  const isTranscribing = sttStatus === "transcribing";
+  const sttBusy = isRecording || isTranscribing;
+
+  // Track Ctrl+Alt hold for push-to-talk
+  const keysHeldRef = useRef<Set<string>>(new Set());
+  const sttActiveRef = useRef(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      keysHeldRef.current.add(e.key);
+      if (
+        keysHeldRef.current.has("Control") &&
+        keysHeldRef.current.has("Alt") &&
+        !sttActiveRef.current
+      ) {
+        sttActiveRef.current = true;
+        void startSTT();
+      }
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      keysHeldRef.current.delete(e.key);
+      if (
+        sttActiveRef.current &&
+        (!keysHeldRef.current.has("Control") || !keysHeldRef.current.has("Alt"))
+      ) {
+        sttActiveRef.current = false;
+        stopSTT();
+      }
+    };
+    const handleBlur = () => {
+      keysHeldRef.current.clear();
+      if (sttActiveRef.current) {
+        sttActiveRef.current = false;
+        stopSTT();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("blur", handleBlur);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, [startSTT, stopSTT]);
 
   const { results: lastMessages } = useUIMessages(
     api.threads.listMessages,
@@ -100,7 +157,8 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
       !userInput.trim() ||
       isSending ||
       isAssistantResponding ||
-      hasDirtyWindows
+      hasDirtyWindows ||
+      sttBusy
     ) {
       return;
     }
@@ -235,27 +293,19 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
             />
           </div>
           <div className="flex items-center justify-between gap-2 pr-2 pb-2">
-            <div className="flex items-center">
-              {/* <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost">
-                    <TbBrain />
-                    {formatModelLabel(model)}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  {MODEL_OPTIONS.map((modelOption) => (
-                    <DropdownMenuItem
-                      key={modelOption}
-                      className="flex items-center justify-between gap-2 cursor-pointer"
-                      onSelect={() => setModel(modelOption)}
-                    >
-                      <span>{formatModelLabel(modelOption)}</span>
-                      {model === modelOption ? <TbCheck size={14} /> : null}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu> */}
+            <div className="flex items-center pl-2">
+              {isRecording && (
+                <div className="flex items-center gap-1.5 text-red-500 text-xs">
+                  <SoundWaveAnimation />
+                  <span>Écoute...</span>
+                </div>
+              )}
+              {isTranscribing && (
+                <div className="flex items-center gap-1.5 text-slate-500 text-xs">
+                  <TbLoader className="animate-spin" size={14} />
+                  <span>Transcription...</span>
+                </div>
+              )}
             </div>
             <Button
               disabled={
@@ -263,7 +313,8 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
                 !canvasId ||
                 isAssistantResponding ||
                 isSending ||
-                hasDirtyWindows
+                hasDirtyWindows ||
+                sttBusy
               }
               onClick={() => void onSendClicked()}
             >

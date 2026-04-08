@@ -7,20 +7,16 @@ export async function upsertChunks(
   ctx: MutationCtx,
   {
     nodeDataId,
-    fieldPath,
     chunks,
   }: {
     nodeDataId: Id<"nodeDatas">;
-    fieldPath: string;
     chunks: Array<Omit<SearchableChunk, "_id" | "_creationTime">>;
   },
 ): Promise<void> {
-  // Delete existing chunks for this (nodeDataId, fieldPath) pair
+  // Delete all existing chunks for this nodeDataId, then insert new ones
   const existing = await ctx.db
     .query("searchableChunks")
-    .withIndex("by_nodeDataId_and_fieldPath", (q) =>
-      q.eq("nodeDataId", nodeDataId).eq("fieldPath", fieldPath),
-    )
+    .withIndex("by_nodeDataId", (q) => q.eq("nodeDataId", nodeDataId))
     .collect();
 
   for (const chunk of existing) {

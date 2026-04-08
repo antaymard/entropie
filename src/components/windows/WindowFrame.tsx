@@ -15,8 +15,8 @@ import { TbLocation } from "react-icons/tb";
 import { useReactFlow } from "@xyflow/react";
 import DocumentWindow from "./prebuilt/DocumentWindow";
 import EmbedWindow from "./prebuilt/EmbedWindow";
-import FileWindow from "./prebuilt/FileWindow";
 import ImageWindow from "./prebuilt/ImageWindow";
+import PdfWindow from "./prebuilt/PdfWindow";
 import TableWindow from "./prebuilt/TableWindow";
 import { WindowFrameContext } from "./WindowFrameContext";
 import ConfirmableButton from "@/components/ui/ConfirmableButton";
@@ -30,7 +30,8 @@ function WindowContent({ openedWindow }: { openedWindow: OpenedWindow }) {
     case "embed":
       return <EmbedWindow nodeDataId={nodeDataId} />;
     case "file":
-      return <FileWindow nodeDataId={nodeDataId} />;
+    case "pdf":
+      return <PdfWindow nodeDataId={nodeDataId} />;
     case "image":
       return <ImageWindow nodeDataId={nodeDataId} />;
     case "table":

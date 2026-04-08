@@ -4,10 +4,9 @@ import { nodeTypeValidator } from "./nodeTypeSchema";
 // ── Sub-validators ──────────────────────────────────────────────────────
 
 const chunkTypeValidator = v.union(
-  v.literal("field"),
+  v.literal("node"),
   v.literal("page"),
-  v.literal("section"),
-  v.literal("image"),
+  v.literal("annotation"),
 );
 
 // ── Main validator ──────────────────────────────────────────────────────
@@ -16,8 +15,6 @@ const searchableChunksValidator = v.object({
   nodeId: v.string(),
   nodeDataId: v.id("nodeDatas"),
   canvasId: v.id("canvases"),
-  fieldPath: v.string(),
-  fieldType: v.string(),
   chunkType: chunkTypeValidator,
   nodeType: nodeTypeValidator,
   templateId: v.optional(v.string()),

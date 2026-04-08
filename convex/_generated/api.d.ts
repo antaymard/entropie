@@ -26,7 +26,6 @@ import type * as ia_helpers_oneLinerGenerator from "../ia/helpers/oneLinerGenera
 import type * as ia_helpers_pillMarkdownRules from "../ia/helpers/pillMarkdownRules.js";
 import type * as ia_helpers_plateMarkdownConverter from "../ia/helpers/plateMarkdownConverter.js";
 import type * as ia_helpers_spatialCanvasOverviewGenerator from "../ia/helpers/spatialCanvasOverviewGenerator.js";
-import type * as ia_helpers_transcriptGenerator from "../ia/helpers/transcriptGenerator.js";
 import type * as ia_nole from "../ia/nole.js";
 import type * as ia_noleToolRuntimeContext from "../ia/noleToolRuntimeContext.js";
 import type * as ia_nole_noleSystemPrompt from "../ia/nole/noleSystemPrompt.js";
@@ -54,6 +53,7 @@ import type * as lib_r2 from "../lib/r2.js";
 import type * as lib_xml from "../lib/xml.js";
 import type * as links from "../links.js";
 import type * as memories from "../memories.js";
+import type * as migrations from "../migrations.js";
 import type * as models_canvasEdgeModels from "../models/canvasEdgeModels.js";
 import type * as models_canvasModels from "../models/canvasModels.js";
 import type * as models_canvasNodeModels from "../models/canvasNodeModels.js";
@@ -68,6 +68,7 @@ import type * as schemas_nodeTypeSchema from "../schemas/nodeTypeSchema.js";
 import type * as schemas_scheduledJobsSchema from "../schemas/scheduledJobsSchema.js";
 import type * as schemas_searchableChunksSchema from "../schemas/searchableChunksSchema.js";
 import type * as schemas_sharesSchema from "../schemas/sharesSchema.js";
+import type * as searchable_chunkBuilder from "../searchable/chunkBuilder.js";
 import type * as shares from "../shares.js";
 import type * as slideshows from "../slideshows.js";
 import type * as speech from "../speech.js";
@@ -105,7 +106,6 @@ declare const fullApi: ApiFromModules<{
   "ia/helpers/pillMarkdownRules": typeof ia_helpers_pillMarkdownRules;
   "ia/helpers/plateMarkdownConverter": typeof ia_helpers_plateMarkdownConverter;
   "ia/helpers/spatialCanvasOverviewGenerator": typeof ia_helpers_spatialCanvasOverviewGenerator;
-  "ia/helpers/transcriptGenerator": typeof ia_helpers_transcriptGenerator;
   "ia/nole": typeof ia_nole;
   "ia/noleToolRuntimeContext": typeof ia_noleToolRuntimeContext;
   "ia/nole/noleSystemPrompt": typeof ia_nole_noleSystemPrompt;
@@ -133,6 +133,7 @@ declare const fullApi: ApiFromModules<{
   "lib/xml": typeof lib_xml;
   links: typeof links;
   memories: typeof memories;
+  migrations: typeof migrations;
   "models/canvasEdgeModels": typeof models_canvasEdgeModels;
   "models/canvasModels": typeof models_canvasModels;
   "models/canvasNodeModels": typeof models_canvasNodeModels;
@@ -147,6 +148,7 @@ declare const fullApi: ApiFromModules<{
   "schemas/scheduledJobsSchema": typeof schemas_scheduledJobsSchema;
   "schemas/searchableChunksSchema": typeof schemas_searchableChunksSchema;
   "schemas/sharesSchema": typeof schemas_sharesSchema;
+  "searchable/chunkBuilder": typeof searchable_chunkBuilder;
   shares: typeof shares;
   slideshows: typeof slideshows;
   speech: typeof speech;

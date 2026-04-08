@@ -18,7 +18,7 @@ import { UploadFile } from "@/components/fields/UploadFile";
 import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
 import { useWindowsStore } from "@/stores/windowsStore";
 
-type FileValue = {
+type PdfValue = {
   url: string;
   filename: string;
   mimeType: string;
@@ -27,16 +27,16 @@ type FileValue = {
   key: string;
 };
 
-const defaultValue: FileValue[] = [];
+const defaultValue: PdfValue[] = [];
 
-function FileNode(xyNode: Node) {
+function PdfNode(xyNode: Node) {
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
   const values = useNodeDataValues(nodeDataId);
   const { updateNodeDataValues } = useUpdateNodeDataValues();
   const openWindow = useWindowsStore((s) => s.openWindow);
 
   const currentValue =
-    (values?.files as FileValue[] | undefined) ?? defaultValue;
+    (values?.files as PdfValue[] | undefined) ?? defaultValue;
   const file = currentValue.length > 0 ? currentValue[0] : null;
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -87,7 +87,8 @@ function FileNode(xyNode: Node) {
             variant="outline"
             onClick={() => {
               if (!nodeDataId) return;
-              openWindow({ xyNodeId: xyNode.id, nodeDataId, nodeType: "file" });
+              const nodeType = xyNode.type === "file" ? "file" : "pdf";
+              openWindow({ xyNodeId: xyNode.id, nodeDataId, nodeType });
             }}
           >
             <TbMaximize />
@@ -95,7 +96,7 @@ function FileNode(xyNode: Node) {
         )}
         <Popover open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="icon" title="Edit file">
+            <Button variant="outline" size="icon" title="Edit PDF">
               <TbPencil />
             </Button>
           </PopoverTrigger>
@@ -123,7 +124,7 @@ function FileNode(xyNode: Node) {
         </Popover>
       </CanvasNodeToolbar>
       <NodeFrame xyNode={xyNode}>
-        <div className="h-full w-full flex items-center gap-2 px-2 min-w-0 relative group/filenode">
+        <div className="h-full w-full flex items-center gap-2 px-2 min-w-0 relative group/pdfnode">
           <RiAttachment2 size={18} className="shrink-0" />
           {file ? (
             <>
@@ -141,7 +142,7 @@ function FileNode(xyNode: Node) {
               )}
             </>
           ) : (
-            <p className="text-sm text-muted-foreground">No file</p>
+            <p className="text-sm text-muted-foreground">No PDF</p>
           )}
         </div>
       </NodeFrame>
@@ -149,4 +150,4 @@ function FileNode(xyNode: Node) {
   );
 }
 
-export default memo(FileNode, areNodePropsEqual);
+export default memo(PdfNode, areNodePropsEqual);

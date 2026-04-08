@@ -171,7 +171,7 @@ export function BlockSuggestionCard({
                         <span className="text-sm">{text || "line breaks"}</span>
                       </div>
                     </React.Fragment>
-                  )
+                  ),
                 )}
 
                 {suggestionText2Array(suggestion.text!).map((text, index) => (
@@ -248,7 +248,7 @@ export function BlockSuggestionCard({
 
 export const useResolveSuggestion = (
   suggestionNodes: NodeEntry<TElement | TSuggestionText>[],
-  blockPath: Path
+  blockPath: Path,
 ) => {
   const discussions = usePluginOption(discussionPlugin, "discussions");
 
@@ -292,7 +292,7 @@ export const useResolveSuggestion = (
           if (TextApi.isText(node)) {
             const dataList = api.suggestion.dataList(node);
             const includeUpdate = dataList.some(
-              (data) => data.type === "update"
+              (data) => data.type === "update",
             );
 
             if (!includeUpdate) {
@@ -309,7 +309,7 @@ export const useResolveSuggestion = (
 
           return [];
         })
-        .filter(Boolean)
+        .filter(Boolean),
     );
 
     const res: ResolvedSuggestion[] = [];
@@ -334,7 +334,7 @@ export const useResolveSuggestion = (
 
       // move line break to the end
       entries.sort(([, path1], [, path2]) =>
-        PathApi.isChild(path1, path2) ? -1 : 1
+        PathApi.isChild(path1, path2) ? -1 : 1,
       );
 
       let newText = "";
@@ -471,5 +471,5 @@ export const useResolveSuggestion = (
 };
 
 export const isResolvedSuggestion = (
-  suggestion: ResolvedSuggestion | TDiscussion
+  suggestion: ResolvedSuggestion | TDiscussion,
 ): suggestion is ResolvedSuggestion => "suggestionId" in suggestion;

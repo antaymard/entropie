@@ -1,18 +1,13 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery } from "../_generated/server";
 import * as SearchableChunkModels from "../models/searchableChunkModels";
-import {
-  searchableChunksValidator,
-  chunkTypeValidator,
-} from "../schemas/searchableChunksSchema";
-import { nodeTypeValidator } from "../schemas/nodeTypeSchema";
+import { searchableChunksValidator } from "../schemas/searchableChunksSchema";
 
 const chunkInputValidator = v.object(searchableChunksValidator.fields);
 
 export const upsertChunks = internalMutation({
   args: {
     nodeDataId: v.id("nodeDatas"),
-    fieldPath: v.string(),
     chunks: v.array(chunkInputValidator),
   },
   returns: v.null(),

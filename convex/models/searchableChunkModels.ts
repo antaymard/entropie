@@ -56,6 +56,23 @@ export async function deleteByCanvasId(
   }
 }
 
+export async function updateCanvasId(
+  ctx: MutationCtx,
+  {
+    nodeDataId,
+    canvasId,
+  }: { nodeDataId: Id<"nodeDatas">; canvasId: Id<"canvases"> },
+): Promise<void> {
+  const chunks = await ctx.db
+    .query("searchableChunks")
+    .withIndex("by_nodeDataId", (q) => q.eq("nodeDataId", nodeDataId))
+    .collect();
+
+  for (const chunk of chunks) {
+    await ctx.db.patch(chunk._id, { canvasId });
+  }
+}
+
 export async function listByNodeDataId(
   ctx: QueryCtx,
   { nodeDataId }: { nodeDataId: Id<"nodeDatas"> },

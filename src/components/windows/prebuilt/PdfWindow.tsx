@@ -1,5 +1,5 @@
 import { memo, useRef, useState, useEffect, useCallback } from "react";
-import type { Node } from "@xyflow/react";
+import { useReactFlow } from "@xyflow/react";
 import WindowPanelFrame from "../WindowPanelFrame";
 import { useNodeDataValues } from "@/hooks/useNodeData";
 import type { Id } from "@/../convex/_generated/dataModel";
@@ -14,8 +14,15 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url,
 ).toString();
 
-function PdfWindow({ xyNode }: { xyNode: Node }) {
-  const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas">;
+function PdfWindow({
+  xyNodeId,
+  nodeDataId,
+}: {
+  xyNodeId: string;
+  nodeDataId: Id<"nodeDatas">;
+}) {
+  const { getNode } = useReactFlow();
+  const xyNode = getNode(xyNodeId);
   const nodeDataValues = useNodeDataValues(nodeDataId);
   const files = (nodeDataValues?.files as FileFieldType[] | undefined) ?? [];
   const pdfUrl = files.length > 0 ? files[0].url : "";
@@ -50,7 +57,7 @@ function PdfWindow({ xyNode }: { xyNode: Node }) {
     return () => resizeObserver.disconnect();
   }, []);
 
-  if (!nodeDataValues) return null;
+  if (!nodeDataValues || !xyNode) return null;
 
   return (
     <WindowPanelFrame xyNode={xyNode} title="PDF">

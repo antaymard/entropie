@@ -1,7 +1,8 @@
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { nodeDataConfig } from "../config/nodeConfig";
+import { internal } from "../_generated/api";
+import * as SearchableChunkModels from "./searchableChunkModels";
 
 export async function readNodeData(
   ctx: QueryCtx,
@@ -110,6 +111,26 @@ export async function updateAutomationProgress(
   return true;
 }
 
+export async function deleteNodeDataWithCascade(
+  ctx: MutationCtx,
+  { nodeDataId }: { nodeDataId: Id<"nodeDatas"> },
+): Promise<void> {
+  // Delete memories
+  const memories = await ctx.db
+    .query("memories")
+    .withIndex("by_subject_and_type", (q) => q.eq("subjectId", nodeDataId))
+    .collect();
+  for (const memory of memories) {
+    await ctx.db.delete(memory._id);
+  }
+
+  // Delete searchable chunks
+  await SearchableChunkModels.deleteByNodeDataId(ctx, { nodeDataId });
+
+  // Delete the nodeData itself
+  await ctx.db.delete(nodeDataId);
+}
+
 export async function updateValues(
   ctx: MutationCtx,
   {
@@ -130,24 +151,10 @@ export async function updateValues(
     updatedAt: now,
   });
 
+  await ctx.scheduler.runAfter(0, internal.searchable.chunkBuilder.rebuildChunks, {
+    nodeDataId: _id,
+    updatedKeys: Object.keys(values),
+  });
+
   return true;
-}
-
-// Transcribe trigger logic. Only triggers for specific node types, and only when specific fields are updated (ex: for a pdf, only trigger when the "url" field is updated, not when we update the "title" field)
-const transcriptFieldKeyByType: Partial<
-  Record<Doc<"nodeDatas">["type"], string>
-> = Object.fromEntries(
-  nodeDataConfig.flatMap((config) =>
-    config.shouldTriggerTranscribeFields === undefined
-      ? []
-      : [[config.type, config.shouldTriggerTranscribeFields]],
-  ),
-) as Partial<Record<Doc<"nodeDatas">["type"], string>>;
-
-export function shouldTranscribe(
-  type: Doc<"nodeDatas">["type"],
-  updateKeys: string[],
-): boolean {
-  const trigger = transcriptFieldKeyByType[type];
-  return trigger !== undefined && updateKeys.includes(trigger);
 }

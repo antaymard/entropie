@@ -31,7 +31,7 @@ function WindowContent({ openedWindow }: { openedWindow: OpenedWindow }) {
       return <EmbedWindow nodeDataId={nodeDataId} />;
     case "file":
     case "pdf":
-      return <PdfWindow nodeDataId={nodeDataId} />;
+      return <PdfWindow xyNodeId={xyNodeId} nodeDataId={nodeDataId} />;
     case "image":
       return <ImageWindow nodeDataId={nodeDataId} />;
     case "table":

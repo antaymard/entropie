@@ -67,7 +67,23 @@ export const rebuildChunks = internalAction({
       return null;
     }
 
-    const chunks = await buildChunks(nodeData, updatedKeys);
+    const { nodes } = await ctx.runQuery(
+      internal.wrappers.canvasNodeWrappers.getCanvasNodesAndEdges,
+      { canvasId: nodeData.canvasId },
+    );
+    const matchingCanvasNode = nodes.find(
+      (node) => node.nodeDataId === nodeDataId,
+    );
+    const nodeId = matchingCanvasNode?.id ?? (nodeDataId as string);
+
+    if (!matchingCanvasNode) {
+      console.warn("[chunkBuilder] rebuildChunks:canvas-node-not-found", {
+        nodeDataId,
+        canvasId: nodeData.canvasId,
+      });
+    }
+
+    const chunks = await buildChunks(nodeData, nodeId, updatedKeys);
 
     console.log("[chunkBuilder] rebuildChunks:chunks-built", {
       nodeDataId,
@@ -96,6 +112,7 @@ export const rebuildChunks = internalAction({
 
 async function buildChunks(
   nodeData: Doc<"nodeDatas">,
+  nodeId: string,
   updatedKeys?: string[],
 ): Promise<ChunkInput[]> {
   console.log("[chunkBuilder] buildChunks:start", {
@@ -118,7 +135,7 @@ async function buildChunks(
     }
   }
   const base = {
-    nodeId: nodeData._id as string,
+    nodeId,
     nodeDataId: nodeData._id,
     canvasId: nodeData.canvasId,
     nodeType: nodeData.type,

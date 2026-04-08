@@ -68,6 +68,7 @@ import type * as schemas_nodeTypeSchema from "../schemas/nodeTypeSchema.js";
 import type * as schemas_scheduledJobsSchema from "../schemas/scheduledJobsSchema.js";
 import type * as schemas_searchableChunksSchema from "../schemas/searchableChunksSchema.js";
 import type * as schemas_sharesSchema from "../schemas/sharesSchema.js";
+import type * as searchableChunks from "../searchableChunks.js";
 import type * as searchable_chunkBuilder from "../searchable/chunkBuilder.js";
 import type * as shares from "../shares.js";
 import type * as slideshows from "../slideshows.js";
@@ -148,6 +149,7 @@ declare const fullApi: ApiFromModules<{
   "schemas/scheduledJobsSchema": typeof schemas_scheduledJobsSchema;
   "schemas/searchableChunksSchema": typeof schemas_searchableChunksSchema;
   "schemas/sharesSchema": typeof schemas_sharesSchema;
+  searchableChunks: typeof searchableChunks;
   "searchable/chunkBuilder": typeof searchable_chunkBuilder;
   shares: typeof shares;
   slideshows: typeof slideshows;

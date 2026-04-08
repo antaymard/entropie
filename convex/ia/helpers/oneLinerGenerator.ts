@@ -21,7 +21,7 @@ export const generate = internalAction({
 
     // 3. Récupérer le one-liner existant (si présent)
     const existingOneLiner = await ctx.runQuery(
-      internal.wrappers.metadataWrappers.read,
+      internal.wrappers.memoryWrappers.read,
       { subjectId: nodeDataId, type: "one-liner" },
     );
 
@@ -61,8 +61,8 @@ export const generate = internalAction({
 `,
     });
 
-    // 5. Persister le one-liner via metadata
-    await ctx.runMutation(internal.wrappers.metadataWrappers.upsert, {
+    // 5. Persister le one-liner via memory
+    await ctx.runMutation(internal.wrappers.memoryWrappers.upsert, {
       subjectType: "nodeData",
       subjectId: nodeDataId,
       type: "one-liner",

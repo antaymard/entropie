@@ -33,6 +33,14 @@ export default function readNodesTool({
 
       try {
         const withPosition = args.withPosition ?? true;
+        const { nodes: canvasNodes, edges: canvasEdges } = await ctx.runQuery(
+          internal.wrappers.canvasNodeWrappers.getCanvasNodesAndEdges,
+          {
+            canvasId: canvasId as Id<"canvases">,
+          },
+        );
+
+        const requestedNodeIdSet = new Set(args.nodeIds);
 
         const nodes = await Promise.all(
           args.nodeIds.map(async (nodeId) => {
@@ -61,6 +69,84 @@ export default function readNodesTool({
           }),
         );
 
+        const nodeInfoById = new Map<string, { type: string; title: string }>(
+          nodes.map((node) => [
+            node.nodeId,
+            {
+              type: node.nodeType,
+              title: node.title,
+            },
+          ]),
+        );
+
+        const connectedNodeIdsToFetch = new Set<string>();
+        for (const edge of canvasEdges) {
+          if (requestedNodeIdSet.has(edge.source)) {
+            connectedNodeIdsToFetch.add(edge.target);
+          }
+          if (requestedNodeIdSet.has(edge.target)) {
+            connectedNodeIdsToFetch.add(edge.source);
+          }
+        }
+
+        const missingNodeIds = [...connectedNodeIdsToFetch].filter(
+          (nodeId) => !nodeInfoById.has(nodeId),
+        );
+
+        const canvasNodeTypeById = new Map(
+          canvasNodes.map((node) => [node.id, node.type]),
+        );
+
+        await Promise.all(
+          missingNodeIds.map(async (nodeId) => {
+            const fallbackType = canvasNodeTypeById.get(nodeId) ?? "unknown";
+
+            try {
+              const { nodeData } = await ctx.runQuery(
+                internal.wrappers.canvasNodeWrappers.getNodeWithNodeData,
+                {
+                  canvasId: canvasId as Id<"canvases">,
+                  nodeId,
+                },
+              );
+
+              nodeInfoById.set(nodeId, {
+                type: fallbackType,
+                title: getNodeDataTitle(nodeData),
+              });
+            } catch {
+              nodeInfoById.set(nodeId, {
+                type: fallbackType,
+                title: "Untitled",
+              });
+            }
+          }),
+        );
+
+        const formatConnection = (nodeId: string) => {
+          const connectedNode = nodeInfoById.get(nodeId);
+          const nodeType = connectedNode?.type ?? "unknown";
+          const nodeTitle = connectedNode?.title ?? "Untitled";
+          return `${nodeId} | ${nodeType} | ${nodeTitle}`;
+        };
+
+        const connectedFromByNodeId = new Map<string, Array<string>>();
+        const connectedToByNodeId = new Map<string, Array<string>>();
+
+        for (const edge of canvasEdges) {
+          if (requestedNodeIdSet.has(edge.target)) {
+            const values = connectedFromByNodeId.get(edge.target) ?? [];
+            values.push(formatConnection(edge.source));
+            connectedFromByNodeId.set(edge.target, values);
+          }
+
+          if (requestedNodeIdSet.has(edge.source)) {
+            const values = connectedToByNodeId.get(edge.source) ?? [];
+            values.push(formatConnection(edge.target));
+            connectedToByNodeId.set(edge.source, values);
+          }
+        }
+
         const xml = [
           "<nodes>",
           ...nodes.map(
@@ -73,10 +159,14 @@ export default function readNodesTool({
               height,
               title,
               content,
-            }) =>
-              `<node id="${escapeXmlAttribute(nodeId)}" type="${escapeXmlAttribute(nodeType)}"${withPosition ? ` x=${escapeXmlAttribute(String(positionX))} y=${escapeXmlAttribute(String(positionY))}${width !== null ? ` width=${escapeXmlAttribute(String(width))}` : "?"}${height !== null ? ` height=${escapeXmlAttribute(String(height))}` : "?"}` : ""} title="${escapeXmlAttribute(title)}">
+            }) => {
+              const connectedFrom = connectedFromByNodeId.get(nodeId) ?? [];
+              const connectedTo = connectedToByNodeId.get(nodeId) ?? [];
+
+              return `<node id="${escapeXmlAttribute(nodeId)}" type="${escapeXmlAttribute(nodeType)}" connectedFrom="${escapeXmlAttribute(connectedFrom.join(" ; "))}" connectedTo="${escapeXmlAttribute(connectedTo.join(" ; "))}"${withPosition ? ` x="${escapeXmlAttribute(String(positionX))}" y="${escapeXmlAttribute(String(positionY))}"${width !== null ? ` width="${escapeXmlAttribute(String(width))}"` : "?"}${height !== null ? ` height="${escapeXmlAttribute(String(height))}"` : "?"}` : ""} title="${escapeXmlAttribute(title)}">
 ${toXmlCdata(content)}
-</node>`,
+</node>`;
+            },
           ),
           "</nodes>",
         ].join("\n");

@@ -23,7 +23,8 @@ const subjectIdValidator = v.union(
 
 // ── Main validator ──────────────────────────────────────────────────────
 
-const metadatasValidator = v.object({
+const memoriesValidator = v.object({
+  canvasId: v.id("canvases"),
   subjectType: subjectTypeValidator,
   subjectId: subjectIdValidator,
   type: typeValidator,
@@ -32,11 +33,11 @@ const metadatasValidator = v.object({
 });
 
 /*
-  Plus tard, on fera du chunking des réponses de l'IA, et un système de parentId. Les pdf transcripted très longs auront un parent de content vide, et des children avec des chunks de contenu. Mieux pour le RAG. Et pareil, les images extraites des pdf seront des enfants, avec un content_type "image" ou "extracted_image". Et un champs metadata pour stocker les infos d'extraction (page, position, url sur R2)...
+  Plus tard, on fera du chunking des réponses de l'IA, et un système de parentId. Les pdf transcripted très longs auront un parent de content vide, et des children avec des chunks de contenu. Mieux pour le RAG. Et pareil, les images extraites des pdf seront des enfants, avec un content_type "image" ou "extracted_image". Et un champ memory pour stocker les infos d'extraction (page, position, url sur R2)...
 */
 
 export {
-  metadatasValidator,
+  memoriesValidator,
   subjectTypeValidator,
   subjectIdValidator,
   typeValidator,

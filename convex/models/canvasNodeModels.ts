@@ -214,15 +214,15 @@ export async function removeCanvasNodes(
   });
 
   // 1:1 relationship: each nodeData belongs to exactly one canvas node,
-  // so we can delete them directly along with their associated metadatas.
+  // so we can delete them directly along with their associated memories.
   for (const nodeDataId of removedNodeDataIds) {
-    // Delete associated metadatas
-    const metadatas = await ctx.db
-      .query("metadatas")
+    // Delete associated memories.
+    const memories = await ctx.db
+      .query("memories")
       .withIndex("by_subject_and_type", (q) => q.eq("subjectId", nodeDataId))
       .collect();
-    for (const metadata of metadatas) {
-      await ctx.db.delete(metadata._id);
+    for (const memory of memories) {
+      await ctx.db.delete(memory._id);
     }
 
     await ctx.db.delete(nodeDataId);
@@ -230,7 +230,7 @@ export async function removeCanvasNodes(
 
   if (removedNodeDataIds.length > 0) {
     console.log(
-      `🗑️ Deleted ${removedNodeDataIds.length} nodeDatas and their metadatas`,
+      `🗑️ Deleted ${removedNodeDataIds.length} nodeDatas and their memories`,
     );
   }
 
@@ -286,7 +286,7 @@ export async function moveToCanvas(
     updatedAt: Date.now(),
   });
 
-  // Update canvasId on moved NodeDatas and their Metadatas
+  // Update canvasId on moved NodeDatas and their memories.
   const movedNodeDataIds = nodesToMove
     .map((node) => node.nodeDataId)
     .filter((id): id is Id<"nodeDatas"> => id !== undefined);
@@ -294,12 +294,12 @@ export async function moveToCanvas(
   for (const nodeDataId of movedNodeDataIds) {
     await ctx.db.patch(nodeDataId, { canvasId: targetCanvasId });
 
-    const metadatas = await ctx.db
-      .query("metadatas")
+    const memories = await ctx.db
+      .query("memories")
       .withIndex("by_subject_and_type", (q) => q.eq("subjectId", nodeDataId))
       .collect();
-    for (const metadata of metadatas) {
-      await ctx.db.patch(metadata._id, { canvasId: targetCanvasId });
+    for (const memory of memories) {
+      await ctx.db.patch(memory._id, { canvasId: targetCanvasId });
     }
   }
 

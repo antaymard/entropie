@@ -5,6 +5,7 @@ import type { LanguageModel, ToolSet } from "ai";
 import type { NoleToolRuntimeContext } from "./noleToolRuntimeContext";
 import nodeAgentTool from "./tools/nodeAgentTool";
 import readNodesTool from "./tools/readNodesTool";
+import listNodesTool from "./tools/listNodesTool";
 import { openWebPageTool } from "./tools/openWebPageTool";
 import { websearchTool } from "./tools/websearchTool";
 import documentStringReplaceContentTool from "./tools/documentStringReplaceContentTool";
@@ -55,6 +56,7 @@ export function createNoleAgent({
     maxSteps: 8,
     languageModel: openrouter("minimax/minimax-m2.7"),
     tools: {
+      list_nodes: listNodesTool(runtimeContext),
       read_nodes: readNodesTool(runtimeContext),
       node_and_edge_manipulation: nodeAgentTool(runtimeContext),
       open_webpage: openWebPageTool,

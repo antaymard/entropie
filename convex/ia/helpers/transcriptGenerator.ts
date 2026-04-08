@@ -23,10 +23,10 @@ export const transcribeNode = internalAction({
     if (!nodeData) return null;
 
     // 2. Staleness guard : skip if transcript is already up-to-date
-    const existing = await ctx.runQuery(
-      internal.wrappers.metadataWrappers.read,
-      { subjectId: nodeDataId, type: "transcript" },
-    );
+    const existing = await ctx.runQuery(internal.wrappers.memoryWrappers.read, {
+      subjectId: nodeDataId,
+      type: "transcript",
+    });
     if (existing && existing.updatedAt >= (nodeData.updatedAt ?? 0)) {
       return null;
     }
@@ -50,8 +50,8 @@ export const transcribeNode = internalAction({
 
     if (!content || content.trim().length === 0) return null;
 
-    // 4. Upsert metadata
-    await ctx.runMutation(internal.wrappers.metadataWrappers.upsert, {
+    // 4. Upsert memory
+    await ctx.runMutation(internal.wrappers.memoryWrappers.upsert, {
       subjectType: "nodeData",
       subjectId: nodeDataId,
       type: "transcript",

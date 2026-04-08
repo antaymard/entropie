@@ -44,6 +44,9 @@ const DocumentEditorField = forwardRef<
   const initialValue: Value = value?.doc as Value;
   const setFocus = useCanvasStore((s) => s.setFocus);
   const skipNextChangeRef = useRef(false);
+  // Après un save local, le store se met à jour et renvoie le même contenu :
+  // on saute le setValue inutile (l'éditeur a déjà le bon contenu).
+  const skipServerValueRef = useRef(false);
 
   const editor = usePlateEditor({
     id: editorId ? `doc-${editorId}` : undefined,
@@ -52,14 +55,20 @@ const DocumentEditorField = forwardRef<
   });
 
   // Last Write Wins: server value always overrides local content unconditionally
+  // (sauf juste après un save local – le contenu est déjà correct dans l'éditeur)
   useEffect(() => {
     if (!initialValue) return;
+    if (skipServerValueRef.current) {
+      skipServerValueRef.current = false;
+      return;
+    }
     skipNextChangeRef.current = true;
     editor.tf.setValue(initialValue);
     onDirtyChange?.(false);
   }, [initialValue, editor, onDirtyChange]);
 
   const save = useCallback(() => {
+    skipServerValueRef.current = true;
     onChange?.({ doc: editor.children as Value });
     onDirtyChange?.(false);
   }, [onChange, onDirtyChange, editor]);

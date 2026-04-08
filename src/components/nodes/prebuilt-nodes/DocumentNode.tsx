@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useDeferredValue, useMemo } from "react";
 import { type Node } from "@xyflow/react";
 import { areNodePropsEqual } from "../areNodePropsEqual";
 import { useNodeDataValues } from "@/hooks/useNodeData";
@@ -31,28 +31,36 @@ function DocumentNode(xyNode: Node) {
     openWindow({ xyNodeId: xyNode.id, nodeDataId, nodeType: "document" });
   }, [nodeDataId, openWindow, xyNode.id]);
 
-  // Memoize parsing + normalisation – values?.doc is a stable string reference
-  // from the Zustand store, so this only recomputes when the document actually changes.
-  const currentValue: Value = useMemo(() => {
-    const parsedDoc = parseStoredPlateDocument(values?.doc);
-    return parsedDoc ? normalizeNodeId(parsedDoc as Value) : defaultValue;
-  }, [values?.doc]);
+  // useDeferredValue permet au parse+normalize+createSlateEditor de s'exécuter
+  // en mode non-bloquant, évitant les freezes sur les documents complexes.
+  const deferredDoc = useDeferredValue(values?.doc);
 
-  const isDocEmpty = currentValue.every((node) => {
-    const getText = (n: unknown): string => {
-      if (n && typeof n === "object") {
-        if ("text" in n && typeof (n as { text: unknown }).text === "string")
-          return (n as { text: string }).text;
-        if (
-          "children" in n &&
-          Array.isArray((n as { children: unknown }).children)
-        )
-          return (n as { children: unknown[] }).children.map(getText).join("");
-      }
-      return "";
-    };
-    return getText(node) === "";
-  });
+  // Memoize parsing + normalisation – deferredDoc est un string stable,
+  // ne recompute que quand le document change réellement.
+  const currentValue: Value = useMemo(() => {
+    const parsedDoc = parseStoredPlateDocument(deferredDoc);
+    return parsedDoc ? normalizeNodeId(parsedDoc as Value) : defaultValue;
+  }, [deferredDoc]);
+
+  const isDocEmpty = useMemo(() => {
+    return currentValue.every((node) => {
+      const getText = (n: unknown): string => {
+        if (n && typeof n === "object") {
+          if ("text" in n && typeof (n as { text: unknown }).text === "string")
+            return (n as { text: string }).text;
+          if (
+            "children" in n &&
+            Array.isArray((n as { children: unknown }).children)
+          )
+            return (n as { children: unknown[] }).children
+              .map(getText)
+              .join("");
+        }
+        return "";
+      };
+      return getText(node) === "";
+    });
+  }, [currentValue]);
 
   const documentTitle = useNodeDataTitle(nodeDataId) ?? "Document";
 

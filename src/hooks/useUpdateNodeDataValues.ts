@@ -75,8 +75,10 @@ export function useUpdateNodeDataValues(): UseUpdateNodeDataValuesReturn {
 
       isUpdatingRef.current = true;
 
-      // Mise à jour optimiste immédiate du store
-      updateStoreNodeData(nodeDataId, values);
+      // Mise à jour optimiste immédiate du store (toujours stringifié pour les
+      // documents afin d'éviter un double render quand la souscription Convex
+      // renvoie le même string)
+      updateStoreNodeData(nodeDataId, valuesForMutation);
 
       try {
         // Exécution de la mutation serveur

@@ -11,6 +11,7 @@ import {
   dataProcessingValidator,
   nodeDatasValidator,
 } from "./schemas/nodeDatasSchema";
+import { parseStoredPlateDocument } from "./lib/plateDocumentStorage";
 export const create = mutation({
   args: nodeDatasValidator,
   handler: async (ctx, args) => {
@@ -59,7 +60,16 @@ export const listByCanvasId = query({
     );
 
     // Filtrer les nulls (au cas où un nodeData aurait été supprimé)
-    return nodeDatas.filter((nd) => nd !== null);
+    // Parser les documents PlateJS côté serveur pour éviter JSON.parse sur le main thread client
+    return nodeDatas.filter((nd) => nd !== null).map((nd) => {
+      if (nd.type === "document" && typeof nd.values?.doc === "string") {
+        const parsed = parseStoredPlateDocument(nd.values.doc);
+        if (parsed) {
+          return { ...nd, values: { ...nd.values, doc: parsed } };
+        }
+      }
+      return nd;
+    });
   },
 });
 

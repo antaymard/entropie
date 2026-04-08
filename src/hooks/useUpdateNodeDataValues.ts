@@ -5,7 +5,6 @@ import type { Id } from "@/../convex/_generated/dataModel";
 import { toastError } from "@/components/utils/errorUtils";
 import { useNodeDataStore } from "@/stores/nodeDataStore";
 import type { Doc } from "@/../convex/_generated/dataModel";
-import { stringifyPlateDocumentForStorage } from "@/../convex/lib/plateDocumentStorage";
 
 interface UpdateNodeDataInput {
   nodeDataId: Id<"nodeDatas">;
@@ -61,36 +60,33 @@ export function useUpdateNodeDataValues(): UseUpdateNodeDataValuesReturn {
     async (input: UpdateNodeDataInput): Promise<void> => {
       const { nodeDataId, values } = input;
       const nodeData = getNodeData(nodeDataId);
-      const valuesForMutation =
-        nodeData?.type === "document"
-          ? {
-              ...values,
-              doc: stringifyPlateDocumentForStorage(values.doc),
-            }
-          : values;
+      const isDocument = nodeData?.type === "document";
 
-      // Sauvegarder le snapshot pour rollback potentiel
-      const snapshotSaved = saveSnapshot(nodeDataId);
-      if (!snapshotSaved) return;
-
-      isUpdatingRef.current = true;
-
-      // Mise à jour optimiste immédiate du store (toujours stringifié pour les
-      // documents afin d'éviter un double render quand la souscription Convex
-      // renvoie le même string)
-      updateStoreNodeData(nodeDataId, valuesForMutation);
+      // Documents : pas d'optimistic update — l'éditeur garde son état local,
+      // le canvas preview se met à jour au retour de la subscription Convex.
+      // La mutation Convex gère le stringify avant stockage.
+      // Autres types : optimistic update classique avec snapshot/rollback.
+      if (!isDocument) {
+        const snapshotSaved = saveSnapshot(nodeDataId);
+        if (!snapshotSaved) return;
+        isUpdatingRef.current = true;
+        updateStoreNodeData(nodeDataId, values);
+      } else {
+        isUpdatingRef.current = true;
+      }
 
       try {
-        // Exécution de la mutation serveur
         await updateValuesMutation({
           _id: nodeDataId,
-          values: valuesForMutation,
+          values,
         });
-        // Succès : nettoyer le snapshot
-        snapshotsRef.current.delete(nodeDataId);
+        if (!isDocument) {
+          snapshotsRef.current.delete(nodeDataId);
+        }
       } catch (error) {
-        // Erreur : revert vers le snapshot
-        revertNodeData(nodeDataId);
+        if (!isDocument) {
+          revertNodeData(nodeDataId);
+        }
         toastError(error, "Error updating");
       } finally {
         isUpdatingRef.current = false;

@@ -2,6 +2,7 @@ import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { nodeDataConfig } from "../config/nodeConfig";
+import { stringifyPlateDocumentForStorage } from "../lib/plateDocumentStorage";
 
 export async function readNodeData(
   ctx: QueryCtx,
@@ -124,9 +125,16 @@ export async function updateValues(
   const existing = await ctx.db.get("nodeDatas", _id);
   if (!existing) throw new ConvexError("NodeData non trouvé");
 
+  // Stringify PlateJS documents avant stockage (limite nesting Convex à 16).
+  // Les outils IA envoient déjà des strings — Array.isArray évite le double-stringify.
+  const storedValues =
+    existing.type === "document" && Array.isArray(values.doc)
+      ? { ...values, doc: stringifyPlateDocumentForStorage(values.doc) }
+      : values;
+
   const now = Date.now();
   await ctx.db.patch("nodeDatas", _id, {
-    values: { ...existing.values, ...values },
+    values: { ...existing.values, ...storedValues },
     updatedAt: now,
   });
 

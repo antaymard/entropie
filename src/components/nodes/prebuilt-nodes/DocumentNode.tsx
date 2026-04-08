@@ -1,28 +1,29 @@
-import { memo, useCallback, useDeferredValue, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { type Node } from "@xyflow/react";
 import { areNodePropsEqual } from "../areNodePropsEqual";
-import { useNodeDataValues } from "@/hooks/useNodeData";
+import { useNodeDataValues, useNodeDataUpdatedAt } from "@/hooks/useNodeData";
 import { useNodeDataTitle } from "@/hooks/useNodeTitle";
 import type { Id } from "@/../convex/_generated/dataModel";
-import { normalizeNodeId, type Value } from "platejs";
+import type { Value } from "platejs";
 import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
 import NodeFrame from "../NodeFrame";
 import DocumentStaticField from "@/components/fields/document-fields/DocumentStaticField";
 import { Button } from "@/components/shadcn/button";
 import { TbMaximize, TbNews } from "react-icons/tb";
 import { useWindowsStore } from "@/stores/windowsStore";
-import { parseStoredPlateDocument } from "@/../convex/lib/plateDocumentStorage";
 
-const defaultValue: Value = normalizeNodeId([
+const defaultValue: Value = [
   {
     children: [{ text: "" }],
     type: "p",
+    id: "empty",
   },
-]);
+];
 
 function DocumentNode(xyNode: Node) {
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
   const values = useNodeDataValues(nodeDataId);
+  const updatedAt = useNodeDataUpdatedAt(nodeDataId);
 
   const openWindow = useWindowsStore((s) => s.openWindow);
 
@@ -31,16 +32,15 @@ function DocumentNode(xyNode: Node) {
     openWindow({ xyNodeId: xyNode.id, nodeDataId, nodeType: "document" });
   }, [nodeDataId, openWindow, xyNode.id]);
 
-  // useDeferredValue permet au parse+normalize+createSlateEditor de s'exécuter
-  // en mode non-bloquant, évitant les freezes sur les documents complexes.
-  const deferredDoc = useDeferredValue(values?.doc);
-
-  // Memoize parsing + normalisation – deferredDoc est un string stable,
-  // ne recompute que quand le document change réellement.
+  // Le doc arrive déjà parsé depuis la query Convex (pas de JSON.parse côté client).
+  // updatedAt (number, comparé par valeur) sert de clé useMemo pour la stabilité
+  // des références — pas de re-render quand l'objet values change sans que le contenu change.
   const currentValue: Value = useMemo(() => {
-    const parsedDoc = parseStoredPlateDocument(deferredDoc);
-    return parsedDoc ? normalizeNodeId(parsedDoc as Value) : defaultValue;
-  }, [deferredDoc]);
+    const doc = values?.doc;
+    return Array.isArray(doc) && doc.length > 0
+      ? (doc as Value)
+      : defaultValue;
+  }, [updatedAt]);
 
   const isDocEmpty = useMemo(() => {
     return currentValue.every((node) => {

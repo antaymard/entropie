@@ -58,3 +58,22 @@ export function useNodeData(
     ),
   );
 }
+
+/**
+ * Hook optimisé pour récupérer le updatedAt d'un NodeData.
+ * Retourne un number (comparé par valeur) — idéal comme clé useMemo
+ * pour éviter les problèmes de stabilité de référence sur les objets.
+ */
+export function useNodeDataUpdatedAt(
+  nodeDataId: Id<"nodeDatas"> | undefined,
+): number | undefined {
+  return useNodeDataStore(
+    useCallback(
+      (state) => {
+        if (!nodeDataId) return undefined;
+        return state.nodeDatas.get(nodeDataId)?.updatedAt;
+      },
+      [nodeDataId],
+    ),
+  );
+}

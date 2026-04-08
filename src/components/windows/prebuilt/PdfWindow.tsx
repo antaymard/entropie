@@ -60,29 +60,27 @@ function PdfWindow({
   if (!nodeDataValues || !xyNode) return null;
 
   return (
-    <WindowPanelFrame xyNode={xyNode} title="PDF">
-      <div ref={containerRef} className="w-full h-full overflow-y-auto">
-        {pdfUrl ? (
-          <Document
-            file={pdfUrl}
-            className="flex flex-col gap-2"
-            onLoadSuccess={onDocumentLoadSuccess}
-          >
-            {Array.from({ length: numPages }, (_, index) => (
-              <Page
-                key={`page_${index + 1}`}
-                pageNumber={index + 1}
-                width={debouncedWidth}
-              />
-            ))}
-          </Document>
-        ) : (
-          <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-            No PDF available
-          </div>
-        )}
-      </div>
-    </WindowPanelFrame>
+    <div ref={containerRef} className="w-full h-full overflow-y-auto">
+      {pdfUrl ? (
+        <Document
+          file={pdfUrl}
+          className="flex flex-col gap-2"
+          onLoadSuccess={onDocumentLoadSuccess}
+        >
+          {Array.from({ length: numPages }, (_, index) => (
+            <Page
+              key={`page_${index + 1}`}
+              pageNumber={index + 1}
+              width={debouncedWidth}
+            />
+          ))}
+        </Document>
+      ) : (
+        <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+          No PDF available
+        </div>
+      )}
+    </div>
   );
 }
 

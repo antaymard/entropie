@@ -41,6 +41,7 @@ function PdfNode(xyNode: Node) {
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
+  const [pendingFile, setPendingFile] = useState<PdfValue | null>(null);
 
   const handleUploadComplete = (fileData: {
     url: string;
@@ -50,29 +51,43 @@ function PdfNode(xyNode: Node) {
     uploadedAt: number;
     key: string;
   }) => {
-    if (nodeDataId) {
-      updateNodeDataValues({
-        nodeDataId,
-        values: { files: [fileData] },
-      });
-      setTitleDraft(fileData.filename);
-    }
+    setPendingFile(fileData);
+    setTitleDraft(fileData.filename);
   };
 
   const handleSave = () => {
-    if (nodeDataId && file && titleDraft.trim()) {
-      updateNodeDataValues({
-        nodeDataId,
-        values: { files: [{ ...file, filename: titleDraft.trim() }] },
-      });
+    if (!nodeDataId) {
+      setIsPopoverOpen(false);
+      return;
     }
+
+    const sourceFile = pendingFile ?? file;
+    if (!sourceFile) {
+      setIsPopoverOpen(false);
+      return;
+    }
+
+    const nextFilename = titleDraft.trim() || sourceFile.filename;
+
+    // Avoid redundant mutation when only opening/saving without any actual change.
+    if (!pendingFile && file && nextFilename === file.filename) {
+      setIsPopoverOpen(false);
+      return;
+    }
+
+    updateNodeDataValues({
+      nodeDataId,
+      values: { files: [{ ...sourceFile, filename: nextFilename }] },
+    });
+
+    setPendingFile(null);
     setIsPopoverOpen(false);
   };
 
   const handlePopoverOpenChange = (open: boolean) => {
     setIsPopoverOpen(open);
     if (open) {
-      setTitleDraft(file?.filename ?? "");
+      setTitleDraft((pendingFile ?? file)?.filename ?? "");
     }
   };
 

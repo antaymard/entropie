@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useEffect, useState, useTransition } from "react";
 import { type Node } from "@xyflow/react";
 import { areNodePropsEqual } from "../areNodePropsEqual";
 import { useNodeDataValues } from "@/hooks/useNodeData";
@@ -13,16 +13,39 @@ import { TbMaximize, TbNews } from "react-icons/tb";
 import { useWindowsStore } from "@/stores/windowsStore";
 import { parseStoredPlateDocument } from "@/../convex/lib/plateDocumentStorage";
 
-const defaultValue: Value = normalizeNodeId([
-  {
-    children: [{ text: "" }],
-    type: "p",
-  },
-]);
+/** Max root-level blocks rendered in the canvas preview. */
+const MAX_PREVIEW_BLOCKS = 35;
+
+function hasTextContent(nodes: unknown[]): boolean {
+  for (const node of nodes) {
+    if (node && typeof node === "object") {
+      if (
+        "text" in node &&
+        typeof (node as { text: unknown }).text === "string" &&
+        (node as { text: string }).text.trim() !== ""
+      ) {
+        return true;
+      }
+      if (
+        "children" in node &&
+        Array.isArray((node as { children: unknown }).children) &&
+        hasTextContent((node as { children: unknown[] }).children)
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 
 function DocumentNode(xyNode: Node) {
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
   const values = useNodeDataValues(nodeDataId);
+  const [, startTransition] = useTransition();
+  const [previewValue, setPreviewValue] = useState<Value | null>(null);
+  const [isDocEmpty, setIsDocEmpty] = useState(true);
+  const [isTruncated, setIsTruncated] = useState(false);
+  const [totalBlocks, setTotalBlocks] = useState(0);
 
   const openWindow = useWindowsStore((s) => s.openWindow);
 
@@ -31,28 +54,33 @@ function DocumentNode(xyNode: Node) {
     openWindow({ xyNodeId: xyNode.id, nodeDataId, nodeType: "document" });
   }, [nodeDataId, openWindow, xyNode.id]);
 
-  // Memoize parsing + normalisation – values?.doc is a stable string reference
-  // from the Zustand store, so this only recomputes when the document actually changes.
-  const currentValue: Value = useMemo(() => {
+  // Defer preview computation so canvas shell renders first
+  useEffect(() => {
     const parsedDoc = parseStoredPlateDocument(values?.doc);
-    return parsedDoc ? normalizeNodeId(parsedDoc as Value) : defaultValue;
+    if (!parsedDoc || !Array.isArray(parsedDoc) || parsedDoc.length === 0) {
+      setPreviewValue(null);
+      setIsDocEmpty(true);
+      setIsTruncated(false);
+      return;
+    }
+    const normalized = normalizeNodeId(parsedDoc as Value);
+    const empty = !hasTextContent(normalized);
+    setIsDocEmpty(empty);
+    if (empty) {
+      setPreviewValue(null);
+      setIsTruncated(false);
+      return;
+    }
+    const truncated = normalized.length > MAX_PREVIEW_BLOCKS;
+    const preview = truncated
+      ? (normalized.slice(0, MAX_PREVIEW_BLOCKS) as Value)
+      : normalized;
+    setTotalBlocks(normalized.length);
+    setIsTruncated(truncated);
+    startTransition(() => {
+      setPreviewValue(preview);
+    });
   }, [values?.doc]);
-
-  const isDocEmpty = currentValue.every((node) => {
-    const getText = (n: unknown): string => {
-      if (n && typeof n === "object") {
-        if ("text" in n && typeof (n as { text: unknown }).text === "string")
-          return (n as { text: string }).text;
-        if (
-          "children" in n &&
-          Array.isArray((n as { children: unknown }).children)
-        )
-          return (n as { children: unknown[] }).children.map(getText).join("");
-      }
-      return "";
-    };
-    return getText(node) === "";
-  });
 
   const documentTitle = useNodeDataTitle(nodeDataId) ?? "Document";
 
@@ -69,22 +97,35 @@ function DocumentNode(xyNode: Node) {
         </Button>
       </CanvasNodeToolbar>
       <NodeFrame xyNode={xyNode}>
-        {!xyNode.data.variant ||
-          (xyNode.data.variant === "default" && (
-            <div className="h-full overflow-auto">
-              {isDocEmpty ? (
-                <div className="h-full flex flex-col items-center justify-center gap-1.5 text-muted-foreground/40 select-none pointer-events-none">
-                  <TbNews size={22} />
-                  <span className="text-xs">Double-clic pour éditer</span>
-                </div>
-              ) : (
+        {xyNode.data.variant !== "title" && (
+          <div className="h-full overflow-auto [content-visibility:auto] [contain-intrinsic-size:auto_300px]">
+            {isDocEmpty ? (
+              <div className="h-full flex flex-col items-center justify-center gap-1.5 text-muted-foreground/40 select-none pointer-events-none">
+                <TbNews size={22} />
+                <span className="text-xs">Double-clic pour éditer</span>
+              </div>
+            ) : previewValue ? (
+              <div className="relative">
                 <DocumentStaticField
-                  value={{ doc: currentValue }}
+                  value={{ doc: previewValue }}
                   allowDrag={!xyNode.selected}
+                  preview
                 />
-              )}
-            </div>
-          ))}
+                {isTruncated && (
+                  <div className="sticky bottom-0 flex items-center justify-center bg-white/30 pointer-events-none py-1.5">
+                    <span className="text-[10px] text-muted-foreground/60">
+                      {Math.round(
+                        ((totalBlocks - MAX_PREVIEW_BLOCKS) / totalBlocks) *
+                          100,
+                      )}
+                      % restant — double-clic pour ouvrir
+                    </span>
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
+        )}
         {xyNode.data.variant === "title" && (
           <div className="flex items-center gap-2 px-2 min-w-0 h-full group/linknode relative">
             <TbNews size={18} className="shrink-0" />

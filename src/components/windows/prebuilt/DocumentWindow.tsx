@@ -16,7 +16,11 @@ interface DocumentWindowProps {
 
 function DocumentWindow({ xyNodeId, nodeDataId }: DocumentWindowProps) {
   const editorRef = useRef<DocumentEditorFieldHandle>(null);
+  const hydrationFrameRef = useRef<number | null>(null);
+  const lastHydratedDocRef = useRef<unknown>(undefined);
   const [isDirty, setIsDirty] = useState(false);
+  const [shouldMountEditor, setShouldMountEditor] = useState(false);
+  const [editorValue, setEditorValue] = useState<{ doc: Value }>({ doc: [] });
   const { setDirty, setSaveHandler } = useWindowFrameContext();
   const nodeDataValues = useNodeDataValues(nodeDataId);
   const nodeData = useNodeData(nodeDataId);
@@ -36,6 +40,19 @@ function DocumentWindow({ xyNodeId, nodeDataId }: DocumentWindowProps) {
     setDirty(isDirty && !isLocked);
   }, [isDirty, isLocked, setDirty]);
 
+  useEffect(() => {
+    return () => {
+      if (hydrationFrameRef.current !== null) {
+        cancelAnimationFrame(hydrationFrameRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const frameId = requestAnimationFrame(() => setShouldMountEditor(true));
+    return () => cancelAnimationFrame(frameId);
+  }, []);
+
   const handleSave = useCallback(
     (newValue: { doc: Value }) => {
       updateNodeDataValues({
@@ -46,12 +63,31 @@ function DocumentWindow({ xyNodeId, nodeDataId }: DocumentWindowProps) {
     [nodeDataId, updateNodeDataValues],
   );
 
-  const editorValue = useMemo(() => {
-    const parsedDoc = parseStoredPlateDocument(nodeDataValues?.doc);
-    return { doc: parsedDoc ? normalizeNodeId(parsedDoc as Value) : [] };
-  }, [nodeDataValues?.doc]);
+  const docSource = useMemo(() => nodeDataValues?.doc, [nodeDataValues?.doc]);
+
+  useEffect(() => {
+    if (!nodeDataValues) return;
+    if (Object.is(lastHydratedDocRef.current, docSource)) return;
+
+    lastHydratedDocRef.current = docSource;
+
+    if (hydrationFrameRef.current !== null) {
+      cancelAnimationFrame(hydrationFrameRef.current);
+    }
+
+    hydrationFrameRef.current = requestAnimationFrame(() => {
+      const parsedDoc = parseStoredPlateDocument(docSource);
+      setEditorValue({
+        doc: parsedDoc ? normalizeNodeId(parsedDoc as Value) : [],
+      });
+    });
+  }, [docSource, nodeDataValues]);
 
   if (!nodeDataValues) return null;
+
+  if (!shouldMountEditor) {
+    return <div className="h-full w-full" />;
+  }
 
   return (
     <DocumentEditorField

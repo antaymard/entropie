@@ -145,16 +145,31 @@ export async function updateValues(
   const existing = await ctx.db.get("nodeDatas", _id);
   if (!existing) throw new ConvexError("NodeData non trouvé");
 
+  const changedEntries = Object.entries(values).filter(
+    ([key, nextValue]) => !Object.is(existing.values?.[key], nextValue),
+  );
+
+  if (changedEntries.length === 0) {
+    return true;
+  }
+
+  const changedValues = Object.fromEntries(changedEntries);
+  const changedKeys = changedEntries.map(([key]) => key);
+
   const now = Date.now();
   await ctx.db.patch("nodeDatas", _id, {
-    values: { ...existing.values, ...values },
+    values: { ...existing.values, ...changedValues },
     updatedAt: now,
   });
 
-  await ctx.scheduler.runAfter(0, internal.searchable.chunkBuilder.rebuildChunks, {
-    nodeDataId: _id,
-    updatedKeys: Object.keys(values),
-  });
+  await ctx.scheduler.runAfter(
+    0,
+    internal.searchable.chunkBuilder.rebuildChunks,
+    {
+      nodeDataId: _id,
+      updatedKeys: changedKeys,
+    },
+  );
 
   return true;
 }

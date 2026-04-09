@@ -64,10 +64,6 @@ function NodeFrame({
             : "hover:ring-1 hover:ring-blue-400/60",
         )}
         onDoubleClick={handleDoubleClick}
-        onClick={() => {
-          console.log("Node clicked:", xyNode.id);
-          console.log("NodeData clicked:", xyNode.data?.nodeDataId);
-        }}
       >
         <div
           className={cn(

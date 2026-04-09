@@ -145,16 +145,37 @@ export async function updateValues(
   const existing = await ctx.db.get("nodeDatas", _id);
   if (!existing) throw new ConvexError("NodeData non trouvé");
 
+  // Diff minimal: on ne conserve que les clés réellement modifiées.
+  // Cela évite un patch DB + une reindexation quand la valeur entrante est identique.
+  const changedEntries = Object.entries(values).filter(
+    ([key, nextValue]) => !Object.is(existing.values?.[key], nextValue),
+  );
+
+  // No-op explicite: on sort tôt pour limiter invalidations réactives et coût scheduler.
+  if (changedEntries.length === 0) {
+    return true;
+  }
+
+  // On patch uniquement le delta pour garder une écriture ciblée.
+  const changedValues = Object.fromEntries(changedEntries);
+  // On passe aussi les clés modifiées au rebuild pour que l'action puisse skipper
+  // les branches coûteuses quand les champs pertinents n'ont pas changé.
+  const changedKeys = changedEntries.map(([key]) => key);
+
   const now = Date.now();
   await ctx.db.patch("nodeDatas", _id, {
-    values: { ...existing.values, ...values },
+    values: { ...existing.values, ...changedValues },
     updatedAt: now,
   });
 
-  await ctx.scheduler.runAfter(0, internal.searchable.chunkBuilder.rebuildChunks, {
-    nodeDataId: _id,
-    updatedKeys: Object.keys(values),
-  });
+  await ctx.scheduler.runAfter(
+    0,
+    internal.searchable.chunkBuilder.rebuildChunks,
+    {
+      nodeDataId: _id,
+      updatedKeys: changedKeys,
+    },
+  );
 
   return true;
 }

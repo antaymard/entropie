@@ -13,7 +13,7 @@ export async function upsertChunks(
     chunks: Array<Omit<SearchableChunk, "_id" | "_creationTime">>;
   },
 ): Promise<void> {
-  // Delete all existing chunks for this nodeDataId, then insert new ones
+  // Keep implementation simple and predictable: replace all chunks for this node.
   const existing = await ctx.db
     .query("searchableChunks")
     .withIndex("by_nodeDataId", (q) => q.eq("nodeDataId", nodeDataId))

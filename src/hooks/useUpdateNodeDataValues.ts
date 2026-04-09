@@ -69,6 +69,14 @@ export function useUpdateNodeDataValues(): UseUpdateNodeDataValuesReturn {
             }
           : values;
 
+      const hasChanges = Object.entries(valuesForMutation).some(
+        ([key, nextValue]) => !Object.is(nodeData?.values?.[key], nextValue),
+      );
+
+      if (!hasChanges) {
+        return;
+      }
+
       // Sauvegarder le snapshot pour rollback potentiel
       const snapshotSaved = saveSnapshot(nodeDataId);
       if (!snapshotSaved) return;

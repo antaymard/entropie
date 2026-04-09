@@ -8,6 +8,7 @@ import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { useWindowFrameContext } from "@/components/windows/WindowFrameContext";
 import { parseStoredPlateDocument } from "@/../convex/lib/plateDocumentStorage";
+import { Spinner } from "@/components/shadcn/spinner";
 
 interface DocumentWindowProps {
   xyNodeId: string;
@@ -16,7 +17,16 @@ interface DocumentWindowProps {
 
 function DocumentWindow({ xyNodeId, nodeDataId }: DocumentWindowProps) {
   const editorRef = useRef<DocumentEditorFieldHandle>(null);
+  // Keep track of scheduled hydration work to cancel stale frames.
+  const hydrationFrameRef = useRef<number | null>(null);
+  // Initial loading should be shown only for the first hydration cycle.
+  const hasHydratedOnceRef = useRef(false);
+  // Prevent re-hydrating when Convex pushes the same doc payload.
+  const lastHydratedDocRef = useRef<unknown>(undefined);
   const [isDirty, setIsDirty] = useState(false);
+  const [shouldMountEditor, setShouldMountEditor] = useState(false);
+  const [isEditorReady, setIsEditorReady] = useState(false);
+  const [editorValue, setEditorValue] = useState<{ doc: Value }>({ doc: [] });
   const { setDirty, setSaveHandler } = useWindowFrameContext();
   const nodeDataValues = useNodeDataValues(nodeDataId);
   const nodeData = useNodeData(nodeDataId);
@@ -36,6 +46,20 @@ function DocumentWindow({ xyNodeId, nodeDataId }: DocumentWindowProps) {
     setDirty(isDirty && !isLocked);
   }, [isDirty, isLocked, setDirty]);
 
+  useEffect(() => {
+    return () => {
+      if (hydrationFrameRef.current !== null) {
+        cancelAnimationFrame(hydrationFrameRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    // Defer heavy editor mount so the window frame can paint immediately.
+    const frameId = requestAnimationFrame(() => setShouldMountEditor(true));
+    return () => cancelAnimationFrame(frameId);
+  }, []);
+
   const handleSave = useCallback(
     (newValue: { doc: Value }) => {
       updateNodeDataValues({
@@ -46,22 +70,70 @@ function DocumentWindow({ xyNodeId, nodeDataId }: DocumentWindowProps) {
     [nodeDataId, updateNodeDataValues],
   );
 
-  const editorValue = useMemo(() => {
-    const parsedDoc = parseStoredPlateDocument(nodeDataValues?.doc);
-    return { doc: parsedDoc ? normalizeNodeId(parsedDoc as Value) : [] };
-  }, [nodeDataValues?.doc]);
+  const docSource = useMemo(() => nodeDataValues?.doc, [nodeDataValues?.doc]);
+
+  useEffect(() => {
+    if (!nodeDataValues) return;
+    // Skip expensive parse/normalize only after the initial hydration completed.
+    if (
+      hasHydratedOnceRef.current &&
+      Object.is(lastHydratedDocRef.current, docSource)
+    ) {
+      return;
+    }
+
+    if (!hasHydratedOnceRef.current) {
+      setIsEditorReady(false);
+    }
+    lastHydratedDocRef.current = docSource;
+
+    if (hydrationFrameRef.current !== null) {
+      cancelAnimationFrame(hydrationFrameRef.current);
+    }
+
+    hydrationFrameRef.current = requestAnimationFrame(() => {
+      // Parse persisted payload then normalize node ids for Plate runtime.
+      const parsedDoc = parseStoredPlateDocument(docSource);
+      setEditorValue({
+        doc: parsedDoc ? normalizeNodeId(parsedDoc as Value) : [],
+      });
+      setIsEditorReady(true);
+      hasHydratedOnceRef.current = true;
+    });
+  }, [docSource, nodeDataValues]);
 
   if (!nodeDataValues) return null;
 
+  if (!shouldMountEditor) {
+    return (
+      <div className="h-full w-full flex items-center justify-center">
+        <span className="flex items-center gap-2 text-sm text-slate-500">
+          <Spinner className="size-4" />
+          Chargement de l'editeur...
+        </span>
+      </div>
+    );
+  }
+
   return (
-    <DocumentEditorField
-      ref={editorRef}
-      editorId={xyNodeId}
-      value={editorValue}
-      onChange={handleSave}
-      isLocked={isLocked}
-      onDirtyChange={setIsDirty}
-    />
+    <div className="relative h-full w-full">
+      <DocumentEditorField
+        ref={editorRef}
+        editorId={xyNodeId}
+        value={editorValue}
+        onChange={handleSave}
+        isLocked={isLocked}
+        onDirtyChange={setIsDirty}
+      />
+      {!isEditorReady && (
+        <div className="absolute inset-0 flex items-center justify-center bg-white/65">
+          <span className="flex items-center gap-2 text-sm text-slate-500">
+            <Spinner className="size-4" />
+            Chargement de l'editeur...
+          </span>
+        </div>
+      )}
+    </div>
   );
 }
 

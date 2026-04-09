@@ -149,10 +149,10 @@ export function generateMessageContext({
     .map((node) => nodeToXml(node, getNodeTitle))
     .join("\n");
 
-  const visibleNodesXml =
+  const visibleNodeIdsXml =
     visibleNodes.length > 0
-      ? visibleNodes.map((node) => nodeToXml(node, getNodeTitle)).join("\n")
-      : "    <none />";
+      ? `    <node_ids>${escapeXml(visibleNodes.map((node) => node.id).join(" | "))}</node_ids>`
+      : "    <!-- No nodes visible in the current viewport -->";
 
   const attachedNodesXml = uniqueAttachedNodes
     .map((node) => nodeToXml(node, getNodeTitle))
@@ -161,10 +161,10 @@ export function generateMessageContext({
   const openNodesSection =
     openedNodes.length > 0
       ? [
-          "  <open_nodes>",
-          "    <description>Nodes currently open in windows.</description>",
+          "<open_nodes>",
+          "<description>Nodes currently open in windows.</description>",
           openNodesXml,
-          "  </open_nodes>",
+          "</open_nodes>",
           "",
         ]
       : [];
@@ -172,23 +172,23 @@ export function generateMessageContext({
   const attachedNodesSection =
     uniqueAttachedNodes.length > 0
       ? [
-          "  <attached_nodes>",
-          "    <description>Nodes explicitly attached to this message.</description>",
+          "<attached_nodes>",
+          "<description>Nodes explicitly attached to this message.</description>",
           attachedNodesXml,
-          "  </attached_nodes>",
+          "</attached_nodes>",
         ]
       : [];
 
   return [
     "<message_context>",
-    "  <description>Context snapshot generated when the user sent this message.</description>",
-    `  <time>${escapeXml(formatTimeNaturalLanguage(time))}</time>`,
+    "<description>Context snapshot generated when the user sent this message.</description>",
+    `<time>${escapeXml(formatTimeNaturalLanguage(time))}</time>`,
     "",
     ...openNodesSection,
-    `  <viewport bounds="${escapeXml(boundsAttr)}">`,
-    "    <description>Nodes visible in the current viewport.</description>",
-    visibleNodesXml,
-    "  </viewport>",
+    `<viewport bounds="${escapeXml(boundsAttr)}">`,
+    "<description>IDs of nodes visible in the current viewport.</description>",
+    visibleNodeIdsXml,
+    "</viewport>",
     ...(attachedNodesSection.length > 0 ? ["", ...attachedNodesSection] : []),
     "</message_context>",
   ].join("\n");

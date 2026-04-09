@@ -14,7 +14,7 @@ import { useWindowsStore } from "@/stores/windowsStore";
 import { parseStoredPlateDocument } from "@/../convex/lib/plateDocumentStorage";
 
 /** Max root-level blocks rendered in the canvas preview. */
-const MAX_PREVIEW_BLOCKS = 35;
+const MAX_PREVIEW_BLOCKS = 80;
 
 function hasTextContent(nodes: unknown[]): boolean {
   for (const node of nodes) {

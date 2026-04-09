@@ -9,6 +9,7 @@ import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
 import NodeFrame from "../NodeFrame";
 import DocumentStaticField from "@/components/fields/document-fields/DocumentStaticField";
 import { Button } from "@/components/shadcn/button";
+import { Spinner } from "@/components/shadcn/spinner";
 import { TbMaximize, TbNews } from "react-icons/tb";
 import { useWindowsStore } from "@/stores/windowsStore";
 import { parseStoredPlateDocument } from "@/../convex/lib/plateDocumentStorage";
@@ -45,6 +46,7 @@ function DocumentNode(xyNode: Node) {
   const [, startTransition] = useTransition();
   const [previewValue, setPreviewValue] = useState<Value | null>(null);
   const [isDocEmpty, setIsDocEmpty] = useState(true);
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
   const [totalBlocks, setTotalBlocks] = useState(0);
 
@@ -62,6 +64,7 @@ function DocumentNode(xyNode: Node) {
     if (!parsedDoc || !Array.isArray(parsedDoc) || parsedDoc.length === 0) {
       setPreviewValue(null);
       setIsDocEmpty(true);
+      setIsPreviewLoading(false);
       setIsTruncated(false);
       return;
     }
@@ -70,6 +73,7 @@ function DocumentNode(xyNode: Node) {
     setIsDocEmpty(empty);
     if (empty) {
       setPreviewValue(null);
+      setIsPreviewLoading(false);
       setIsTruncated(false);
       return;
     }
@@ -77,6 +81,8 @@ function DocumentNode(xyNode: Node) {
     const preview = truncated
       ? (normalized.slice(0, MAX_PREVIEW_BLOCKS) as Value)
       : normalized;
+    setPreviewValue(null);
+    setIsPreviewLoading(true);
     setTotalBlocks(normalized.length);
     setIsTruncated(truncated);
 
@@ -84,6 +90,7 @@ function DocumentNode(xyNode: Node) {
     const cancel = enqueuePreviewRender(() => {
       startTransition(() => {
         setPreviewValue(preview);
+        setIsPreviewLoading(false);
       });
     });
 
@@ -111,6 +118,11 @@ function DocumentNode(xyNode: Node) {
               <div className="h-full flex flex-col items-center justify-center gap-1.5 text-muted-foreground/40 select-none pointer-events-none">
                 <TbNews size={22} />
                 <span className="text-xs">Double-clic pour éditer</span>
+              </div>
+            ) : isPreviewLoading ? (
+              <div className="h-full flex flex-col items-center justify-center gap-2 text-muted-foreground/50 select-none pointer-events-none">
+                <Spinner className="size-4" />
+                <span className="text-xs">Chargement de l&apos;aperçu...</span>
               </div>
             ) : previewValue ? (
               <div className="relative">

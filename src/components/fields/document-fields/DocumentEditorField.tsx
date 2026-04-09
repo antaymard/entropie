@@ -44,6 +44,8 @@ const DocumentEditorField = forwardRef<
   const initialValue: Value = value?.doc as Value;
   const setFocus = useCanvasStore((s) => s.setFocus);
   const skipNextChangeRef = useRef(false);
+  const applyFrameRef = useRef<number | null>(null);
+  const lastAppliedServerSnapshotRef = useRef<string | null>(null);
 
   const editor = usePlateEditor({
     id: editorId ? `doc-${editorId}` : undefined,
@@ -51,13 +53,51 @@ const DocumentEditorField = forwardRef<
     value: initialValue,
   });
 
+  const serializeValue = useCallback(
+    (doc: Value | undefined): string | null => {
+      try {
+        return JSON.stringify(doc ?? []);
+      } catch {
+        return null;
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (applyFrameRef.current !== null) {
+        cancelAnimationFrame(applyFrameRef.current);
+      }
+    };
+  }, []);
+
   // Last Write Wins: server value always overrides local content unconditionally
   useEffect(() => {
     if (!initialValue) return;
-    skipNextChangeRef.current = true;
-    editor.tf.setValue(initialValue);
-    onDirtyChange?.(false);
-  }, [initialValue, editor, onDirtyChange]);
+
+    const incomingSnapshot = serializeValue(initialValue);
+    if (!incomingSnapshot) return;
+    if (lastAppliedServerSnapshotRef.current === incomingSnapshot) return;
+
+    const currentSnapshot = serializeValue(editor.children as Value);
+    if (currentSnapshot === incomingSnapshot) {
+      lastAppliedServerSnapshotRef.current = incomingSnapshot;
+      onDirtyChange?.(false);
+      return;
+    }
+
+    if (applyFrameRef.current !== null) {
+      cancelAnimationFrame(applyFrameRef.current);
+    }
+
+    applyFrameRef.current = requestAnimationFrame(() => {
+      skipNextChangeRef.current = true;
+      editor.tf.setValue(initialValue);
+      lastAppliedServerSnapshotRef.current = incomingSnapshot;
+      onDirtyChange?.(false);
+    });
+  }, [initialValue, editor, onDirtyChange, serializeValue]);
 
   const save = useCallback(() => {
     onChange?.({ doc: editor.children as Value });

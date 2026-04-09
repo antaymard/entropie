@@ -74,8 +74,13 @@ function DocumentWindow({ xyNodeId, nodeDataId }: DocumentWindowProps) {
 
   useEffect(() => {
     if (!nodeDataValues) return;
-    // Skip expensive parse/normalize if source doc reference did not change.
-    if (Object.is(lastHydratedDocRef.current, docSource)) return;
+    // Skip expensive parse/normalize only after the initial hydration completed.
+    if (
+      hasHydratedOnceRef.current &&
+      Object.is(lastHydratedDocRef.current, docSource)
+    ) {
+      return;
+    }
 
     if (!hasHydratedOnceRef.current) {
       setIsEditorReady(false);

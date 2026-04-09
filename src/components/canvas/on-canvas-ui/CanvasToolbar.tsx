@@ -31,9 +31,9 @@ export default function CanvasToolbar({
         <Button variant="default" size="icon">
           <TbPlus size={20} />
         </Button>
-        <Button variant="ghost" size="icon">
+        {/* <Button variant="ghost" size="icon">
           <TbUpload size={20} />
-        </Button>
+        </Button> */}
         <Button
           variant={isSearchModalOpen ? "default" : "ghost"}
           size="default"

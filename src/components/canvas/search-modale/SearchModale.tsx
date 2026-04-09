@@ -2,13 +2,36 @@ import { Button } from "@/components/shadcn/button";
 import useRichQuery from "@/components/utils/useRichQuery";
 import { useDebounce } from "@/hooks/use-debounce";
 import type { Id } from "@/types";
+import type { NodeType } from "@/types/domain";
 import { useParams } from "@tanstack/react-router";
+import { useReactFlow } from "@xyflow/react";
 import { api } from "@/../convex/_generated/api";
 import { Fragment, useMemo } from "react";
-import { TbSearch, TbX } from "react-icons/tb";
+import { TbLocation, TbSearch, TbX } from "react-icons/tb";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { useNodeDataTitle } from "@/hooks/useNodeTitle";
 import { useCanvasStore } from "@/stores/canvasStore";
+import { useWindowsStore } from "@/stores/windowsStore";
+import { canNodeTypeBeOpenedInWindow } from "@/components/nodes/prebuilt-nodes/prebuiltNodesConfig";
+
+type SearchResult = {
+  type: string;
+  nodeId: string;
+  nodeDataId: Id<"nodeDatas">;
+  images: Array<{
+    imageUrl: string;
+    page?: number;
+  }>;
+  snippets: Array<{
+    snippet: string;
+    chunkType: "node" | "page" | "annotation";
+    order: number;
+    page?: number;
+    imageUrl?: string;
+    matchStart: number;
+    matchEnd: number;
+  }>;
+};
 
 export default function SearchModale() {
   const isOpen = useCanvasStore((state) => state.isSearchModalOpen);
@@ -39,7 +62,7 @@ export default function SearchModale() {
       onClick={() => closeSearchModal()}
     >
       <div
-        className="canvas-ui-container shadow-lg w-full max-w-none sm:max-w-3xl md:max-w-4xl flex-col h-[85vh] sm:h-3/4 rounded-none sm:rounded-lg"
+        className="canvas-ui-container shadow-xl w-full max-w-none sm:max-w-3xl md:max-w-4xl flex-col h-[85vh] sm:h-3/4 rounded-none sm:rounded-lg"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -71,15 +94,13 @@ export default function SearchModale() {
             {searchResults.length === 0 ? (
               <div>No results found</div>
             ) : (
-              <ul>
-                {searchResults.map((result) => (
-                  <ResultCard
-                    key={result.nodeId}
-                    result={result}
-                    query={debouncedSearchQuery}
-                  />
-                ))}
-              </ul>
+              searchResults.map((result) => (
+                <ResultCard
+                  key={result.nodeId}
+                  result={result}
+                  query={debouncedSearchQuery}
+                />
+              ))
             )}
           </div>
         )}
@@ -92,28 +113,15 @@ function ResultCard({
   result,
   query,
 }: {
-  result: {
-    type: string;
-    nodeId: string;
-    nodeDataId: Id<"nodeDatas">;
-    images: Array<{
-      imageUrl: string;
-      page?: number;
-    }>;
-    snippets: Array<{
-      snippet: string;
-      chunkType: "node" | "page" | "annotation";
-      order: number;
-      page?: number;
-      imageUrl?: string;
-      matchStart: number;
-      matchEnd: number;
-    }>;
-  };
+  result: SearchResult;
   query: string;
 }) {
   const nodeTitle = useNodeDataTitle(result.nodeDataId);
+  const closeSearchModal = useCanvasStore((state) => state.closeSearchModal);
+  const openWindow = useWindowsStore((state) => state.openWindow);
+  const { fitView } = useReactFlow();
   const previewImages = useMemo(() => result.images, [result.images]);
+  const canOpenWindow = canNodeTypeBeOpenedInWindow(result.type);
   const sortedSnippets = useMemo(
     () =>
       [...result.snippets].sort((a, b) => {
@@ -126,9 +134,57 @@ function ResultCard({
     [result.snippets],
   );
 
+  const handleGoToNode = () => {
+    fitView({
+      nodes: [{ id: result.nodeId }],
+      duration: 500,
+      minZoom: 0.5,
+      maxZoom: 1,
+    });
+    closeSearchModal();
+  };
+
+  const handleOpenWindow = () => {
+    if (!canOpenWindow) return;
+
+    openWindow({
+      xyNodeId: result.nodeId,
+      nodeDataId: result.nodeDataId,
+      nodeType: result.type as NodeType,
+    });
+    closeSearchModal();
+  };
+
   return (
-    <div className="flex flex-col rounded hover:bg-slate-100 p-3">
-      <div className="flex items-center justify-between">
+    <div
+      className="relative flex flex-col rounded p-3 transition-colors hover:bg-slate-100 cursor-pointer"
+      onClick={handleOpenWindow}
+      role={canOpenWindow ? "button" : undefined}
+      tabIndex={canOpenWindow ? 0 : undefined}
+      onKeyDown={(event) => {
+        if (!canOpenWindow) return;
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        handleOpenWindow();
+      }}
+    >
+      <div className="absolute top-3 right-3 flex items-center gap-1">
+        <Button
+          type="button"
+          size="icon"
+          className="h-7 w-7"
+          onClick={(event) => {
+            event.stopPropagation();
+            handleGoToNode();
+          }}
+          aria-label="Localiser sur le canvas"
+          title="Localiser sur le canvas"
+        >
+          <TbLocation size={14} />
+        </Button>
+      </div>
+
+      <div className="flex items-center justify-between gap-3 pr-16">
         <p className="font-bold text-lg">{nodeTitle}</p>
         <span className="text-sm text-muted-foreground bg-slate-200 px-1 rounded-sm">
           {result.type}

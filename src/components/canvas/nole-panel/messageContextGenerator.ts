@@ -151,7 +151,7 @@ export function generateMessageContext({
 
   const visibleNodeIdsXml =
     visibleNodes.length > 0
-      ? `    <node_ids>${escapeXml(visibleNodes.map((node) => node.id).join(" | "))}</node_ids>`
+      ? `    <in_viewport_node_ids>${escapeXml(visibleNodes.map((node) => node.id).join(" | "))}</in_viewport_node_ids>`
       : "    <!-- No nodes visible in the current viewport -->";
 
   const attachedNodesXml = uniqueAttachedNodes
@@ -162,7 +162,7 @@ export function generateMessageContext({
     openedNodes.length > 0
       ? [
           "<open_nodes>",
-          "<description>Nodes currently open in windows.</description>",
+          "<hint>Nodes currently open in windows.</hint>",
           openNodesXml,
           "</open_nodes>",
           "",
@@ -173,7 +173,7 @@ export function generateMessageContext({
     uniqueAttachedNodes.length > 0
       ? [
           "<attached_nodes>",
-          "<description>Nodes explicitly attached to this message.</description>",
+          "<hint>Nodes explicitly attached to this message.</hint>",
           attachedNodesXml,
           "</attached_nodes>",
         ]
@@ -181,12 +181,12 @@ export function generateMessageContext({
 
   return [
     "<message_context>",
-    "<description>Context snapshot generated when the user sent this message.</description>",
+    "<hint>Context snapshot generated when the user sent this message.</hint>",
     `<time>${escapeXml(formatTimeNaturalLanguage(time))}</time>`,
     "",
     ...openNodesSection,
     `<viewport bounds="${escapeXml(boundsAttr)}">`,
-    "<description>IDs of nodes visible in the current viewport.</description>",
+    "<hint>Use the viewport coordinates to place new nodes, if relevant to the question asked. Visible nodes and current viewport may or may not be relevant to the current task.</hint>",
     visibleNodeIdsXml,
     "</viewport>",
     ...(attachedNodesSection.length > 0 ? ["", ...attachedNodesSection] : []),

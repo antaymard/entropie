@@ -2,8 +2,11 @@ import { Button } from "@/components/shadcn/button";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { useCanvasStore } from "@/stores/canvasStore";
 import SlideshowContainer from "./slideshow/SlideshowContainer";
+import SlideshowProgressToolbar from "./slideshow/SlideshowProgressToolbar";
 import { BiSlideshow } from "react-icons/bi";
-import { TbPlus, TbSearch, TbUpload } from "react-icons/tb";
+import { TbPlus, TbSearch, TbUpload, TbX } from "react-icons/tb";
+import { Kbd } from "@/components/shadcn/kbd";
+import { useSlideshowStore } from "@/stores/slideshowStore";
 
 export default function CanvasToolbar({
   canvasId,
@@ -14,6 +17,13 @@ export default function CanvasToolbar({
   const setTool = useCanvasStore((state) => state.setTool);
   const isSearchModalOpen = useCanvasStore((state) => state.isSearchModalOpen);
   const toggleSearchModal = useCanvasStore((state) => state.toggleSearchModal);
+  const isPlaying = useSlideshowStore(
+    (state) => state.playback.status === "playing",
+  );
+
+  if (isPlaying) {
+    return <SlideshowProgressToolbar />;
+  }
 
   return (
     <div className="flex flex-col-reverse items-center gap-3">
@@ -26,10 +36,11 @@ export default function CanvasToolbar({
         </Button>
         <Button
           variant={isSearchModalOpen ? "default" : "ghost"}
-          size="icon"
+          size="default"
           onClick={() => toggleSearchModal()}
         >
           <TbSearch size={20} />
+          <Kbd>Ctrl + K</Kbd>
         </Button>
         <Button
           variant={tool === "slides" ? "default" : "ghost"}
@@ -42,7 +53,7 @@ export default function CanvasToolbar({
             }
           }}
         >
-          <BiSlideshow size={20} />
+          {tool === "slides" ? <TbX size={20} /> : <BiSlideshow size={20} />}
         </Button>
       </div>
       {tool === "slides" && <SlideshowContainer canvasId={canvasId} />}

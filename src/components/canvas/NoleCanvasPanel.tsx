@@ -32,8 +32,8 @@ export default function NoleCanvasPanel() {
             }
           }}
         >
-          <NoleIcon />
-          <Kbd>N</Kbd>-<Kbd>Alt + Ctrl</Kbd>
+          <NoleIcon /> Nolë
+          <Kbd>N</Kbd>
         </Button>
       </div>
     </div>

@@ -1,8 +1,9 @@
-import { useMemo, useRef } from "react";
+import { memo, useMemo, useRef } from "react";
 
 import { createSlateEditor, type Value } from "platejs";
 
 import { BaseEditorKit } from "@/components/plate/editor-base-kit";
+import { BasePreviewKit } from "@/components/plate/preview-base-kit";
 import { EditorStatic } from "@/components/plate/editor-static";
 import type { BaseFieldProps } from "@/types/ui";
 import { cn } from "@/lib/utils";
@@ -10,27 +11,28 @@ import { useNoWheelUnlessZoom } from "@/hooks/useNoWheelUnlessZoom";
 
 interface DocumentStaticFieldProps extends BaseFieldProps<{ doc: Value }> {
   allowDrag?: boolean;
+  preview?: boolean;
 }
 
-export default function DocumentStaticField({
-  field,
+function DocumentStaticField({
   value,
-  onChange,
-  visualSettings,
   allowDrag = false,
+  preview = false,
 }: DocumentStaticFieldProps) {
   // Vérifier que doc est bien un tableau valide pour Plate.js
   const isValidDoc = Array.isArray(value?.doc) && value.doc.length > 0;
 
+  const plugins = preview ? BasePreviewKit : BaseEditorKit;
+
   const editor = useMemo(
     () =>
       createSlateEditor({
-        plugins: BaseEditorKit,
+        plugins,
         value: isValidDoc
           ? value.doc
           : [{ type: "p", children: [{ text: "" }] }],
       }),
-    [value?.doc, isValidDoc],
+    [isValidDoc, value?.doc, plugins],
   );
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -49,3 +51,11 @@ export default function DocumentStaticField({
     </div>
   );
 }
+
+export default memo(
+  DocumentStaticField,
+  (prev, next) =>
+    prev.allowDrag === next.allowDrag &&
+    prev.preview === next.preview &&
+    prev.value?.doc === next.value?.doc,
+);

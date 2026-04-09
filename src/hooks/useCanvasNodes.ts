@@ -21,6 +21,10 @@ import {
 import type { CanvasNode } from "@/types";
 import { useWindowsStore } from "@/stores/windowsStore";
 
+const HYDRATION_BATCH_SIZE = 8;
+const HYDRATION_GAP_MS = 24;
+const HYDRATION_THRESHOLD = 20;
+
 /**
  * Build a map of source -> target node IDs from edges (children = targets of a source).
  */
@@ -89,6 +93,9 @@ export function useCanvasNodes(
     initialOffsets: new Map(),
   });
 
+  const hydrationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hydrationRunIdRef = useRef(0);
+
   // CONVEX MUTATIONS
   const addCanvasNodesToConvex = useMutation(api.canvasNodes.add);
   const updateCanvasNodesPositionOrDimensionsInConvex = useMutation(
@@ -114,42 +121,126 @@ export function useCanvasNodes(
     };
   }, [throttledUpdatePositions]);
 
-  // Sync convex -> reactflow nodes, en préservant les nodes en cours
-  // de drag/resize et la sélection
   useEffect(() => {
+    return () => {
+      if (hydrationTimerRef.current !== null) {
+        clearTimeout(hydrationTimerRef.current);
+        hydrationTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  // Sync convex -> reactflow nodes.
+  // Admission is progressive for large diffs to avoid mounting all nodes at once.
+  useEffect(() => {
+    if (hydrationTimerRef.current !== null) {
+      clearTimeout(hydrationTimerRef.current);
+      hydrationTimerRef.current = null;
+    }
+
+    const runId = ++hydrationRunIdRef.current;
+
     if (canvasNodes !== undefined) {
       if (canvasNodes.length === 0) {
         setNodes([]);
         return;
       }
+
+      const incomingNodes = fromCanvasNodesToXyNodes(canvasNodes) as Node[];
+
+      const mergeNode = (
+        newNode: Node,
+        currentNode: Node | undefined,
+      ): Node => {
+        if (
+          currentNode?.dragging ||
+          (currentNode as Node | undefined)?.resizing ||
+          (draggedChildrenCache.current.draggedNodeId !== null &&
+            draggedChildrenCache.current.descendantIds.includes(newNode.id))
+        ) {
+          return currentNode as Node;
+        }
+
+        if (currentNode?.selected) {
+          return { ...newNode, selected: true } as Node;
+        }
+
+        return newNode as Node;
+      };
+
       setNodes((currentNodes: Node[]) => {
-        const newNodes = fromCanvasNodesToXyNodes(canvasNodes);
         const currentNodesMap = new Map(currentNodes.map((n) => [n.id, n]));
+        const addedNodes = incomingNodes.filter(
+          (incomingNode) => !currentNodesMap.has(incomingNode.id),
+        );
+        const shouldHydrateProgressively =
+          addedNodes.length >= HYDRATION_THRESHOLD;
 
-        return newNodes.map((newNode) => {
-          const currentNode = currentNodesMap.get(newNode.id);
+        if (!shouldHydrateProgressively) {
+          return incomingNodes.map((incomingNode) =>
+            mergeNode(incomingNode, currentNodesMap.get(incomingNode.id)),
+          );
+        }
 
-          // Si le node est en cours de drag ou resize, on garde le currentNode complet
-          // Also preserve descendants being moved along with a dragged parent
-          if (
-            currentNode?.dragging ||
-            (currentNode as Node)?.resizing ||
-            (draggedChildrenCache.current.draggedNodeId !== null &&
-              draggedChildrenCache.current.descendantIds.includes(newNode.id))
-          ) {
-            return currentNode as Node;
+        const admittedIds = new Set(
+          addedNodes.slice(0, HYDRATION_BATCH_SIZE).map((node) => node.id),
+        );
+
+        const scheduleNextBatch = (offset: number) => {
+          if (offset >= addedNodes.length) {
+            hydrationTimerRef.current = null;
+            return;
           }
 
-          // Sinon, on prend le newNode mais on préserve la sélection
-          if (currentNode?.selected) {
-            return { ...newNode, selected: true } as Node;
-          }
+          hydrationTimerRef.current = setTimeout(() => {
+            if (runId !== hydrationRunIdRef.current) {
+              hydrationTimerRef.current = null;
+              return;
+            }
 
-          return newNode as Node;
-        });
+            const nextSlice = addedNodes.slice(
+              offset,
+              offset + HYDRATION_BATCH_SIZE,
+            );
+            for (const node of nextSlice) {
+              admittedIds.add(node.id);
+            }
+
+            setNodes((current) => {
+              if (runId !== hydrationRunIdRef.current) {
+                return current;
+              }
+
+              const currentMap = new Map(current.map((n) => [n.id, n]));
+              return incomingNodes
+                .filter(
+                  (incomingNode) =>
+                    currentMap.has(incomingNode.id) ||
+                    admittedIds.has(incomingNode.id),
+                )
+                .map((incomingNode) =>
+                  mergeNode(incomingNode, currentMap.get(incomingNode.id)),
+                );
+            });
+
+            scheduleNextBatch(offset + HYDRATION_BATCH_SIZE);
+          }, HYDRATION_GAP_MS);
+        };
+
+        scheduleNextBatch(HYDRATION_BATCH_SIZE);
+
+        return incomingNodes
+          .filter(
+            (incomingNode) =>
+              currentNodesMap.has(incomingNode.id) ||
+              admittedIds.has(incomingNode.id),
+          )
+          .map((incomingNode) =>
+            mergeNode(incomingNode, currentNodesMap.get(incomingNode.id)),
+          );
       });
     }
-  }, [canvasNodes]);
+  }, [canvasNodes, setNodes]);
 
   const handleNodeChange = useCallback(
     (changes: NodeChange[]) => {

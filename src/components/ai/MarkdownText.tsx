@@ -11,7 +11,7 @@ interface MarkdownTextProps {
 
 const MarkdownTextImpl: FC<MarkdownTextProps> = ({ children }) => {
   return (
-    <div className="aui-md flex flex-col gap-2">
+    <div className="aui-md min-w-0 flex flex-col gap-2 break-words [overflow-wrap:anywhere]">
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={defaultComponents}>
         {children}
       </ReactMarkdown>
@@ -91,7 +91,7 @@ const defaultComponents = {
     <h1
       className={cn(
         "aui-md-h1 mb-8 scroll-m-20 font-extrabold text-3xl tracking-tight last:mb-0",
-        className
+        className,
       )}
       {...props}
     />
@@ -100,7 +100,7 @@ const defaultComponents = {
     <h2
       className={cn(
         "aui-md-h2 mt-6 mb-3 scroll-m-20 font-semibold text-2xl tracking-tight first:mt-0 last:mb-0",
-        className
+        className,
       )}
       {...props}
     />
@@ -109,7 +109,7 @@ const defaultComponents = {
     <h3
       className={cn(
         "aui-md-h3 mt-4 mb-2 scroll-m-20 font-semibold text-xl tracking-tight first:mt-0 last:mb-0",
-        className
+        className,
       )}
       {...props}
     />
@@ -118,7 +118,7 @@ const defaultComponents = {
     <h4
       className={cn(
         "aui-md-h4 mt-4 mb-2 scroll-m-20 font-semibold tracking-tight first:mt-0 last:mb-0",
-        className
+        className,
       )}
       {...props}
     />
@@ -127,7 +127,7 @@ const defaultComponents = {
     <h5
       className={cn(
         "aui-md-h5 my-2 font-semibold text-lg first:mt-0 last:mb-0",
-        className
+        className,
       )}
       {...props}
     />
@@ -136,7 +136,7 @@ const defaultComponents = {
     <h6
       className={cn(
         "aui-md-h6 my-2 font-semibold first:mt-0 last:mb-0",
-        className
+        className,
       )}
       {...props}
     />
@@ -157,7 +157,7 @@ const defaultComponents = {
     <a
       className={cn(
         "aui-md-a font-medium text-white underline underline-offset-4",
-        className
+        className,
       )}
       {...props}
       target="_blank"
@@ -176,7 +176,7 @@ const defaultComponents = {
     <ul
       className={cn(
         "aui-md-ul mb-2 ml-6 list-disc [&>li]:mt-1 flex flex-col",
-        className
+        className,
       )}
       {...props}
     />
@@ -185,7 +185,7 @@ const defaultComponents = {
     <ol
       className={cn(
         "aui-md-ol my-2 ml-6 list-decimal [&>li]:mt-1 flex flex-col",
-        className
+        className,
       )}
       {...props}
     />
@@ -204,7 +204,7 @@ const defaultComponents = {
       <table
         className={cn(
           "aui-md-table my-3 w-full border-separate border-spacing-0 overflow-auto",
-          className
+          className,
         )}
         {...props}
       />
@@ -217,7 +217,7 @@ const defaultComponents = {
     <th
       className={cn(
         "aui-md-th bg-white/10 px-4 py-2 text-left font-bold first:rounded-tl-md last:rounded-tr-md [[align=center]]:text-center [[align=right]]:text-right",
-        className
+        className,
       )}
       {...props}
     />
@@ -229,7 +229,7 @@ const defaultComponents = {
     <td
       className={cn(
         "aui-md-td border-b border-l border-white/10 px-4 py-2 text-left last:border-r [[align=center]]:text-center [[align=right]]:text-right",
-        className
+        className,
       )}
       {...props}
     />
@@ -238,7 +238,7 @@ const defaultComponents = {
     <tr
       className={cn(
         "aui-md-tr m-0 border-b p-0 first:border-t [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg",
-        className
+        className,
       )}
       {...props}
     />
@@ -275,7 +275,7 @@ const defaultComponents = {
         className={cn(
           inline &&
             "aui-md-inline-code rounded border bg-muted font-semibold px-1",
-          className
+          className,
         )}
         {...props}
       >

@@ -63,6 +63,7 @@ ${nodeTypesContext}
 1. Read before edit. Always.
 2. Node position and edges are important. When creating or modifying a node, define its position and its edges to other nodes cleverly. Don't overuse it though.
 3. Check your work. After using a tool to modify the canvas, read the modified nodes to confirm the change was successful and correct.
+4. Use the right search tool: use full_text_search for exact token lookup (names, acronyms, reference IDs, rare words), and use explore for conceptual or thematic exploration.
 </instructions>
 
 <parallelization>

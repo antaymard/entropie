@@ -23,7 +23,6 @@ const WINDOW_SIZE_BY_TYPE: Partial<Record<NodeType, WindowSizePreset>> = {
   embed: { width: 500, height: 500 },
   link: { width: 480, height: 360 },
   pdf: { widthRatio: 1 / 2.66, heightRatio: 0.9 },
-  file: { widthRatio: 1 / 2.66, heightRatio: 0.9 },
   value: { width: 400, height: 300 },
   floatingText: { width: 480, height: 320 },
   table: { widthRatio: 1 / 2.66, heightRatio: 0.9 },

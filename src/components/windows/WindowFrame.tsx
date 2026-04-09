@@ -29,7 +29,6 @@ function WindowContent({ openedWindow }: { openedWindow: OpenedWindow }) {
       return <DocumentWindow xyNodeId={xyNodeId} nodeDataId={nodeDataId} />;
     case "embed":
       return <EmbedWindow nodeDataId={nodeDataId} />;
-    case "file":
     case "pdf":
       return <PdfWindow xyNodeId={xyNodeId} nodeDataId={nodeDataId} />;
     case "image":

@@ -61,12 +61,6 @@ const nodeUiConfig: Record<string, NodeUiConfigItem> = {
     nodeIcon: NODE_TYPE_ICON_MAP.pdf,
     canBeOpenInWindow: true,
   },
-  // Backward compatibility while existing canvases still contain type "file".
-  file: {
-    nodeComponent: PdfNode,
-    nodeIcon: NODE_TYPE_ICON_MAP.file,
-    canBeOpenInWindow: true,
-  },
   // fetch is frontend-only (not yet implemented as a backend node type)
   fetch: {
     nodeComponent: FetchNode,

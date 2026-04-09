@@ -102,8 +102,7 @@ function PdfNode(xyNode: Node) {
             variant="outline"
             onClick={() => {
               if (!nodeDataId) return;
-              const nodeType = xyNode.type === "file" ? "file" : "pdf";
-              openWindow({ xyNodeId: xyNode.id, nodeDataId, nodeType });
+              openWindow({ xyNodeId: xyNode.id, nodeDataId, nodeType: "pdf" });
             }}
           >
             <TbMaximize />

@@ -17,7 +17,6 @@ export const NODE_TYPE_ICON_MAP: Record<string, IconType> = {
   image: TbPhoto,
   link: TbLink,
   pdf: TbFileTypePdf,
-  file: TbFileTypePdf,
   value: TbTag,
   fetch: TbApi,
   embed: TbCode,

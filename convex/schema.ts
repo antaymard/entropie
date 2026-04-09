@@ -1,11 +1,11 @@
 import { defineSchema, defineTable } from "convex/server";
 import { authTables } from "@convex-dev/auth/server";
-import { v } from "convex/values";
 import { canvasesValidator } from "./schemas/canvasesSchema";
 import { nodeDatasValidator } from "./schemas/nodeDatasSchema";
 import { scheduledJobsValidator } from "./schemas/scheduledJobsSchema";
 import { sharesValidator } from "./schemas/sharesSchema";
-import { metadatasValidator } from "./schemas/metadatasSchema";
+import { memoriesValidator } from "./schemas/memoriesSchema";
+import { searchableChunksValidator } from "./schemas/searchableChunksSchema";
 
 const schema = defineSchema({
   ...authTables,
@@ -21,9 +21,7 @@ const schema = defineSchema({
       filterFields: ["creatorId"],
     }),
 
-  nodeDatas: defineTable(nodeDatasValidator).index("by_canvasId", [
-    "canvasId",
-  ]),
+  nodeDatas: defineTable(nodeDatasValidator).index("by_canvasId", ["canvasId"]),
 
   // ============================================================================
   // SHARES
@@ -37,7 +35,7 @@ const schema = defineSchema({
     "nodesDataId",
   ]),
 
-  metadatas: defineTable(metadatasValidator)
+  memories: defineTable(memoriesValidator)
     .index("by_subject_and_type", ["subjectId", "type"])
     .index("by_canvasId", ["canvasId"])
     .searchIndex("search_content", {
@@ -45,6 +43,17 @@ const schema = defineSchema({
       filterFields: ["subjectType", "subjectId", "type"],
     }),
 
+  // ============================================================================
+  // SEARCH
+  // ============================================================================
+  searchableChunks: defineTable(searchableChunksValidator)
+    .index("by_nodeDataId", ["nodeDataId"])
+    .index("by_nodeId", ["nodeId"])
+    .index("by_canvasId", ["canvasId"])
+    .searchIndex("search_text", {
+      searchField: "text",
+      filterFields: ["canvasId", "nodeDataId", "nodeType", "chunkType"],
+    }),
 });
 
 export default schema;

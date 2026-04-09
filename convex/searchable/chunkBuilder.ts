@@ -1,0 +1,528 @@
+"use node";
+
+import { v } from "convex/values";
+import { internalAction } from "../_generated/server";
+import { internal } from "../_generated/api";
+import { generateText } from "ai";
+import { openrouter } from "@openrouter/ai-sdk-provider";
+import { uploadBuffer } from "../lib/r2";
+import { plateJsonToMarkdown } from "../ia/helpers/plateMarkdownConverter";
+import { parseStoredPlateDocument } from "../lib/plateDocumentStorage";
+import { makeTableNodeDataLLMFriendly } from "../ia/helpers/makeNodeDataLLMFriendly";
+import type { Doc } from "../_generated/dataModel";
+
+// ── Types ────────────────────────────────────────────────────────────────────
+
+type ChunkInput = Omit<Doc<"searchableChunks">, "_id" | "_creationTime">;
+
+interface MistralOcrImage {
+  id: string;
+  top_left_x: number;
+  top_left_y: number;
+  bottom_right_x: number;
+  bottom_right_y: number;
+  image_base64?: string;
+  image_annotation?: string | null;
+}
+
+interface MistralOcrPage {
+  index: number;
+  markdown: string;
+  images: MistralOcrImage[];
+}
+
+interface MistralOcrResponse {
+  pages: MistralOcrPage[];
+}
+
+// ── Main action ───────────────────────────────────────────────────────────────
+
+// Champ porteur de contenu coûteux par nodeType (LLM vision / Mistral OCR).
+// Si updatedKeys est fourni et ne contient pas ce champ → skip.
+const EXPENSIVE_CONTENT_FIELD: Partial<Record<string, string>> = {
+  pdf: "files",
+  image: "images",
+};
+
+export const rebuildChunks = internalAction({
+  args: {
+    nodeDataId: v.id("nodeDatas"),
+    updatedKeys: v.optional(v.array(v.string())),
+  },
+  returns: v.null(),
+  handler: async (ctx, { nodeDataId, updatedKeys }) => {
+    console.log("[chunkBuilder] rebuildChunks:start", {
+      nodeDataId,
+      updatedKeys,
+    });
+
+    const nodeData = await ctx.runQuery(
+      internal.wrappers.nodeDataWrappers.readNodeData,
+      { _id: nodeDataId },
+    );
+    if (!nodeData) {
+      console.log("[chunkBuilder] rebuildChunks:nodeData-not-found", {
+        nodeDataId,
+      });
+      return null;
+    }
+
+    const { nodes } = await ctx.runQuery(
+      internal.wrappers.canvasNodeWrappers.getCanvasNodesAndEdges,
+      { canvasId: nodeData.canvasId },
+    );
+    const matchingCanvasNode = nodes.find(
+      (node) => node.nodeDataId === nodeDataId,
+    );
+    const nodeId = matchingCanvasNode?.id ?? (nodeDataId as string);
+
+    if (!matchingCanvasNode) {
+      console.warn("[chunkBuilder] rebuildChunks:canvas-node-not-found", {
+        nodeDataId,
+        canvasId: nodeData.canvasId,
+      });
+    }
+
+    const chunks = await buildChunks(nodeData, nodeId, updatedKeys);
+
+    console.log("[chunkBuilder] rebuildChunks:chunks-built", {
+      nodeDataId,
+      nodeType: nodeData.type,
+      chunkCount: chunks.length,
+    });
+
+    await ctx.runMutation(
+      internal.wrappers.searchableChunkWrappers.upsertChunks,
+      {
+        nodeDataId,
+        chunks,
+      },
+    );
+
+    console.log("[chunkBuilder] rebuildChunks:upsert-complete", {
+      nodeDataId,
+      chunkCount: chunks.length,
+    });
+
+    return null;
+  },
+});
+
+// ── Dispatcher ────────────────────────────────────────────────────────────────
+
+async function buildChunks(
+  nodeData: Doc<"nodeDatas">,
+  nodeId: string,
+  updatedKeys?: string[],
+): Promise<ChunkInput[]> {
+  console.log("[chunkBuilder] buildChunks:start", {
+    nodeDataId: nodeData._id,
+    nodeType: nodeData.type,
+    updatedKeys,
+  });
+
+  // Guard: for expensive branches (LLM/OCR), skip if the content field wasn't updated
+  if (updatedKeys) {
+    const expensiveField = EXPENSIVE_CONTENT_FIELD[nodeData.type];
+    if (expensiveField && !updatedKeys.includes(expensiveField)) {
+      console.log("[chunkBuilder] buildChunks:skip-expensive-branch", {
+        nodeDataId: nodeData._id,
+        nodeType: nodeData.type,
+        requiredField: expensiveField,
+        updatedKeys,
+      });
+      return [];
+    }
+  }
+  const base = {
+    nodeId,
+    nodeDataId: nodeData._id,
+    canvasId: nodeData.canvasId,
+    nodeType: nodeData.type,
+    templateId: undefined as string | undefined,
+  };
+
+  switch (nodeData.type) {
+    case "floatingText": {
+      const text = String(nodeData.values.text ?? "").trim();
+      if (!text) return [];
+      return [{ ...base, chunkType: "node", order: 0, text }];
+    }
+
+    case "link": {
+      const link = nodeData.values.link as
+        | { href?: string; pageTitle?: string }
+        | undefined;
+      if (!link?.href) return [];
+      const domain = safeDomain(link.href);
+      const parts = [link.pageTitle, link.href, domain].filter(Boolean);
+      return [
+        { ...base, chunkType: "node", order: 0, text: parts.join(" | ") },
+      ];
+    }
+
+    case "value": {
+      const val = nodeData.values.value as
+        | { value?: unknown; unit?: string; label?: string }
+        | undefined;
+      if (!val) return [];
+      const parts = [val.label, String(val.value ?? ""), val.unit].filter(
+        (p) => p !== undefined && p !== null && String(p).trim() !== "",
+      );
+      return [
+        { ...base, chunkType: "node", order: 0, text: parts.join(" | ") },
+      ];
+    }
+
+    case "embed": {
+      const embed = nodeData.values.embed as
+        | { url?: string; title?: string; type?: string }
+        | undefined;
+      if (!embed?.url) return [];
+      const domain = safeDomain(embed.url);
+      const parts = [embed.title, embed.type, embed.url, domain].filter(
+        Boolean,
+      );
+      return [
+        { ...base, chunkType: "node", order: 0, text: parts.join(" | ") },
+      ];
+    }
+
+    case "table": {
+      const text = makeTableNodeDataLLMFriendly(
+        nodeData.values.table,
+        nodeData.values.title,
+      );
+      if (!text.trim()) return [];
+      return [{ ...base, chunkType: "node", order: 0, text }];
+    }
+
+    case "document": {
+      const parsed = parseStoredPlateDocument(nodeData.values.doc);
+      if (!parsed || parsed.length === 0) return [];
+      const text = plateJsonToMarkdown(parsed);
+      if (!text.trim()) return [];
+      return [{ ...base, chunkType: "node", order: 0, text }];
+    }
+
+    case "image": {
+      const text = await buildImageChunkText(nodeData.values);
+      if (!text) return [];
+      return [{ ...base, chunkType: "node", order: 0, text }];
+    }
+
+    case "pdf":
+    case "file": {
+      return await buildPdfChunks(base, nodeData);
+    }
+
+    default:
+      return [];
+  }
+}
+
+// ── Image branch ─────────────────────────────────────────────────────────────
+
+async function buildImageChunkText(
+  values: Record<string, unknown>,
+): Promise<string | null> {
+  const images = values.images as Array<{ url: string }> | undefined;
+  if (!images || images.length === 0) {
+    console.log("[chunkBuilder] buildImageChunkText:no-images");
+    return null;
+  }
+
+  // Product constraint: images currently contains at most one image.
+  const img = images[0];
+  if (!img?.url) {
+    console.log("[chunkBuilder] buildImageChunkText:missing-image-url");
+    return null;
+  }
+
+  const filename = img.url.split("/").pop() ?? "image";
+  console.log("[chunkBuilder] buildImageChunkText:start", {
+    imageUrl: img.url,
+    filename,
+  });
+
+  try {
+    const result = await generateText({
+      model: openrouter("anthropic/claude-haiku-4-5"),
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "image", image: img.url },
+            {
+              type: "text",
+              text: `Give a title and a detailed description of this image. Format your response as:
+TITLE: <concise title>
+DESCRIPTION: <detailed description including visible text, data, and visual content>
+
+Respond in the same language as any visible text, or in French if no text is visible.`,
+            },
+          ],
+        },
+      ],
+    });
+
+    console.log("[chunkBuilder] buildImageChunkText:success", {
+      imageUrl: img.url,
+      responseLength: result.text.length,
+    });
+
+    return `[${filename}]\n${result.text}`;
+  } catch (error) {
+    console.error("Image chunk generation failed", {
+      imageUrl: img.url,
+      error,
+    });
+    return null;
+  }
+}
+
+// ── PDF branch ────────────────────────────────────────────────────────────────
+
+async function buildPdfChunks(
+  base: Omit<ChunkInput, "chunkType" | "order" | "text" | "metadata">,
+  nodeData: Doc<"nodeDatas">,
+): Promise<ChunkInput[]> {
+  const files = nodeData.values.files as
+    | Array<{ url: string; filename: string; mimeType: string }>
+    | undefined;
+  if (!files || files.length === 0) {
+    console.log("[chunkBuilder] buildPdfChunks:no-files", {
+      nodeDataId: nodeData._id,
+    });
+    return [];
+  }
+
+  const pdfFiles = files.filter((f) => f.mimeType === "application/pdf");
+  if (pdfFiles.length === 0) {
+    console.log("[chunkBuilder] buildPdfChunks:no-pdf-files", {
+      nodeDataId: nodeData._id,
+      fileCount: files.length,
+    });
+    return [];
+  }
+
+  console.log("[chunkBuilder] buildPdfChunks:start", {
+    nodeDataId: nodeData._id,
+    fileCount: files.length,
+    pdfFileCount: pdfFiles.length,
+  });
+
+  const apiKey = process.env.MISTRAL_API_KEY;
+  if (!apiKey) throw new Error("MISTRAL_API_KEY is not configured");
+
+  const allChunks: ChunkInput[] = [];
+
+  for (const pdf of pdfFiles) {
+    console.log("[chunkBuilder] buildPdfChunks:ocr-request", {
+      nodeDataId: nodeData._id,
+      pdfUrl: pdf.url,
+      filename: pdf.filename,
+    });
+
+    const response = await fetch("https://api.mistral.ai/v1/ocr", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "mistral-ocr-latest",
+        document: { type: "document_url", document_url: pdf.url },
+        include_image_base64: true,
+        bbox_annotation_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "image_annotation",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                image_type: {
+                  type: "string",
+                  description:
+                    "Type of image (photo, diagram, chart, table, logo, etc.)",
+                },
+                short_description: {
+                  type: "string",
+                  description: "Short description of the image content",
+                },
+                summary: {
+                  type: "string",
+                  description:
+                    "Full summary of the image content. Should be self-sufficient and include all relevant details, including any visible text, data, and visual elements. It should allow someone who cannot see the image to fully understand its content and significance, and search with text for relevant information.",
+                },
+              },
+              required: ["image_type", "short_description", "summary"],
+              additionalProperties: false,
+            },
+          },
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error(`Mistral OCR error (${response.status}): ${errorBody}`);
+      continue;
+    }
+
+    const ocrResult = (await response.json()) as MistralOcrResponse;
+    const totalPages = ocrResult.pages.length;
+
+    console.log("[chunkBuilder] buildPdfChunks:ocr-success", {
+      nodeDataId: nodeData._id,
+      pdfUrl: pdf.url,
+      totalPages,
+    });
+
+    // Upload images and build URL map
+    const imageUrlMap = new Map<string, string>();
+
+    for (const page of ocrResult.pages) {
+      for (const img of page.images) {
+        if (!img.image_base64) continue;
+
+        const base64Data = img.image_base64.replace(
+          /^data:image\/[^;]+;base64,/,
+          "",
+        );
+        const buffer = Buffer.from(base64Data, "base64");
+        const mimeMatch = img.image_base64.match(/^data:(image\/[^;]+);/);
+        const mimeType = mimeMatch?.[1] ?? "image/jpeg";
+        const ext = mimeType.split("/")[1] ?? "jpeg";
+
+        const key = `${nodeData._id}/${img.id}.${ext}`;
+        const publicUrl = await uploadBuffer(
+          key,
+          buffer.buffer.slice(
+            buffer.byteOffset,
+            buffer.byteOffset + buffer.byteLength,
+          ),
+          mimeType,
+        );
+        imageUrlMap.set(img.id, publicUrl);
+      }
+    }
+
+    console.log("[chunkBuilder] buildPdfChunks:image-upload-complete", {
+      nodeDataId: nodeData._id,
+      pdfUrl: pdf.url,
+      uploadedImageCount: imageUrlMap.size,
+    });
+
+    // Build one chunk per page + one per annotation
+    for (const page of ocrResult.pages) {
+      const pageImages = page.images.filter((img) => imageUrlMap.has(img.id));
+
+      // Replace Mistral image placeholders with R2 URLs in markdown
+      let md = page.markdown;
+      for (const [imageId, url] of imageUrlMap) {
+        const escapedId = imageId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const pattern = new RegExp(
+          `!\\[([^\\]]*)\\]\\(${escapedId}[^)]*\\)`,
+          "g",
+        );
+        md = md.replace(pattern, `![$1](${url})`);
+      }
+
+      // Page chunk
+      allChunks.push({
+        ...base,
+        chunkType: "page",
+        order: page.index,
+        text: md,
+        metadata: {
+          page: page.index + 1,
+          totalPages,
+          sections: extractSections(page.markdown),
+          hasImages: pageImages.length > 0,
+          imageCount: pageImages.length,
+        },
+      });
+
+      // Annotation chunks (one per image)
+      for (let i = 0; i < page.images.length; i++) {
+        const img = page.images[i];
+        const publicUrl = imageUrlMap.get(img.id);
+        if (!publicUrl) continue;
+
+        const annotation = parseAnnotation(img.image_annotation);
+        const text = annotation
+          ? `${annotation.short_description}\n${annotation.summary}`
+          : img.id;
+
+        allChunks.push({
+          ...base,
+          chunkType: "annotation",
+          order: page.index * 1000 + i,
+          text,
+          metadata: {
+            page: page.index + 1,
+            imageUrl: publicUrl,
+            boundingBox: {
+              x: img.top_left_x,
+              y: img.top_left_y,
+              w: img.bottom_right_x - img.top_left_x,
+              h: img.bottom_right_y - img.top_left_y,
+            },
+          },
+        });
+      }
+    }
+
+    console.log("[chunkBuilder] buildPdfChunks:pdf-chunks-complete", {
+      nodeDataId: nodeData._id,
+      pdfUrl: pdf.url,
+      runningChunkCount: allChunks.length,
+    });
+  }
+
+  console.log("[chunkBuilder] buildPdfChunks:done", {
+    nodeDataId: nodeData._id,
+    totalChunkCount: allChunks.length,
+  });
+
+  return allChunks;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function safeDomain(url: string): string {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return "";
+  }
+}
+
+function extractSections(
+  markdown: string,
+): Array<{ level: string; title: string }> {
+  const sections: Array<{ level: string; title: string }> = [];
+  for (const line of markdown.split("\n")) {
+    const match = line.match(/^(#{1,6})\s+(.+)/);
+    if (match) {
+      sections.push({
+        level: `h${match[1].length}`,
+        title: match[2].trim(),
+      });
+    }
+  }
+  return sections;
+}
+
+function parseAnnotation(
+  raw: string | null | undefined,
+): { image_type: string; short_description: string; summary: string } | null {
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}

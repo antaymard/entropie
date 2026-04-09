@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { type Node } from "@xyflow/react";
 import { areNodePropsEqual } from "../areNodePropsEqual";
 import { useNodeDataValues } from "@/hooks/useNodeData";
@@ -9,20 +9,39 @@ import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
 import NodeFrame from "../NodeFrame";
 import DocumentStaticField from "@/components/fields/document-fields/DocumentStaticField";
 import { Button } from "@/components/shadcn/button";
+import { Spinner } from "@/components/shadcn/spinner";
 import { TbMaximize, TbNews } from "react-icons/tb";
 import { useWindowsStore } from "@/stores/windowsStore";
 import { parseStoredPlateDocument } from "@/../convex/lib/plateDocumentStorage";
 
-const defaultValue: Value = normalizeNodeId([
-  {
-    children: [{ text: "" }],
-    type: "p",
-  },
-]);
+function hasTextContent(nodes: unknown[]): boolean {
+  for (const node of nodes) {
+    if (node && typeof node === "object") {
+      if (
+        "text" in node &&
+        typeof (node as { text: unknown }).text === "string" &&
+        (node as { text: string }).text.trim() !== ""
+      ) {
+        return true;
+      }
+      if (
+        "children" in node &&
+        Array.isArray((node as { children: unknown }).children) &&
+        hasTextContent((node as { children: unknown[] }).children)
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 
 function DocumentNode(xyNode: Node) {
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
   const values = useNodeDataValues(nodeDataId);
+  const [previewValue, setPreviewValue] = useState<Value | null>(null);
+  const [isDocEmpty, setIsDocEmpty] = useState(true);
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
 
   const openWindow = useWindowsStore((s) => s.openWindow);
 
@@ -31,28 +50,27 @@ function DocumentNode(xyNode: Node) {
     openWindow({ xyNodeId: xyNode.id, nodeDataId, nodeType: "document" });
   }, [nodeDataId, openWindow, xyNode.id]);
 
-  // Memoize parsing + normalisation – values?.doc is a stable string reference
-  // from the Zustand store, so this only recomputes when the document actually changes.
-  const currentValue: Value = useMemo(() => {
+  // Render full static preview directly (all-or-nothing, no sequential queue).
+  useEffect(() => {
+    setIsPreviewLoading(true);
     const parsedDoc = parseStoredPlateDocument(values?.doc);
-    return parsedDoc ? normalizeNodeId(parsedDoc as Value) : defaultValue;
+    if (!parsedDoc || !Array.isArray(parsedDoc) || parsedDoc.length === 0) {
+      setPreviewValue(null);
+      setIsDocEmpty(true);
+      setIsPreviewLoading(false);
+      return;
+    }
+    const normalized = normalizeNodeId(parsedDoc as Value);
+    const empty = !hasTextContent(normalized);
+    setIsDocEmpty(empty);
+    if (empty) {
+      setPreviewValue(null);
+      setIsPreviewLoading(false);
+      return;
+    }
+    setPreviewValue(normalized);
+    setIsPreviewLoading(false);
   }, [values?.doc]);
-
-  const isDocEmpty = currentValue.every((node) => {
-    const getText = (n: unknown): string => {
-      if (n && typeof n === "object") {
-        if ("text" in n && typeof (n as { text: unknown }).text === "string")
-          return (n as { text: string }).text;
-        if (
-          "children" in n &&
-          Array.isArray((n as { children: unknown }).children)
-        )
-          return (n as { children: unknown[] }).children.map(getText).join("");
-      }
-      return "";
-    };
-    return getText(node) === "";
-  });
 
   const documentTitle = useNodeDataTitle(nodeDataId) ?? "Document";
 
@@ -69,22 +87,29 @@ function DocumentNode(xyNode: Node) {
         </Button>
       </CanvasNodeToolbar>
       <NodeFrame xyNode={xyNode}>
-        {!xyNode.data.variant ||
-          (xyNode.data.variant === "default" && (
-            <div className="h-full overflow-auto">
-              {isDocEmpty ? (
-                <div className="h-full flex flex-col items-center justify-center gap-1.5 text-muted-foreground/40 select-none pointer-events-none">
-                  <TbNews size={22} />
-                  <span className="text-xs">Double-clic pour éditer</span>
-                </div>
-              ) : (
+        {xyNode.data.variant !== "title" && (
+          <div className="h-full overflow-auto [content-visibility:auto] [contain-intrinsic-size:auto_300px]">
+            {isDocEmpty ? (
+              <div className="h-full flex flex-col items-center justify-center gap-1.5 text-muted-foreground/40 select-none pointer-events-none">
+                <TbNews size={22} />
+                <span className="text-xs">Double-clic pour éditer</span>
+              </div>
+            ) : isPreviewLoading ? (
+              <div className="h-full flex flex-col items-center justify-center gap-2 text-muted-foreground/50 select-none pointer-events-none">
+                <Spinner className="size-4" />
+                <span className="text-xs">Chargement de l'aperçu...</span>
+              </div>
+            ) : previewValue ? (
+              <div className="relative">
                 <DocumentStaticField
-                  value={{ doc: currentValue }}
+                  value={{ doc: previewValue }}
                   allowDrag={!xyNode.selected}
+                  preview
                 />
-              )}
-            </div>
-          ))}
+              </div>
+            ) : null}
+          </div>
+        )}
         {xyNode.data.variant === "title" && (
           <div className="flex items-center gap-2 px-2 min-w-0 h-full group/linknode relative">
             <TbNews size={18} className="shrink-0" />

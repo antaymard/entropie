@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { query } from "./_generated/server";
 import { requireAuth } from "./lib/auth";
 
-export const listNodeDataMetadatas = query({
+export const listNodeDataMemories = query({
   args: {
     nodeDataId: v.id("nodeDatas"),
   },

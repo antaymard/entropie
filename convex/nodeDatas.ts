@@ -1,11 +1,9 @@
 import { v } from "convex/values";
 import { ConvexError } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { optionalAuth, requireAuth, requireCanvasAccess } from "./lib/auth";
 import * as NodeDataModel from "./models/nodeDataModels";
-import { shouldTranscribe } from "./models/nodeDataModels";
 import {
   agentConfigValidator,
   dataProcessingValidator,
@@ -72,18 +70,7 @@ export const updateValues = mutation({
   returns: v.boolean(),
   handler: async (ctx, { _id, values }): Promise<boolean> => {
     await requireAuth(ctx);
-    const result = await NodeDataModel.updateValues(ctx, { _id, values });
-
-    const nodeData = await ctx.db.get(_id);
-    if (nodeData && shouldTranscribe(nodeData.type, Object.keys(values))) {
-      await ctx.scheduler.runAfter(
-        0,
-        internal.ia.helpers.transcriptGenerator.transcribeNode,
-        { nodeDataId: _id },
-      );
-    }
-
-    return result;
+    return NodeDataModel.updateValues(ctx, { _id, values });
   },
 });
 

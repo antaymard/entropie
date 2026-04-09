@@ -12,6 +12,8 @@ export default function CanvasToolbar({
 }) {
   const tool = useCanvasStore((state) => state.tool);
   const setTool = useCanvasStore((state) => state.setTool);
+  const isSearchModalOpen = useCanvasStore((state) => state.isSearchModalOpen);
+  const toggleSearchModal = useCanvasStore((state) => state.toggleSearchModal);
 
   return (
     <div className="flex flex-col-reverse items-center gap-3">
@@ -22,7 +24,11 @@ export default function CanvasToolbar({
         <Button variant="ghost" size="icon">
           <TbUpload size={20} />
         </Button>
-        <Button variant="ghost" size="icon">
+        <Button
+          variant={isSearchModalOpen ? "default" : "ghost"}
+          size="icon"
+          onClick={() => toggleSearchModal()}
+        >
           <TbSearch size={20} />
         </Button>
         <Button

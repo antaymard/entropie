@@ -84,3 +84,21 @@ export const getNodeWithNodeData = internalQuery({
     return CanvasNodeModels.getNodeWithNodeData(ctx, args);
   },
 });
+
+export const getCanvasNodesAndEdges = internalQuery({
+  args: {
+    canvasId: v.id("canvases"),
+  },
+  handler: async (ctx, args) => {
+    const canvas = await ctx.db.get("canvases", args.canvasId);
+
+    if (!canvas) {
+      throw new Error("Canvas not found");
+    }
+
+    return {
+      nodes: canvas.nodes ?? [],
+      edges: canvas.edges ?? [],
+    };
+  },
+});

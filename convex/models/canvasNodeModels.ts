@@ -3,6 +3,8 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import errors from "../config/errorsConfig";
 import { nodeDataConfig } from "../config/nodeConfig";
+import { internal } from "../_generated/api";
+import * as SearchableChunkModels from "./searchableChunkModels";
 
 type CanvasNode = NonNullable<Doc<"canvases">["nodes"]>[number];
 
@@ -213,24 +215,19 @@ export async function removeCanvasNodes(
     updatedAt: Date.now(),
   });
 
-  // 1:1 relationship: each nodeData belongs to exactly one canvas node,
-  // so we can delete them directly along with their associated metadatas.
+  // Schedule cascade deletion (memories + chunks + nodeData) as a deferred job.
+  // This decouples canvas node removal from data deletion, enabling future ctrl-Z.
   for (const nodeDataId of removedNodeDataIds) {
-    // Delete associated metadatas
-    const metadatas = await ctx.db
-      .query("metadatas")
-      .withIndex("by_subject_and_type", (q) => q.eq("subjectId", nodeDataId))
-      .collect();
-    for (const metadata of metadatas) {
-      await ctx.db.delete(metadata._id);
-    }
-
-    await ctx.db.delete(nodeDataId);
+    await ctx.scheduler.runAfter(
+      0,
+      internal.wrappers.nodeDataWrappers.deleteWithCascade,
+      { nodeDataId },
+    );
   }
 
   if (removedNodeDataIds.length > 0) {
     console.log(
-      `🗑️ Deleted ${removedNodeDataIds.length} nodeDatas and their metadatas`,
+      `🗑️ Scheduled cascade deletion for ${removedNodeDataIds.length} nodeDatas`,
     );
   }
 
@@ -286,7 +283,7 @@ export async function moveToCanvas(
     updatedAt: Date.now(),
   });
 
-  // Update canvasId on moved NodeDatas and their Metadatas
+  // Update canvasId on moved NodeDatas and their memories.
   const movedNodeDataIds = nodesToMove
     .map((node) => node.nodeDataId)
     .filter((id): id is Id<"nodeDatas"> => id !== undefined);
@@ -294,13 +291,18 @@ export async function moveToCanvas(
   for (const nodeDataId of movedNodeDataIds) {
     await ctx.db.patch(nodeDataId, { canvasId: targetCanvasId });
 
-    const metadatas = await ctx.db
-      .query("metadatas")
+    const memories = await ctx.db
+      .query("memories")
       .withIndex("by_subject_and_type", (q) => q.eq("subjectId", nodeDataId))
       .collect();
-    for (const metadata of metadatas) {
-      await ctx.db.patch(metadata._id, { canvasId: targetCanvasId });
+    for (const memory of memories) {
+      await ctx.db.patch(memory._id, { canvasId: targetCanvasId });
     }
+
+    await SearchableChunkModels.updateCanvasId(ctx, {
+      nodeDataId,
+      canvasId: targetCanvasId,
+    });
   }
 
   console.log(

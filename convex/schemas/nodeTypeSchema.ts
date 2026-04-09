@@ -7,6 +7,7 @@ const nodeTypeValues = [
   "value",
   "embed",
   "floatingText",
+  "pdf",
   "file",
   "table",
 ] as const;

@@ -21,7 +21,7 @@ export const generate = internalAction({
 
     // 3. Récupérer le one-liner existant (si présent)
     const existingOneLiner = await ctx.runQuery(
-      internal.wrappers.metadataWrappers.read,
+      internal.wrappers.memoryWrappers.read,
       { subjectId: nodeDataId, type: "one-liner" },
     );
 
@@ -61,8 +61,8 @@ export const generate = internalAction({
 `,
     });
 
-    // 5. Persister le one-liner via metadata
-    await ctx.runMutation(internal.wrappers.metadataWrappers.upsert, {
+    // 5. Persister le one-liner via memory
+    await ctx.runMutation(internal.wrappers.memoryWrappers.upsert, {
       subjectType: "nodeData",
       subjectId: nodeDataId,
       type: "one-liner",
@@ -97,7 +97,7 @@ function getExamplesFromNodeType(nodeType: string): string {
     image: `- The image (imageUrl) represents a chart showing the sales growth of the company over the last quarter.`,
     link: `- The link (https://example.com | pageTitle) leads to a research paper discussing the impact of climate change on polar bear populations.`,
     value: `- The value ($value + $unit) is a numerical representation of the average customer satisfaction score for the month of June.`,
-    file: `- The file (fileName.pdf) is a financial report detailing the quarterly earnings and expenses of the company.`,
+    pdf: `- The PDF (fileName.pdf) is a financial report detailing the quarterly earnings and expenses of the company.`,
     floatingText: `For floatingtext, return the text if short (< 100 chars) or a concise summary if long (e.g. "a long note about project updates").`,
     embed: `- An embed of a YouTube video entitled "10 signs of a healthy relationship".`,
     table: `- The table contains $nb rows of team members, their roles, and contact information`,
@@ -112,7 +112,7 @@ function getGuidelinesFromNodeType(nodeType: string): string {
     image: `The image is passed to you. First, describe objectively what the image represents (without interpretation). Then, if possible, summarize it in one line. If the image is a diagram or chart, focus on the key insights it conveys rather than describing every element.`,
     link: `The link is passed to you with its URL and page title. First, go to the site using the URL and read its content. Then, describe objectively what the page represents (without interpretation). Finally, summarize it in one line.`,
     value: `The value is passed to you. First, describe objectively what the value represents (without interpretation). Then, if possible, summarize it in one line.`,
-    file: `The file is passed to you. First, describe objectively what the file represents (without interpretation). Then, if possible, summarize it in one line.`,
+    pdf: `The PDF is passed to you. First, describe objectively what the PDF represents (without interpretation). Then, if possible, summarize it in one line.`,
     floatingText: `For floatingtext, return the text if short (< 100 chars) or a concise summary if long (e.g. "a long note about project updates").`,
     embed: `The embed is passed to you. First, describe objectively what the embed represents (without interpretation). Then, if possible, summarize it in one line.`,
     table: `The table is passed to you in a tanstack-table compatible format. Use the columns names to understand the structure. Check how many rows are already in the table. Don't hallucinate the purpose of the table, just describe it objectively, even if it does not make sense to you.`,

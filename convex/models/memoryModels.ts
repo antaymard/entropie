@@ -1,10 +1,10 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 
-type Metadata = Doc<"metadatas">;
+type Memory = Doc<"memories">;
 
 /**
- * Upsert: si une metadata avec le même subjectId + type existe, on patch.
+ * Upsert: si une memory avec le même subjectId + type existe, on patch.
  * Sinon, on insère.
  */
 export async function upsert(
@@ -15,12 +15,12 @@ export async function upsert(
     type,
     content,
     canvasId,
-  }: Pick<Metadata, "subjectType" | "subjectId" | "type" | "content"> & {
+  }: Pick<Memory, "subjectType" | "subjectId" | "type" | "content"> & {
     canvasId: Id<"canvases">;
   },
 ): Promise<boolean> {
-  const existing = await ctx.db
-    .query("metadatas")
+  const existingMemory = await ctx.db
+    .query("memories")
     .withIndex("by_subject_and_type", (q) =>
       q.eq("subjectId", subjectId).eq("type", type),
     )
@@ -28,15 +28,15 @@ export async function upsert(
 
   const now = Date.now();
 
-  if (existing) {
-    await ctx.db.patch(existing._id, {
+  if (existingMemory) {
+    await ctx.db.patch(existingMemory._id, {
       content,
       subjectType,
       canvasId,
       updatedAt: now,
     });
   } else {
-    await ctx.db.insert("metadatas", {
+    await ctx.db.insert("memories", {
       subjectType,
       subjectId,
       type,
@@ -51,10 +51,10 @@ export async function upsert(
 
 export async function read(
   ctx: QueryCtx,
-  { subjectId, type }: Pick<Metadata, "subjectId" | "type">,
+  { subjectId, type }: Pick<Memory, "subjectId" | "type">,
 ) {
   return await ctx.db
-    .query("metadatas")
+    .query("memories")
     .withIndex("by_subject_and_type", (q) =>
       q.eq("subjectId", subjectId).eq("type", type),
     )
@@ -63,10 +63,10 @@ export async function read(
 
 export async function list(
   ctx: QueryCtx,
-  { subjectId }: Pick<Metadata, "subjectId">,
+  { subjectId }: Pick<Memory, "subjectId">,
 ) {
   return await ctx.db
-    .query("metadatas")
+    .query("memories")
     .withIndex("by_subject_and_type", (q) => q.eq("subjectId", subjectId))
     .collect();
 }

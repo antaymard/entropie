@@ -47,13 +47,14 @@ export function getNodeDataTitle(nodeData: Doc<"nodeDatas">): string {
       return typeof val?.label === "string" ? val.label : "Value";
     }
 
-    case "file": {
+    case "file":
+    case "pdf": {
       const files = nodeData.values.files as
         | Array<{ filename?: unknown }>
         | undefined;
       return typeof files?.[0]?.filename === "string"
         ? files[0].filename
-        : "File";
+        : "PDF";
     }
 
     case "image": {

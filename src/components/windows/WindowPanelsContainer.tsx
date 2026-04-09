@@ -19,6 +19,7 @@ export default function WindowPanelsContainer() {
       case "document":
         return <DocumentWindow key={node.id} xyNode={node} />;
       case "file":
+      case "pdf":
         return <PdfWindow xyNode={node} />;
     }
   }

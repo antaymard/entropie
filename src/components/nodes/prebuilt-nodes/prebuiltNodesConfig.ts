@@ -11,7 +11,7 @@ import ImageNode from "./ImageNode";
 import LinkNode from "./LinkNode";
 import ValueNode from "./ValueNode";
 import FetchNode from "./FetchNode";
-import FileNode from "./FileNode";
+import PdfNode from "./PdfNode";
 import EmbedNode from "./EmbedNode";
 import TableNode from "./TableNode";
 
@@ -56,8 +56,14 @@ const nodeUiConfig: Record<string, NodeUiConfigItem> = {
     nodeIcon: NODE_TYPE_ICON_MAP.embed,
     canBeOpenInWindow: true,
   },
+  pdf: {
+    nodeComponent: PdfNode,
+    nodeIcon: NODE_TYPE_ICON_MAP.pdf,
+    canBeOpenInWindow: true,
+  },
+  // Backward compatibility while existing canvases still contain type "file".
   file: {
-    nodeComponent: FileNode,
+    nodeComponent: PdfNode,
     nodeIcon: NODE_TYPE_ICON_MAP.file,
     canBeOpenInWindow: true,
   },

@@ -39,6 +39,7 @@ import AuthUpgradeBanner from "@/components/canvas/on-canvas-ui/AuthUpgradeBanne
 import { useConvexAuth } from "convex/react";
 import OnboardingModal from "@/components/ui/OnboardingModal";
 import { generateLlmId } from "@/../convex/lib/llmId";
+import SearchModale from "@/components/canvas/search-modale/SearchModale";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -213,6 +214,7 @@ function CanvasContent({
 
   return (
     <div className="flex-1 w-full h-full">
+      <SearchModale />
       <WindowsContainer />
       <ReactFlow
         panOnScroll

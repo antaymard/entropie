@@ -12,6 +12,7 @@ import { Button } from "@/components/shadcn/button";
 import { TbMaximize, TbNews } from "react-icons/tb";
 import { useWindowsStore } from "@/stores/windowsStore";
 import { parseStoredPlateDocument } from "@/../convex/lib/plateDocumentStorage";
+import { enqueuePreviewRender } from "@/lib/previewRenderQueue";
 
 /** Max root-level blocks rendered in the canvas preview. */
 const MAX_PREVIEW_BLOCKS = 60;
@@ -54,7 +55,8 @@ function DocumentNode(xyNode: Node) {
     openWindow({ xyNodeId: xyNode.id, nodeDataId, nodeType: "document" });
   }, [nodeDataId, openWindow, xyNode.id]);
 
-  // Defer preview computation so canvas shell renders first
+  // Defer preview computation so canvas shell renders first.
+  // Renders are serialized across all document nodes via the queue.
   useEffect(() => {
     const parsedDoc = parseStoredPlateDocument(values?.doc);
     if (!parsedDoc || !Array.isArray(parsedDoc) || parsedDoc.length === 0) {
@@ -77,9 +79,15 @@ function DocumentNode(xyNode: Node) {
       : normalized;
     setTotalBlocks(normalized.length);
     setIsTruncated(truncated);
-    startTransition(() => {
-      setPreviewValue(preview);
+
+    // Enqueue so nodes render one at a time with idle gaps between them
+    const cancel = enqueuePreviewRender(() => {
+      startTransition(() => {
+        setPreviewValue(preview);
+      });
     });
+
+    return cancel;
   }, [values?.doc]);
 
   const documentTitle = useNodeDataTitle(nodeDataId) ?? "Document";

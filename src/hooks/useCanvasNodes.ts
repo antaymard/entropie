@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
   useNodesState,
   useReactFlow,
@@ -10,7 +10,6 @@ import {
   type NodeRemoveChange,
 } from "@xyflow/react";
 import { useMutation } from "convex/react";
-import { throttle } from "lodash";
 import { useKeyHold } from "@tanstack/react-hotkeys";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { api } from "@/../convex/_generated/api";
@@ -89,9 +88,6 @@ export function useCanvasNodes(
     initialOffsets: new Map(),
   });
 
-  const hydrationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const hydrationRunIdRef = useRef(0);
-
   // CONVEX MUTATIONS
   const addCanvasNodesToConvex = useMutation(api.canvasNodes.add);
   const updateCanvasNodesPositionOrDimensionsInConvex = useMutation(
@@ -99,26 +95,8 @@ export function useCanvasNodes(
   );
   const removeCanvasNodesToConvex = useMutation(api.canvasNodes.remove);
 
-  const throttledUpdatePositions = useMemo(
-    () =>
-      throttle((changes: NodePositionChange[]) => {
-        updateCanvasNodesPositionOrDimensionsInConvex({
-          canvasId,
-          nodeChanges: changes,
-        });
-      }, 300),
-    [canvasId, updateCanvasNodesPositionOrDimensionsInConvex],
-  );
-
-  // Cleanup throttle on unmount or when dependencies change
-  useEffect(() => {
-    return () => {
-      throttledUpdatePositions.cancel();
-    };
-  }, [throttledUpdatePositions]);
-
-  // Sync convex -> reactflow nodes, en preservant les nodes en cours
-  // de drag/resize et la selection
+  // Sync Convex -> React Flow nodes while preserving drag/resize state
+  // and selection.
   useEffect(() => {
     if (canvasNodes !== undefined) {
       if (canvasNodes.length === 0) {
@@ -133,7 +111,8 @@ export function useCanvasNodes(
         return newNodes.map((newNode) => {
           const currentNode = currentNodesMap.get(newNode.id);
 
-          // Si le node est en cours de drag ou resize, on garde le currentNode complet
+          // If the node is currently being dragged or resized, keep the full
+          // current node object.
           // Also preserve descendants being moved along with a dragged parent
           if (
             currentNode?.dragging ||
@@ -144,7 +123,7 @@ export function useCanvasNodes(
             return currentNode as Node;
           }
 
-          // Sinon, on prend le newNode mais on preserve la selection
+          // Otherwise use the fresh node from Convex, but preserve selection.
           if (currentNode?.selected) {
             return { ...newNode, selected: true } as Node;
           }
@@ -153,7 +132,7 @@ export function useCanvasNodes(
         });
       });
     }
-  }, [canvasNodes]);
+  }, [canvasNodes, setNodes]);
 
   const handleNodeChange = useCallback(
     (changes: NodeChange[]) => {
@@ -270,7 +249,7 @@ export function useCanvasNodes(
 
       // ADD NODES
       if (addedChanges.length > 0) {
-        // Envoi direct à Convex
+        // Directly persist add operations to Convex.
         return addCanvasNodesToConvex({
           canvasNodes: fromXyNodesToCanvasNodes(
             addedChanges.map((c) => c.item) as Node[],
@@ -280,24 +259,24 @@ export function useCanvasNodes(
       } else if (removedChanges.length > 0) {
         // REMOVE NODES
         closeWindowsForNodeIds(removedChanges.map((change) => change.id));
-        // Envoi direct à Convex
+        // Directly persist remove operations to Convex.
         return removeCanvasNodesToConvex({
           nodeCanvasIds: removedChanges.map((c) => c.id),
           canvasId,
         });
       } else if (dimensionChanges.length > 0) {
-        // UPDATE NODES DIMENSIONS
+        // UPDATE NODE DIMENSIONS
         if (
           dimensionChanges.some(
             (change) => (change as NodeDimensionChange).resizing,
           )
         ) {
           if (positionChanges.length > 0) {
-            // Sauvegarder les positionChanges pendant le resize
+            // Keep position changes while resize is in progress.
             lastPositionChangesWhenResizing.current = positionChanges;
           }
         } else {
-          // Fusionner les dimensionChanges et positionChanges par node ID
+          // Merge dimension and position changes by node ID.
           const savedPositionChanges =
             lastPositionChangesWhenResizing.current || [];
           const mergedChanges = dimensionChanges.map((dimChange) => {
@@ -319,15 +298,14 @@ export function useCanvasNodes(
           lastPositionChangesWhenResizing.current = null;
         }
       } else if (positionChanges.length > 0) {
-        // UPDATE NODES POSITIONS
+        // UPDATE NODE POSITIONS
         if (
           positionChanges.some((change) => change.dragging) &&
           dimensionChanges.length === 0
         ) {
-          // Throttle l'envoi à Convex pendant le drag (toutes les 300ms)
-          // throttledUpdatePositions(positionChanges);
+          // No-op while dragging; persist when drag ends.
         } else {
-          // Envoi direct à Convex quand le drag est fini
+          // Persist to Convex when drag ends.
           // Include descendant position changes when drag ends
           const { descendantIds, descendantSet } = draggedChildrenCache.current;
           if (descendantIds.length > 0) {
@@ -369,7 +347,6 @@ export function useCanvasNodes(
       closeWindowsForNodeIds,
       removeCanvasNodesToConvex,
       updateCanvasNodesPositionOrDimensionsInConvex,
-      // throttledUpdatePositions,
       onNodesChange,
       getEdges,
       getNodes,

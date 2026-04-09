@@ -10,13 +10,14 @@ type ToolPartState = "input-streaming" | "output-available" | "output-error";
 
 export function Message({ message }: { message: UIMessage }) {
   const isUser = message.role === "user";
+  const userText = extractUserMessageForDisplay(message.text ?? "");
 
   // Pour les messages utilisateur, afficher simplement le texte
   if (isUser) {
     return (
       <div className="flex justify-end">
         <div className="rounded whitespace-pre-wrap p-3 bg-slate-200 border border-slate-400 text-text max-w-4/5">
-          <MarkdownText>{message.text ?? ""}</MarkdownText>
+          <MarkdownText>{userText}</MarkdownText>
         </div>
       </div>
     );
@@ -245,6 +246,15 @@ function stringifyForDebug(value: unknown): string {
   } catch {
     return String(value);
   }
+}
+
+function extractUserMessageForDisplay(text: string): string {
+  const match = /<user_message>\s*([\s\S]*?)\s*<\/user_message>/i.exec(text);
+  if (!match) {
+    return text;
+  }
+
+  return match[1] ?? text;
 }
 
 export function TextPartRenderer({ part }: { part: TextPart }) {

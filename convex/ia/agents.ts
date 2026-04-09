@@ -13,6 +13,7 @@ import documentInsertContentTool from "./tools/documentInsertContentTool";
 import tableUpdateRowsTool from "./tools/tableUpdateRowsTool";
 import tableInsertRowsTool from "./tools/tableInsertRowsTool";
 import tableDeleteRowsTool from "./tools/tableDeleteRowsTools";
+import fullTextSearchTool from "./tools/fullTextSearchTool";
 
 export function createBaseAgent({ model }: { model?: LanguageModel } = {}) {
   return new Agent(components.agent, {
@@ -54,9 +55,10 @@ export function createNoleAgent({
   return new Agent(components.agent, {
     name: "Nolë",
     maxSteps: 8,
-    languageModel: openrouter("minimax/minimax-m2.7"),
+    languageModel: openrouter("z-ai/glm-5.1"),
     tools: {
       list_nodes: listNodesTool(runtimeContext),
+      full_text_search: fullTextSearchTool(runtimeContext),
       read_nodes: readNodesTool(runtimeContext),
       node_and_edge_manipulation: nodeAgentTool(runtimeContext),
       open_webpage: openWebPageTool,

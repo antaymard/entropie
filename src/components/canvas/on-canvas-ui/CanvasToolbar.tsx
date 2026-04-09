@@ -2,8 +2,19 @@ import { Button } from "@/components/shadcn/button";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { useCanvasStore } from "@/stores/canvasStore";
 import SlideshowContainer from "./slideshow/SlideshowContainer";
+import SlideshowProgressToolbar from "./slideshow/SlideshowProgressToolbar";
 import { BiSlideshow } from "react-icons/bi";
-import { TbPlus, TbSearch, TbUpload } from "react-icons/tb";
+import { TbPlus, TbSearch, TbUpload, TbX } from "react-icons/tb";
+import { Kbd } from "@/components/shadcn/kbd";
+import { useSlideshowStore } from "@/stores/slideshowStore";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/shadcn/dropdown-menu";
+import { useCallback, useState } from "react";
+import { useViewport } from "@xyflow/react";
+import AddBlockMenuContent from "../context-menus/AddBlockMenuContent";
 
 export default function CanvasToolbar({
   canvasId,
@@ -14,22 +25,52 @@ export default function CanvasToolbar({
   const setTool = useCanvasStore((state) => state.setTool);
   const isSearchModalOpen = useCanvasStore((state) => state.isSearchModalOpen);
   const toggleSearchModal = useCanvasStore((state) => state.toggleSearchModal);
+  const isPlaying = useSlideshowStore(
+    (state) => state.playback.status === "playing",
+  );
+  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+  const { x: canvasX, y: canvasY, zoom: canvasZoom } = useViewport();
+
+  const getViewportCenterPosition = useCallback(() => {
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+
+    return {
+      x: (screenWidth / 2 - canvasX) / canvasZoom,
+      y: (screenHeight / 2 - canvasY) / canvasZoom,
+    };
+  }, [canvasX, canvasY, canvasZoom]);
+
+  if (isPlaying) {
+    return <SlideshowProgressToolbar />;
+  }
 
   return (
     <div className="flex flex-col-reverse items-center gap-3">
       <div className="canvas-ui-container px-0!">
-        <Button variant="default" size="icon">
-          <TbPlus size={20} />
-        </Button>
-        <Button variant="ghost" size="icon">
+        <DropdownMenu open={isAddMenuOpen} onOpenChange={setIsAddMenuOpen}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="default" size="icon">
+              <TbPlus size={20} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="top" align="center" sideOffset={10}>
+            <AddBlockMenuContent
+              getCreatePosition={getViewportCenterPosition}
+              onCreated={() => setIsAddMenuOpen(false)}
+            />
+          </DropdownMenuContent>
+        </DropdownMenu>
+        {/* <Button variant="ghost" size="icon">
           <TbUpload size={20} />
-        </Button>
+        </Button> */}
         <Button
           variant={isSearchModalOpen ? "default" : "ghost"}
-          size="icon"
+          size="default"
           onClick={() => toggleSearchModal()}
         >
           <TbSearch size={20} />
+          <Kbd>Ctrl + K</Kbd>
         </Button>
         <Button
           variant={tool === "slides" ? "default" : "ghost"}
@@ -42,7 +83,7 @@ export default function CanvasToolbar({
             }
           }}
         >
-          <BiSlideshow size={20} />
+          {tool === "slides" ? <TbX size={20} /> : <BiSlideshow size={20} />}
         </Button>
       </div>
       {tool === "slides" && <SlideshowContainer canvasId={canvasId} />}

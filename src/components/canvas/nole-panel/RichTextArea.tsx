@@ -43,6 +43,9 @@ export default function RichTextArea({
   const autoResize = useCallback(() => {
     const textarea = wrapperRef.current?.querySelector("textarea");
     if (textarea) {
+      const control = textarea.parentElement as HTMLElement | null;
+      const highlighter = control?.querySelector("div") as HTMLElement | null;
+
       const effectiveMaxHeightPx =
         maxHeightPx ?? wrapperRef.current?.parentElement?.clientHeight;
 
@@ -53,12 +56,34 @@ export default function RichTextArea({
           textarea.scrollHeight,
           effectiveMaxHeightPx,
         );
+        const nextHeightPx = `${nextHeight}px`;
+
         textarea.style.height = `${nextHeight}px`;
         textarea.style.overflowY =
           textarea.scrollHeight > effectiveMaxHeightPx ? "auto" : "hidden";
+
+        if (control) {
+          control.style.height = nextHeightPx;
+          control.style.minHeight = "2.5rem";
+        }
+        if (highlighter) {
+          highlighter.style.height = nextHeightPx;
+          highlighter.style.overflow = "hidden";
+        }
       } else {
-        textarea.style.height = `${textarea.scrollHeight}px`;
+        const nextHeightPx = `${textarea.scrollHeight}px`;
+
+        textarea.style.height = nextHeightPx;
         textarea.style.overflowY = "hidden";
+
+        if (control) {
+          control.style.height = nextHeightPx;
+          control.style.minHeight = "2.5rem";
+        }
+        if (highlighter) {
+          highlighter.style.height = nextHeightPx;
+          highlighter.style.overflow = "hidden";
+        }
       }
     }
   }, [maxHeightPx]);

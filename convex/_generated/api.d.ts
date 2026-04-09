@@ -32,6 +32,7 @@ import type * as ia_nole_noleSystemPrompt from "../ia/nole/noleSystemPrompt.js";
 import type * as ia_tools__toolTemplate from "../ia/tools/_toolTemplate.js";
 import type * as ia_tools_documentInsertContentTool from "../ia/tools/documentInsertContentTool.js";
 import type * as ia_tools_documentStringReplaceContentTool from "../ia/tools/documentStringReplaceContentTool.js";
+import type * as ia_tools_fullTextSearchTool from "../ia/tools/fullTextSearchTool.js";
 import type * as ia_tools_listNodesTool from "../ia/tools/listNodesTool.js";
 import type * as ia_tools_nodeAgentTool from "../ia/tools/nodeAgentTool.js";
 import type * as ia_tools_openWebPageTool from "../ia/tools/openWebPageTool.js";
@@ -113,6 +114,7 @@ declare const fullApi: ApiFromModules<{
   "ia/tools/_toolTemplate": typeof ia_tools__toolTemplate;
   "ia/tools/documentInsertContentTool": typeof ia_tools_documentInsertContentTool;
   "ia/tools/documentStringReplaceContentTool": typeof ia_tools_documentStringReplaceContentTool;
+  "ia/tools/fullTextSearchTool": typeof ia_tools_fullTextSearchTool;
   "ia/tools/listNodesTool": typeof ia_tools_listNodesTool;
   "ia/tools/nodeAgentTool": typeof ia_tools_nodeAgentTool;
   "ia/tools/openWebPageTool": typeof ia_tools_openWebPageTool;

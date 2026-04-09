@@ -1,11 +1,5 @@
 import { useViewport } from "@xyflow/react";
-import prebuiltNodesConfig from "../../nodes/prebuilt-nodes/prebuiltNodesConfig";
-import {
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@/components/shadcn/dropdown-menu";
-import { useCreateNode } from "@/hooks/useCreateNode";
+import AddBlockMenuContent from "./AddBlockMenuContent";
 
 export default function ContextMenu({
   closeMenu,
@@ -14,7 +8,6 @@ export default function ContextMenu({
   closeMenu: () => void;
   position: { x: number; y: number };
 }) {
-  const { createNode } = useCreateNode();
   const { x: canvasX, y: canvasY, zoom: canvasZoom } = useViewport();
 
   const newNodePosition = {
@@ -22,39 +15,10 @@ export default function ContextMenu({
     y: (-canvasY + position.y) / canvasZoom,
   };
 
-  // On est déjà dans DropdownMenuContent
-
   return (
-    <>
-      <DropdownMenuLabel className="whitespace-nowrap">
-        Add a block
-      </DropdownMenuLabel>
-      <DropdownMenuSeparator />
-      {prebuiltNodesConfig.map((nodeConfig, i) => {
-        const Icon = nodeConfig.nodeIcon;
-        return (
-          <DropdownMenuItem
-            key={i}
-            className="w-48"
-            onClick={async () => {
-              // Utiliser les dimensions du variant "default" s'il existe
-              const nodeToCreate = { ...nodeConfig.node };
-              if (nodeConfig.variants?.default) {
-                nodeToCreate.height = nodeConfig.variants.default.defaultHeight;
-                nodeToCreate.width = nodeConfig.variants.default.defaultWidth;
-              }
-
-              await createNode({
-                node: nodeToCreate,
-                position: newNodePosition,
-              });
-              closeMenu();
-            }}
-          >
-            <Icon /> {nodeConfig.label}
-          </DropdownMenuItem>
-        );
-      })}
-    </>
+    <AddBlockMenuContent
+      getCreatePosition={() => newNodePosition}
+      onCreated={closeMenu}
+    />
   );
 }

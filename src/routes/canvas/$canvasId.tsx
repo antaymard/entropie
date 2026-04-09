@@ -34,7 +34,6 @@ import { Spinner } from "@/components/shadcn/spinner";
 import NoleCanvasPanel from "@/components/canvas/NoleCanvasPanel";
 import CanvasToolbar from "@/components/canvas/on-canvas-ui/CanvasToolbar";
 import TopRightToolbar from "@/components/canvas/on-canvas-ui/TopRightToolbar";
-import BottomToolbar from "@/components/canvas/on-canvas-ui/BottomToolbar";
 import AuthUpgradeBanner from "@/components/canvas/on-canvas-ui/AuthUpgradeBanner";
 import { useConvexAuth } from "convex/react";
 import OnboardingModal from "@/components/ui/OnboardingModal";
@@ -284,9 +283,6 @@ function CanvasContent({
             <AuthUpgradeBanner />
           </Panel>
         )}
-        <Panel position="bottom-center">
-          <BottomToolbar />
-        </Panel>
         {contextMenu.type && (
           <ContextMenu
             contextMenu={contextMenu}

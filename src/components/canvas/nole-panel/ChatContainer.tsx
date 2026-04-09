@@ -10,11 +10,10 @@ import {
   TbSend,
   TbX,
 } from "react-icons/tb";
-import { useNodes } from "@xyflow/react";
+import { useNodes, useViewport } from "@xyflow/react";
 import type { CanvasNode } from "@/types";
 import prebuiltNodesConfig from "@/components/nodes/prebuilt-nodes/prebuiltNodesConfig";
 import { useNodeDataStore } from "@/stores/nodeDataStore";
-import { getNodeDataTitle } from "@/components/utils/nodeDataDisplayUtils";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 import { useWindowsStore } from "@/stores/windowsStore";
@@ -37,10 +36,12 @@ import {
   TooltipTrigger,
 } from "@/components/shadcn/tooltip";
 import toast from "react-hot-toast";
+import {
+  generateMessageContext,
+  getCanvasNodeTitle,
+} from "./messageContextGenerator";
 
 const INPUT_MAX_HEIGHT_PX = 182;
-
-type Models = "default" | "best" | "fast";
 
 type ChatContainerProps = {
   onClose?: () => void;
@@ -141,7 +142,10 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
   );
 
   const dirtyNodeIds = useWindowsStore((s) => s.dirtyNodeIds);
+  const openedWindows = useWindowsStore((s) => s.openedWindows);
   const hasDirtyWindows = dirtyNodeIds.length > 0;
+  const nodeDatas = useNodeDataStore((state) => state.nodeDatas);
+  const { x: viewportX, y: viewportY, zoom: viewportZoom } = useViewport();
 
   const nodes = useNodes();
   const selectedNodesOnCanvas = nodes.filter((n) => n.selected) as CanvasNode[];
@@ -164,13 +168,27 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
     }
 
     const prompt = userInput;
+    const messageContext = generateMessageContext({
+      nodes: nodes as CanvasNode[],
+      openedNodeIds: openedWindows.map((openedWindow) => openedWindow.xyNodeId),
+      attachedNodes,
+      viewport: {
+        x: viewportX,
+        y: viewportY,
+        zoom: viewportZoom,
+      },
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      getNodeTitle: (node) => getCanvasNodeTitle(node, nodeDatas),
+    });
+    const promptWithContext = `${messageContext}\n\n<user_message>\n${prompt}\n</user_message>`;
     setUserInput("");
     setIsSending(true);
 
     try {
       await sendMessage({
         threadId,
-        prompt,
+        prompt: promptWithContext,
         canvasId,
       });
       setAttachedNodes([]);
@@ -251,7 +269,7 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
       <div className="p-2 pt-0">
         <div
           className={cn(
-            "max-h-48 bg-slate-200 border shadow-lg rounded-lg flex flex-col gap-2 mt-2",
+            "bg-slate-200 border shadow-lg rounded-lg flex flex-col gap-2 mt-2",
             hasDirtyWindows ? "border-red-300" : "border-slate-400",
           )}
         >
@@ -384,12 +402,8 @@ function NodeAttachment({
     (config) => config.type === node.type,
   );
   const nodeDatas = useNodeDataStore((state) => state.nodeDatas);
-  const nodeDataId = node.data?.nodeDataId as Id<"nodeDatas"> | undefined;
-  const nodeData = nodeDataId ? nodeDatas.get(nodeDataId) : undefined;
   const NodeIcon = nodeConfig?.nodeIcon;
-  const nodeTitle = nodeData
-    ? getNodeDataTitle(nodeData)
-    : nodeConfig?.label || node.type;
+  const nodeTitle = getCanvasNodeTitle(node, nodeDatas);
 
   return (
     <div

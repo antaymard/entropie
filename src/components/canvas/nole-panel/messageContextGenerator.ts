@@ -20,6 +20,7 @@ type MessageContextParams = {
   nodes: CanvasNode[];
   openedNodeIds: string[];
   attachedNodes: CanvasNode[];
+  attachedPosition: { x: number; y: number } | null;
   viewport: ViewportState;
   viewportWidth: number;
   viewportHeight: number;
@@ -121,6 +122,7 @@ export function generateMessageContext({
   nodes,
   openedNodeIds,
   attachedNodes,
+  attachedPosition,
   viewport,
   viewportWidth,
   viewportHeight,
@@ -179,6 +181,15 @@ export function generateMessageContext({
         ]
       : [];
 
+  const attachedPositionSection = attachedPosition
+    ? [
+        "<attached_position>",
+        "<hint>Empty position the user attached to this message. Use it to create new nodes or place existing nodes.</hint>",
+        `    <position x="${Math.round(attachedPosition.x)}" y="${Math.round(attachedPosition.y)}" />`,
+        "</attached_position>",
+      ]
+    : [];
+
   return [
     "<message_context>",
     "<hint>Context snapshot generated when the user sent this message.</hint>",
@@ -189,6 +200,9 @@ export function generateMessageContext({
     "<hint>Use the viewport coordinates to place new nodes, if relevant to the question asked. Visible nodes and current viewport may or may not be relevant to the current task.</hint>",
     visibleNodeIdsXml,
     "</viewport>",
+    ...(attachedPositionSection.length > 0
+      ? ["", ...attachedPositionSection]
+      : []),
     ...(attachedNodesSection.length > 0 ? ["", ...attachedNodesSection] : []),
     "</message_context>",
   ].join("\n");

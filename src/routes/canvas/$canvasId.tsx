@@ -8,19 +8,28 @@ import {
   Panel,
   Background,
   BackgroundVariant,
+  useReactFlow,
 } from "@xyflow/react";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { api } from "@/../convex/_generated/api";
 import { cn } from "@/lib/utils";
+import { fromXyNodeToCanvasNode } from "@/lib/node-types-converter";
 import useRichQuery from "@/components/utils/useRichQuery";
 import { useNodeDataStore } from "@/stores/nodeDataStore";
+import { useNoleStore } from "@/stores/noleStore";
 import { useWindowsStore } from "@/stores/windowsStore";
 import { useCanvasStore } from "@/stores/canvasStore";
 import ErrorDisplay from "@/components/ui/ErrorDisplay";
 import { Button } from "@/components/shadcn/button";
 import ContextMenu from "@/components/canvas/context-menus";
 import { useContextMenu } from "@/hooks/useContextMenu";
-import { useEffect, useMemo, useRef } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  type MouseEvent,
+} from "react";
 import type { CanvasNode } from "@/types/convex";
 import { nodeTypes } from "@/components/nodes/nodeTypes";
 import { useCanvasPasteHandler } from "@/hooks/useCanvasPasteHandler";
@@ -122,6 +131,39 @@ function CanvasContent({
   } = useContextMenu();
 
   const isMobile = useIsMobile();
+  const { screenToFlowPosition } = useReactFlow();
+  const isNolePanelExpanded = useNoleStore(
+    (state) => state.panelLayout === "expanded",
+  );
+  const addNoleAttachments = useNoleStore((state) => state.addAttachments);
+
+  const onNodeClick = useCallback(
+    (event: MouseEvent, node: Parameters<typeof fromXyNodeToCanvasNode>[0]) => {
+      if (!event.altKey || !isNolePanelExpanded) {
+        return;
+      }
+
+      event.preventDefault();
+      addNoleAttachments({ nodes: [fromXyNodeToCanvasNode(node)] });
+    },
+    [addNoleAttachments, isNolePanelExpanded],
+  );
+
+  const onPaneClick = useCallback(
+    (event: MouseEvent) => {
+      if (!event.altKey || event.button !== 0 || !isNolePanelExpanded) {
+        return;
+      }
+
+      event.preventDefault();
+      const position = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+      addNoleAttachments({ position });
+    },
+    [addNoleAttachments, isNolePanelExpanded, screenToFlowPosition],
+  );
 
   // Canvas nodes management
   const { nodes, handleNodeChange } = useCanvasNodes(
@@ -229,8 +271,10 @@ function CanvasContent({
         selectionMode={SelectionMode.Partial}
         selectionOnDrag={!isMobile}
         nodeTypes={nodeTypes}
+        onPaneClick={onPaneClick}
         onPaneContextMenu={onPaneContextMenu}
         onNodeContextMenu={onNodeContextMenu}
+        onNodeClick={onNodeClick}
         onSelectionContextMenu={onSelectionContextMenu}
         onEdgeContextMenu={onEdgeContextMenu}
         deleteKeyCode={null}

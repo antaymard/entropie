@@ -1,23 +1,29 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import type { Canvas } from "@/types";
+import type { CanvasNode } from "@/types/convex";
 import { useShallow } from "zustand/react/shallow";
+
+export type NolePanelLayout = "minimized" | "expanded";
 
 interface NoleStore {
   canvas: Omit<Canvas, "nodes" | "edges"> | null;
-  attachedNodes: any[];
+  panelLayout: NolePanelLayout;
+  attachedNodes: CanvasNode[];
   attachedPosition: { x: number; y: number } | null;
 
   setCanvas: (canvas: Canvas) => void;
+  setPanelLayout: (layout: NolePanelLayout) => void;
+  togglePanelLayout: () => void;
   addAttachments: (
-    attachments: { nodes?: any[]; position?: { x: number; y: number } },
-    removeIfPresent?: boolean
+    attachments: { nodes?: CanvasNode[]; position?: { x: number; y: number } },
+    removeIfPresent?: boolean,
   ) => void;
   removeAttachments: (
     attachments: {
       type: "node" | "position";
       ids?: string[]; // Null if position
-    }[]
+    }[],
   ) => void;
   resetAttachments: () => void;
 }
@@ -26,11 +32,23 @@ export const useNoleStore = create<NoleStore>()(
   devtools(
     (set, get) => ({
       canvas: null,
+      panelLayout: "minimized",
       attachedNodes: [],
       attachedPosition: null,
 
       setCanvas: (canvas: Canvas) => {
         set({ canvas });
+      },
+
+      setPanelLayout: (layout: NolePanelLayout) => {
+        set({ panelLayout: layout });
+      },
+
+      togglePanelLayout: () => {
+        set((state) => ({
+          panelLayout:
+            state.panelLayout === "minimized" ? "expanded" : "minimized",
+        }));
       },
 
       addAttachments: (attachments, removeIfPresent = false) => {
@@ -41,7 +59,7 @@ export const useNoleStore = create<NoleStore>()(
         if (attachments.nodes) {
           for (const node of attachments.nodes) {
             const existingIndex = newAttachedNodes.findIndex(
-              (n) => n.id === node.id
+              (n) => n.id === node.id,
             );
             if (removeIfPresent && existingIndex !== -1) {
               newAttachedNodes.splice(existingIndex, 1);
@@ -66,7 +84,7 @@ export const useNoleStore = create<NoleStore>()(
         for (const attachment of attachments) {
           if (attachment.type === "node" && attachment.ids) {
             newAttachedNodes = newAttachedNodes.filter(
-              (node) => !attachment.ids!.includes(node.id)
+              (node) => !attachment.ids!.includes(node.id),
             );
           } else if (attachment.type === "position") {
             newAttachedPosition = null;
@@ -82,8 +100,8 @@ export const useNoleStore = create<NoleStore>()(
         set({ attachedNodes: [], attachedPosition: null });
       },
     }),
-    { name: "canvas-store" }
-  )
+    { name: "canvas-store" },
+  ),
 );
 
 /**
@@ -92,6 +110,10 @@ export const useNoleStore = create<NoleStore>()(
  */
 export const useIsNodeAttached = (nodeId: string): boolean => {
   return useNoleStore(
-    useShallow((state) => state.attachedNodes.some((n) => n.id === nodeId))
+    useShallow((state) => state.attachedNodes.some((n) => n.id === nodeId)),
   );
+};
+
+export const useIsNolePanelExpanded = (): boolean => {
+  return useNoleStore(useShallow((state) => state.panelLayout === "expanded"));
 };

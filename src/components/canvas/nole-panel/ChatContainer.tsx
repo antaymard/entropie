@@ -10,10 +10,13 @@ import {
   TbSend,
   TbX,
 } from "react-icons/tb";
+import { HiMiniXMark } from "react-icons/hi2";
+import { LuMousePointerClick } from "react-icons/lu";
 import { useNodes, useViewport } from "@xyflow/react";
 import type { CanvasNode } from "@/types";
 import prebuiltNodesConfig from "@/components/nodes/prebuilt-nodes/prebuiltNodesConfig";
 import { useNodeDataStore } from "@/stores/nodeDataStore";
+import { useNoleStore } from "@/stores/noleStore";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 import { useWindowsStore } from "@/stores/windowsStore";
@@ -58,7 +61,11 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
 
   const [userInput, setUserInput] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [attachedNodes, setAttachedNodes] = useState<CanvasNode[]>([]);
+  const attachedNodes = useNoleStore((state) => state.attachedNodes);
+  const attachedPosition = useNoleStore((state) => state.attachedPosition);
+  const addAttachments = useNoleStore((state) => state.addAttachments);
+  const removeAttachments = useNoleStore((state) => state.removeAttachments);
+  const resetAttachments = useNoleStore((state) => state.resetAttachments);
 
   // Speech-to-text: hold Ctrl+Alt to record
   const onTranscript = useCallback(
@@ -172,6 +179,7 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
       nodes: nodes as CanvasNode[],
       openedNodeIds: openedWindows.map((openedWindow) => openedWindow.xyNodeId),
       attachedNodes,
+      attachedPosition,
       viewport: {
         x: viewportX,
         y: viewportY,
@@ -191,7 +199,7 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
         prompt: promptWithContext,
         canvasId,
       });
-      setAttachedNodes([]);
+      resetAttachments();
       void updateThreadTitle({ threadId, onlyIfUntitled: true });
     } catch (error) {
       console.error("Erreur lors de l'envoi:", error);
@@ -204,7 +212,7 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
   const onNewThreadClicked = async () => {
     setOverrideThreadId(null);
     setUserInput("");
-    setAttachedNodes([]);
+    resetAttachments();
     await resetThread();
   };
 
@@ -245,7 +253,7 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
               onSelectThread={(selectedThreadId) => {
                 setOverrideThreadId(selectedThreadId);
                 setUserInput("");
-                setAttachedNodes([]);
+                resetAttachments();
               }}
             />
           ) : null}
@@ -273,20 +281,26 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
             hasDirtyWindows ? "border-red-300" : "border-slate-400",
           )}
         >
-          {(selectableNodes.length > 0 || attachedNodes.length > 0) && (
+          {(selectableNodes.length > 0 ||
+            attachedNodes.length > 0 ||
+            attachedPosition) && (
             <div className="p-2 pb-0 flex flex-wrap gap-1">
+              {attachedPosition ? (
+                <PositionAttachment
+                  position={attachedPosition}
+                  onRemove={() => removeAttachments([{ type: "position" }])}
+                />
+              ) : null}
               {selectableNodes.map((node) => (
                 <NodeAttachment
                   key={node.id}
                   node={node}
                   isAttached={false}
                   onRemove={(nodeId) =>
-                    setAttachedNodes((prev) =>
-                      prev.filter((n) => n.id !== nodeId),
-                    )
+                    removeAttachments([{ type: "node", ids: [nodeId] }])
                   }
                   onAttach={(selectedNode) =>
-                    setAttachedNodes((prev) => [selectedNode, ...prev])
+                    addAttachments({ nodes: [selectedNode] })
                   }
                 />
               ))}
@@ -296,12 +310,10 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
                   node={node}
                   isAttached={true}
                   onRemove={(nodeId) =>
-                    setAttachedNodes((prev) =>
-                      prev.filter((n) => n.id !== nodeId),
-                    )
+                    removeAttachments([{ type: "node", ids: [nodeId] }])
                   }
                   onAttach={(selectedNode) =>
-                    setAttachedNodes((prev) => [selectedNode, ...prev])
+                    addAttachments({ nodes: [selectedNode] })
                   }
                 />
               ))}
@@ -383,6 +395,31 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function PositionAttachment({
+  position,
+  onRemove,
+}: {
+  position: { x: number; y: number };
+  onRemove: () => void;
+}) {
+  return (
+    <div className="group relative flex items-center gap-1 rounded-sm border border-slate-300 bg-white px-2 py-1 text-sm text-slate-700 max-w-55">
+      <LuMousePointerClick size={12} className="min-w-3" />
+      <span className="truncate">
+        Position ({Math.round(position.x)}, {Math.round(position.y)})
+      </span>
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label="Retirer la position jointe"
+        className="absolute top-1 right-1 hidden group-hover:block rounded-sm bg-slate-100 text-red-400"
+      >
+        <HiMiniXMark size={14} />
+      </button>
     </div>
   );
 }

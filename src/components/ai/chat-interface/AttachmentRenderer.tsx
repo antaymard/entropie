@@ -1,7 +1,7 @@
 import prebuiltNodesConfig from "@/components/nodes/prebuilt-nodes/prebuiltNodesConfig";
 import { useNoleStore } from "@/stores/noleStore";
 import { HiMiniXMark } from "react-icons/hi2";
-import { LuMousePointer } from "react-icons/lu";
+import { LuMousePointerClick } from "react-icons/lu";
 
 export function AttachmentRenderer() {
   const attachedNodes = useNoleStore((state) => state.attachedNodes);
@@ -38,12 +38,12 @@ export function AttachmentCard({
     label = data?.data?.name || data.type;
   }
   if (type === "position") {
-    Icon = LuMousePointer;
+    Icon = LuMousePointerClick;
     label = `Position (${data.x.toFixed(0)}, ${data.y.toFixed(0)})`;
   }
 
   return (
-    <div className="group relative flex items-center gap-1 border border-white/20 bg-white/10 rounded-sm text-sm text-white max-w-[200px] truncate p-1">
+    <div className="group relative flex items-center gap-1 border border-white/20 bg-white/10 rounded-sm text-sm text-white max-w-50 truncate p-1">
       {Icon && <Icon size={12} className="min-w-3" />}
       {label}
       <button

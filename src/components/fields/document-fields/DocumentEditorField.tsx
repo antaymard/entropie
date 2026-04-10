@@ -14,6 +14,7 @@ import type { BaseFieldProps } from "@/types/ui";
 import { useCanvasStore } from "@/stores/canvasStore";
 import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/shadcn/spinner";
+import { useTranslation } from "react-i18next";
 
 export interface DocumentEditorFieldHandle {
   save: () => void;
@@ -41,6 +42,7 @@ const DocumentEditorField = forwardRef<
   },
   ref,
 ) {
+  const { t } = useTranslation();
   const initialValue: Value = value?.doc as Value;
   const setFocus = useCanvasStore((s) => s.setFocus);
   const skipNextChangeRef = useRef(false);
@@ -136,7 +138,7 @@ const DocumentEditorField = forwardRef<
           <Editor
             disableDefaultStyles={true}
             variant="none"
-            placeholder="Start writing..."
+            placeholder={t("editor.startWriting")}
             className="px-5 py-3"
             readOnly={isLocked}
           />

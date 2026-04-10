@@ -2,6 +2,7 @@
 
 import * as React from "react";
 
+import { useTranslation } from "react-i18next";
 import {
   AIChatPlugin,
   AIPlugin,
@@ -64,6 +65,7 @@ import { AIChatEditor } from "./ai-chat-editor";
 
 export function AIMenu() {
   const { api, editor } = useEditorPlugin(AIChatPlugin);
+  const { t } = useTranslation();
   const mode = usePluginOption(AIChatPlugin, "mode");
   const toolName = usePluginOption(AIChatPlugin, "toolName");
 
@@ -226,7 +228,7 @@ export function AIMenu() {
                 }
               }}
               onValueChange={setInput}
-              placeholder="Ask AI anything..."
+              placeholder={t("editor.askAi")}
               data-plate-focus
               autoFocus
             />

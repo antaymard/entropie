@@ -6,8 +6,10 @@ import { memo } from "react";
 import { useCanvasStore } from "@/stores/canvasStore";
 import { useConvexAuth } from "convex/react";
 import SharingModal from "./SharingModal";
+import { useTranslation } from "react-i18next";
 
 function TopRightToolbar() {
+  const { t } = useTranslation();
   const { isAuthenticated } = useConvexAuth();
   if (!isAuthenticated) return null;
 
@@ -21,7 +23,7 @@ function TopRightToolbar() {
         <Link
           to="/settings"
           className="hover:bg-accent flex items-center rounded-md"
-          title="Settings"
+          title={t("settings.settings")}
         >
           <HiOutlineCog size={18} />
         </Link>
@@ -31,6 +33,7 @@ function TopRightToolbar() {
 }
 
 function CanvasStatus() {
+  const { t } = useTranslation();
   const status = useCanvasStore((state) => state.status);
   const size = 16;
 
@@ -38,7 +41,7 @@ function CanvasStatus() {
     case "idle":
     case "saved":
       return (
-        <span className="text-green-500" title="Synced">
+        <span className="text-green-500" title={t("canvas.synced")}>
           <TbCloudCheck size={size} />
         </span>
       );
@@ -51,7 +54,7 @@ function CanvasStatus() {
       );
     case "error":
       return (
-        <span className="text-red-500" title="Sync error">
+        <span className="text-red-500" title={t("canvas.syncError")}>
           <TbCloudX size={size} />
         </span>
       );

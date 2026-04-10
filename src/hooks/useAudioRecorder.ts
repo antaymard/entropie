@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export type RecordingStatus = "idle" | "recording" | "stopped";
 
@@ -18,6 +19,7 @@ export interface AudioRecorderResult {
 }
 
 export function useAudioRecorder(): AudioRecorderResult {
+  const { t } = useTranslation();
   const [status, setStatus] = useState<RecordingStatus>("idle");
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +62,7 @@ export function useAudioRecorder(): AudioRecorderResult {
       setStatus("recording");
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Failed to access microphone";
+        err instanceof Error ? err.message : t("errors.failedMicrophone");
       setError(message);
       setStatus("idle");
     }

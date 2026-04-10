@@ -12,11 +12,13 @@ import { useWindowsStore } from "@/stores/windowsStore";
 import { useNoWheelUnlessZoom } from "@/hooks/useNoWheelUnlessZoom";
 import { TablePreview } from "@/components/table";
 import type { TableData } from "@/components/table";
+import { useTranslation } from "react-i18next";
 
 function TableNode(xyNode: Node) {
+  const { t } = useTranslation();
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
   const values = useNodeDataValues(nodeDataId);
-  const tableTitle = useNodeDataTitle(nodeDataId) ?? "Table";
+  const tableTitle = useNodeDataTitle(nodeDataId) ?? t("nodes.table");
   const openWindow = useWindowsStore((s) => s.openWindow);
 
   const handleOpenWindow = useCallback(() => {

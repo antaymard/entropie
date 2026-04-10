@@ -1,6 +1,7 @@
 import type { ToolCardProps } from "@/types/message.types";
 import { TbPointer } from "react-icons/tb";
 import ToolCardFrame from "./ToolCardFrame";
+import { useTranslation } from "react-i18next";
 
 interface OpenWebpageInput {
   urls: string[];
@@ -24,10 +25,11 @@ export default function OpenWebpageToolCard({
   input,
   output,
 }: OpenWebpageToolCardProps) {
+  const { t } = useTranslation();
   return (
     <ToolCardFrame
       icon={TbPointer}
-      name="Web page navigation"
+      name={t("toolCards.webPageNavigation")}
       state={state}
       canBeExpanded={true}
     >

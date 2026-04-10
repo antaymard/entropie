@@ -20,6 +20,7 @@ import { Plus, Presentation } from "lucide-react";
 import { useMemo, useState } from "react";
 import { TbPlayerPlay } from "react-icons/tb";
 import LaunchSlideshowButton from "./LaunchSlideshowButton";
+import { useTranslation } from "react-i18next";
 
 export default function SlideshowList({
   canvasId,
@@ -28,6 +29,7 @@ export default function SlideshowList({
   canvasId: Id<"canvases">;
   setLayout: (layout: string) => void;
 }) {
+  const { t } = useTranslation();
   const canvas = useCanvasStore((state) => state.canvas);
   const createSlideshowMutation = useMutation(api.slideshows.create);
 
@@ -85,7 +87,7 @@ export default function SlideshowList({
                 <Label htmlFor="slideshow-title">Title</Label>
                 <Input
                   id="slideshow-title"
-                  placeholder="Q2 Product Narrative"
+                  placeholder={t("slideshow.defaultName")}
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
                   onKeyDown={(event) => {
@@ -106,14 +108,14 @@ export default function SlideshowList({
                     setIsCreateModalOpen(false);
                   }}
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </Button>
                 <Button
                   type="button"
                   onClick={() => void createSlideshow()}
                   disabled={!canCreate}
                 >
-                  {isCreating ? "Creating..." : "Create"}
+                  {isCreating ? t("slideshow.creating") : t("common.create")}
                 </Button>
               </DialogFooter>
             </DialogContent>

@@ -16,6 +16,7 @@ import { useNodeDataValues } from "@/hooks/useNodeData";
 import { useNodeDataTitle } from "@/hooks/useNodeTitle";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { useWindowsStore } from "@/stores/windowsStore";
+import { useTranslation } from "react-i18next";
 
 type EmbedType =
   | "youtube"
@@ -103,11 +104,12 @@ function parseEmbedInput(input: string): { embedUrl: string; type: EmbedType } {
 }
 
 function EmbedNode(xyNode: Node) {
+  const { t } = useTranslation();
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
   const values = useNodeDataValues(nodeDataId);
   const { updateNodeDataValues } = useUpdateNodeDataValues();
   const openWindow = useWindowsStore((s) => s.openWindow);
-  const embedTitle = useNodeDataTitle(nodeDataId) ?? "Embed";
+  const embedTitle = useNodeDataTitle(nodeDataId) ?? t("nodes.embed");
 
   const [inputUrl, setInputUrl] = useState("");
   const [inputTitle, setInputTitle] = useState("");
@@ -173,7 +175,7 @@ function EmbedNode(xyNode: Node) {
                 <Input
                   onDoubleClick={(e) => e.stopPropagation()}
                   type="text"
-                  placeholder="URL or <iframe> embed code..."
+                  placeholder={t("fields.urlOrEmbedPlaceholder")}
                   value={inputUrl}
                   onChange={(e) => setInputUrl(e.target.value)}
                   onKeyDown={(e) => {
@@ -183,7 +185,7 @@ function EmbedNode(xyNode: Node) {
                 <Input
                   onDoubleClick={(e) => e.stopPropagation()}
                   type="text"
-                  placeholder="Title (optional)"
+                  placeholder={t("nodes.titleOptional")}
                   value={inputTitle}
                   onChange={(e) => setInputTitle(e.target.value)}
                 />
@@ -192,7 +194,7 @@ function EmbedNode(xyNode: Node) {
                   size="sm"
                   disabled={!inputUrl.trim()}
                 >
-                  Save
+                  {t("common.save")}
                 </Button>
               </div>
             </PopoverContent>
@@ -210,7 +212,7 @@ function EmbedNode(xyNode: Node) {
         ) : embedValue?.embedUrl ? (
           <iframe
             src={embedValue.embedUrl}
-            title={embedValue.title ?? "Embedded content"}
+            title={embedValue.title ?? t("nodes.embeddedContent")}
             className="w-full h-full border-0 rounded"
             allow="autoplay; fullscreen; clipboard-read; clipboard-write"
             allowFullScreen

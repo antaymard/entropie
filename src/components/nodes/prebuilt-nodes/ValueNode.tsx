@@ -16,6 +16,7 @@ import { TbTag, TbCheck, TbX, TbPencil } from "react-icons/tb";
 import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
 import { useNodeDataValues } from "@/hooks/useNodeData";
 import type { Id } from "@/../convex/_generated/dataModel";
+import { useTranslation } from "react-i18next";
 
 export type ValueDataType = "text" | "number" | "boolean";
 
@@ -34,6 +35,7 @@ const defaultValue: ValueType = {
 };
 
 function ValueNode(xyNode: Node) {
+  const { t } = useTranslation();
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
   const values = useNodeDataValues(nodeDataId);
   const { updateNodeDataValues } = useUpdateNodeDataValues();
@@ -131,7 +133,7 @@ function ValueNode(xyNode: Node) {
       <CanvasNodeToolbar xyNode={xyNode}>
         <Popover open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="icon" title="Edit value">
+            <Button variant="outline" size="icon" title={t("nodes.editValue")}>
               <TbPencil />
             </Button>
           </PopoverTrigger>
@@ -148,10 +150,10 @@ function ValueNode(xyNode: Node) {
                   className="w-full"
                 >
                   <ToggleGroupItem value="text" className="flex-1">
-                    Text
+                    {t("values.text")}
                   </ToggleGroupItem>
                   <ToggleGroupItem value="number" className="flex-1">
-                    Number
+                    {t("values.number")}
                   </ToggleGroupItem>
                   <ToggleGroupItem value="boolean" className="flex-1">
                     Yes/No
@@ -168,14 +170,14 @@ function ValueNode(xyNode: Node) {
                       onCheckedChange={setInputBoolean}
                     />
                     <span className="text-sm">
-                      {inputBoolean ? "Yes" : "No"}
+                      {inputBoolean ? t("common.yes") : t("common.no")}
                     </span>
                   </div>
                 ) : (
                   <Input
                     onDoubleClick={(e) => e.stopPropagation()}
                     type={inputType === "number" ? "number" : "text"}
-                    placeholder={inputType === "number" ? "Number" : "Text"}
+                    placeholder={inputType === "number" ? t("values.number") : t("values.text")}
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                   />
@@ -186,7 +188,7 @@ function ValueNode(xyNode: Node) {
                 <Input
                   onDoubleClick={(e) => e.stopPropagation()}
                   type="text"
-                  placeholder="Unit (kg, $, %...)"
+                  placeholder={t("values.unitPlaceholder")}
                   value={inputUnit}
                   onChange={(e) => setInputUnit(e.target.value)}
                 />
@@ -195,13 +197,13 @@ function ValueNode(xyNode: Node) {
               <Input
                 onDoubleClick={(e) => e.stopPropagation()}
                 type="text"
-                placeholder="Label"
+                placeholder={t("values.label")}
                 value={inputLabel}
                 onChange={(e) => setInputLabel(e.target.value)}
               />
 
               <Button onClick={handleSave} size="sm">
-                Save
+                {t("common.save")}
               </Button>
             </div>
           </PopoverContent>

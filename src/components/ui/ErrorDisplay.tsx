@@ -9,6 +9,7 @@ import {
 import { ConvexError } from "convex/values";
 
 import { TbError404 } from "react-icons/tb";
+import { useTranslation } from "react-i18next";
 
 export default function ErrorDisplay({
   title,
@@ -23,14 +24,15 @@ export default function ErrorDisplay({
   message?: string;
   error?: Error | null;
 }) {
+  const { t } = useTranslation();
   // Extract message from error if provided
   const displayMessage =
     message ||
     (error instanceof ConvexError
       ? (error.data as string)
-      : error?.message || "An error occurred");
+      : error?.message || t("common.error"));
 
-  const displayTitle = title || "Error";
+  const displayTitle = title || t("common.error");
 
   return (
     <div className="h-full w-full flex items-center">

@@ -19,6 +19,7 @@ import { Dialog, DialogTrigger } from "@/components/shadcn/dialog";
 import CanvasCreationModal from "../CanvasCreationModal";
 import { memo } from "react";
 import { useShallow } from "zustand/shallow";
+import { useTranslation } from "react-i18next";
 
 function TopLeftToolbar({
   undo,
@@ -27,6 +28,7 @@ function TopLeftToolbar({
   undo: () => void;
   redo: () => void;
 }) {
+  const { t } = useTranslation();
   const canvas = useCanvasStore(useShallow((state) => state.canvas));
   const updateCanvasDetails = useMutation(api.canvases.updateCanvasDetails);
   const deleteCanvas = useMutation(api.canvases.deleteCanvas);
@@ -91,11 +93,11 @@ function TopLeftToolbar({
         </DropdownMenu>
         <InlineEditableText
           disabled={!isAuthenticated}
-          value={canvas?.name || "Untitled"}
+          value={canvas?.name || t("common.untitled")}
           onSave={handleUpdateCanvasDetails}
           as="h1"
           className="font-semibold hover:bg-accent p-1 px-2 rounded-sm"
-          placeholder="Untitled"
+          placeholder={t("common.untitled")}
         />
       </div>
 

@@ -10,6 +10,7 @@ import {
 } from "@/components/utils/nodeDataDisplayUtils";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface RichTextAreaProps {
   value: string;
@@ -24,6 +25,7 @@ export default function RichTextArea({
   onSubmit,
   maxHeightPx,
 }: RichTextAreaProps) {
+  const { t } = useTranslation();
   const nodeDatas = useNodeDataStore((state) => state.nodeDatas);
   const canvasNodes = useNodes();
 
@@ -108,7 +110,7 @@ export default function RichTextArea({
           highlighter: { outline: "none" },
         }}
         value={value}
-        placeholder="Type your question, mention nodes using '@'"
+        placeholder={t("chat.typePlaceholder")}
         onKeyDown={(e: React.KeyboardEvent) => {
           if (e.key === "Enter") {
             if (e.shiftKey || e.ctrlKey || e.metaKey) {

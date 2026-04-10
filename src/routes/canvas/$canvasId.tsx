@@ -48,6 +48,7 @@ import { useConvexAuth } from "convex/react";
 import OnboardingModal from "@/components/ui/OnboardingModal";
 import { generateLlmId } from "@/../convex/lib/llmId";
 import SearchModale from "@/components/canvas/search-modale/SearchModale";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -84,6 +85,7 @@ function CanvasContent({
   canvasId: Id<"canvases">;
   isAuthenticated: boolean;
 }) {
+  const { t } = useTranslation();
   const setNodeDatas = useNodeDataStore((state) => state.setNodeDatas);
   const clearNodeDatas = useNodeDataStore((state) => state.clear);
   const setCanvas = useCanvasStore((state) => state.setCanvas);
@@ -227,11 +229,11 @@ function CanvasContent({
     if (!isAuthenticated) {
       return (
         <ErrorDisplay
-          title="This canvas is private or unavailable"
-          message="Sign in to check whether you have access, or ask the owner to share it with you."
+          title={t("canvas.privateOrUnavailable")}
+          message={t("canvas.signInToAccess")}
           cta={
             <Button asChild>
-              <Link to="/signin">Sign in / Create account</Link>
+              <Link to="/signin">{t("auth.signInCreateAccount")}</Link>
             </Button>
           }
         />

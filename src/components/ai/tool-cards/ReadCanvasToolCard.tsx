@@ -1,6 +1,7 @@
 import type { ToolCardProps } from "@/types/message.types";
 import { TbBrowser } from "react-icons/tb";
 import ToolCardFrame from "./ToolCardFrame";
+import { useTranslation } from "react-i18next";
 
 interface ReadCanvasInput {
   canvasId: string;
@@ -14,7 +15,8 @@ export default function OpenWebpageToolCard({
   input,
   output,
 }: ReadCanvasToolCardProps) {
+  const { t } = useTranslation();
   return (
-    <ToolCardFrame icon={TbBrowser} name="Reading canvas" state={state} />
+    <ToolCardFrame icon={TbBrowser} name={t("toolCards.readingCanvas")} state={state} />
   );
 }

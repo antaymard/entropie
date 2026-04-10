@@ -30,6 +30,7 @@ import {
   TooltipTrigger,
 } from "@/components/shadcn/tooltip";
 import { automationMapping } from "./automationTypesToLabelsMapping";
+import { useTranslation } from "react-i18next";
 
 const sectionClassName = "flex flex-col gap-2";
 const tooltipDelayDuration = 500;
@@ -41,6 +42,7 @@ export default function AutomationSettingsButton({
   xyNode: Node;
   automationStepAlwaysVisible?: boolean;
 }) {
+  const { t } = useTranslation();
   const updateAutomationSettings = useMutation(
     api.nodeDatas.updateAutomationSettings,
   );
@@ -65,7 +67,7 @@ export default function AutomationSettingsButton({
       dataProcessing: nodeData?.dataProcessing || [],
     } as Pick<NodeData, "automationMode" | "agent" | "dataProcessing">,
     onSubmit: async ({ value }) => {
-      if (!nodeDataId) return toast.error("nodeDataId is missing.");
+      if (!nodeDataId) return toast.error(t("errors.nodeDataIdMissing"));
       await updateAutomationSettings({
         _id: nodeDataId,
         ...value,
@@ -79,7 +81,7 @@ export default function AutomationSettingsButton({
   const automationStatus = nodeData?.status;
 
   const handleTriggerAutomation = async () => {
-    if (!nodeDataId) return toast.error("nodeDataId is missing.");
+    if (!nodeDataId) return toast.error(t("errors.nodeDataIdMissing"));
     await triggerAutomation({ nodeDataId });
   };
 
@@ -136,15 +138,15 @@ export default function AutomationSettingsButton({
                 options={[
                   {
                     value: "off",
-                    label: "Off",
+                    label: t("nodes.off"),
                   },
                   {
                     value: "agent",
-                    label: "Agent",
+                    label: t("nodes.agent"),
                   },
                   {
                     value: "dataProcessing",
-                    label: "Data Processing",
+                    label: t("nodes.dataProcessing"),
                   },
                 ]}
               />

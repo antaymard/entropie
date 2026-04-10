@@ -5,9 +5,11 @@ import type { Id } from "@/../convex/_generated/dataModel";
 import { useWindowFrameContext } from "@/components/windows/WindowFrameContext";
 import InlineEditableText from "@/components/form-ui/InlineEditableText";
 import { Table } from "@/components/table";
+import { useTranslation } from "react-i18next";
 import type { TableData, TableColumn, TableRowData, CellValue, ColumnType } from "@/components/table";
 
 function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
+  const { t } = useTranslation();
   const { setDirty, setSaveHandler } = useWindowFrameContext();
   const nodeData = useNodeData(nodeDataId);
   const nodeDataValues = useNodeDataValues(nodeDataId);
@@ -200,7 +202,7 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
             setLocalTitle(val);
             markDirty();
           }}
-          placeholder="Sans titre"
+          placeholder={t("common.untitled")}
           className="font-semibold text-lg min-w-0 flex-1"
           disabled={isLocked}
         />

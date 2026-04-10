@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import CanvasCreationModal from "../components/canvas/CanvasCreationModal";
 import { Dialog } from "@/components/shadcn/dialog";
 import { useConvexAuth, useConvex } from "convex/react";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/")({
   component: RouteComponent,
@@ -16,6 +17,7 @@ function RouteComponent() {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const convex = useConvex();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Si pas authentifié, rediriger vers signin
@@ -43,7 +45,7 @@ function RouteComponent() {
   if (isLoading || !isAuthenticated || isGettingLastCanvas) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-gray-100">
-        <div>Loading...</div>
+        <div>{t("common.loading")}</div>
       </div>
     );
   }
@@ -52,7 +54,7 @@ function RouteComponent() {
     <div className="h-screen w-screen bg-gray-100">
       <div className="flex flex-col items-center justify-center h-full gap-5">
         <p className="text-gray-500">
-          No workspace found. Create a new one!
+          {t("workspace.noWorkspace")}
         </p>
         <button
           type="button"
@@ -62,7 +64,7 @@ function RouteComponent() {
           }}
         >
           <VscGithubProject />
-          Create a workspace
+          {t("workspace.create")}
         </button>
       </div>
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>

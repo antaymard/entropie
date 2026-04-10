@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import type { PlateEditor, PlateElementProps } from "platejs/react";
+import { useTranslation } from "react-i18next";
 
 import {
   CalendarIcon,
@@ -54,151 +55,152 @@ type Group = {
   }[];
 };
 
-const groups: Group[] = [
-  {
-    group: "Basic blocks",
-    items: [
-      {
-        icon: <PilcrowIcon />,
-        keywords: ["paragraph"],
-        label: "Text",
-        value: KEYS.p,
-      },
-      {
-        icon: <Heading1Icon />,
-        keywords: ["title", "h1"],
-        label: "Heading 1",
-        value: KEYS.h1,
-      },
-      {
-        icon: <Heading2Icon />,
-        keywords: ["subtitle", "h2"],
-        label: "Heading 2",
-        value: KEYS.h2,
-      },
-      {
-        icon: <Heading3Icon />,
-        keywords: ["subtitle", "h3"],
-        label: "Heading 3",
-        value: KEYS.h3,
-      },
-      {
-        icon: <ListIcon />,
-        keywords: ["unordered", "ul", "-"],
-        label: "Bulleted list",
-        value: KEYS.ul,
-      },
-      {
-        icon: <ListOrdered />,
-        keywords: ["ordered", "ol", "1"],
-        label: "Numbered list",
-        value: KEYS.ol,
-      },
-      {
-        icon: <Square />,
-        keywords: ["checklist", "task", "checkbox", "[]"],
-        label: "To-do list",
-        value: KEYS.listTodo,
-      },
-      {
-        icon: <ChevronRightIcon />,
-        keywords: ["collapsible", "expandable"],
-        label: "Toggle",
-        value: KEYS.toggle,
-      },
-      {
-        icon: <Code2 />,
-        keywords: ["```"],
-        label: "Code Block",
-        value: KEYS.codeBlock,
-      },
-      {
-        icon: <Table />,
-        label: "Table",
-        value: KEYS.table,
-      },
-      {
-        icon: <Quote />,
-        keywords: ["citation", "blockquote", "quote", ">"],
-        label: "Blockquote",
-        value: KEYS.blockquote,
-      },
-      {
-        description: "Insert a highlighted block.",
-        icon: <LightbulbIcon />,
-        keywords: ["note"],
-        label: "Callout",
-        value: KEYS.callout,
-      },
-    ].map((item) => ({
-      ...item,
-      onSelect: (editor, value) => {
-        insertBlock(editor, value, { upsert: true });
-      },
-    })),
-  },
-  {
-    group: "Advanced blocks",
-    items: [
-      {
-        icon: <TableOfContentsIcon />,
-        keywords: ["toc"],
-        label: "Table of contents",
-        value: KEYS.toc,
-      },
-      {
-        icon: <Columns3Icon />,
-        label: "3 columns",
-        value: "action_three_columns",
-      },
-      {
-        focusEditor: false,
-        icon: <RadicalIcon />,
-        label: "Equation",
-        value: KEYS.equation,
-      },
-      // {
-      //   icon: <PenToolIcon />,
-      //   keywords: ['excalidraw'],
-      //   label: 'Excalidraw',
-      //   value: KEYS.excalidraw,
-      // },
-    ].map((item) => ({
-      ...item,
-      onSelect: (editor, value) => {
-        insertBlock(editor, value, { upsert: true });
-      },
-    })),
-  },
-  {
-    group: "Inline",
-    items: [
-      {
-        focusEditor: true,
-        icon: <CalendarIcon />,
-        keywords: ["time"],
-        label: "Date",
-        value: KEYS.date,
-      },
-      {
-        focusEditor: false,
-        icon: <RadicalIcon />,
-        label: "Inline Equation",
-        value: KEYS.inlineEquation,
-      },
-    ].map((item) => ({
-      ...item,
-      onSelect: (editor, value) => {
-        insertInlineElement(editor, value);
-      },
-    })),
-  },
-];
-
 export function SlashInputElement(
   props: PlateElementProps<TComboboxInputElement>
 ) {
   const { editor, element } = props;
+  const { t } = useTranslation();
+
+  const groups: Group[] = React.useMemo(() => [
+    {
+      group: t("editor.basicBlocks"),
+      items: [
+        {
+          icon: <PilcrowIcon />,
+          keywords: ["paragraph"],
+          label: t("editor.text"),
+          value: KEYS.p,
+        },
+        {
+          icon: <Heading1Icon />,
+          keywords: ["title", "h1"],
+          label: "Heading 1",
+          value: KEYS.h1,
+        },
+        {
+          icon: <Heading2Icon />,
+          keywords: ["subtitle", "h2"],
+          label: "Heading 2",
+          value: KEYS.h2,
+        },
+        {
+          icon: <Heading3Icon />,
+          keywords: ["subtitle", "h3"],
+          label: "Heading 3",
+          value: KEYS.h3,
+        },
+        {
+          icon: <ListIcon />,
+          keywords: ["unordered", "ul", "-"],
+          label: t("editor.bulletedList"),
+          value: KEYS.ul,
+        },
+        {
+          icon: <ListOrdered />,
+          keywords: ["ordered", "ol", "1"],
+          label: t("editor.numberedList"),
+          value: KEYS.ol,
+        },
+        {
+          icon: <Square />,
+          keywords: ["checklist", "task", "checkbox", "[]"],
+          label: "To-do list",
+          value: KEYS.listTodo,
+        },
+        {
+          icon: <ChevronRightIcon />,
+          keywords: ["collapsible", "expandable"],
+          label: t("editor.toggle"),
+          value: KEYS.toggle,
+        },
+        {
+          icon: <Code2 />,
+          keywords: ["```"],
+          label: t("editor.codeBlock"),
+          value: KEYS.codeBlock,
+        },
+        {
+          icon: <Table />,
+          label: t("editor.table"),
+          value: KEYS.table,
+        },
+        {
+          icon: <Quote />,
+          keywords: ["citation", "blockquote", "quote", ">"],
+          label: "Blockquote",
+          value: KEYS.blockquote,
+        },
+        {
+          description: "Insert a highlighted block.",
+          icon: <LightbulbIcon />,
+          keywords: ["note"],
+          label: "Callout",
+          value: KEYS.callout,
+        },
+      ].map((item) => ({
+        ...item,
+        onSelect: (editor, value) => {
+          insertBlock(editor, value, { upsert: true });
+        },
+      })),
+    },
+    {
+      group: t("editor.advancedBlocks"),
+      items: [
+        {
+          icon: <TableOfContentsIcon />,
+          keywords: ["toc"],
+          label: t("editor.tableOfContents"),
+          value: KEYS.toc,
+        },
+        {
+          icon: <Columns3Icon />,
+          label: "3 columns",
+          value: "action_three_columns",
+        },
+        {
+          focusEditor: false,
+          icon: <RadicalIcon />,
+          label: t("editor.equation"),
+          value: KEYS.equation,
+        },
+        // {
+        //   icon: <PenToolIcon />,
+        //   keywords: ['excalidraw'],
+        //   label: 'Excalidraw',
+        //   value: KEYS.excalidraw,
+        // },
+      ].map((item) => ({
+        ...item,
+        onSelect: (editor, value) => {
+          insertBlock(editor, value, { upsert: true });
+        },
+      })),
+    },
+    {
+      group: t("editor.inline"),
+      items: [
+        {
+          focusEditor: true,
+          icon: <CalendarIcon />,
+          keywords: ["time"],
+          label: t("editor.date"),
+          value: KEYS.date,
+        },
+        {
+          focusEditor: false,
+          icon: <RadicalIcon />,
+          label: t("editor.inlineEquation"),
+          value: KEYS.inlineEquation,
+        },
+      ].map((item) => ({
+        ...item,
+        onSelect: (editor, value) => {
+          insertInlineElement(editor, value);
+        },
+      })),
+    },
+  ], [t]);
 
   return (
     <PlateElement {...props} as="span">

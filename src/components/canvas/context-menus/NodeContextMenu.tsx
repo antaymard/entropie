@@ -18,6 +18,7 @@ import { useNodeDataStore } from "@/stores/nodeDataStore";
 import { colors } from "@/components/ui/styles";
 import type { colorsEnum } from "@/types/domain";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 // Icons
 import { HiOutlineTrash } from "react-icons/hi";
@@ -58,6 +59,7 @@ export default function NodeContextMenu({
   position: { x: number; y: number };
   xyNode: Node;
 }) {
+  const { t } = useTranslation();
   const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
   const { deleteElements, updateNode } = useReactFlow();
   const { createNode } = useCreateNode();
@@ -80,7 +82,7 @@ export default function NodeContextMenu({
   const nodeOptions: NodeOption[] = [
     {
       hidden: !variants || Object.keys(variants).length === 0,
-      label: "Appearance",
+      label: t("nodes.appearance"),
       icon: TbSpaces,
       subMenu: Object.entries(variants || {}).map(
         ([variantKey, variantConfig]) => ({
@@ -115,7 +117,7 @@ export default function NodeContextMenu({
       ),
     },
     {
-      label: "Color",
+      label: t("nodes.color"),
       icon: TbPalette,
       preventAutoClose: true,
       customSubContent: (
@@ -154,7 +156,7 @@ export default function NodeContextMenu({
       ),
     },
     {
-      label: "Duplicate",
+      label: t("nodes.duplicate"),
       icon: TbCopyPlus,
       onClick: () => {
         const nodeToDuplicate = xyNode;
@@ -183,7 +185,7 @@ export default function NodeContextMenu({
       },
     },
     {
-      label: "Move to another canvas",
+      label: t("nodes.moveToCanvas"),
       icon: TbArrowLeftFromArc,
       preventAutoClose: true,
       onClick: () => {
@@ -191,7 +193,7 @@ export default function NodeContextMenu({
       },
     },
     {
-      label: "Delete",
+      label: t("common.delete"),
       icon: HiOutlineTrash,
       onClick: () => {
         deleteElements({ nodes: [xyNode] });

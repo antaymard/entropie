@@ -15,6 +15,7 @@ import {
   Navigation2,
 } from "lucide-react";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function SlideshowEditor({
   canvasId,
@@ -25,6 +26,7 @@ export default function SlideshowEditor({
   slideshowId: string;
   setLayout: (layout: string) => void;
 }) {
+  const { t } = useTranslation();
   const canvas = useCanvasStore((state) => state.canvas);
   const updateSlideshowMutation = useMutation(api.slideshows.update);
   const viewport = useViewport();
@@ -107,7 +109,7 @@ export default function SlideshowEditor({
           as="h3"
           className="max-w-40 truncate text-sm font-semibold"
           inputClassName="text-sm font-semibold"
-          placeholder="Untitled slideshow"
+          placeholder={t("slideshow.untitledSlideshow")}
         />
         <button
           type="button"
@@ -136,14 +138,14 @@ export default function SlideshowEditor({
                   as="span"
                   className="max-w-40 truncate text-xs font-medium text-slate-900"
                   inputClassName="text-xs font-medium text-slate-900"
-                  placeholder="Untitled slide"
+                  placeholder={t("slideshow.untitledSlide")}
                 />
                 <div className="mt-1 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
                   <Button
                     size="icon"
                     variant="ghost"
                     className="size-5"
-                    title="Go to slide"
+                    title={t("slideshow.goToSlide")}
                     onClick={() => {
                       const v = slide.viewport as {
                         x: number;
@@ -159,7 +161,7 @@ export default function SlideshowEditor({
                     size="icon"
                     variant="ghost"
                     className="size-5"
-                    title="Move up"
+                    title={t("slideshow.moveUp")}
                     disabled={index === 0}
                     onClick={() => moveSlide(index, "up")}
                   >
@@ -169,7 +171,7 @@ export default function SlideshowEditor({
                     size="icon"
                     variant="ghost"
                     className="size-5"
-                    title="Move down"
+                    title={t("slideshow.moveDown")}
                     disabled={index === slides.length - 1}
                     onClick={() => moveSlide(index, "down")}
                   >
@@ -179,7 +181,7 @@ export default function SlideshowEditor({
                     size="icon"
                     variant="ghost"
                     className="size-5"
-                    title="Recapture viewport"
+                    title={t("slideshow.recaptureViewport")}
                     onClick={() => recaptureSlide(index)}
                   >
                     <RefreshCw className="size-3" />
@@ -188,7 +190,7 @@ export default function SlideshowEditor({
                     size="icon"
                     variant="ghost"
                     className="size-5 text-destructive hover:text-destructive"
-                    title="Delete"
+                    title={t("common.delete")}
                     onClick={() => deleteSlide(index)}
                   >
                     <Trash2 className="size-3" />

@@ -7,6 +7,7 @@ import {
 import { HiMiniArrowSmallLeft } from "react-icons/hi2";
 import { useAuthActions } from "@convex-dev/auth/react";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/settings")({
   component: RouteComponent,
@@ -25,57 +26,58 @@ type SettingsSidebarSection = {
   buttons: SidebarButton[];
 };
 
-const settingsSidebarSections: SettingsSidebarSection[] = [
-  {
-    label: "Customization",
-    buttons: [
-      {
-        label: "Default nodes",
-        icon: "settings",
-        route: "/settings/",
-      },
-    ],
-  },
-  {
-    label: "Account",
-    buttons: [
-      {
-        label: "Account information",
-        icon: "settings",
-        route: "/settings/",
-      },
-      {
-        label: "Sign out",
-        icon: "logout",
-        action: "logout",
-        variant: "danger",
-      },
-    ],
-  },
-  {
-    label: "Billing",
-    buttons: [
-      {
-        label: "Billing",
-        icon: "billing",
-        route: "/settings/billing",
-      },
-    ],
-  },
-];
-
 function RouteComponent() {
   const { signOut } = useAuthActions();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const settingsSidebarSections: SettingsSidebarSection[] = [
+    {
+      label: t("settings.customization"),
+      buttons: [
+        {
+          label: t("settings.defaultNodes"),
+          icon: "settings",
+          route: "/settings/",
+        },
+      ],
+    },
+    {
+      label: t("settings.account"),
+      buttons: [
+        {
+          label: t("settings.accountInfo"),
+          icon: "settings",
+          route: "/settings/",
+        },
+        {
+          label: t("settings.signOut"),
+          icon: "logout",
+          action: "logout",
+          variant: "danger",
+        },
+      ],
+    },
+    {
+      label: t("settings.billing"),
+      buttons: [
+        {
+          label: t("settings.billing"),
+          icon: "billing",
+          route: "/settings/billing",
+        },
+      ],
+    },
+  ];
 
   const handleLogout = async () => {
     try {
       await signOut();
-      toast.success("You have been signed out");
+      toast.success(t("settings.signedOut"));
       navigate({ to: "/signin" });
     } catch (error) {
       console.error("Logout error:", error);
-      toast.error("Error signing out");
+      toast.error(t("settings.errorSigningOut"));
     }
   };
 
@@ -125,7 +127,7 @@ function RouteComponent() {
           <Link to="/" className="p-1 rounded-md bg-gray-100 hover:bg-gray-200">
             <HiMiniArrowSmallLeft size={24} />
           </Link>
-          <h1 className="text-lg font-bold">Settings</h1>
+          <h1 className="text-lg font-bold">{t("settings.settings")}</h1>
         </span>
         <div className="space-y-5">{renderSettingsSidebar()}</div>
       </div>

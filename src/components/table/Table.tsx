@@ -46,6 +46,7 @@ import { Button } from "@/components/shadcn/button";
 import { Input } from "@/components/shadcn/input";
 import { TbPlus, TbSearch, TbTrash } from "react-icons/tb";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 import { CellEditor } from "./CellEditor";
 import { ColHeader } from "./ColHeader";
 import type {
@@ -203,6 +204,7 @@ export function Table({
   onRowOrderChange,
   className,
 }: TableProps) {
+  const { t } = useTranslation();
   const tableRootRef = useRef<HTMLDivElement>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
@@ -407,7 +409,7 @@ export function Table({
             </Button>
             <Button size="sm" variant="outline" onClick={onAddRow}>
               <TbPlus size={14} className="mr-1" />
-              Add row
+              {t("table.addRow")}
             </Button>
           </div>
         )}
@@ -415,7 +417,7 @@ export function Table({
           <div className="flex items-center gap-2 px-2 py-1.5 border-b shrink-0">
             <TbSearch size={14} className="text-muted-foreground shrink-0" />
             <Input
-              placeholder="Search…"
+              placeholder={t("table.search")}
               value={globalFilter}
               onChange={(e) => setGlobalFilter(e.target.value)}
               className="h-7 text-sm"
@@ -467,8 +469,8 @@ export function Table({
                       className="text-center text-muted-foreground py-10"
                     >
                       {readOnly
-                        ? "No rows."
-                        : 'No rows yet. Click "Add row" to get started.'}
+                        ? t("table.noRows")
+                        : t("table.noRows")}
                     </TableCell>
                   </TableRow>
                 ) : (

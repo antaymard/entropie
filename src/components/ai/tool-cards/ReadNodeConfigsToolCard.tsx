@@ -1,19 +1,21 @@
 import ToolCardFrame from "./ToolCardFrame";
 import { TbClipboardSearch } from "react-icons/tb";
+import { useTranslation } from "react-i18next";
 
 export default function ReadNodeConfigsToolCard({ state, input, output }: any) {
+  const { t } = useTranslation();
   function renderTooName() {
     switch (input?.operation) {
       case "listAllNodeTypes":
-        return "Reading all node types";
+        return t("toolCards.readingAllNodeTypes");
       case "readOneNodeType":
         return `Reading a node type (${input.itemType})`;
       case "listAllNodeFields":
-        return "Reading all node fields";
+        return t("toolCards.readingAllNodeFields");
       case "readOneNodeField":
         return `Reading a node field (${input.itemType})`;
       default:
-        return "Reading node configurations";
+        return t("toolCards.readingNodeConfigs");
     }
   }
 

@@ -12,6 +12,7 @@ import {
 } from "@/components/shadcn/popover";
 import { cn } from "@/lib/utils";
 import type { CellValue, LinkCellValue } from "./types";
+import { useTranslation } from "react-i18next";
 
 export interface LinkCellEditorProps {
   value: LinkCellValue | null | undefined;
@@ -28,6 +29,7 @@ export function LinkCellEditor({
   onChange,
   onBlur,
 }: LinkCellEditorProps) {
+  const { t } = useTranslation();
   const [linkUrl, setLinkUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const fetchLinkMetadata = useAction(api.links.fetchLinkMetadata);
@@ -49,7 +51,7 @@ export function LinkCellEditor({
     try {
       new URL(url);
     } catch {
-      toast.error("URL invalide");
+      toast.error(t("table.invalidUrl"));
       return;
     }
     setIsLoading(true);
@@ -116,7 +118,7 @@ export function LinkCellEditor({
           <Input
             autoFocus
             type="url"
-            placeholder="https://..."
+            placeholder={t("fields.urlPlaceholder")}
             value={linkUrl}
             onChange={(e) => setLinkUrl(e.target.value)}
             onKeyDown={(e) => {
@@ -135,7 +137,7 @@ export function LinkCellEditor({
               disabled={isLoading}
               className="flex-1"
             >
-              {isLoading ? "Chargement…" : "Enregistrer"}
+              {isLoading ? t("common.loading") : t("common.save")}
             </Button>
             {value?.href && (
               <Button

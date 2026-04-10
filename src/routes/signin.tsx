@@ -5,6 +5,7 @@ import { Button } from "@/components/shadcn/button";
 import { Input } from "@/components/shadcn/input";
 import toast from "react-hot-toast";
 import { useConvexAuth } from "convex/react";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/signin")({
   component: RouteComponent,
@@ -16,6 +17,7 @@ function RouteComponent() {
   const [step, setStep] = useState<"signUp" | "signIn">("signIn");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
@@ -32,12 +34,12 @@ function RouteComponent() {
         {/* Header */}
         <div className="text-center flex flex-col gap-2">
           <h1 className="text-2xl font-bold text-gray-900">
-            {step === "signIn" ? "Welcome back" : "Create an account"}
+            {step === "signIn" ? t("auth.welcomeBack") : t("auth.createAccount")}
           </h1>
           <p className="text-sm text-gray-500">
             {step === "signIn"
-              ? "Sign in to your account to continue"
-              : "Sign up to get started for free"}
+              ? t("auth.signInToAccount")
+              : t("auth.signUpFree")}
           </p>
         </div>
 
@@ -52,29 +54,27 @@ function RouteComponent() {
               .then(() => {
                 toast.success(
                   step === "signIn"
-                    ? "Successfully signed in!"
-                    : "Account created successfully!",
+                    ? t("auth.signInSuccess")
+                    : t("auth.signUpSuccess"),
                 );
               })
               .catch((e) => {
                 console.error(e);
                 const errorMessage = e?.message || String(e);
                 if (errorMessage.includes("already exists")) {
-                  toast.error(
-                    "This account already exists. Sign in or use a different email.",
-                  );
+                  toast.error(t("auth.accountExists"));
                 } else if (
                   errorMessage.includes("Invalid password") ||
                   errorMessage.includes("invalid password") ||
                   errorMessage.includes("Invalid secret")
                 ) {
-                  toast.error("Incorrect password.");
+                  toast.error(t("auth.incorrectPassword"));
                 } else if (errorMessage.includes("InvalidAccountId")) {
-                  toast.error("No account found with this email.");
+                  toast.error(t("auth.noAccountFound"));
                 } else if (errorMessage.includes("Invalid email")) {
-                  toast.error("Invalid email.");
+                  toast.error(t("auth.invalidEmail"));
                 } else {
-                  toast.error("Unable to sign in. Please try again.");
+                  toast.error(t("auth.unableToSignIn"));
                 }
               })
               .finally(() => {
@@ -84,7 +84,7 @@ function RouteComponent() {
         >
           <Input
             name="email"
-            placeholder="name@example.com"
+            placeholder={t("auth.emailPlaceholder")}
             type="email"
             required
             disabled={isSubmitting}
@@ -92,7 +92,7 @@ function RouteComponent() {
           />
           <Input
             name="password"
-            placeholder="Password"
+            placeholder={t("auth.password")}
             type="password"
             required
             disabled={isSubmitting}
@@ -109,9 +109,9 @@ function RouteComponent() {
             {isSubmitting ? (
               <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : step === "signIn" ? (
-              "Sign In"
+              t("auth.signIn")
             ) : (
-              "Sign Up"
+              t("auth.signUp")
             )}
           </Button>
         </form>
@@ -120,26 +120,26 @@ function RouteComponent() {
         <p className="text-sm text-gray-400">
           {step === "signIn" ? (
             <>
-              Don&apos;t have an account?{" "}
+              {t("auth.noAccount")}{" "}
               <button
                 type="button"
                 className="text-gray-600 underline underline-offset-2 hover:text-gray-900 transition-colors"
                 onClick={() => setStep("signUp")}
                 disabled={isSubmitting}
               >
-                Sign Up
+                {t("auth.signUp")}
               </button>
             </>
           ) : (
             <>
-              Already have an account?{" "}
+              {t("auth.alreadyHaveAccount")}{" "}
               <button
                 type="button"
                 className="text-gray-600 underline underline-offset-2 hover:text-gray-900 transition-colors"
                 onClick={() => setStep("signIn")}
                 disabled={isSubmitting}
               >
-                Sign In
+                {t("auth.signIn")}
               </button>
             </>
           )}
@@ -150,19 +150,19 @@ function RouteComponent() {
       <footer className="absolute bottom-8 flex flex-col items-center gap-2">
         <div className="flex items-center gap-3 text-xs text-gray-400">
           <a href="#" className="hover:text-gray-500 transition-colors">
-            Terms
+            {t("auth.terms")}
           </a>
           <span>|</span>
           <a href="#" className="hover:text-gray-500 transition-colors">
-            Privacy
+            {t("auth.privacy")}
           </a>
           <span>|</span>
           <a href="#" className="hover:text-gray-500 transition-colors">
-            Feedback
+            {t("auth.feedback")}
           </a>
         </div>
         <p className="text-xs text-gray-400">
-          © 2026 Nolënor. All rights reserved.
+          {t("auth.copyright")}
         </p>
       </footer>
     </div>

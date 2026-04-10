@@ -17,6 +17,7 @@ import { Input } from "@/components/shadcn/input";
 import { UploadFile } from "@/components/fields/UploadFile";
 import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
 import { useWindowsStore } from "@/stores/windowsStore";
+import { useTranslation } from "react-i18next";
 
 type PdfValue = {
   url: string;
@@ -30,6 +31,7 @@ type PdfValue = {
 const defaultValue: PdfValue[] = [];
 
 function PdfNode(xyNode: Node) {
+  const { t } = useTranslation();
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
   const values = useNodeDataValues(nodeDataId);
   const { updateNodeDataValues } = useUpdateNodeDataValues();
@@ -123,7 +125,7 @@ function PdfNode(xyNode: Node) {
               <Input
                 onDoubleClick={(e) => e.stopPropagation()}
                 type="text"
-                placeholder="Title (optional)"
+                placeholder={t("nodes.titleOptional")}
                 value={titleDraft}
                 onChange={(e) => setTitleDraft(e.target.value)}
                 onKeyDown={(e) => {
@@ -131,7 +133,7 @@ function PdfNode(xyNode: Node) {
                 }}
               />
               <Button size="sm" onClick={handleSave}>
-                Save
+                {t("common.save")}
               </Button>
             </div>
           </PopoverContent>

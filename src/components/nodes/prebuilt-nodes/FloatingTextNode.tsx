@@ -13,8 +13,10 @@ import { cn } from "@/lib/utils";
 import { useNodeDataValues } from "@/hooks/useNodeData";
 import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
 import type { Id } from "@/../convex/_generated/dataModel";
+import { useTranslation } from "react-i18next";
 
 function FloatingTextNode(xyNode: Node) {
+  const { t } = useTranslation();
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
   const values = useNodeDataValues(nodeDataId);
   const { updateNodeDataValues } = useUpdateNodeDataValues();
@@ -75,7 +77,7 @@ function FloatingTextNode(xyNode: Node) {
                 });
               }
             }}
-            placeholder="Double-click to edit..."
+            placeholder={t("nodes.doubleClickToEdit")}
           />
         </div>
       </NodeFrame>

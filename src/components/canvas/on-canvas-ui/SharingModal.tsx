@@ -25,8 +25,10 @@ import { Switch } from "@/components/shadcn/switch";
 import { toastError } from "@/components/utils/errorUtils";
 import toast from "react-hot-toast";
 import { TbTrash } from "react-icons/tb";
+import { useTranslation } from "react-i18next";
 
 export default function SharingModal() {
+  const { t } = useTranslation();
   const canvas = useCanvasStore((state) => state.canvas);
   const [open, setOpen] = useState(false);
 
@@ -39,14 +41,14 @@ export default function SharingModal() {
           variant="ghost"
           size="sm"
           className="hover:bg-accent flex items-center rounded-md"
-          title="Share canvas"
+          title={t("sharing.shareCanvas")}
         >
-          Share
+          {t("common.share")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Share canvas</DialogTitle>
+          <DialogTitle>{t("sharing.shareCanvas")}</DialogTitle>
         </DialogHeader>
         <PublicLinkSection
           canvasId={canvas._id}
@@ -67,6 +69,7 @@ function PublicLinkSection({
   canvasId: Id<"canvases">;
   isPublic: boolean;
 }) {
+  const { t } = useTranslation();
   const [isUpdating, setIsUpdating] = useState(false);
   const togglePublic = useMutation(api.canvases.togglePublic);
 
@@ -78,10 +81,10 @@ function PublicLinkSection({
         isPublic: checked,
       });
       toast.success(
-        checked ? "Canvas is now public." : "Canvas is now private.",
+        checked ? t("sharing.canvasPublic") : t("sharing.canvasPrivate"),
       );
     } catch (err) {
-      toastError(err, "Failed to update canvas visibility");
+      toastError(err, t("sharing.failedUpdate"));
     } finally {
       setIsUpdating(false);
     }
@@ -90,9 +93,9 @@ function PublicLinkSection({
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
-      toast.success("Link copied to clipboard");
+      toast.success(t("sharing.linkCopied"));
     } catch (err) {
-      toastError(err, "Failed to copy link");
+      toastError(err, t("sharing.failedCopy"));
     }
   };
 
@@ -100,9 +103,9 @@ function PublicLinkSection({
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <Label htmlFor="public-canvas-switch">Public link</Label>
+          <Label htmlFor="public-canvas-switch">{t("sharing.publicLink")}</Label>
           <p className="text-xs text-muted-foreground">
-            Anyone with the link can view this canvas.
+            {t("sharing.anyoneCanView")}
           </p>
         </div>
         <Switch
@@ -120,7 +123,7 @@ function PublicLinkSection({
             size="sm"
             onClick={handleCopyLink}
           >
-            Copy link
+            {t("sharing.copyLink")}
           </Button>
         </div>
       )}
@@ -129,6 +132,7 @@ function PublicLinkSection({
 }
 
 function ShareForm({ canvasId }: { canvasId: Id<"canvases"> }) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [permission, setPermission] = useState<"viewer" | "editor">("viewer");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -148,7 +152,7 @@ function ShareForm({ canvasId }: { canvasId: Id<"canvases"> }) {
       });
       setEmail("");
     } catch (err) {
-      toastError(err, "Failed to share canvas");
+      toastError(err, t("sharing.failedShare"));
     } finally {
       setIsSubmitting(false);
     }
@@ -157,7 +161,7 @@ function ShareForm({ canvasId }: { canvasId: Id<"canvases"> }) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="share-email">Email</Label>
+        <Label htmlFor="share-email">{t("common.email")}</Label>
         <Input
           id="share-email"
           type="email"
@@ -169,7 +173,7 @@ function ShareForm({ canvasId }: { canvasId: Id<"canvases"> }) {
       </div>
       <div className="flex items-end gap-2">
         <div className="flex flex-col gap-1.5 flex-1">
-          <Label>Permission</Label>
+          <Label>{t("sharing.permission")}</Label>
           <Select
             value={permission}
             onValueChange={(v) => setPermission(v as "viewer" | "editor")}
@@ -178,13 +182,13 @@ function ShareForm({ canvasId }: { canvasId: Id<"canvases"> }) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="viewer">Viewer</SelectItem>
-              <SelectItem value="editor">Editor</SelectItem>
+              <SelectItem value="viewer">{t("sharing.viewer")}</SelectItem>
+              <SelectItem value="editor">{t("sharing.editor")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <Button type="submit" disabled={isSubmitting || !email.trim()}>
-          {isSubmitting ? "Sharing..." : "Share"}
+          {isSubmitting ? t("sharing.sharing") : t("common.share")}
         </Button>
       </div>
     </form>
@@ -192,6 +196,7 @@ function ShareForm({ canvasId }: { canvasId: Id<"canvases"> }) {
 }
 
 function ShareList({ canvasId }: { canvasId: Id<"canvases"> }) {
+  const { t } = useTranslation();
   const shares = useQuery(api.shares.listCanvasShares, {
     canvasId,
   });
@@ -203,13 +208,13 @@ function ShareList({ canvasId }: { canvasId: Id<"canvases"> }) {
     try {
       await unshareCanvas({ shareId });
     } catch (err) {
-      toastError(err, "Failed to remove share");
+      toastError(err, t("sharing.failedRemove"));
     }
   };
 
   return (
     <div className="flex flex-col gap-2 mt-2">
-      <Label className="text-muted-foreground text-xs">Shared with</Label>
+      <Label className="text-muted-foreground text-xs">{t("sharing.sharedWith")}</Label>
       <div className="flex flex-col divide-y">
         {shares.map((share) => (
           <div
@@ -232,7 +237,7 @@ function ShareList({ canvasId }: { canvasId: Id<"canvases"> }) {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleRemove(share._id)}
-                title="Remove access"
+                title={t("sharing.removeAccess")}
               >
                 <TbTrash size={14} />
               </Button>

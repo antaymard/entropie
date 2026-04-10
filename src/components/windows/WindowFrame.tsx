@@ -20,6 +20,7 @@ import PdfWindow from "./prebuilt/PdfWindow";
 import TableWindow from "./prebuilt/TableWindow";
 import { WindowFrameContext } from "./WindowFrameContext";
 import ConfirmableButton from "@/components/ui/ConfirmableButton";
+import { useTranslation } from "react-i18next";
 
 function WindowContent({ openedWindow }: { openedWindow: OpenedWindow }) {
   const { nodeType, xyNodeId, nodeDataId } = openedWindow;
@@ -66,6 +67,7 @@ export default function WindowFrame({
   openedWindow,
   onSnapPreviewChange,
 }: WindowFrameProps) {
+  const { t } = useTranslation();
   const { xyNodeId, nodeDataId } = openedWindow;
   const [isDirty, setDirty] = useState(false);
   const [saveHandler, setSaveHandler] = useState<(() => void) | null>(null);
@@ -343,7 +345,7 @@ export default function WindowFrame({
                 maxZoom: 1,
               })
             }
-            aria-label="Go to node"
+            aria-label={t("nodes.goToNode")}
           >
             <TbLocation size={13} />
           </button>
@@ -352,28 +354,28 @@ export default function WindowFrame({
             className="shrink-0 rounded p-0.5 opacity-50 hover:bg-black/10 hover:opacity-100 h-full aspect-square flex items-center justify-center"
             onMouseDown={(e) => e.stopPropagation()}
             onClick={() => toggleMinimizeWindow(xyNodeId)}
-            aria-label="Minimize"
+            aria-label={t("nodes.minimize")}
           >
             <Minus size={14} />
           </button>
           <ConfirmableButton
-            title="Fermer sans sauvegarder ?"
-            text="Vous avez des modifications non sauvegardees. Voulez-vous fermer cette fenetre ?"
+            title={t("windows.closeWithoutSaving")}
+            text={t("windows.unsavedChanges")}
             onCancel={() => closeWindow(xyNodeId)}
             onConfirm={() => {
               if (isDirty) saveHandler?.();
               closeWindow(xyNodeId);
             }}
             shouldConfirm={isDirty}
-            cancelLabel="Fermer sans sauvegarder"
-            confirmLabel="Sauvegarder et fermer"
+            cancelLabel={t("windows.closeWithoutSavingBtn")}
+            confirmLabel={t("windows.saveAndClose")}
             autoFocusConfirm
           >
             <button
               data-window-control="true"
               className="shrink-0 rounded p-0.5 opacity-50 hover:bg-red-500/15 hover:text-red-600 hover:opacity-100 h-full aspect-square flex items-center justify-center"
               onMouseDown={(e) => e.stopPropagation()}
-              aria-label="Close"
+              aria-label={t("common.close")}
             >
               <X size={14} />
             </button>

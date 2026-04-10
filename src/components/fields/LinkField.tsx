@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { useAction } from "convex/react";
 import { api } from "@/../convex/_generated/api";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 export type LinkValueType = {
   href: string;
@@ -24,6 +25,7 @@ export function LinkEditionPopover({
   initialValue: string;
   onSave: (value: LinkValueType) => void;
 }) {
+  const { t } = useTranslation();
   const [linkUrl, setLinkUrl] = useState(initialValue);
   const [isLoading, setIsLoading] = useState(false);
   const fetchLinkMetadata = useAction(api.links.fetchLinkMetadata);
@@ -40,7 +42,7 @@ export function LinkEditionPopover({
     try {
       new URL(url);
     } catch {
-      toast.error("Invalid URL");
+      toast.error(t("fields.invalidUrl"));
       return;
     }
 
@@ -57,7 +59,7 @@ export function LinkEditionPopover({
         siteName: "",
       });
     } catch {
-      toast.error("Unable to fetch page title");
+      toast.error(t("fields.unableToFetchTitle"));
       // Sauvegarder quand même avec l'URL comme titre
       onSave({ href: url, pageTitle: url });
     } finally {
@@ -70,12 +72,12 @@ export function LinkEditionPopover({
       <Input
         onDoubleClick={(e) => e.stopPropagation()}
         type="text"
-        placeholder="https://..."
+        placeholder={t("fields.urlPlaceholder")}
         value={linkUrl}
         onChange={(e) => setLinkUrl(e.target.value)}
       />
       <Button onClick={handleSave} disabled={isLoading} size="sm">
-        {isLoading ? "Loading..." : "Save"}
+        {isLoading ? t("common.loading") : t("common.save")}
       </Button>
     </div>
   );
@@ -86,6 +88,7 @@ interface LinkFieldProps extends BaseFieldProps<LinkValueType> {
 }
 
 function LinkField({ value, className = "", componentProps }: LinkFieldProps) {
+  const { t } = useTranslation();
   const { iconOnly } = componentProps || {};
 
   const linkValue: LinkValueType = (value as LinkValueType) || {
@@ -112,11 +115,11 @@ function LinkField({ value, className = "", componentProps }: LinkFieldProps) {
           <TbLink size={18} className="shrink-0" />
 
           <p className="truncate hover:underline flex-1 min-w-0">
-            {linkValue.pageTitle || <i>No title</i>}
+            {linkValue.pageTitle || <i>{t("common.noTitle")}</i>}
           </p>
         </a>
       ) : (
-        "No link"
+        t("fields.noLink")
       )}
     </div>
   );

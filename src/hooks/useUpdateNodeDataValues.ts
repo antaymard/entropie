@@ -1,5 +1,6 @@
 import { useCallback, useRef } from "react";
 import { useMutation } from "convex/react";
+import { useTranslation } from "react-i18next";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { toastError } from "@/components/utils/errorUtils";
@@ -18,6 +19,7 @@ interface UseUpdateNodeDataValuesReturn {
 }
 
 export function useUpdateNodeDataValues(): UseUpdateNodeDataValuesReturn {
+  const { t } = useTranslation();
   const updateValuesMutation = useMutation(api.nodeDatas.updateValues);
 
   const {
@@ -97,7 +99,7 @@ export function useUpdateNodeDataValues(): UseUpdateNodeDataValuesReturn {
       } catch (error) {
         // Erreur : revert vers le snapshot
         revertNodeData(nodeDataId);
-        toastError(error, "Error updating");
+        toastError(error, t("errors.errorUpdating"));
       } finally {
         isUpdatingRef.current = false;
       }

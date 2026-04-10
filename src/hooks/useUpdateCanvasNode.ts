@@ -2,6 +2,7 @@ import { useCallback, useRef } from "react";
 import { useReactFlow, type Node } from "@xyflow/react";
 import { useParams } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
+import { useTranslation } from "react-i18next";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import type { colorsEnum } from "@/types/domain";
@@ -28,6 +29,7 @@ interface UseUpdateCanvasNodeReturn {
 }
 
 export function useUpdateCanvasNode(): UseUpdateCanvasNodeReturn {
+  const { t } = useTranslation();
   const { canvasId }: { canvasId: Id<"canvases"> } = useParams({
     from: "/canvas/$canvasId",
   });
@@ -147,7 +149,7 @@ export function useUpdateCanvasNode(): UseUpdateCanvasNodeReturn {
         );
       } catch (error) {
         revertNodes(validInputs.map((i) => i.nodeId));
-        toastError(error, "Error updating");
+        toastError(error, t("errors.errorUpdating"));
       } finally {
         isUpdatingRef.current = false;
       }

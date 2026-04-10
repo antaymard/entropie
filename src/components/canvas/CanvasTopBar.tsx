@@ -9,8 +9,10 @@ import { useSidebar } from "../shadcn/sidebar";
 import InlineEditableText from "../form-ui/InlineEditableText";
 import { TbCloudCheck, TbCloudUp, TbCloudX } from "react-icons/tb";
 import { memo } from "react";
+import { useTranslation } from "react-i18next";
 
 function CanvasTopBar() {
+  const { t } = useTranslation();
   const canvas = useCanvasStore((state) => state.canvas);
   const { setOpen } = useSidebar();
 
@@ -29,7 +31,7 @@ function CanvasTopBar() {
         <div className="rounded-sm border border-gray-300 flex divide-x divide-gray-300">
           <button
             className="hover:bg-gray-200 p-2 flex items-center rounded-xs"
-            title="Workspaces"
+            title={t("canvas.workspaces")}
             type="button"
             onClick={() => setOpen(true)}
           >
@@ -38,17 +40,17 @@ function CanvasTopBar() {
           <Link
             to="/settings"
             className="hover:bg-gray-200 p-2 flex items-center rounded-xs"
-            title="Settings"
+            title={t("settings.settings")}
           >
             <HiOutlineCog size={18} />
           </Link>
         </div>
         <InlineEditableText
-          value={canvas?.name || "Untitled"}
+          value={canvas?.name || t("common.untitled")}
           onSave={handleUpdateCanvasDetails}
           as="h1"
           className="font-semibold hover:text-black text-lg"
-          placeholder="Untitled"
+          placeholder={t("common.untitled")}
         />
         <div>
           <CanvasStatus />

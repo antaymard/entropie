@@ -28,6 +28,7 @@ import { useUpdateCanvasNode } from "@/hooks/useUpdateCanvasNode";
 import { colors } from "@/components/ui/styles";
 import type { colorsEnum } from "@/types/domain";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 export default function SelectionContextMenu({
   closeMenu,
@@ -36,6 +37,7 @@ export default function SelectionContextMenu({
   closeMenu: () => void;
   elements: Node[] | object | null;
 }) {
+  const { t } = useTranslation();
   const { deleteElements, updateNode } = useReactFlow();
   const { updateCanvasNode } = useUpdateCanvasNode();
   const availableColors = Object.entries(colors);
@@ -129,22 +131,22 @@ export default function SelectionContextMenu({
 
   const alignements = [
     {
-      label: "Top",
+      label: t("contextMenu.top"),
       icon: RiAlignItemTopLine,
       onClick: () => alignSelectedNodes("top"),
     },
     {
-      label: "Right",
+      label: t("contextMenu.right"),
       icon: RiAlignItemRightLine,
       onClick: () => alignSelectedNodes("right"),
     },
     {
-      label: "Bottom",
+      label: t("contextMenu.bottom"),
       icon: RiAlignItemBottomLine,
       onClick: () => alignSelectedNodes("bottom"),
     },
     {
-      label: "Left",
+      label: t("contextMenu.left"),
       icon: RiAlignItemLeftLine,
       onClick: () => alignSelectedNodes("left"),
     },
@@ -152,12 +154,12 @@ export default function SelectionContextMenu({
 
   const uniformizations = [
     {
-      label: "Same width",
+      label: t("contextMenu.sameWidth"),
       icon: TbArrowAutofitWidth,
       onClick: () => uniformizeSelectedNodes("width"),
     },
     {
-      label: "Same height",
+      label: t("contextMenu.sameHeight"),
       icon: TbArrowAutofitHeight,
       onClick: () => uniformizeSelectedNodes("height"),
     },
@@ -166,7 +168,7 @@ export default function SelectionContextMenu({
   return (
     <>
       <DropdownMenuLabel className="whitespace-nowrap">
-        Selection actions
+        {t("contextMenu.selectionActions")}
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
 
@@ -218,7 +220,7 @@ export default function SelectionContextMenu({
       {/* Couleur */}
       <DropdownMenuSub>
         <DropdownMenuSubTrigger className="whitespace-nowrap">
-          <TbPalette size={16} /> Color
+          <TbPalette size={16} /> {t("nodes.color")}
         </DropdownMenuSubTrigger>
         <DropdownMenuSubContent>
           <div className="grid grid-cols-5 gap-2 p-2">
@@ -256,7 +258,7 @@ export default function SelectionContextMenu({
         }}
       >
         <HiOutlineTrash />
-        Delete
+        {t("common.delete")}
       </DropdownMenuItem>
     </>
   );

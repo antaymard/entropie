@@ -1,14 +1,16 @@
 import ToolCardFrame from "./ToolCardFrame";
 import { TbFilePencil } from "react-icons/tb";
+import { useTranslation } from "react-i18next";
 
 export default function EditCanvasNodesAndEdgesToolCard({
   state,
   input,
   output,
 }: any) {
+  const { t } = useTranslation();
   return (
     <ToolCardFrame
-      name="Writing to canvas"
+      name={t("toolCards.writingToCanvas")}
       state={state}
       icon={TbFilePencil}
     >

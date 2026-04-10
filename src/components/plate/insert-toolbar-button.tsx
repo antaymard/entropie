@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import type { DropdownMenuProps } from "@radix-ui/react-dropdown-menu";
+import { useTranslation } from "react-i18next";
 
 import {
   CalendarIcon,
@@ -56,175 +57,176 @@ type Item = {
   label?: string;
 };
 
-const groups: Group[] = [
-  {
-    group: "Basic blocks",
-    items: [
-      {
-        icon: <PilcrowIcon />,
-        label: "Paragraph",
-        value: KEYS.p,
-      },
-      {
-        icon: <Heading1Icon />,
-        label: "Heading 1",
-        value: "h1",
-      },
-      {
-        icon: <Heading2Icon />,
-        label: "Heading 2",
-        value: "h2",
-      },
-      {
-        icon: <Heading3Icon />,
-        label: "Heading 3",
-        value: "h3",
-      },
-      {
-        icon: <TableIcon />,
-        label: "Table",
-        value: KEYS.table,
-      },
-      {
-        icon: <FileCodeIcon />,
-        label: "Code",
-        value: KEYS.codeBlock,
-      },
-      {
-        icon: <QuoteIcon />,
-        label: "Quote",
-        value: KEYS.blockquote,
-      },
-      {
-        icon: <MinusIcon />,
-        label: "Divider",
-        value: KEYS.hr,
-      },
-    ].map((item) => ({
-      ...item,
-      onSelect: (editor, value) => {
-        insertBlock(editor, value);
-      },
-    })),
-  },
-  {
-    group: "Lists",
-    items: [
-      {
-        icon: <ListIcon />,
-        label: "Bulleted list",
-        value: KEYS.ul,
-      },
-      {
-        icon: <ListOrderedIcon />,
-        label: "Numbered list",
-        value: KEYS.ol,
-      },
-      {
-        icon: <SquareIcon />,
-        label: "To-do list",
-        value: KEYS.listTodo,
-      },
-      {
-        icon: <ChevronRightIcon />,
-        label: "Toggle list",
-        value: KEYS.toggle,
-      },
-    ].map((item) => ({
-      ...item,
-      onSelect: (editor, value) => {
-        insertBlock(editor, value);
-      },
-    })),
-  },
-  {
-    group: "Media",
-    items: [
-      {
-        icon: <ImageIcon />,
-        label: "Image",
-        value: KEYS.img,
-      },
-      {
-        icon: <FilmIcon />,
-        label: "Embed",
-        value: KEYS.mediaEmbed,
-      },
-    ].map((item) => ({
-      ...item,
-      onSelect: (editor, value) => {
-        insertBlock(editor, value);
-      },
-    })),
-  },
-  {
-    group: "Advanced blocks",
-    items: [
-      {
-        icon: <TableOfContentsIcon />,
-        label: "Table of contents",
-        value: KEYS.toc,
-      },
-      {
-        icon: <Columns3Icon />,
-        label: "3 columns",
-        value: "action_three_columns",
-      },
-      {
-        focusEditor: false,
-        icon: <RadicalIcon />,
-        label: "Equation",
-        value: KEYS.equation,
-      },
-      {
-        icon: <PenToolIcon />,
-        label: "Excalidraw",
-        value: KEYS.excalidraw,
-      },
-    ].map((item) => ({
-      ...item,
-      onSelect: (editor, value) => {
-        insertBlock(editor, value);
-      },
-    })),
-  },
-  {
-    group: "Inline",
-    items: [
-      {
-        icon: <Link2Icon />,
-        label: "Link",
-        value: KEYS.link,
-      },
-      {
-        focusEditor: true,
-        icon: <CalendarIcon />,
-        label: "Date",
-        value: KEYS.date,
-      },
-      {
-        focusEditor: false,
-        icon: <RadicalIcon />,
-        label: "Inline Equation",
-        value: KEYS.inlineEquation,
-      },
-    ].map((item) => ({
-      ...item,
-      onSelect: (editor, value) => {
-        insertInlineElement(editor, value);
-      },
-    })),
-  },
-];
-
 export function InsertToolbarButton(props: DropdownMenuProps) {
   const editor = useEditorRef();
   const [open, setOpen] = React.useState(false);
+  const { t } = useTranslation();
+
+  const groups: Group[] = React.useMemo(() => [
+    {
+      group: t("editor.basicBlocks"),
+      items: [
+        {
+          icon: <PilcrowIcon />,
+          label: t("editor.paragraph"),
+          value: KEYS.p,
+        },
+        {
+          icon: <Heading1Icon />,
+          label: "Heading 1",
+          value: "h1",
+        },
+        {
+          icon: <Heading2Icon />,
+          label: "Heading 2",
+          value: "h2",
+        },
+        {
+          icon: <Heading3Icon />,
+          label: "Heading 3",
+          value: "h3",
+        },
+        {
+          icon: <TableIcon />,
+          label: t("editor.table"),
+          value: KEYS.table,
+        },
+        {
+          icon: <FileCodeIcon />,
+          label: t("editor.code"),
+          value: KEYS.codeBlock,
+        },
+        {
+          icon: <QuoteIcon />,
+          label: t("editor.quote"),
+          value: KEYS.blockquote,
+        },
+        {
+          icon: <MinusIcon />,
+          label: t("editor.divider"),
+          value: KEYS.hr,
+        },
+      ].map((item) => ({
+        ...item,
+        onSelect: (editor, value) => {
+          insertBlock(editor, value);
+        },
+      })),
+    },
+    {
+      group: t("editor.lists"),
+      items: [
+        {
+          icon: <ListIcon />,
+          label: t("editor.bulletedList"),
+          value: KEYS.ul,
+        },
+        {
+          icon: <ListOrderedIcon />,
+          label: t("editor.numberedList"),
+          value: KEYS.ol,
+        },
+        {
+          icon: <SquareIcon />,
+          label: "To-do list",
+          value: KEYS.listTodo,
+        },
+        {
+          icon: <ChevronRightIcon />,
+          label: t("editor.toggleList"),
+          value: KEYS.toggle,
+        },
+      ].map((item) => ({
+        ...item,
+        onSelect: (editor, value) => {
+          insertBlock(editor, value);
+        },
+      })),
+    },
+    {
+      group: t("editor.media"),
+      items: [
+        {
+          icon: <ImageIcon />,
+          label: t("editor.image"),
+          value: KEYS.img,
+        },
+        {
+          icon: <FilmIcon />,
+          label: t("editor.embedLabel"),
+          value: KEYS.mediaEmbed,
+        },
+      ].map((item) => ({
+        ...item,
+        onSelect: (editor, value) => {
+          insertBlock(editor, value);
+        },
+      })),
+    },
+    {
+      group: t("editor.advancedBlocks"),
+      items: [
+        {
+          icon: <TableOfContentsIcon />,
+          label: t("editor.tableOfContents"),
+          value: KEYS.toc,
+        },
+        {
+          icon: <Columns3Icon />,
+          label: "3 columns",
+          value: "action_three_columns",
+        },
+        {
+          focusEditor: false,
+          icon: <RadicalIcon />,
+          label: t("editor.equation"),
+          value: KEYS.equation,
+        },
+        {
+          icon: <PenToolIcon />,
+          label: t("editor.excalidraw"),
+          value: KEYS.excalidraw,
+        },
+      ].map((item) => ({
+        ...item,
+        onSelect: (editor, value) => {
+          insertBlock(editor, value);
+        },
+      })),
+    },
+    {
+      group: t("editor.inline"),
+      items: [
+        {
+          icon: <Link2Icon />,
+          label: t("editor.link"),
+          value: KEYS.link,
+        },
+        {
+          focusEditor: true,
+          icon: <CalendarIcon />,
+          label: t("editor.date"),
+          value: KEYS.date,
+        },
+        {
+          focusEditor: false,
+          icon: <RadicalIcon />,
+          label: t("editor.inlineEquation"),
+          value: KEYS.inlineEquation,
+        },
+      ].map((item) => ({
+        ...item,
+        onSelect: (editor, value) => {
+          insertInlineElement(editor, value);
+        },
+      })),
+    },
+  ], [t]);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton pressed={open} tooltip="Insert" isDropdown>
+        <ToolbarButton pressed={open} tooltip={t("editor.insert")} isDropdown>
           <PlusIcon />
         </ToolbarButton>
       </DropdownMenuTrigger>

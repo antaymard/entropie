@@ -13,8 +13,10 @@ import {
   DialogTitle,
 } from "@/components/shadcn/dialog";
 import { Button } from "@/components/shadcn/button";
+import { useTranslation } from "react-i18next";
 
 export default function CanvasCreationModal() {
+  const { t } = useTranslation();
   const createCanvas = useMutation(api.canvases.createCanvas);
   const navigate = useNavigate();
 
@@ -25,7 +27,7 @@ export default function CanvasCreationModal() {
       try {
         const newCanvasId = await createCanvas({ name: value.name });
         if (newCanvasId) {
-          toast.success(`Workspace "${value.name}" created successfully!`);
+          toast.success(t("workspace.createdSuccess", { name: value.name }));
           navigate({
             to: `/canvas/${newCanvasId}`,
             params: { canvasId: newCanvasId },
@@ -34,7 +36,7 @@ export default function CanvasCreationModal() {
           throw new Error("Failed to create workspace.");
         }
       } catch (error) {
-        toastError(error, "Error while creating workspace.");
+        toastError(error, t("workspace.createError"));
       }
     },
   });
@@ -48,23 +50,23 @@ export default function CanvasCreationModal() {
         }}
       >
         <DialogHeader>
-          <DialogTitle>Create a workspace</DialogTitle>
-          <DialogDescription>Give this new workspace a name.</DialogDescription>
+          <DialogTitle>{t("workspace.create")}</DialogTitle>
+          <DialogDescription>{t("workspace.giveName")}</DialogDescription>
         </DialogHeader>
         <div className="my-3">
           <TextInput
             form={form}
             name="name"
-            label="Workspace name"
+            label={t("workspace.nameLabel")}
             placeholder=""
             validators={{
               onChange: ({ value }: { value: string }) =>
-                !value.trim() ? "Name cannot be empty" : undefined,
+                !value.trim() ? t("workspace.nameEmpty") : undefined,
             }}
           />
         </div>
         <DialogFooter>
-          <Button type="submit">Create</Button>
+          <Button type="submit">{t("common.create")}</Button>
         </DialogFooter>
       </form>
     </DialogContent>

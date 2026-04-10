@@ -15,6 +15,7 @@ import {
 import { UploadFile } from "@/components/fields/UploadFile";
 import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
 import { useWindowsStore } from "@/stores/windowsStore";
+import { useTranslation } from "react-i18next";
 
 type Value = Array<{
   url: string;
@@ -23,6 +24,7 @@ type Value = Array<{
 const defaultValue: Value = [];
 
 function ImageNode(xyNode: Node) {
+  const { t } = useTranslation();
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
   const values = useNodeDataValues(nodeDataId);
   const { updateNodeDataValues } = useUpdateNodeDataValues();
@@ -75,7 +77,7 @@ function ImageNode(xyNode: Node) {
         </Button>
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="icon" title="Upload an image">
+            <Button variant="outline" size="icon" title={t("nodes.uploadImage")}>
               <TbPencil />
             </Button>
           </PopoverTrigger>

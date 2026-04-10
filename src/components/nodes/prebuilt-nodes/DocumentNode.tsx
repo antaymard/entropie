@@ -13,6 +13,7 @@ import { Spinner } from "@/components/shadcn/spinner";
 import { TbMaximize, TbNews } from "react-icons/tb";
 import { useWindowsStore } from "@/stores/windowsStore";
 import { parseStoredPlateDocument } from "@/../convex/lib/plateDocumentStorage";
+import { useTranslation } from "react-i18next";
 
 function hasTextContent(nodes: unknown[]): boolean {
   for (const node of nodes) {
@@ -37,6 +38,7 @@ function hasTextContent(nodes: unknown[]): boolean {
 }
 
 function DocumentNode(xyNode: Node) {
+  const { t } = useTranslation();
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
   const values = useNodeDataValues(nodeDataId);
   const [previewValue, setPreviewValue] = useState<Value | null>(null);
@@ -72,7 +74,7 @@ function DocumentNode(xyNode: Node) {
     setIsPreviewLoading(false);
   }, [values?.doc]);
 
-  const documentTitle = useNodeDataTitle(nodeDataId) ?? "Document";
+  const documentTitle = useNodeDataTitle(nodeDataId) ?? t("nodes.document");
 
   return (
     <>

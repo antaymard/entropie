@@ -15,8 +15,10 @@ import {
 import { useAction, useQuery } from "convex/react";
 import { useCanvasStore } from "@/stores/canvasStore";
 import { toastError } from "../utils/errorUtils";
+import { useTranslation } from "react-i18next";
 
 export function NoleChat() {
+  const { t } = useTranslation();
   const { threadId: _threadId, isLoading, resetThread } = useNoleThread();
   const setIsAiPanelOpen = useCanvasStore((s) => s.setIsAiPanelOpen);
 
@@ -80,7 +82,7 @@ export function NoleChat() {
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              {showHistory ? "Back to chat" : "Show conversation history"}
+              {showHistory ? t("chat.backToChat") : t("chat.showHistory")}
             </TooltipContent>
           </Tooltip>
           <Tooltip delayDuration={300}>
@@ -93,7 +95,7 @@ export function NoleChat() {
                 <TbX size={15} />
               </button>
             </TooltipTrigger>
-            <TooltipContent>Close Nolë</TooltipContent>
+            <TooltipContent>{t("chat.closeNole")}</TooltipContent>
           </Tooltip>
         </div>
       </div>
@@ -118,6 +120,7 @@ function ChatHistory({
   closeHistory: () => void;
   setThreadId: React.Dispatch<React.SetStateAction<string | null>>;
 }) {
+  const { t } = useTranslation();
   const userThreads = useQuery(api.threads.listUserThreads, {
     paginationOpts: {
       numItems: 20,
@@ -158,7 +161,7 @@ function ChatHistory({
             >
               <div className="flex flex-col items-start gap-1 flex-1">
                 <div className="font-semibold truncate w-full text-left">
-                  {thread.title || "Untitled"}
+                  {thread.title || t("common.untitled")}
                 </div>
                 <div className="text-sm">
                   Created on {new Date(thread._creationTime).toLocaleString()}
@@ -172,7 +175,7 @@ function ChatHistory({
                   try {
                     await deleteThread({ threadId: thread._id });
                   } catch (error) {
-                    toastError(error, "Error deleting thread.");
+                    toastError(error, t("chat.errorDeleting"));
                   }
                 }}
               >

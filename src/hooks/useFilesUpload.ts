@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { useTranslation } from "react-i18next";
 import axios from "axios";
 
 export interface FileUploadProgress {
@@ -20,6 +21,7 @@ export interface UploadedFileData {
 }
 
 export const useFileUpload = () => {
+  const { t } = useTranslation();
   const generateUploadUrl = useAction(api.uploads.generateUploadUrl);
   const generateUploadUrls = useAction(api.uploads.generateUploadUrls);
 
@@ -93,7 +95,7 @@ export const useFileUpload = () => {
           [fileId]: {
             ...prev[fileId],
             status: "error",
-            error: error instanceof Error ? error.message : "Upload failed",
+            error: error instanceof Error ? error.message : t("errors.uploadFailed"),
           },
         }));
         throw error;
@@ -172,7 +174,7 @@ export const useFileUpload = () => {
             [fileId]: {
               ...prev[fileId],
               status: "error",
-              error: error instanceof Error ? error.message : "Upload failed",
+              error: error instanceof Error ? error.message : t("errors.uploadFailed"),
             },
           }));
           throw error;

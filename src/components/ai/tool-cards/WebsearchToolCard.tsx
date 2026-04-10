@@ -1,6 +1,7 @@
 import type { ToolCardProps } from "@/types/message.types";
 import { TbWorldSearch } from "react-icons/tb";
 import ToolCardFrame from "./ToolCardFrame";
+import { useTranslation } from "react-i18next";
 
 interface WebSearchInput {
   objective: string;
@@ -48,10 +49,11 @@ export default function WebsearchToolCard({
   input,
   output,
 }: WebsearchToolCardProps) {
+  const { t } = useTranslation();
   return (
     <ToolCardFrame
       icon={TbWorldSearch}
-      name="Web search"
+      name={t("toolCards.webSearch")}
       state={state}
       canBeExpanded={true}
       detailLabel={`${output?.length ?? 0} results`}

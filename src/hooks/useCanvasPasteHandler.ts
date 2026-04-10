@@ -3,6 +3,7 @@ import { useReactFlow, useViewport } from "@xyflow/react";
 import { useFileUpload } from "./useFilesUpload";
 import { useCreateNode } from "./useCreateNode";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 import prebuiltNodesConfig from "@/components/nodes/prebuilt-nodes/prebuiltNodesConfig";
 import { useAction, useMutation } from "convex/react";
 import { api } from "@/../convex/_generated/api";
@@ -55,6 +56,7 @@ function runWithPasteGuard(
  * - Detects URLs and creates ImageNode (if image URL) or LinkNode (if web URL)
  */
 export function useCanvasPasteHandler() {
+  const { t } = useTranslation();
   const { setNodes } = useReactFlow();
   const { x: canvasX, y: canvasY, zoom: canvasZoom } = useViewport();
   const { uploadFile } = useFileUpload();
@@ -118,7 +120,7 @@ export function useCanvasPasteHandler() {
         (config) => config.node.type === "image",
       );
       if (!imageNodeConfig) {
-        toast.error("Error: ImageNode configuration not found");
+        toast.error(t("errors.imageNodeNotFound"));
         return null;
       }
 
@@ -146,7 +148,7 @@ export function useCanvasPasteHandler() {
         (config) => config.node.type === "link",
       );
       if (!linkNodeConfig) {
-        toast.error("Error: LinkNode configuration not found");
+        toast.error(t("errors.linkNodeNotFound"));
         return null;
       }
 
@@ -199,7 +201,7 @@ export function useCanvasPasteHandler() {
         (config) => config.node.type === "document",
       );
       if (!documentNodeConfig) {
-        toast.error("Error: DocumentNode configuration not found");
+        toast.error(t("errors.documentNodeNotFound"));
         return null;
       }
 
@@ -234,10 +236,10 @@ export function useCanvasPasteHandler() {
           _id: nodeDataId,
           values: { images: [{ url: fileData.url }] },
         });
-        toast.success("Image added to canvas");
+        toast.success(t("pasteHandler.imageAdded"));
       } catch (error) {
         console.error("Upload failed:", error);
-        toast.error("Error uploading image");
+        toast.error(t("pasteHandler.errorUploadingImage"));
 
         // Remove the node since upload failed
         setNodes((nodes) => nodes.filter((n) => n.id !== nodeId));
@@ -262,11 +264,11 @@ export function useCanvasPasteHandler() {
       if (isImageUrl(url)) {
         // Create ImageNode with the URL
         await createImageNode(url);
-        toast.success("Image added to canvas");
+        toast.success(t("pasteHandler.imageAdded"));
       } else {
         // Create LinkNode (async - fetches metadata in background)
         await createLinkNode(url);
-        toast.success("Link added to canvas");
+        toast.success(t("pasteHandler.linkAdded"));
       }
     },
     [isImageUrl, createImageNode, createLinkNode],
@@ -322,7 +324,7 @@ export function useCanvasPasteHandler() {
         } else {
           runWithPasteGuard(pasteGuardRef.current, signature, async () => {
             await createDocumentNode(trimmedText);
-            toast.success("Document created");
+            toast.success(t("pasteHandler.documentCreated"));
           });
         }
       }

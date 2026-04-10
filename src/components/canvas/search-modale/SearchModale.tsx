@@ -13,6 +13,7 @@ import { useNodeDataTitle } from "@/hooks/useNodeTitle";
 import { useCanvasStore } from "@/stores/canvasStore";
 import { useWindowsStore } from "@/stores/windowsStore";
 import { canNodeTypeBeOpenedInWindow } from "@/components/nodes/prebuilt-nodes/prebuiltNodesConfig";
+import { useTranslation } from "react-i18next";
 
 type SearchResult = {
   type: string;
@@ -34,6 +35,7 @@ type SearchResult = {
 };
 
 export default function SearchModale() {
+  const { t } = useTranslation();
   const isOpen = useCanvasStore((state) => state.isSearchModalOpen);
   const searchQuery = useCanvasStore((state) => state.searchQuery);
   const toggleSearchModal = useCanvasStore((state) => state.toggleSearchModal);
@@ -72,7 +74,7 @@ export default function SearchModale() {
             <input
               autoFocus
               type="text"
-              placeholder="Search for nodes, templates, etc..."
+              placeholder={t("search.searchPlaceholder")}
               className="bg-transparent outline-none border-none flex-1"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -86,7 +88,7 @@ export default function SearchModale() {
 
         {/* Body */}
         {isPending ? (
-          <div>Loading...</div>
+          <div>{t("common.loading")}</div>
         ) : error ? (
           <div>Error: {error.message}</div>
         ) : (
@@ -116,6 +118,7 @@ function ResultCard({
   result: SearchResult;
   query: string;
 }) {
+  const { t } = useTranslation();
   const nodeTitle = useNodeDataTitle(result.nodeDataId);
   const closeSearchModal = useCanvasStore((state) => state.closeSearchModal);
   const openWindow = useWindowsStore((state) => state.openWindow);
@@ -177,8 +180,8 @@ function ResultCard({
             event.stopPropagation();
             handleGoToNode();
           }}
-          aria-label="Localiser sur le canvas"
-          title="Localiser sur le canvas"
+          aria-label={t("search.locateOnCanvas")}
+          title={t("search.locateOnCanvas")}
         >
           <TbLocation size={14} />
         </Button>

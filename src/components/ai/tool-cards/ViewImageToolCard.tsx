@@ -1,6 +1,7 @@
 import type { ToolCardProps } from "@/types/message.types";
 import { TbPhotoSearch } from "react-icons/tb";
 import ToolCardFrame from "./ToolCardFrame";
+import { useTranslation } from "react-i18next";
 
 interface ViewImageInput {
   url: string;
@@ -14,10 +15,11 @@ export default function ViewImageToolCard({
   input,
   output,
 }: ViewImageToolProps) {
+  const { t } = useTranslation();
   return (
     <ToolCardFrame
       icon={TbPhotoSearch}
-      name="Reading image"
+      name={t("toolCards.readingImage")}
       state={state}
       canBeExpanded={true}
     >

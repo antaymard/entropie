@@ -13,32 +13,33 @@ import slide2 from "@/assets/onboarding/slide2.png";
 import slide3 from "@/assets/onboarding/Slide3.png";
 import slide4 from "@/assets/onboarding/Slide4.png";
 import slide5 from "@/assets/onboarding/Slide5.png";
-
-const slides = [
-  {
-    title: "Use mouse wheel to move, Ctrl + scroll to zoom",
-    image: slide1,
-  },
-  {
-    title: "Right click anywhere to add a block",
-    image: slide2,
-  },
-  {
-    title: "Top left corner to open the sidebar",
-    image: slide3,
-  },
-  {
-    title:
-      "Left click on a block to select it - Right click for menu - Double click to open/edit",
-    image: slide4,
-  },
-  {
-    title: "Click and drag from a handle to connect blocks",
-    image: slide5,
-  },
-];
+import { useTranslation } from "react-i18next";
 
 export default function OnboardingModal() {
+  const { t } = useTranslation();
+
+  const slides = [
+    {
+      title: t("onboarding.slide1"),
+      image: slide1,
+    },
+    {
+      title: t("onboarding.slide2"),
+      image: slide2,
+    },
+    {
+      title: t("onboarding.slide3"),
+      image: slide3,
+    },
+    {
+      title: t("onboarding.slide4"),
+      image: slide4,
+    },
+    {
+      title: t("onboarding.slide5"),
+      image: slide5,
+    },
+  ];
   const shouldShow = localStorage.getItem("hasSeenOnboarding") !== "true";
   const [isOpen, setIsOpen] = useState(shouldShow);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -70,9 +71,9 @@ export default function OnboardingModal() {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Welcome to Nolënor !</DialogTitle>
+          <DialogTitle>{t("onboarding.welcome")}</DialogTitle>
           <DialogDescription>
-            Here's a quick tour to get you started.
+            {t("onboarding.quickTour")}
           </DialogDescription>
         </DialogHeader>
 
@@ -111,15 +112,15 @@ export default function OnboardingModal() {
               disabled={currentSlide === 0}
             >
               <ChevronLeft className="w-4 h-4" />
-              Previous
+              {t("common.previous")}
             </Button>
 
             <Button variant="ghost" onClick={handleSkip}>
-              Skip
+              {t("common.skip")}
             </Button>
 
             <Button onClick={handleNext}>
-              {currentSlide === slides.length - 1 ? "Done" : "Next"}
+              {currentSlide === slides.length - 1 ? t("common.done") : t("common.next")}
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>

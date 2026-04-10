@@ -17,6 +17,7 @@ import type { Id } from "@/../convex/_generated/dataModel";
 import { useAction } from "convex/react";
 import { api } from "@/../convex/_generated/api";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 
 export type LinkValueType = {
   href: string;
@@ -32,6 +33,7 @@ const defaultValue: LinkValueType = {
 };
 
 function LinkNode(xyNode: Node) {
+  const { t } = useTranslation();
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
   const values = useNodeDataValues(nodeDataId);
   const { updateNodeDataValues } = useUpdateNodeDataValues();
@@ -59,7 +61,7 @@ function LinkNode(xyNode: Node) {
     try {
       new URL(url);
     } catch {
-      toast.error("Invalid URL");
+      toast.error(t("fields.invalidUrl"));
       return;
     }
 
@@ -84,7 +86,7 @@ function LinkNode(xyNode: Node) {
       setLinkUrl("");
       setLinkTitle("");
     } catch {
-      toast.error("Unable to fetch page title");
+      toast.error(t("fields.unableToFetchTitle"));
       // Sauvegarder quand même avec l'URL comme titre
       updateNodeDataValues({
         nodeDataId,
@@ -111,7 +113,7 @@ function LinkNode(xyNode: Node) {
       <CanvasNodeToolbar xyNode={xyNode}>
         <Popover open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="icon" title="Edit link">
+            <Button variant="outline" size="icon" title={t("nodes.editLink")}>
               <TbPencil />
             </Button>
           </PopoverTrigger>
@@ -120,19 +122,19 @@ function LinkNode(xyNode: Node) {
               <Input
                 onDoubleClick={(e) => e.stopPropagation()}
                 type="text"
-                placeholder="https://..."
+                placeholder={t("fields.urlPlaceholder")}
                 value={linkUrl}
                 onChange={(e) => setLinkUrl(e.target.value)}
               />
               <Input
                 onDoubleClick={(e) => e.stopPropagation()}
                 type="text"
-                placeholder="Title (optional)"
+                placeholder={t("nodes.titleOptional")}
                 value={linkTitle}
                 onChange={(e) => setLinkTitle(e.target.value)}
               />
               <Button onClick={handleSave} disabled={isLoading} size="sm">
-                {isLoading ? "Loading..." : "Save"}
+                {isLoading ? t("common.loading") : t("common.save")}
               </Button>
             </div>
           </PopoverContent>
@@ -206,7 +208,7 @@ function LinkNode(xyNode: Node) {
           ) : (
             <div className="flex items-center justify-center h-full text-muted-foreground">
               <TbLink size={24} className="mr-2" />
-              No link
+              {t("fields.noLink")}
             </div>
           )
         ) : (
@@ -218,7 +220,7 @@ function LinkNode(xyNode: Node) {
                   className="truncate flex-1 min-w-0"
                   title={linkValue.pageTitle || linkValue.href}
                 >
-                  {linkValue.pageTitle || <i>No title</i>}
+                  {linkValue.pageTitle || <i>{t("common.noTitle")}</i>}
                 </p>
                 {xyNode.selected && (
                   <a
@@ -235,7 +237,7 @@ function LinkNode(xyNode: Node) {
             ) : (
               <span className="text-muted-foreground flex items-center gap-2">
                 <TbLink size={18} className="shrink-0" />
-                No link
+                {t("fields.noLink")}
               </span>
             )}
           </div>

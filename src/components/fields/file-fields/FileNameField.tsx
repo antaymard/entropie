@@ -5,6 +5,7 @@ import SidePanelFrame from "../../nodes/side-panels/SidePanelFrame";
 import { UploadFile } from "../UploadFile";
 import { TbPencil, TbExternalLink } from "react-icons/tb";
 import { RiAttachment2 } from "react-icons/ri";
+import { useTranslation } from "react-i18next";
 
 export type FileFieldType = {
   url: string;
@@ -28,6 +29,7 @@ export default function FileNameField({
   visualSettings,
   className = "",
 }: FileNameFieldProps) {
+  const { t } = useTranslation();
   const { closeSidePanel, openSidePanel } = useNodeSidePanel();
   const fileUrl = value && value.length > 0 ? value[0].url : "";
 
@@ -61,7 +63,7 @@ export default function FileNameField({
             type="button"
             onClick={() => window.open(value[0].url, "_blank")}
             className="cursor-default hover:bg-black/5 rounded-sm items-center justify-center h-6 w-6 shrink-0 group-hover/linkfield:flex hidden"
-            title="Open file"
+            title={t("fields.openFile")}
           >
             <TbExternalLink />
           </button>
@@ -88,6 +90,7 @@ export default function FileNameField({
 }
 
 function FileUploaderSidePanel({ initialValue, onSave, onClose }) {
+  const { t } = useTranslation();
   const handleUploadComplete = (fileData: FileFieldType) => {
     onSave(fileData);
   };
@@ -95,7 +98,7 @@ function FileUploaderSidePanel({ initialValue, onSave, onClose }) {
   return (
     <SidePanelFrame
       id={sidePanelId}
-      title="Edit file"
+      title={t("fields.editFile")}
       className="w-64"
     >
       <UploadFile

@@ -43,6 +43,7 @@ import {
   generateMessageContext,
   getCanvasNodeTitle,
 } from "./messageContextGenerator";
+import { useTranslation } from "react-i18next";
 
 const INPUT_MAX_HEIGHT_PX = 182;
 
@@ -51,6 +52,7 @@ type ChatContainerProps = {
 };
 
 export default function ChatContainer({ onClose }: ChatContainerProps) {
+  const { t } = useTranslation();
   const { threadId: initialThreadId, isLoading, resetThread } = useNoleThread();
   const { canvasId } = useParams({ strict: false }) as {
     canvasId?: Id<"canvases">;
@@ -227,7 +229,7 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
   if (!threadId) {
     return (
       <div className="w-full h-full flex items-center justify-center text-slate-500">
-        Error loading chat
+        {t("chat.errorLoading")}
       </div>
     );
   }
@@ -237,7 +239,7 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
       {/* Header */}
       <div className="pl-2 rounded-t-lg border-b flex items-center justify-between">
         <p className="text-sm font-medium truncate">
-          {threadInfo?.title || "Untitled"}
+          {threadInfo?.title || t("common.untitled")}
         </p>
         <div className="flex items-center gap-1">
           <Button
@@ -261,7 +263,7 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
             variant="ghost"
             size="icon-sm"
             onClick={() => onClose?.()}
-            aria-label="Close panel"
+            aria-label={t("chat.closePanel")}
           >
             <TbX size={15} />
           </Button>
@@ -406,6 +408,7 @@ function PositionAttachment({
   position: { x: number; y: number };
   onRemove: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="group relative flex items-center gap-1 rounded-sm border border-slate-300 bg-white px-2 py-1 text-sm text-slate-700 max-w-55">
       <LuMousePointerClick size={12} className="min-w-3" />
@@ -415,7 +418,7 @@ function PositionAttachment({
       <button
         type="button"
         onClick={onRemove}
-        aria-label="Retirer la position jointe"
+        aria-label={t("chat.removeAttachment")}
         className="absolute top-1 right-1 hidden group-hover:block rounded-sm bg-slate-100 text-red-400"
       >
         <HiMiniXMark size={14} />
@@ -435,6 +438,7 @@ function NodeAttachment({
   onRemove: (nodeId: string) => void;
   onAttach: (node: CanvasNode) => void;
 }) {
+  const { t } = useTranslation();
   const nodeConfig = prebuiltNodesConfig.find(
     (config) => config.type === node.type,
   );
@@ -459,7 +463,7 @@ function NodeAttachment({
           isAttached ? "hover:text-red-500" : "hover:text-green-500",
         )}
         onClick={() => (isAttached ? onRemove(node.id) : onAttach(node))}
-        aria-label={isAttached ? "Retirer la piece jointe" : "Attacher le node"}
+        aria-label={isAttached ? t("chat.removeAttachment") : t("chat.attachNode")}
       >
         {isAttached ? <TbX size={14} /> : <TbPlus size={14} />}
       </button>

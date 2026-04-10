@@ -9,6 +9,7 @@ import {
 } from "@/components/shadcn/dropdown-menu";
 import { TbHistory, TbTrash } from "react-icons/tb";
 import { toastError } from "@/components/utils/errorUtils";
+import { useTranslation } from "react-i18next";
 
 interface ThreadSelectorProps {
   currentThreadId: string;
@@ -19,6 +20,7 @@ export default function ThreadSelector({
   currentThreadId,
   onSelectThread,
 }: ThreadSelectorProps) {
+  const { t } = useTranslation();
   const userThreads = useQuery(api.threads.listUserThreads, {
     paginationOpts: { numItems: 20, cursor: null },
   });
@@ -52,7 +54,7 @@ export default function ThreadSelector({
           >
             <div className="flex flex-col flex-1 min-w-0">
               <span className="truncate text-sm font-medium">
-                {thread.title || "Untitled"}
+                {thread.title || t("common.untitled")}
               </span>
               <span className="text-xs text-muted-foreground">
                 {new Date(thread._creationTime).toLocaleDateString()}
@@ -67,7 +69,7 @@ export default function ThreadSelector({
                   try {
                     await deleteThread({ threadId: thread._id });
                   } catch (error) {
-                    toastError(error, "Error deleting thread.");
+                    toastError(error, t("chat.errorDeleting"));
                   }
                 }}
               >

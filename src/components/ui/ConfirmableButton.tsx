@@ -19,6 +19,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/plate/alert-dialog";
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface ConfirmableButtonProps {
   title: string;
@@ -40,11 +41,14 @@ export default function ConfirmableButton({
   onConfirm,
   children,
   shouldConfirm = true,
-  confirmLabel = "Confirmer",
-  cancelLabel = "Annuler",
+  confirmLabel,
+  cancelLabel,
   showCloseButton = true,
   autoFocusConfirm = false,
 }: ConfirmableButtonProps) {
+  const { t } = useTranslation();
+  const resolvedConfirmLabel = confirmLabel ?? t("common.confirm");
+  const resolvedCancelLabel = cancelLabel ?? t("common.cancel");
   const [isOpen, setIsOpen] = useState(false);
   const confirmRef = useRef<HTMLButtonElement>(null);
 
@@ -82,7 +86,7 @@ export default function ConfirmableButton({
         {showCloseButton && (
           <AlertDialogCancel
             className="absolute right-3 top-3 h-7 w-7 p-0"
-            aria-label="Fermer"
+            aria-label={t("common.close")}
           >
             <X className="h-4 w-4" />
           </AlertDialogCancel>
@@ -93,10 +97,10 @@ export default function ConfirmableButton({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={() => onCancel?.()}>
-            {cancelLabel}
+            {resolvedCancelLabel}
           </AlertDialogCancel>
           <AlertDialogAction ref={confirmRef} onClick={() => onConfirm()}>
-            {confirmLabel}
+            {resolvedConfirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

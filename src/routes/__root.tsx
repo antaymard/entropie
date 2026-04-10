@@ -8,6 +8,7 @@ import {
 import { useConvexAuth } from "convex/react";
 import type { ConvexReactClient } from "convex/react";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 export interface RouterContext {
   convex: ConvexReactClient;
@@ -21,6 +22,7 @@ function RootComponent() {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated && location.pathname !== "/signin") {
@@ -31,7 +33,7 @@ function RootComponent() {
   if (isLoading) {
     return (
       <div className="h-screen w-screen flex items-center justify-center">
-        <div>Chargement...</div>
+        <div>{t("common.loading")}</div>
       </div>
     );
   }

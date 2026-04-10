@@ -25,6 +25,7 @@ import { HiDotsVertical } from "react-icons/hi";
 import { TbPlus } from "react-icons/tb";
 import { cn } from "@/lib/utils";
 import InlineEditableText from "@/components/form-ui/InlineEditableText";
+import { useTranslation } from "react-i18next";
 
 export default function CanvasSidebar({
   children,
@@ -33,6 +34,7 @@ export default function CanvasSidebar({
   children: React.ReactNode;
   canvasId: Id<"canvases">;
 }) {
+  const { t } = useTranslation();
   const deleteCanvas = useMutation(api.canvases.deleteCanvas);
   const updateCanvasProps = useMutation(api.canvases.updateProps);
   const userCanvases = useQuery(api.canvases.listUserCanvases);
@@ -138,7 +140,7 @@ export default function CanvasSidebar({
               value={currentCanvasName ?? "..."}
               onSave={handleUpdateCanvasName}
               className="font-semibold text-lg truncate"
-              placeholder="Workspace name"
+              placeholder={t("workspace.nameLabel")}
               as="span"
             />
           </div>

@@ -25,6 +25,7 @@ import type {
   EdgeMarker,
   colorsEnum,
 } from "@/types/domain";
+import { useTranslation } from "react-i18next";
 
 export default function EdgeContextMenu({
   closeMenu,
@@ -35,6 +36,7 @@ export default function EdgeContextMenu({
   position: { x: number; y: number };
   xyEdge: Edge;
 }) {
+  const { t } = useTranslation();
   const { deleteElements, updateEdge } = useReactFlow();
 
   const edgeData = (xyEdge.data || {}) as EdgeCustomData;
@@ -72,14 +74,14 @@ export default function EdgeContextMenu({
   };
 
   const strokeWidthLabels = {
-    thin: "Thin",
-    regular: "Regular",
-    thick: "Thick",
+    thin: t("contextMenu.thin"),
+    regular: t("contextMenu.regular"),
+    thick: t("contextMenu.thick"),
   };
 
   const markerLabels = {
-    none: "None",
-    arrow: "Arrow",
+    none: t("contextMenu.none"),
+    arrow: t("contextMenu.arrow"),
   };
 
   // Filtrer les couleurs disponibles (sans transparent)
@@ -90,7 +92,7 @@ export default function EdgeContextMenu({
   return (
     <>
       <DropdownMenuLabel className="whitespace-nowrap">
-        Edge actions
+        {t("contextMenu.edgeActions")}
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
 
@@ -217,7 +219,7 @@ export default function EdgeContextMenu({
           closeMenu();
         }}
       >
-        <TbTrash className="text-red-500" /> Delete
+        <TbTrash className="text-red-500" /> {t("common.delete")}
       </DropdownMenuItem>
     </>
   );

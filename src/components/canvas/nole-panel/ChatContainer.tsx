@@ -20,7 +20,7 @@ import { useNoleStore } from "@/stores/noleStore";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 import { useWindowsStore } from "@/stores/windowsStore";
-import ChatInterface from "@/components/ai/chat-interface/ChatInterface";
+import ChatInterface from "./ChatInterface";
 import { useNoleThread } from "@/hooks/useNoleThread";
 import { api } from "@/../convex/_generated/api";
 import { useAction, useMutation, useQuery } from "convex/react";
@@ -189,14 +189,16 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
       viewportHeight: window.innerHeight,
       getNodeTitle: (node) => getCanvasNodeTitle(node, nodeDatas),
     });
-    const promptWithContext = `${messageContext}\n\n<user_message>\n${prompt}\n</user_message>`;
     setUserInput("");
     setIsSending(true);
 
     try {
       await sendMessage({
         threadId,
-        prompt: promptWithContext,
+        prompt,
+        context: {
+          messageContext,
+        },
         canvasId,
       });
       resetAttachments();
@@ -408,18 +410,18 @@ function PositionAttachment({
 }) {
   return (
     <div className="group relative flex items-center gap-1 rounded-sm border border-slate-300 bg-white px-2 py-1 text-sm text-slate-700 max-w-55">
-      <LuMousePointerClick size={12} className="min-w-3" />
-      <span className="truncate">
-        Position ({Math.round(position.x)}, {Math.round(position.y)})
-      </span>
       <button
         type="button"
         onClick={onRemove}
         aria-label="Retirer la position jointe"
-        className="absolute top-1 right-1 hidden group-hover:block rounded-sm bg-slate-100 text-red-400"
+        className="text-slate-500 hover:text-red-500"
       >
         <HiMiniXMark size={14} />
       </button>
+      <LuMousePointerClick size={12} className="min-w-3" />
+      <span className="truncate">
+        Position ({Math.round(position.x)}, {Math.round(position.y)})
+      </span>
     </div>
   );
 }

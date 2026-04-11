@@ -1,0 +1,66 @@
+import { createTool } from "@convex-dev/agent";
+import { internal } from "../../_generated/api";
+import { type Id } from "../../_generated/dataModel";
+import { nodeTypeValues } from "../../schemas/nodeTypeSchema";
+import { validateNodeInputSchemaForLLM } from "../helpers/nodeInputSchemaValidatorForLLM";
+import z from "zod";
+
+export default function setNodeDataTool({
+  canvasId,
+}: {
+  canvasId: Id<"canvases">;
+}) {
+  return createTool({
+    description:
+      "Set directement les valeurs du nodeData lié à un nodeId pour un type de node donné.",
+    args: z.object({
+      nodeType: z
+        .enum(nodeTypeValues)
+        .describe("Type du node cible (doit correspondre au nodeId fourni)."),
+      nodeId: z.string().describe("ID canvas du node à mettre à jour."),
+      data: z
+        .record(z.string(), z.unknown())
+        .describe("Objet values à écrire directement dans le nodeData lié."),
+    }),
+    handler: async (ctx, args): Promise<string> => {
+      try {
+        if (args.nodeType === "document") {
+          return "Cannot set document data: use insert_document_content or string_replace_document_content.";
+        }
+
+        if (args.nodeType === "table") {
+          return "Cannot set table data: use table_insert_rows, table_delete_rows, or table_update_rows.";
+        }
+
+        const validationError = validateNodeInputSchemaForLLM({
+          nodeType: args.nodeType,
+          input: args.data,
+        });
+        if (validationError) {
+          return validationError;
+        }
+
+        const nodeLookup = await ctx.runQuery(
+          internal.wrappers.canvasNodeWrappers.getNodeWithNodeData,
+          {
+            canvasId,
+            nodeId: args.nodeId,
+          },
+        );
+
+        if (nodeLookup.node.type !== args.nodeType) {
+          return `Node type mismatch for nodeId ${args.nodeId}: expected ${args.nodeType}, got ${nodeLookup.node.type}.`;
+        }
+
+        await ctx.runMutation(internal.wrappers.nodeDataWrappers.updateValues, {
+          _id: nodeLookup.nodeData._id,
+          values: args.data,
+        });
+
+        return `Node data updated for nodeId ${args.nodeId}.`;
+      } catch (error) {
+        return `Error while setting node data for nodeId ${args.nodeId}: ${error instanceof Error ? error.message : String(error)}`;
+      }
+    },
+  });
+}

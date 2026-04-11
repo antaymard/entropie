@@ -3,17 +3,19 @@ import { Agent } from "@convex-dev/agent";
 import { openrouter } from "@openrouter/ai-sdk-provider";
 import type { LanguageModel, ToolSet } from "ai";
 import type { NoleToolRuntimeContext } from "./noleToolRuntimeContext";
-import nodeAgentTool from "./tools/nodeAgentTool";
 import readNodesTool from "./tools/readNodesTool";
 import listNodesTool from "./tools/listNodesTool";
 import { openWebPageTool } from "./tools/openWebPageTool";
 import { websearchTool } from "./tools/websearchTool";
 import documentStringReplaceContentTool from "./tools/documentStringReplaceContentTool";
 import documentInsertContentTool from "./tools/documentInsertContentTool";
-import tableUpdateRowsTool from "./tools/tableUpdateRowsTool";
+import tableUpdateRowsTool from "./tools/tableUpdateRowTool";
 import tableInsertRowsTool from "./tools/tableInsertRowsTool";
 import tableDeleteRowsTool from "./tools/tableDeleteRowsTools";
+import tableUpdateSchemaTool from "./tools/tableUpdateSchemaTool";
 import fullTextSearchTool from "./tools/fullTextSearchTool";
+import setNodeDataTool from "./tools/setNodeDataTool";
+import createNodeTool from "./tools/createNodeTool";
 
 export function createBaseAgent({ model }: { model?: LanguageModel } = {}) {
   return new Agent(components.agent, {
@@ -60,7 +62,6 @@ export function createNoleAgent({
       list_nodes: listNodesTool(runtimeContext),
       full_text_search: fullTextSearchTool(runtimeContext),
       read_nodes: readNodesTool(runtimeContext),
-      node_and_edge_manipulation: nodeAgentTool(runtimeContext),
       open_webpage: openWebPageTool,
       websearch: websearchTool,
       string_replace_document_content: documentStringReplaceContentTool({
@@ -76,6 +77,15 @@ export function createNoleAgent({
         canvasId: runtimeContext.canvasId,
       }),
       table_delete_rows: tableDeleteRowsTool({
+        canvasId: runtimeContext.canvasId,
+      }),
+      table_update_schema: tableUpdateSchemaTool({
+        canvasId: runtimeContext.canvasId,
+      }),
+      create_node: createNodeTool({
+        canvasId: runtimeContext.canvasId,
+      }),
+      set_node_data: setNodeDataTool({
         canvasId: runtimeContext.canvasId,
       }),
       ...tools,

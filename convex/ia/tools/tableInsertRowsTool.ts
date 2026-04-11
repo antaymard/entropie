@@ -25,6 +25,8 @@ type StoredTableValue = {
 const ERROR_TARGET_NOT_TABLE = "Error: Target node must be a table.";
 const ERROR_INVALID_TABLE_CONTENT =
   "Error: Table content is not valid (expected table.columns and table.rows arrays).";
+const ERROR_TABLE_SCHEMA_EMPTY =
+  "Error: Table schema is empty. Use table_update_schema first (operation: set or add_column) before inserting rows.";
 
 const linkValueSchema = z.object({
   href: z.string().min(1),
@@ -41,23 +43,14 @@ const cellValueSchema = z.union([
   linkValueSchema,
 ]);
 
-const cellUpdateSchema = z.object({
-  column: z
-    .string()
-    .min(1)
-    .describe("Column title or id from the table markdown header."),
-  newValue: cellValueSchema.describe("New value for this column."),
-});
-
-const rowValueSchema = z.array(cellUpdateSchema).min(1);
-
 const rowInputSchema = z
-  .object({
-    cells: rowValueSchema.describe(
-      "Column values for this row, as an array of {column, newValue} pairs.",
-    ),
+  .record(z.string(), cellValueSchema)
+  .refine((row) => Object.keys(row).length > 0, {
+    message: "Each row must contain at least one column value.",
   })
-  .describe("A single row to insert.");
+  .describe(
+    'A single row to insert as an object map: { "Column Name": value, ... }.',
+  );
 
 function normalizeLookupKey(value: string): string {
   return value.trim().toLowerCase();
@@ -164,12 +157,6 @@ function normalizeCellValueForColumn({
   }
 }
 
-function asRowsInput(
-  values: Array<z.infer<typeof rowInputSchema>>,
-): Array<z.infer<typeof rowValueSchema>> {
-  return values.map((row) => row.cells);
-}
-
 export default function tableInsertRowsTool({
   canvasId,
 }: {
@@ -185,11 +172,10 @@ export default function tableInsertRowsTool({
         .describe(
           "Row id after which new rows are inserted. If empty or omitted, insert at table start.",
         ),
-      values: z
-        .array(rowInputSchema)
-        .min(1)
+      valuesJson: z
+        .string()
         .describe(
-          "Rows to insert. Each item is { cells: [{column, newValue}, ...] }. Always use this structure, even for a single row.",
+          'Rows to insert as JSON string of compact objects. Example: `[{"":"FloatingText","Couleur démo":"Purple"},{"Type":"Document","Couleur démo":"Blue"}]`.',
         ),
       explanation: z.string().describe("3-5 words explaining the edit intent."),
     }),
@@ -199,8 +185,26 @@ export default function tableInsertRowsTool({
       );
 
       try {
-        const { nodeId, values } = args;
+        const { nodeId } = args;
         const anchorRowId = args.anchorRowId?.trim() ?? "";
+
+        let parsedValues: unknown;
+        try {
+          parsedValues = JSON.parse(args.valuesJson);
+        } catch {
+          return "Error: valuesJson must be valid JSON.";
+        }
+
+        const valuesResult = z
+          .array(rowInputSchema)
+          .min(1)
+          .safeParse(parsedValues);
+        if (!valuesResult.success) {
+          return `Error: Invalid valuesJson format. ${valuesResult.error.issues
+            .map((issue) => issue.message)
+            .join(" ")}`;
+        }
+        const values = valuesResult.data;
 
         const { node, nodeData } = await ctx.runQuery(
           internal.wrappers.canvasNodeWrappers.getNodeWithNodeData,
@@ -224,6 +228,10 @@ export default function tableInsertRowsTool({
           return ERROR_INVALID_TABLE_CONTENT;
         }
 
+        if (columns.length === 0) {
+          return ERROR_TABLE_SCHEMA_EMPTY;
+        }
+
         let insertIndex = 0;
         if (anchorRowId.length > 0) {
           const anchorMatches = rows.filter(
@@ -243,20 +251,19 @@ export default function tableInsertRowsTool({
           insertIndex = anchorIdx + 1;
         }
 
-        const rowsInput = asRowsInput(values);
         const rowsToInsert: Array<TableRow> = [];
 
-        for (const rowInput of rowsInput) {
+        for (const rowInput of values) {
           const resolvedUpdates: Array<{ columnId: string; value: unknown }> =
             [];
 
-          for (const update of rowInput) {
-            const updateColumnNormalized = normalizeLookupKey(update.column);
+          for (const [columnInput, rawValue] of Object.entries(rowInput)) {
+            const updateColumnNormalized = normalizeLookupKey(columnInput);
             const updateColumnNoSpaces = removeSpaces(updateColumnNormalized);
 
             const matchedColumns = columns.filter(
               (column) =>
-                column.id === update.column ||
+                column.id === columnInput ||
                 normalizeLookupKey(column.id) === updateColumnNormalized ||
                 normalizeLookupKey(column.name) === updateColumnNormalized ||
                 removeSpaces(normalizeLookupKey(column.id)) ===
@@ -266,10 +273,10 @@ export default function tableInsertRowsTool({
             );
 
             if (matchedColumns.length === 0) {
-              return `Error: No match found for column "${update.column}".`;
+              return `Error: No match found for column "${columnInput}".`;
             }
             if (matchedColumns.length > 1) {
-              return `Error: Found ${matchedColumns.length} matches for column "${update.column}". Please provide a unique column id.`;
+              return `Error: Found ${matchedColumns.length} matches for column "${columnInput}". Please provide a unique column id.`;
             }
 
             const matchedColumn = matchedColumns[0];
@@ -282,7 +289,7 @@ export default function tableInsertRowsTool({
             }
 
             const normalized = normalizeCellValueForColumn({
-              rawValue: update.newValue,
+              rawValue,
               column: matchedColumn,
             });
             if (!normalized.ok) {

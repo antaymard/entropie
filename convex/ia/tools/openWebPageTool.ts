@@ -10,6 +10,9 @@ export const openWebPageTool = createTool({
   description:
     "Convert any public URL into clean, LLM-optimized markdown. It converts any public URL into clean markdown, including JavaScript-heavy pages and PDFs. It returns focused excerpts aligned to the objective, or full page content if requested.",
   args: z.object({
+    explanation: z
+      .string()
+      .describe("3-5 words explaining the research intent."),
     urls: z
       .array(z.string())
       .describe(

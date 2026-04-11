@@ -161,11 +161,18 @@ export default function tableUpdateRowTool({
         .string()
         .min(1)
         .describe("The table row ID to update (from _rowId in read_nodes)."),
-      valuesJson: z
-        .string()
-        .describe(
-          'Column updates as JSON string of a compact object map. Example: `{"Type":"Document","Couleur démo":"Blue"}`.',
-        ),
+      values: z
+        .array(
+          z.object({
+            column: z
+              .string()
+              .min(1)
+              .describe("Column title or id from the table markdown header."),
+            newValue: cellValueSchema.describe("New value for this column."),
+          }),
+        )
+        .min(1)
+        .describe("Column updates to apply on the target row."),
       explanation: z.string().describe("3-5 words explaining the edit intent."),
     }),
     handler: async (ctx, args): Promise<string> => {
@@ -174,30 +181,8 @@ export default function tableUpdateRowTool({
       );
 
       try {
-        const { nodeId, rowId } = args;
+        const { nodeId, rowId, values } = args;
         const normalizedRowId = rowId.trim();
-
-        let parsedValues: unknown;
-        try {
-          parsedValues = JSON.parse(args.valuesJson);
-        } catch {
-          return "Error: valuesJson must be valid JSON.";
-        }
-
-        const valuesResult = z
-          .record(z.string(), cellValueSchema)
-          .refine((row) => Object.keys(row).length > 0, {
-            message: "valuesJson must contain at least one column update.",
-          })
-          .safeParse(parsedValues);
-
-        if (!valuesResult.success) {
-          return `Error: Invalid valuesJson format. ${valuesResult.error.issues
-            .map((issue) => issue.message)
-            .join(" ")}`;
-        }
-
-        const values = valuesResult.data;
 
         const { node, nodeData } = await ctx.runQuery(
           internal.wrappers.canvasNodeWrappers.getNodeWithNodeData,
@@ -237,13 +222,13 @@ export default function tableUpdateRowTool({
 
         const resolvedUpdates: Array<{ columnId: string; value: unknown }> = [];
 
-        for (const [columnInput, rawValue] of Object.entries(values)) {
-          const updateColumnNormalized = normalizeLookupKey(columnInput);
+        for (const update of values) {
+          const updateColumnNormalized = normalizeLookupKey(update.column);
           const updateColumnNoSpaces = removeSpaces(updateColumnNormalized);
 
           const matchedColumns = columns.filter(
             (column) =>
-              column.id === columnInput ||
+              column.id === update.column ||
               normalizeLookupKey(column.id) === updateColumnNormalized ||
               normalizeLookupKey(column.name) === updateColumnNormalized ||
               removeSpaces(normalizeLookupKey(column.id)) ===
@@ -253,10 +238,10 @@ export default function tableUpdateRowTool({
           );
 
           if (matchedColumns.length === 0) {
-            return `Error: No match found for column "${columnInput}".`;
+            return `Error: No match found for column "${update.column}".`;
           }
           if (matchedColumns.length > 1) {
-            return `Error: Found ${matchedColumns.length} matches for column "${columnInput}". Please provide a unique column id.`;
+            return `Error: Found ${matchedColumns.length} matches for column "${update.column}". Please provide a unique column id.`;
           }
 
           const matchedColumn = matchedColumns[0];
@@ -269,7 +254,7 @@ export default function tableUpdateRowTool({
           }
 
           const normalized = normalizeCellValueForColumn({
-            rawValue,
+            rawValue: update.newValue,
             column: matchedColumn,
           });
           if (!normalized.ok) {

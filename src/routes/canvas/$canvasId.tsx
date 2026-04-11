@@ -144,7 +144,7 @@ function CanvasContent({
       }
 
       event.preventDefault();
-      addNoleAttachments({ nodes: [fromXyNodeToCanvasNode(node)] });
+      addNoleAttachments({ nodes: [fromXyNodeToCanvasNode(node)] }, true);
     },
     [addNoleAttachments, isNolePanelExpanded],
   );

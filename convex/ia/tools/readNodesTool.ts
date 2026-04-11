@@ -6,6 +6,38 @@ import { getNodeDataTitle } from "../../lib/getNodeDataTitle";
 import { escapeXmlAttribute, toXmlCdata } from "../../lib/xml";
 import { makeNodeDataLLMFriendly } from "../helpers/makeNodeDataLLMFriendly";
 import type { NoleToolRuntimeContext } from "../noleToolRuntimeContext";
+import { nodeDataConfig } from "../../config/nodeConfig";
+
+function isSchemaEligibleType(nodeType: string): boolean {
+  return nodeType !== "document" && nodeType !== "table";
+}
+
+function getExpectedNodeDataSchemaString(nodeType: string): string | null {
+  if (nodeType === "document" || nodeType === "table") {
+    return null;
+  }
+
+  const config = nodeDataConfig.find((item) => item.type === nodeType);
+  if (!config) {
+    return null;
+  }
+
+  const schema = config.toolInputSchema ?? config.dataValuesSchema;
+
+  try {
+    const zodWithJson = z as unknown as {
+      toJSONSchema?: (input: z.ZodTypeAny) => unknown;
+    };
+
+    if (typeof zodWithJson.toJSONSchema === "function") {
+      return JSON.stringify(zodWithJson.toJSONSchema(schema), null, 2);
+    }
+  } catch {
+    // Ignore serialization failures and fallback below.
+  }
+
+  return "Schema JSON serialization is unavailable.";
+}
 
 // is v1.0
 export default function readNodesTool({
@@ -65,6 +97,13 @@ export default function readNodesTool({
                   : null,
               title: getNodeDataTitle(nodeData),
               content: makeNodeDataLLMFriendly(nodeData),
+              hasData:
+                typeof nodeData.values === "object" &&
+                nodeData.values !== null &&
+                Object.keys(nodeData.values).length > 0,
+              expectedNodeDataSchema: getExpectedNodeDataSchemaString(
+                node.type,
+              ),
             };
           }),
         );
@@ -159,12 +198,31 @@ export default function readNodesTool({
               height,
               title,
               content,
+              hasData,
+              expectedNodeDataSchema,
             }) => {
               const connectedFrom = connectedFromByNodeId.get(nodeId) ?? [];
               const connectedTo = connectedToByNodeId.get(nodeId) ?? [];
 
-              return `<node id="${escapeXmlAttribute(nodeId)}" type="${escapeXmlAttribute(nodeType)}" connectedFrom="${escapeXmlAttribute(connectedFrom.join(" ; "))}" connectedTo="${escapeXmlAttribute(connectedTo.join(" ; "))}"${withPosition ? ` x="${escapeXmlAttribute(String(positionX))}" y="${escapeXmlAttribute(String(positionY))}"${width !== null ? ` width="${escapeXmlAttribute(String(width))}"` : "?"}${height !== null ? ` height="${escapeXmlAttribute(String(height))}"` : "?"}` : ""} title="${escapeXmlAttribute(title)}">
+              const schemaStatus = !isSchemaEligibleType(nodeType)
+                ? "not_applicable"
+                : !hasData
+                  ? "unavailable_no_data"
+                  : expectedNodeDataSchema
+                    ? "available"
+                    : "unavailable";
+
+              const schemaHint =
+                schemaStatus === "unavailable_no_data"
+                  ? "No schema available because this node currently has no data. Initialize it first."
+                  : schemaStatus === "unavailable"
+                    ? "No schema available for this node type."
+                    : null;
+
+              return `<node id="${escapeXmlAttribute(nodeId)}" type="${escapeXmlAttribute(nodeType)}" schemaStatus="${escapeXmlAttribute(schemaStatus)}" connectedFrom="${escapeXmlAttribute(connectedFrom.join(" ; "))}" connectedTo="${escapeXmlAttribute(connectedTo.join(" ; "))}"${withPosition ? ` x="${escapeXmlAttribute(String(positionX))}" y="${escapeXmlAttribute(String(positionY))}"${width !== null ? ` width="${escapeXmlAttribute(String(width))}"` : "?"}${height !== null ? ` height="${escapeXmlAttribute(String(height))}"` : "?"}` : ""} title="${escapeXmlAttribute(title)}">
 ${toXmlCdata(content)}
+${expectedNodeDataSchema ? `<expectedNodeDataSchema>${toXmlCdata(expectedNodeDataSchema)}</expectedNodeDataSchema>` : ""}
+${schemaHint ? `<schemaHint>${toXmlCdata(schemaHint)}</schemaHint>` : ""}
 </node>`;
             },
           ),

@@ -23,9 +23,14 @@ export const saveMessage = mutation({
   args: {
     threadId: v.string(),
     prompt: v.string(),
+    context: v.optional(
+      v.object({
+        messageContext: v.string(), // Déja balisé
+      }),
+    ),
     canvasId: v.id("canvases"),
   },
-  handler: async (ctx, { threadId, prompt, canvasId }) => {
+  handler: async (ctx, { threadId, prompt, context, canvasId }) => {
     const authUserId = await requireAuth(ctx);
 
     // Save the user message
@@ -39,6 +44,8 @@ export const saveMessage = mutation({
       authUserId: authUserId,
       threadId,
       promptMessageId: messageId,
+      userPrompt: prompt,
+      context,
       canvasId,
     });
 
@@ -51,12 +58,21 @@ export const streamResponse = internalAction({
   args: {
     authUserId: v.id("users"),
     promptMessageId: v.string(),
+    userPrompt: v.string(),
     threadId: v.string(),
+    context: v.optional(
+      v.object({
+        messageContext: v.string(), // Déja balisé
+      }),
+    ),
     canvasId: v.id("canvases"),
   },
-  handler: async (ctx, { authUserId, promptMessageId, threadId, canvasId }) => {
+  handler: async (
+    ctx,
+    { authUserId, promptMessageId, userPrompt, threadId, context, canvasId },
+  ) => {
     // Generate nole context (canvas + user context)
-    const brainInstructions = await generateNoleSystemPrompt({
+    const noleSystemPrompt = await generateNoleSystemPrompt({
       canvasId,
       userId: authUserId,
       ctx,
@@ -68,13 +84,17 @@ export const streamResponse = internalAction({
         canvasId,
       },
     });
+    const llmPrompt = context?.messageContext?.trim()
+      ? `${context.messageContext}\n\n<user_message>\n${userPrompt}\n</user_message>`
+      : userPrompt;
     try {
       const result = await noleAgent.streamText(
         ctx,
         { threadId, userId: authUserId },
         {
           promptMessageId,
-          system: brainInstructions,
+          prompt: llmPrompt,
+          system: noleSystemPrompt,
         },
         {
           saveStreamDeltas: {

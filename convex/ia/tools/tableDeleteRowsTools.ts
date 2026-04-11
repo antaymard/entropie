@@ -16,6 +16,8 @@ type StoredTableValue = {
 const ERROR_TARGET_NOT_TABLE = "Error: Target node must be a table.";
 const ERROR_INVALID_TABLE_CONTENT =
   "Error: Table content is not valid (expected table.columns and table.rows arrays).";
+const ERROR_TABLE_SCHEMA_EMPTY =
+  "Error: Table schema is empty. Use table_update_schema first (operation: set or add_column) before deleting rows.";
 
 function normalizeRowId(value: string): string {
   return value.trim();
@@ -75,6 +77,10 @@ export default function tableDeleteRowsTool({
 
         if (!columns || !rows) {
           return ERROR_INVALID_TABLE_CONTENT;
+        }
+
+        if (columns.length === 0) {
+          return ERROR_TABLE_SCHEMA_EMPTY;
         }
 
         for (const rawRowId of rowIds) {

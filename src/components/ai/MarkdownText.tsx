@@ -33,12 +33,12 @@ const CodeHeader: FC<{ language?: string; code: string }> = ({
 
   return (
     <div className="aui-code-header-root mt-4 flex items-center justify-between gap-4 rounded-t-md dark:bg-muted-foreground/15 px-4 py-2 font-semibold text-foreground text-sm bg-muted-foreground/20">
-      <span className="aui-code-header-language lowercase [&>span]:text-xs text-white">
+      <span className="aui-code-header-language lowercase [&>span]:text-xs">
         {language}
       </span>
       <button
         onClick={onCopy}
-        className="p-1 hover:bg-white/10 rounded transition text-white"
+        className="p-1 hover:bg-text/10 rounded transition"
         type="button"
         aria-label="Copy code"
       >
@@ -156,7 +156,7 @@ const defaultComponents = {
   }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
     <a
       className={cn(
-        "aui-md-a font-medium text-white underline underline-offset-4",
+        "aui-md-a font-medium underline underline-offset-4",
         className,
       )}
       {...props}
@@ -216,7 +216,7 @@ const defaultComponents = {
   }: React.ThHTMLAttributes<HTMLTableCellElement>) => (
     <th
       className={cn(
-        "aui-md-th bg-white/10 px-4 py-2 text-left font-bold first:rounded-tl-md last:rounded-tr-md [[align=center]]:text-center [[align=right]]:text-right",
+        "aui-md-th bg-text/10 px-4 py-2 text-left font-bold first:rounded-tl-md last:rounded-tr-md [[align=center]]:text-center [[align=right]]:text-right",
         className,
       )}
       {...props}
@@ -228,7 +228,7 @@ const defaultComponents = {
   }: React.TdHTMLAttributes<HTMLTableCellElement>) => (
     <td
       className={cn(
-        "aui-md-td border-b border-l border-white/10 px-4 py-2 text-left last:border-r [[align=center]]:text-center [[align=right]]:text-right",
+        "aui-md-td border-b border-l border-text/10 px-4 py-2 text-left last:border-r [[align=center]]:text-center [[align=right]]:text-right",
         className,
       )}
       {...props}
@@ -250,7 +250,10 @@ const defaultComponents = {
     />
   ),
   pre: ({ className, ...props }: React.HTMLAttributes<HTMLPreElement>) => (
-    <pre className={cn("aui-md-pre text-white", className)} {...props} />
+    <pre
+      className={cn("aui-md-pre max-w-full overflow-x-auto", className)}
+      {...props}
+    />
   ),
   code: ({ className, inline, children, ...props }: any) => {
     const match = /language-(\w+)/.exec(className || "");

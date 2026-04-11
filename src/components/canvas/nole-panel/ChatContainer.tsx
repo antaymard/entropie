@@ -20,7 +20,7 @@ import { useNoleStore } from "@/stores/noleStore";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 import { useWindowsStore } from "@/stores/windowsStore";
-import ChatInterface from "@/components/ai/chat-interface/ChatInterface";
+import ChatInterface from "./ChatInterface";
 import { useNoleThread } from "@/hooks/useNoleThread";
 import { api } from "@/../convex/_generated/api";
 import { useAction, useMutation, useQuery } from "convex/react";
@@ -61,6 +61,7 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
 
   const [userInput, setUserInput] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
   const attachedNodes = useNoleStore((state) => state.attachedNodes);
   const attachedPosition = useNoleStore((state) => state.attachedPosition);
   const addAttachments = useNoleStore((state) => state.addAttachments);
@@ -136,12 +137,12 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
   const isAssistantResponding =
     lastMessage !== null &&
     lastMessage.role === "assistant" &&
-    lastMessage.status !== "success" &&
-    lastMessage.status !== "failed";
+    lastMessage.status === "streaming";
 
   const sendMessage = useMutation(api.ia.nole.saveMessage).withOptimisticUpdate(
     optimisticallySendMessage(api.threads.listMessages),
   );
+  const abortStream = useMutation(api.threads.abortStream);
   const updateThreadTitle = useAction(api.threads.updateThreadTitle);
   const threadInfo = useQuery(
     api.threads.getThreadInfo,
@@ -189,14 +190,16 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
       viewportHeight: window.innerHeight,
       getNodeTitle: (node) => getCanvasNodeTitle(node, nodeDatas),
     });
-    const promptWithContext = `${messageContext}\n\n<user_message>\n${prompt}\n</user_message>`;
     setUserInput("");
     setIsSending(true);
 
     try {
       await sendMessage({
         threadId,
-        prompt: promptWithContext,
+        prompt,
+        context: {
+          messageContext,
+        },
         canvasId,
       });
       resetAttachments();
@@ -214,6 +217,29 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
     setUserInput("");
     resetAttachments();
     await resetThread();
+  };
+
+  const onStopClicked = async () => {
+    if (!threadId || !isAssistantResponding || isCancelling) {
+      return;
+    }
+
+    setIsCancelling(true);
+    try {
+      const result = await abortStream({ threadId });
+      if (!result.aborted) {
+        toast("Aucun stream actif a interrompre", {
+          position: "bottom-left",
+        });
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'interruption du stream:", error);
+      toast.error("Impossible d'interrompre la reponse en cours", {
+        position: "bottom-left",
+      });
+    } finally {
+      setIsCancelling(false);
+    }
   };
 
   if (isLoading) {
@@ -363,6 +389,21 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
                   </TooltipContent>
                 </Tooltip>
               )}
+              {isAssistantResponding && (
+                <Button
+                  disabled={isCancelling || isSending}
+                  onClick={() => void onStopClicked()}
+                  className={cn(hasDirtyWindows && "")}
+                  variant="outline"
+                >
+                  Stop
+                  {isCancelling ? (
+                    <TbLoader className="animate-spin" />
+                  ) : (
+                    <TbX />
+                  )}
+                </Button>
+              )}
               <Button
                 disabled={
                   !userInput.trim() ||
@@ -408,18 +449,18 @@ function PositionAttachment({
 }) {
   return (
     <div className="group relative flex items-center gap-1 rounded-sm border border-slate-300 bg-white px-2 py-1 text-sm text-slate-700 max-w-55">
-      <LuMousePointerClick size={12} className="min-w-3" />
-      <span className="truncate">
-        Position ({Math.round(position.x)}, {Math.round(position.y)})
-      </span>
       <button
         type="button"
         onClick={onRemove}
         aria-label="Retirer la position jointe"
-        className="absolute top-1 right-1 hidden group-hover:block rounded-sm bg-slate-100 text-red-400"
+        className="text-slate-500 hover:text-red-500"
       >
         <HiMiniXMark size={14} />
       </button>
+      <LuMousePointerClick size={12} className="min-w-3" />
+      <span className="truncate">
+        Position ({Math.round(position.x)}, {Math.round(position.y)})
+      </span>
     </div>
   );
 }

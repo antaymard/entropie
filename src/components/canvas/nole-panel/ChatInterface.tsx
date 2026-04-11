@@ -36,8 +36,7 @@ const ChatInterface = memo(function ChatInterface({
   const isAssistantThinking =
     !!lastMessage &&
     lastMessage.role === "assistant" &&
-    lastMessage.status !== "success" &&
-    lastMessage.status !== "failed";
+    lastMessage.status === "streaming";
   const isWaitingForAssistant =
     !!lastMessage && lastMessage.role === "user" && !isAssistantThinking;
 
@@ -63,7 +62,7 @@ const ChatInterface = memo(function ChatInterface({
 
     const newIsAtBottom = checkIsAtBottom();
 
-    // Ne pas mettre à jour isAtBottom si on scrolle vers le bas
+    // Ne pas mettre a jour isAtBottom si on scrolle vers le bas
     if (!newIsAtBottom && lastScrollTop.current < div.scrollTop) {
       // ignore scroll down
     } else {
@@ -81,17 +80,17 @@ const ChatInterface = memo(function ChatInterface({
     const div = scrollViewportRef.current;
     if (!div) return;
 
-    // Vérifier si les messages ont vraiment changé
+    // Verifier si les messages ont vraiment change
     const currentLength = messages.length;
     const lastMessage = messages[messages.length - 1];
     const hasNewMessage = currentLength !== previousMessagesLengthRef.current;
     const lastMessageChanged = lastMessage !== previousLastMessageRef.current;
 
-    // Mettre à jour les refs
+    // Mettre a jour les refs
     previousMessagesLengthRef.current = currentLength;
     previousLastMessageRef.current = lastMessage;
 
-    // Ne scroller que si les messages ont changé
+    // Ne scroller que si les messages ont change
     if (!hasNewMessage && !lastMessageChanged) return;
 
     if (scrollingToBottomRef.current) {
@@ -101,7 +100,7 @@ const ChatInterface = memo(function ChatInterface({
     }
   }, [messages, isAtBottom, scrollToBottom]);
 
-  // Scroll instantané lors du premier chargement
+  // Scroll instantane lors du premier chargement
   useEffect(() => {
     scrollToBottom("instant");
   }, [scrollToBottom]);

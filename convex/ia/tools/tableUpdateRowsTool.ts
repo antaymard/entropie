@@ -24,6 +24,8 @@ type StoredTableValue = {
 const ERROR_TARGET_NOT_TABLE = "Error: Target node must be a table.";
 const ERROR_INVALID_TABLE_CONTENT =
   "Error: Table content is not valid (expected table.columns and table.rows arrays).";
+const ERROR_TABLE_SCHEMA_EMPTY =
+  "Error: Table schema is empty. Use table_update_schema first (operation: set or add_column) before updating rows.";
 
 const linkValueSchema = z.object({
   href: z.string().min(1),
@@ -40,13 +42,17 @@ const cellValueSchema = z.union([
   linkValueSchema,
 ]);
 
-function normalizeLookupKey(value: string): string {
-  return value.trim().toLowerCase();
-}
+const rowValuesByColumnIdSchema = z
+  .record(z.string().min(1), cellValueSchema)
+  .refine((row) => Object.keys(row).length > 0, {
+    message: "Each row update must contain at least one column value.",
+  });
 
-function removeSpaces(value: string): string {
-  return value.replace(/\s+/g, "");
-}
+const valuesByRowIdSchema = z
+  .record(z.string().min(1), rowValuesByColumnIdSchema)
+  .refine((updates) => Object.keys(updates).length > 0, {
+    message: "values must contain at least one row update.",
+  });
 
 function normalizeCellValueForColumn({
   rawValue,
@@ -152,35 +158,44 @@ export default function tableUpdateRowsTool({
 }) {
   return createTool({
     description:
-      "Update one existing row in a table node from the current canvas.",
+      "Update one or multiple existing rows in a table node from the current canvas.",
     args: z.object({
       nodeId: z.string().describe("The node ID in the current canvas."),
-      rowId: z
-        .string()
-        .min(1)
-        .describe("The table row ID to update (from _rowId in read_nodes)."),
-      values: z
-        .array(
-          z.object({
-            column: z
-              .string()
-              .min(1)
-              .describe("Column title or id from the table markdown header."),
-            newValue: cellValueSchema.describe("New value for this column."),
-          }),
-        )
-        .min(1)
-        .describe("Column updates to apply on the target row."),
+      values: valuesByRowIdSchema.describe(
+        'Row updates in this format: `{"rowId":{"columnId":value}}`. Example: `{"588P493x":{"description":"Contenu embarque"},"412Z233E":{"type":"Document","color":"Navy"}}`.',
+      ),
       explanation: z.string().describe("3-5 words explaining the edit intent."),
     }),
     handler: async (ctx, args): Promise<string> => {
-      console.log(
-        `🧮 Table row update requested on node ${args.nodeId}, row ${args.rowId}`,
-      );
+      console.log(`🧮 Table rows update requested on node ${args.nodeId}`);
 
       try {
-        const { nodeId, rowId, values } = args;
-        const normalizedRowId = rowId.trim();
+        const { nodeId } = args;
+
+        const requestedEntries = Object.entries(args.values).map(
+          ([rawRowId, rowValues]) => ({
+            rawRowId,
+            rowId: rawRowId.trim(),
+            rowValues,
+          }),
+        );
+
+        const emptyRowId = requestedEntries.find(
+          (entry) => entry.rowId.length === 0,
+        );
+        if (emptyRowId) {
+          return "Error: rowId must be a non-empty string.";
+        }
+
+        const duplicateRequestedRowId = requestedEntries.find(
+          (entry, index) =>
+            requestedEntries.findIndex(
+              (candidate) => candidate.rowId === entry.rowId,
+            ) !== index,
+        );
+        if (duplicateRequestedRowId) {
+          return `Error: rowId "${duplicateRequestedRowId.rawRowId}" is provided multiple times.`;
+        }
 
         const { node, nodeData } = await ctx.runQuery(
           internal.wrappers.canvasNodeWrappers.getNodeWithNodeData,
@@ -204,65 +219,81 @@ export default function tableUpdateRowsTool({
           return ERROR_INVALID_TABLE_CONTENT;
         }
 
-        const rowMatches = rows.filter(
-          (row) => (row.id ?? "").trim() === normalizedRowId,
-        );
-        if (rowMatches.length === 0) {
-          return `Error: No match found for rowId "${rowId}".`;
-        }
-        if (rowMatches.length > 1) {
-          return `Error: Found ${rowMatches.length} matches for rowId "${rowId}". Please provide a unique rowId.`;
+        if (columns.length === 0) {
+          return ERROR_TABLE_SCHEMA_EMPTY;
         }
 
-        const resolvedUpdates: Array<{ columnId: string; value: unknown }> = [];
-
-        for (const update of values) {
-          const updateColumnNormalized = normalizeLookupKey(update.column);
-          const updateColumnNoSpaces = removeSpaces(updateColumnNormalized);
-
-          const matchedColumns = columns.filter(
-            (column) =>
-              column.id === update.column ||
-              normalizeLookupKey(column.id) === updateColumnNormalized ||
-              normalizeLookupKey(column.name) === updateColumnNormalized ||
-              removeSpaces(normalizeLookupKey(column.id)) ===
-                updateColumnNoSpaces ||
-              removeSpaces(normalizeLookupKey(column.name)) ===
-                updateColumnNoSpaces,
+        for (const entry of requestedEntries) {
+          const rowMatches = rows.filter(
+            (row) => (row.id ?? "").trim() === entry.rowId,
           );
-
-          if (matchedColumns.length === 0) {
-            return `Error: No match found for column "${update.column}".`;
+          if (rowMatches.length === 0) {
+            return `Error: No match found for rowId "${entry.rawRowId}".`;
           }
-          if (matchedColumns.length > 1) {
-            return `Error: Found ${matchedColumns.length} matches for column "${update.column}". Please provide a unique column id.`;
+          if (rowMatches.length > 1) {
+            return `Error: Found ${rowMatches.length} matches for rowId "${entry.rawRowId}". Please provide a unique rowId.`;
+          }
+        }
+
+        const updatesByRowId = new Map<
+          string,
+          Array<{ columnId: string; value: unknown }>
+        >();
+
+        for (const entry of requestedEntries) {
+          const resolvedUpdates: Array<{ columnId: string; value: unknown }> =
+            [];
+
+          for (const [rawColumnId, rawValue] of Object.entries(
+            entry.rowValues,
+          )) {
+            const columnId = rawColumnId.trim();
+            if (!columnId) {
+              return "Error: columnId must be a non-empty string.";
+            }
+
+            const matchedColumns = columns.filter(
+              (column) => column.id.trim() === columnId,
+            );
+
+            if (matchedColumns.length === 0) {
+              return `Error: No match found for columnId "${rawColumnId}".`;
+            }
+            if (matchedColumns.length > 1) {
+              return `Error: Found ${matchedColumns.length} matches for columnId "${rawColumnId}". Please provide a unique column id.`;
+            }
+
+            const matchedColumn = matchedColumns[0];
+
+            const duplicate = resolvedUpdates.some(
+              (existing) => existing.columnId === matchedColumn.id,
+            );
+            if (duplicate) {
+              return `Error: Column "${matchedColumn.name}" is provided multiple times.`;
+            }
+
+            const normalized = normalizeCellValueForColumn({
+              rawValue,
+              column: matchedColumn,
+            });
+            if (!normalized.ok) {
+              return normalized.error;
+            }
+
+            resolvedUpdates.push({
+              columnId: matchedColumn.id,
+              value: normalized.value,
+            });
           }
 
-          const matchedColumn = matchedColumns[0];
-
-          const duplicate = resolvedUpdates.some(
-            (existing) => existing.columnId === matchedColumn.id,
-          );
-          if (duplicate) {
-            return `Error: Column "${matchedColumn.name}" is provided multiple times.`;
-          }
-
-          const normalized = normalizeCellValueForColumn({
-            rawValue: update.newValue,
-            column: matchedColumn,
-          });
-          if (!normalized.ok) {
-            return normalized.error;
-          }
-
-          resolvedUpdates.push({
-            columnId: matchedColumn.id,
-            value: normalized.value,
-          });
+          updatesByRowId.set(entry.rowId, resolvedUpdates);
         }
 
         const updatedRows = rows.map((row) => {
-          if ((row.id ?? "").trim() !== normalizedRowId) {
+          const rowId = (row.id ?? "").trim();
+          const rowUpdates = updatesByRowId.get(rowId);
+
+          if (!rowUpdates) {
             return row;
           }
 
@@ -270,7 +301,7 @@ export default function tableUpdateRowsTool({
             ...(row.cells ?? {}),
           };
 
-          for (const update of resolvedUpdates) {
+          for (const update of rowUpdates) {
             nextCells[update.columnId] = update.value;
           }
 
@@ -293,10 +324,15 @@ export default function tableUpdateRowsTool({
         });
 
         console.log(
-          `✅ Table row update complete for node ${nodeId}, row ${rowId} (${resolvedUpdates.length} column(s))`,
+          `✅ Table row update complete for node ${nodeId} (${requestedEntries.length} row(s))`,
         );
 
-        return `Successfully replaced row in exactly ${resolvedUpdates.length} colunms.`;
+        const updatedCellsCount = Array.from(updatesByRowId.values()).reduce(
+          (count, updates) => count + updates.length,
+          0,
+        );
+
+        return `Successfully updated ${requestedEntries.length} rows and ${updatedCellsCount} cells.`;
       } catch (error) {
         console.error("Table update rows tool error:", error);
         return `Error: ${error instanceof Error ? error.message : String(error)}`;

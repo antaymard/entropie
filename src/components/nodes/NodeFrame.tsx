@@ -8,6 +8,7 @@ import NodeHandles from "./NodeHandles";
 import AutomationIndicator from "./toolbar/AutomationIndicator";
 import { useWindowsStore } from "@/stores/windowsStore";
 import { canNodeTypeBeOpenedInWindow } from "@/components/nodes/prebuilt-nodes/prebuiltNodesConfig";
+import { useIsNodeAttached } from "@/stores/noleStore";
 
 function NodeFrame({
   xyNode,
@@ -21,6 +22,7 @@ function NodeFrame({
   const nodeColor = colors[(xyNode?.data?.color as colorsEnum) || "default"];
   const canDrag = true;
   const openWindow = useWindowsStore((state) => state.openWindow);
+  const isAttachedToNole = useIsNodeAttached(xyNode.id);
 
   const handleDoubleClick = useCallback(() => {
     const nodeType = xyNode.type;
@@ -58,6 +60,8 @@ function NodeFrame({
           "group h-full flex flex-col duration-150 border",
           nodeColor.nodeBg,
           nodeColor.nodeBorder,
+          isAttachedToNole &&
+            "after:pointer-events-none after:absolute after:-inset-1 after:rounded-[8px] after:border-2 after:border-dashed after:border-violet-500/90",
           !canDrag && "nodrag",
           xyNode.selected
             ? "ring-2 ring-blue-500/70"

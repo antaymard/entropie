@@ -1,6 +1,6 @@
 import { useSmoothText, type UIMessage } from "@convex-dev/agent/react";
 import { useState } from "react";
-import { MarkdownText } from "../MarkdownText";
+import { MarkdownText } from "@/components/ai/MarkdownText";
 import type { TextPart } from "@/types/domain/message.types";
 import { RiLoaderLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
@@ -23,10 +23,9 @@ export function Message({ message }: { message: UIMessage }) {
     );
   }
 
-  // Pour les messages assistant, itérer sur les parts
+  // Pour les messages assistant, iterer sur les parts
   const parts = message.parts ?? [];
-  const isProcessing =
-    message.status !== "success" && message.status !== "failed";
+  const isProcessing = message.status === "streaming";
   const messageError = getMessageErrorText(message);
 
   return (
@@ -41,7 +40,7 @@ export function Message({ message }: { message: UIMessage }) {
         )}
       >
         {parts.map((part, index) => {
-          // Ignorer les step-start (marqueurs de début d'étape)
+          // Ignorer les step-start (marqueurs de debut d'etape)
           if (part.type === "step-start") {
             return null;
           }
@@ -57,7 +56,7 @@ export function Message({ message }: { message: UIMessage }) {
               "state" in part ? part.state : "input-streaming"
             ) as ToolPartState;
             const toolName = part.type.replace("tool-", "");
-            const toolError = getToolPartErrorText(part);
+            const toolError = getToolPartErrorText(part, partState);
             const debugInput =
               isRecord(part) && "input" in part
                 ? (part.input as unknown)
@@ -119,7 +118,7 @@ function ToolPlaceholder({
   const hasDebugData = input !== undefined || output !== undefined || !!error;
 
   return (
-    <div className="py-2 text-sm text-text opacity-40 hover:opacity-100">
+    <div className="py-2 rounded border border-slate-300 bg-slate-50 p-2 text-xs text-slate-700">
       <button
         type="button"
         className="w-full flex items-center gap-1 text-left"
@@ -139,7 +138,7 @@ function ToolPlaceholder({
         />
       </button>
       {isExpanded && hasDebugData ? (
-        <div className="mt-2 space-y-2 rounded border border-slate-300 bg-slate-50 p-2 text-xs text-slate-700">
+        <div className="mt-2 space-y-2 ">
           <DebugBlock label="Args" value={input} />
           <DebugBlock label="Result" value={output} />
           <DebugBlock label="Error" value={error} />
@@ -185,7 +184,10 @@ function getMessageErrorText(message: UIMessage): string | undefined {
   return readErrorLike(candidate.error);
 }
 
-function getToolPartErrorText(part: unknown): string | undefined {
+function getToolPartErrorText(
+  part: unknown,
+  state: ToolPartState,
+): string | undefined {
   if (!isRecord(part)) {
     return undefined;
   }
@@ -195,7 +197,11 @@ function getToolPartErrorText(part: unknown): string | undefined {
     return directError;
   }
 
-  return readErrorLike(part.output);
+  if (state === "output-error") {
+    return readErrorLike(part.output);
+  }
+
+  return undefined;
 }
 
 function readErrorLike(value: unknown): string | undefined {

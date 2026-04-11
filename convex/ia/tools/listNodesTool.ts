@@ -5,6 +5,15 @@ import { Id } from "../../_generated/dataModel";
 import { getNodeDataTitle } from "../../lib/getNodeDataTitle";
 import { escapeXmlAttribute } from "../../lib/xml";
 import type { NoleToolRuntimeContext } from "../noleToolRuntimeContext";
+import { nodeDataConfig } from "../../config/nodeConfig";
+
+function isSchemaEligibleType(nodeType: string): boolean {
+  return nodeType !== "document" && nodeType !== "table";
+}
+
+function hasNodeSchema(nodeType: string): boolean {
+  return nodeDataConfig.some((config) => config.type === nodeType);
+}
 
 // is v1.0
 export default function listNodesTool({
@@ -147,6 +156,13 @@ export default function listNodesTool({
               title,
               x: Math.trunc(node.position.x),
               y: Math.trunc(node.position.y),
+              schemaStatus: !isSchemaEligibleType(node.type)
+                ? "not_applicable"
+                : !node.nodeDataId
+                  ? "unavailable_no_data"
+                  : hasNodeSchema(node.type)
+                    ? "available"
+                    : "unavailable",
             };
           }),
         );
@@ -157,13 +173,15 @@ export default function listNodesTool({
 
         const limit = 20;
         const truncated = nodeEntries.length > limit;
-        const displayedEntries = truncated ? nodeEntries.slice(0, limit) : nodeEntries;
+        const displayedEntries = truncated
+          ? nodeEntries.slice(0, limit)
+          : nodeEntries;
 
         const xml = [
           `<nodes count="${displayedEntries.length}"${truncated ? ` truncated="true" total="${nodeEntries.length}"` : ""}>`,
           ...displayedEntries.map(
-            ({ id, type, title, x, y }) =>
-              `  <node id=${escapeXmlAttribute(id)} type=${escapeXmlAttribute(type)} title=${escapeXmlAttribute(title)} x=${escapeXmlAttribute(String(x))} y=${escapeXmlAttribute(String(y))} />`,
+            ({ id, type, title, x, y, schemaStatus }) =>
+              `  <node id=${escapeXmlAttribute(id)} type=${escapeXmlAttribute(type)} title=${escapeXmlAttribute(title)} x=${escapeXmlAttribute(String(x))} y=${escapeXmlAttribute(String(y))} schemaStatus=${escapeXmlAttribute(schemaStatus)} />`,
           ),
           "</nodes>",
           "",

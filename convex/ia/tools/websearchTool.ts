@@ -1,7 +1,6 @@
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
 import Parallel from "parallel-web";
-import { reportToolProgress } from "../../automation/progressReporter";
 
 const client = new Parallel({
   apiKey: process.env.PARALLEL_API_KEY!,
@@ -10,6 +9,9 @@ const client = new Parallel({
 export const websearchTool = createTool({
   description: "Search the web for relevant information.",
   args: z.object({
+    explanation: z
+      .string()
+      .describe("3-5 words explaining the research intent."),
     objective: z
       .string()
       .describe(

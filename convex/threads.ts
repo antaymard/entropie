@@ -152,6 +152,54 @@ export const listMessages = query({
   },
 });
 
+export const abortStream = mutation({
+  args: {
+    threadId: v.string(),
+  },
+  returns: v.object({
+    aborted: v.boolean(),
+  }),
+  handler: async (ctx, { threadId }) => {
+    const authUserId = await requireAuth(ctx);
+    if (!authUserId) {
+      throw new Error(errors.UNAUTHORIZED_USER);
+    }
+
+    console.log(`Aborting stream for threadId: ${threadId}`);
+
+    const thread = await getThreadMetadata(ctx, components.agent, {
+      threadId,
+    });
+    if (!thread || thread.userId !== authUserId) {
+      throw new Error(errors.THREAD_NOT_FOUND_OR_FORBIDDEN);
+    }
+
+    const activeStreams = await ctx.runQuery(components.agent.streams.list, {
+      threadId,
+      statuses: ["streaming"],
+    });
+
+    if (activeStreams.length === 0) {
+      return { aborted: false };
+    }
+
+    const currentStream = activeStreams.reduce((latest, stream) =>
+      stream.order > latest.order ? stream : latest,
+    );
+
+    const aborted = await ctx.runMutation(
+      components.agent.streams.abortByOrder,
+      {
+        threadId,
+        order: currentStream.order,
+        reason: "Cancelled by user",
+      },
+    );
+
+    return { aborted };
+  },
+});
+
 export const deleteThread = action({
   args: { threadId: v.string() },
   handler: async (ctx, { threadId }) => {

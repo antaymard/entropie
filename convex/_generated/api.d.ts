@@ -41,7 +41,6 @@ import type * as ia_tools_readNodesTool from "../ia/tools/readNodesTool.js";
 import type * as ia_tools_setNodeDataTool from "../ia/tools/setNodeDataTool.js";
 import type * as ia_tools_tableDeleteRowsTools from "../ia/tools/tableDeleteRowsTools.js";
 import type * as ia_tools_tableInsertRowsTool from "../ia/tools/tableInsertRowsTool.js";
-import type * as ia_tools_tableUpdateRowTool from "../ia/tools/tableUpdateRowTool.js";
 import type * as ia_tools_tableUpdateRowsTool from "../ia/tools/tableUpdateRowsTool.js";
 import type * as ia_tools_tableUpdateSchemaTool from "../ia/tools/tableUpdateSchemaTool.js";
 import type * as ia_tools_updateNodeDataValuesTool from "../ia/tools/updateNodeDataValuesTool.js";
@@ -127,7 +126,6 @@ declare const fullApi: ApiFromModules<{
   "ia/tools/setNodeDataTool": typeof ia_tools_setNodeDataTool;
   "ia/tools/tableDeleteRowsTools": typeof ia_tools_tableDeleteRowsTools;
   "ia/tools/tableInsertRowsTool": typeof ia_tools_tableInsertRowsTool;
-  "ia/tools/tableUpdateRowTool": typeof ia_tools_tableUpdateRowTool;
   "ia/tools/tableUpdateRowsTool": typeof ia_tools_tableUpdateRowsTool;
   "ia/tools/tableUpdateSchemaTool": typeof ia_tools_tableUpdateSchemaTool;
   "ia/tools/updateNodeDataValuesTool": typeof ia_tools_updateNodeDataValuesTool;

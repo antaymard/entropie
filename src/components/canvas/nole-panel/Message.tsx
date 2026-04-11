@@ -25,8 +25,7 @@ export function Message({ message }: { message: UIMessage }) {
 
   // Pour les messages assistant, iterer sur les parts
   const parts = message.parts ?? [];
-  const isProcessing =
-    message.status !== "success" && message.status !== "failed";
+  const isProcessing = message.status === "streaming";
   const messageError = getMessageErrorText(message);
 
   return (

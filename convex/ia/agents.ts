@@ -9,7 +9,7 @@ import { openWebPageTool } from "./tools/openWebPageTool";
 import { websearchTool } from "./tools/websearchTool";
 import documentStringReplaceContentTool from "./tools/documentStringReplaceContentTool";
 import documentInsertContentTool from "./tools/documentInsertContentTool";
-import tableUpdateRowsTool from "./tools/tableUpdateRowTool";
+import tableUpdateRowsTool from "./tools/tableUpdateRowsTool";
 import tableInsertRowsTool from "./tools/tableInsertRowsTool";
 import tableDeleteRowsTool from "./tools/tableDeleteRowsTools";
 import tableUpdateSchemaTool from "./tools/tableUpdateSchemaTool";

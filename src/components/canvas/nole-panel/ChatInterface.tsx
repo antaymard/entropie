@@ -36,8 +36,7 @@ const ChatInterface = memo(function ChatInterface({
   const isAssistantThinking =
     !!lastMessage &&
     lastMessage.role === "assistant" &&
-    lastMessage.status !== "success" &&
-    lastMessage.status !== "failed";
+    lastMessage.status === "streaming";
   const isWaitingForAssistant =
     !!lastMessage && lastMessage.role === "user" && !isAssistantThinking;
 

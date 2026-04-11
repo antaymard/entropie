@@ -44,21 +44,13 @@ const cellValueSchema = z.union([
 ]);
 
 const rowInputSchema = z
-  .record(z.string(), cellValueSchema)
+  .record(z.string().min(1), cellValueSchema)
   .refine((row) => Object.keys(row).length > 0, {
     message: "Each row must contain at least one column value.",
   })
   .describe(
-    'A single row to insert as an object map: { "Column Name": value, ... }.',
+    'A single row to insert as an object map: { "columnId": value, ... }.',
   );
-
-function normalizeLookupKey(value: string): string {
-  return value.trim().toLowerCase();
-}
-
-function removeSpaces(value: string): string {
-  return value.replace(/\s+/g, "");
-}
 
 function normalizeCellValueForColumn({
   rawValue,
@@ -172,10 +164,11 @@ export default function tableInsertRowsTool({
         .describe(
           "Row id after which new rows are inserted. If empty or omitted, insert at table start.",
         ),
-      valuesJson: z
-        .string()
+      values: z
+        .array(rowInputSchema)
+        .min(1)
         .describe(
-          'Rows to insert as JSON string of compact objects. Example: `[{"":"FloatingText","Couleur démo":"Purple"},{"Type":"Document","Couleur démo":"Blue"}]`.',
+          'Rows to insert as objects keyed by columnId. Example: `[{"description":"Contenu embarque"},{"type":"Document","color":"Navy"}]`.',
         ),
       explanation: z.string().describe("3-5 words explaining the edit intent."),
     }),
@@ -187,24 +180,7 @@ export default function tableInsertRowsTool({
       try {
         const { nodeId } = args;
         const anchorRowId = args.anchorRowId?.trim() ?? "";
-
-        let parsedValues: unknown;
-        try {
-          parsedValues = JSON.parse(args.valuesJson);
-        } catch {
-          return "Error: valuesJson must be valid JSON.";
-        }
-
-        const valuesResult = z
-          .array(rowInputSchema)
-          .min(1)
-          .safeParse(parsedValues);
-        if (!valuesResult.success) {
-          return `Error: Invalid valuesJson format. ${valuesResult.error.issues
-            .map((issue) => issue.message)
-            .join(" ")}`;
-        }
-        const values = valuesResult.data;
+        const values = args.values;
 
         const { node, nodeData } = await ctx.runQuery(
           internal.wrappers.canvasNodeWrappers.getNodeWithNodeData,
@@ -258,25 +234,20 @@ export default function tableInsertRowsTool({
             [];
 
           for (const [columnInput, rawValue] of Object.entries(rowInput)) {
-            const updateColumnNormalized = normalizeLookupKey(columnInput);
-            const updateColumnNoSpaces = removeSpaces(updateColumnNormalized);
+            const columnId = columnInput.trim();
+            if (!columnId) {
+              return "Error: columnId must be a non-empty string.";
+            }
 
             const matchedColumns = columns.filter(
-              (column) =>
-                column.id === columnInput ||
-                normalizeLookupKey(column.id) === updateColumnNormalized ||
-                normalizeLookupKey(column.name) === updateColumnNormalized ||
-                removeSpaces(normalizeLookupKey(column.id)) ===
-                  updateColumnNoSpaces ||
-                removeSpaces(normalizeLookupKey(column.name)) ===
-                  updateColumnNoSpaces,
+              (column) => column.id.trim() === columnId,
             );
 
             if (matchedColumns.length === 0) {
-              return `Error: No match found for column "${columnInput}".`;
+              return `Error: No match found for columnId "${columnInput}".`;
             }
             if (matchedColumns.length > 1) {
-              return `Error: Found ${matchedColumns.length} matches for column "${columnInput}". Please provide a unique column id.`;
+              return `Error: Found ${matchedColumns.length} matches for columnId "${columnInput}". Please provide a unique column id.`;
             }
 
             const matchedColumn = matchedColumns[0];

@@ -37,7 +37,7 @@ export default function tableDeleteRowsTool({
         .array(z.string().min(1))
         .min(1)
         .describe(
-          "List of table row IDs to delete (from _rowId in read_nodes).",
+          'List of table row IDs to delete (from _rowId in read_nodes). Example: `["row_001","row_003"]`.',
         ),
       explanation: z.string().describe("3-5 words explaining the edit intent."),
     }),

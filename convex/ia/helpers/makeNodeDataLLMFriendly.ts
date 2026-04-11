@@ -89,11 +89,20 @@ export function makeTableNodeDataLLMFriendly(
         })()
       : [headerRow, separatorRow, ...bodyRows].join("\n");
 
+  const columnIdsLegend =
+    columns.length === 0
+      ? ""
+      : [
+          "",
+          "Column IDs (use these IDs for table_insert_rows and table_update_rows):",
+          ...columns.map((col) => `- ${col.id}: ${col.name || col.id}`),
+        ].join("\n");
+
   if (title) {
-    return `### ${title}\n\n${tableMarkdown}`;
+    return `### ${title}\n\n${tableMarkdown}${columnIdsLegend}`;
   }
 
-  return tableMarkdown;
+  return `${tableMarkdown}${columnIdsLegend}`;
 }
 
 /**

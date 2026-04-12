@@ -32,10 +32,6 @@ function isSchemaEligibleType(
 function getExpectedNodeDataSchemaString(
   nodeType: z.infer<typeof nodeTypeZodValidator>,
 ): string | null {
-  if (!isSchemaEligibleType(nodeType)) {
-    return null;
-  }
-
   const nodeConfig = nodeDataConfig.find((item) => item.type === nodeType);
   if (!nodeConfig) {
     return null;
@@ -164,6 +160,25 @@ function applyNodeDataTitle({
   }
 }
 
+function getToolFacingInitialData({
+  nodeType,
+  initialValues,
+  nodeTitle,
+}: {
+  nodeType: z.infer<typeof nodeTypeZodValidator>;
+  initialValues: Record<string, unknown>;
+  nodeTitle?: string;
+}): Record<string, unknown> {
+  if (nodeType !== "document") {
+    return initialValues;
+  }
+
+  const title = nodeTitle?.trim();
+  return {
+    doc: title ? `# ${title}` : "",
+  };
+}
+
 export default function createNodeTool({
   canvasId,
 }: {
@@ -258,17 +273,30 @@ export default function createNodeTool({
             ? "Document node created. Use insert_document_content or string_replace_document_content to edit content."
             : args.nodeType === "table"
               ? "Table node created. First use table_update_schema (set or add_column), then use table_insert_rows / table_update_rows / table_delete_rows."
-              : "Node created. Use set_node_data with the expected schema below to set node values.";
+              : "Node created. Use set_node_data with nodeType/nodeId/data shown below, and make sure data matches expectedNodeDataSchema.";
+
+        const createNodeData = {
+          schema: getExpectedNodeDataSchemaString(args.nodeType),
+          data: getToolFacingInitialData({
+            nodeType: args.nodeType,
+            initialValues,
+            nodeTitle: args.nodeTitle,
+          }),
+        };
 
         return {
           success: true,
           nodeId,
           nodeType: args.nodeType,
-          supportsSetNodeData: schemaEligible,
           titleApplied,
-          expectedNodeDataSchema: getExpectedNodeDataSchemaString(
-            args.nodeType,
-          ),
+          position: args.position,
+          color: args.color,
+          dimensions: {
+            width: resolvedDimensions.width,
+            height: resolvedDimensions.height,
+          },
+          supportsSetNodeData: schemaEligible,
+          createNodeData,
           hint,
         };
       } catch (error) {

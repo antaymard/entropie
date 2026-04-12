@@ -36,7 +36,6 @@ import type * as ia_tools_documentInsertContentTool from "../ia/tools/documentIn
 import type * as ia_tools_documentStringReplaceContentTool from "../ia/tools/documentStringReplaceContentTool.js";
 import type * as ia_tools_fullTextSearchTool from "../ia/tools/fullTextSearchTool.js";
 import type * as ia_tools_listNodesTool from "../ia/tools/listNodesTool.js";
-import type * as ia_tools_nodeAgentTool from "../ia/tools/nodeAgentTool.js";
 import type * as ia_tools_openWebPageTool from "../ia/tools/openWebPageTool.js";
 import type * as ia_tools_readNodesTool from "../ia/tools/readNodesTool.js";
 import type * as ia_tools_setNodeDataTool from "../ia/tools/setNodeDataTool.js";
@@ -47,8 +46,6 @@ import type * as ia_tools_tableUpdateSchemaTool from "../ia/tools/tableUpdateSch
 import type * as ia_tools_updateNodeDataValuesTool from "../ia/tools/updateNodeDataValuesTool.js";
 import type * as ia_tools_viewImageTool from "../ia/tools/viewImageTool.js";
 import type * as ia_tools_websearchTool from "../ia/tools/websearchTool.js";
-import type * as ia_tools_writeEdgeDynamicTool from "../ia/tools/writeEdgeDynamicTool.js";
-import type * as ia_tools_writeNodeDynamicTool from "../ia/tools/writeNodeDynamicTool.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_generateLlmId from "../lib/generateLlmId.js";
 import type * as lib_getNodeDataTitle from "../lib/getNodeDataTitle.js";
@@ -122,7 +119,6 @@ declare const fullApi: ApiFromModules<{
   "ia/tools/documentStringReplaceContentTool": typeof ia_tools_documentStringReplaceContentTool;
   "ia/tools/fullTextSearchTool": typeof ia_tools_fullTextSearchTool;
   "ia/tools/listNodesTool": typeof ia_tools_listNodesTool;
-  "ia/tools/nodeAgentTool": typeof ia_tools_nodeAgentTool;
   "ia/tools/openWebPageTool": typeof ia_tools_openWebPageTool;
   "ia/tools/readNodesTool": typeof ia_tools_readNodesTool;
   "ia/tools/setNodeDataTool": typeof ia_tools_setNodeDataTool;
@@ -133,8 +129,6 @@ declare const fullApi: ApiFromModules<{
   "ia/tools/updateNodeDataValuesTool": typeof ia_tools_updateNodeDataValuesTool;
   "ia/tools/viewImageTool": typeof ia_tools_viewImageTool;
   "ia/tools/websearchTool": typeof ia_tools_websearchTool;
-  "ia/tools/writeEdgeDynamicTool": typeof ia_tools_writeEdgeDynamicTool;
-  "ia/tools/writeNodeDynamicTool": typeof ia_tools_writeNodeDynamicTool;
   "lib/auth": typeof lib_auth;
   "lib/generateLlmId": typeof lib_generateLlmId;
   "lib/getNodeDataTitle": typeof lib_getNodeDataTitle;

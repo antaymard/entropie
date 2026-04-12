@@ -8,10 +8,6 @@ import { makeNodeDataLLMFriendly } from "../helpers/makeNodeDataLLMFriendly";
 import type { NoleToolRuntimeContext } from "../noleToolRuntimeContext";
 import { nodeDataConfig } from "../../config/nodeConfig";
 
-function isSchemaEligibleType(nodeType: string): boolean {
-  return nodeType !== "document" && nodeType !== "table";
-}
-
 function getExpectedNodeDataSchemaString(nodeType: string): string | null {
   if (nodeType === "document" || nodeType === "table") {
     return null;
@@ -72,39 +68,83 @@ export default function readNodesTool({
           },
         );
 
+        const canvasNodeTypeById = new Map(
+          canvasNodes.map((node) => [node.id, node.type]),
+        );
+
         const requestedNodeIdSet = new Set(args.nodeIds);
 
         const nodes = await Promise.all(
           args.nodeIds.map(async (nodeId) => {
-            const { node, nodeData } = await ctx.runQuery(
-              internal.wrappers.canvasNodeWrappers.getNodeWithNodeData,
-              {
-                canvasId: canvasId as Id<"canvases">,
-                nodeId,
-              },
-            );
+            try {
+              const { node, nodeData } = await ctx.runQuery(
+                internal.wrappers.canvasNodeWrappers.getNodeWithNodeData,
+                {
+                  canvasId: canvasId as Id<"canvases">,
+                  nodeId,
+                },
+              );
 
-            return {
-              nodeId,
-              nodeType: node.type,
-              positionX: Math.trunc(node.position.x),
-              positionY: Math.trunc(node.position.y),
-              width:
-                typeof node.width === "number" ? Math.trunc(node.width) : null,
-              height:
-                typeof node.height === "number"
-                  ? Math.trunc(node.height)
-                  : null,
-              title: getNodeDataTitle(nodeData),
-              content: makeNodeDataLLMFriendly(nodeData),
-              hasData:
-                typeof nodeData.values === "object" &&
-                nodeData.values !== null &&
-                Object.keys(nodeData.values).length > 0,
-              expectedNodeDataSchema: getExpectedNodeDataSchemaString(
-                node.type,
-              ),
-            };
+              const embed =
+                node.type === "embed" &&
+                typeof nodeData.values.embed === "object" &&
+                nodeData.values.embed !== null
+                  ? (nodeData.values.embed as {
+                      url?: unknown;
+                      embedUrl?: unknown;
+                      type?: unknown;
+                    })
+                  : null;
+
+              return {
+                nodeId,
+                nodeType: node.type,
+                positionX: Math.trunc(node.position.x),
+                positionY: Math.trunc(node.position.y),
+                width:
+                  typeof node.width === "number"
+                    ? Math.trunc(node.width)
+                    : null,
+                height:
+                  typeof node.height === "number"
+                    ? Math.trunc(node.height)
+                    : null,
+                title: getNodeDataTitle(nodeData),
+                content: makeNodeDataLLMFriendly(nodeData),
+                embedUrl:
+                  typeof embed?.url === "string" && embed.url.length > 0
+                    ? embed.url
+                    : null,
+                embedIframeUrl:
+                  typeof embed?.embedUrl === "string" &&
+                  embed.embedUrl.length > 0
+                    ? embed.embedUrl
+                    : null,
+                embedType:
+                  typeof embed?.type === "string" && embed.type.length > 0
+                    ? embed.type
+                    : null,
+                error: null as string | null,
+              };
+            } catch (error) {
+              return {
+                nodeId,
+                nodeType: canvasNodeTypeById.get(nodeId) ?? "unknown",
+                positionX: null as number | null,
+                positionY: null as number | null,
+                width: null as number | null,
+                height: null as number | null,
+                title: "Untitled",
+                content: "",
+                embedUrl: null as string | null,
+                embedIframeUrl: null as string | null,
+                embedType: null as string | null,
+                error:
+                  error instanceof Error
+                    ? error.message
+                    : "Unknown node read error",
+              };
+            }
           }),
         );
 
@@ -130,10 +170,6 @@ export default function readNodesTool({
 
         const missingNodeIds = [...connectedNodeIdsToFetch].filter(
           (nodeId) => !nodeInfoById.has(nodeId),
-        );
-
-        const canvasNodeTypeById = new Map(
-          canvasNodes.map((node) => [node.id, node.type]),
         );
 
         await Promise.all(
@@ -187,46 +223,70 @@ export default function readNodesTool({
         }
 
         const xml = [
-          "<nodes>",
-          ...nodes.map(
-            ({
-              nodeId,
-              nodeType,
-              positionX,
-              positionY,
-              width,
-              height,
-              title,
-              content,
-              hasData,
-              expectedNodeDataSchema,
-            }) => {
-              const connectedFrom = connectedFromByNodeId.get(nodeId) ?? [];
-              const connectedTo = connectedToByNodeId.get(nodeId) ?? [];
+          // One schema/tool descriptor per node type.
+          // If multiple nodes share the same type, we expose it only once.
+          // This keeps the output compact and avoids redundant instructions.
+          ...(() => {
+            const uniqueNodeTypes = [
+              ...new Set(nodes.map((node) => node.nodeType)),
+            ];
 
-              const schemaStatus = !isSchemaEligibleType(nodeType)
-                ? "not_applicable"
-                : !hasData
-                  ? "unavailable_no_data"
-                  : expectedNodeDataSchema
-                    ? "available"
-                    : "unavailable";
+            return [
+              "<nodes>",
+              ...nodes.map(
+                ({
+                  nodeId,
+                  nodeType,
+                  positionX,
+                  positionY,
+                  width,
+                  height,
+                  title,
+                  content,
+                  embedUrl,
+                  embedIframeUrl,
+                  embedType,
+                  error,
+                }) => {
+                  const connectedFrom = connectedFromByNodeId.get(nodeId) ?? [];
+                  const connectedTo = connectedToByNodeId.get(nodeId) ?? [];
 
-              const schemaHint =
-                schemaStatus === "unavailable_no_data"
-                  ? "No schema available because this node currently has no data. Initialize it first."
-                  : schemaStatus === "unavailable"
-                    ? "No schema available for this node type."
-                    : null;
+                  const positionAttributes =
+                    withPosition && positionX !== null && positionY !== null
+                      ? `${` x="${String(positionX)}" y="${String(positionY)}"`}${width !== null ? ` width="${String(width)}"` : ""}${height !== null ? ` height="${String(height)}"` : ""}`
+                      : "";
 
-              return `<node id="${nodeId}" type="${nodeType}" schemaStatus="${schemaStatus}" connectedFrom="${connectedFrom.join(" ; ")}" connectedTo="${connectedTo.join(" ; ")}"${withPosition ? ` x="${String(positionX)}" y="${String(positionY)}"${width !== null ? ` width="${String(width)}"` : "?"}${height !== null ? ` height="${String(height)}"` : "?"}` : ""} title="${title}">
+                  if (nodeType === "embed") {
+                    return `<node id="${nodeId}" type="embed" title="${title}"${embedUrl ? ` url="${embedUrl}"` : ""}${embedIframeUrl ? ` embedUrl="${embedIframeUrl}"` : ""}${embedType ? ` embedType="${embedType}"` : ""}${error ? ` readError="${error}"` : ""}${positionAttributes} />`;
+                  }
+
+                  return `<node id="${nodeId}" type="${nodeType}" connectedFrom="${connectedFrom.join(" ; ")}" connectedTo="${connectedTo.join(" ; ")}"${positionAttributes} title="${title}">
+    ${error ? `<readError>${toXmlCdata(error)}</readError>` : ""}
 ${toXmlCdata(content)}
-${expectedNodeDataSchema ? `<expectedNodeDataSchema>${toXmlCdata(expectedNodeDataSchema)}</expectedNodeDataSchema>` : ""}
-${schemaHint ? `<schemaHint>${toXmlCdata(schemaHint)}</schemaHint>` : ""}
 </node>`;
-            },
-          ),
-          "</nodes>",
+                },
+              ),
+              "</nodes>",
+              "<nodeDataSchemas>",
+              ...uniqueNodeTypes.map((nodeType) => {
+                if (nodeType === "document") {
+                  return '<schema nodeType="document" edition_tools="insert_document_content,string_replace_document_content"></schema>';
+                }
+
+                if (nodeType === "table") {
+                  return '<schema nodeType="table" edition_tools="table_update_schema,table_insert_rows,table_update_rows,table_delete_rows"></schema>';
+                }
+
+                const schema = getExpectedNodeDataSchemaString(nodeType);
+                if (!schema) {
+                  return `<schema nodeType="${nodeType}" edition_tool="set_node_data">Schema JSON serialization is unavailable.</schema>`;
+                }
+
+                return `<schema nodeType="${nodeType}" edition_tool="set_node_data">${toXmlCdata(schema)}</schema>`;
+              }),
+              "</nodeDataSchemas>",
+            ];
+          })(),
         ].join("\n");
 
         console.log("✅ Node read complete");

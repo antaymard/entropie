@@ -4,7 +4,7 @@ import { MarkdownText } from "@/components/ai/MarkdownText";
 import type { TextPart } from "@/types/domain/message.types";
 import { RiLoaderLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
-import { TbChevronDown, TbTool } from "react-icons/tb";
+import { TbBrain, TbChevronDown, TbTool } from "react-icons/tb";
 
 type ToolPartState = "input-streaming" | "output-available" | "output-error";
 
@@ -120,7 +120,7 @@ function ReasoningPartRenderer({
         className="w-full flex items-center gap-1 px-2 py-1.5 text-left"
         onClick={() => setIsExpanded((prev) => !prev)}
       >
-        <RiLoaderLine
+        <TbBrain
           size={12}
           className={cn(isStreaming ? "animate-spin" : "opacity-70")}
         />

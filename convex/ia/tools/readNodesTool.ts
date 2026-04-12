@@ -205,20 +205,20 @@ export default function readNodesTool({
           return `${nodeId} | ${nodeType} | ${nodeTitle}`;
         };
 
-        const connectedFromByNodeId = new Map<string, Array<string>>();
-        const connectedToByNodeId = new Map<string, Array<string>>();
+        const sourceNodesByNodeId = new Map<string, Array<string>>();
+        const targetNodesByNodeId = new Map<string, Array<string>>();
 
         for (const edge of canvasEdges) {
           if (requestedNodeIdSet.has(edge.target)) {
-            const values = connectedFromByNodeId.get(edge.target) ?? [];
+            const values = sourceNodesByNodeId.get(edge.target) ?? [];
             values.push(formatConnection(edge.source));
-            connectedFromByNodeId.set(edge.target, values);
+            sourceNodesByNodeId.set(edge.target, values);
           }
 
           if (requestedNodeIdSet.has(edge.source)) {
-            const values = connectedToByNodeId.get(edge.source) ?? [];
+            const values = targetNodesByNodeId.get(edge.source) ?? [];
             values.push(formatConnection(edge.target));
-            connectedToByNodeId.set(edge.source, values);
+            targetNodesByNodeId.set(edge.source, values);
           }
         }
 
@@ -248,8 +248,8 @@ export default function readNodesTool({
                   embedType,
                   error,
                 }) => {
-                  const connectedFrom = connectedFromByNodeId.get(nodeId) ?? [];
-                  const connectedTo = connectedToByNodeId.get(nodeId) ?? [];
+                  const sourceNodes = sourceNodesByNodeId.get(nodeId) ?? [];
+                  const targetNodes = targetNodesByNodeId.get(nodeId) ?? [];
 
                   const positionAttributes =
                     withPosition && positionX !== null && positionY !== null
@@ -260,7 +260,7 @@ export default function readNodesTool({
                     return `<node id="${nodeId}" type="embed" title="${title}"${embedUrl ? ` url="${embedUrl}"` : ""}${embedIframeUrl ? ` embedUrl="${embedIframeUrl}"` : ""}${embedType ? ` embedType="${embedType}"` : ""}${error ? ` readError="${error}"` : ""}${positionAttributes} />`;
                   }
 
-                  return `<node id="${nodeId}" type="${nodeType}" connectedFrom="${connectedFrom.join(" ; ")}" connectedTo="${connectedTo.join(" ; ")}"${positionAttributes} title="${title}">
+                  return `<node id="${nodeId}" type="${nodeType}" sourceNodes="${sourceNodes.join(" ; ")}" targetNodes="${targetNodes.join(" ; ")}"${positionAttributes} title="${title}">
     ${error ? `<readError>${toXmlCdata(error)}</readError>` : ""}
 ${toXmlCdata(content)}
 </node>`;

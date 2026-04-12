@@ -290,11 +290,11 @@ export default function createNodeTool({
         .describe(
           "Optional node data title. Applied to title-like fields depending on node type.",
         ),
-      connectedFrom: z
-        .string()
+      sourceNodes: z
+        .array(z.string())
         .optional()
         .describe(
-          "Optional existing nodeId to connect FROM this node TO the newly created node.",
+          "Optional list of existing nodeIds to connect FROM each source node TO the newly created node.",
         ),
     }),
     handler: async (ctx, args) => {
@@ -352,34 +352,15 @@ export default function createNodeTool({
           ],
         });
 
-        let createdEdge: {
+        const createdEdges: Array<{
           id: string;
           source: string;
           target: string;
           sourceHandle: string;
           targetHandle: string;
-        } | null = null;
+        }> = [];
 
-        if (args.connectedFrom) {
-          if (args.connectedFrom === nodeId) {
-            return "Error: connectedFrom cannot be the newly created node itself.";
-          }
-
-          const fromNodeLookup = await ctx.runQuery(
-            internal.wrappers.canvasNodeWrappers.getNodeWithNodeData,
-            {
-              canvasId,
-              nodeId: args.connectedFrom,
-            },
-          );
-
-          const fromRect: NodeRect = {
-            id: fromNodeLookup.node.id,
-            position: fromNodeLookup.node.position,
-            width: fromNodeLookup.node.width,
-            height: fromNodeLookup.node.height,
-          };
-
+        if (args.sourceNodes && args.sourceNodes.length > 0) {
           const toRect: NodeRect = {
             id: nodeId,
             position: args.position,
@@ -387,34 +368,55 @@ export default function createNodeTool({
             height: resolvedDimensions.height,
           };
 
-          const { sourceHandle, targetHandle } =
-            getClosestHandlesForDirectedEdge({
-              from: fromRect,
-              to: toRect,
+          for (const sourceNodeId of args.sourceNodes) {
+            if (sourceNodeId === nodeId) {
+              return "Error: sourceNodes cannot contain the newly created node itself.";
+            }
+
+            const fromNodeLookup = await ctx.runQuery(
+              internal.wrappers.canvasNodeWrappers.getNodeWithNodeData,
+              {
+                canvasId,
+                nodeId: sourceNodeId,
+              },
+            );
+
+            const fromRect: NodeRect = {
+              id: fromNodeLookup.node.id,
+              position: fromNodeLookup.node.position,
+              width: fromNodeLookup.node.width,
+              height: fromNodeLookup.node.height,
+            };
+
+            const { sourceHandle, targetHandle } =
+              getClosestHandlesForDirectedEdge({
+                from: fromRect,
+                to: toRect,
+              });
+
+            const edgeId = generateLlmId();
+
+            await ctx.runMutation(internal.wrappers.canvasEdgeWrappers.add, {
+              canvasId,
+              edges: [
+                {
+                  id: edgeId,
+                  source: sourceNodeId,
+                  target: nodeId,
+                  sourceHandle,
+                  targetHandle,
+                },
+              ],
             });
 
-          const edgeId = generateLlmId();
-
-          await ctx.runMutation(internal.wrappers.canvasEdgeWrappers.add, {
-            canvasId,
-            edges: [
-              {
-                id: edgeId,
-                source: args.connectedFrom,
-                target: nodeId,
-                sourceHandle,
-                targetHandle,
-              },
-            ],
-          });
-
-          createdEdge = {
-            id: edgeId,
-            source: args.connectedFrom,
-            target: nodeId,
-            sourceHandle,
-            targetHandle,
-          };
+            createdEdges.push({
+              id: edgeId,
+              source: sourceNodeId,
+              target: nodeId,
+              sourceHandle,
+              targetHandle,
+            });
+          }
         }
 
         const schemaEligible = isSchemaEligibleType(args.nodeType);
@@ -447,7 +449,7 @@ export default function createNodeTool({
           },
           supportsSetNodeData: schemaEligible,
           createNodeData,
-          createdEdge,
+          createdEdges,
           hint,
         };
       } catch (error) {

@@ -48,7 +48,7 @@ export default function listNodesTool({
         .describe(
           "Filter by node types (e.g. ['document', 'image', 'table']). If omitted, all types are included.",
         ),
-      connectedTo: z
+      targetNode: z
         .object({
           nodeId: z.string().describe("The node ID to find connections for"),
           direction: z
@@ -94,10 +94,10 @@ export default function listNodesTool({
           canvasNodes.map((n) => [n.id, { x: n.position.x, y: n.position.y }]),
         );
 
-        // Resolve connected node IDs if connectedTo filter is set
+        // Resolve connected node IDs if targetNode filter is set
         let connectedNodeIds: Set<string> | null = null;
-        if (args.connectedTo) {
-          const { nodeId, direction } = args.connectedTo;
+        if (args.targetNode) {
+          const { nodeId, direction } = args.targetNode;
           connectedNodeIds = new Set<string>();
           for (const edge of canvasEdges) {
             if (direction === "output" || direction === "both") {

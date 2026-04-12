@@ -47,7 +47,7 @@ export default function documentStringReplaceContentTool({
         .describe(
           "Exact string to replace. Provide just enough context to make it unique in the document. Include the exact original markdown formatting and whitespace. ",
         ),
-      new_str: z
+      new_string: z
         .string()
         .describe(
           "The replacement string to paste in place of old_string. Can be empty if you just want to delete the old_string. Use markdown formatting.",
@@ -56,11 +56,11 @@ export default function documentStringReplaceContentTool({
     }),
     handler: async (ctx, args): Promise<string> => {
       console.log(
-        `📝 String replace requested on node ${args.nodeId} - old_string: "${args.old_string}", new_str: "${args.new_str}"`,
+        `📝 String replace requested on node ${args.nodeId} - old_string: "${args.old_string}", new_string: "${args.new_string}"`,
       );
 
       try {
-        const { nodeId, old_string, new_str } = args;
+        const { nodeId, old_string, new_string } = args;
 
         const { node, nodeData } = await ctx.runQuery(
           internal.wrappers.canvasNodeWrappers.getNodeWithNodeData,
@@ -95,7 +95,7 @@ export default function documentStringReplaceContentTool({
           return `Error: Found ${matches} matches for replacement text. Please provide more context to make a unique match.`;
         }
 
-        const updatedMarkdown = markdownSource.replace(old_string, new_str);
+        const updatedMarkdown = markdownSource.replace(old_string, new_string);
 
         const updatedPlateDocument = markdownToPlateJson(updatedMarkdown);
         const serializedUpdatedDocument =

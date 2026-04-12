@@ -3,16 +3,35 @@ import { z } from "zod";
 import { internal } from "../../_generated/api";
 import { Id } from "../../_generated/dataModel";
 import { getNodeDataTitle } from "../../lib/getNodeDataTitle";
-import { escapeXmlAttribute } from "../../lib/xml";
+import { toXmlCdata } from "../../lib/xml";
 import type { NoleToolRuntimeContext } from "../noleToolRuntimeContext";
 import { nodeDataConfig } from "../../config/nodeConfig";
 
-function isSchemaEligibleType(nodeType: string): boolean {
-  return nodeType !== "document" && nodeType !== "table";
-}
+function getExpectedNodeDataSchemaString(nodeType: string): string | null {
+  if (nodeType === "document" || nodeType === "table") {
+    return null;
+  }
 
-function hasNodeSchema(nodeType: string): boolean {
-  return nodeDataConfig.some((config) => config.type === nodeType);
+  const config = nodeDataConfig.find((item) => item.type === nodeType);
+  if (!config) {
+    return null;
+  }
+
+  const schema = config.toolInputSchema ?? config.dataValuesSchema;
+
+  try {
+    const zodWithJson = z as unknown as {
+      toJSONSchema?: (input: z.ZodTypeAny) => unknown;
+    };
+
+    if (typeof zodWithJson.toJSONSchema === "function") {
+      return JSON.stringify(zodWithJson.toJSONSchema(schema), null, 2);
+    }
+  } catch {
+    // Ignore serialization failures and fallback below.
+  }
+
+  return "Schema JSON serialization is unavailable.";
 }
 
 // is v1.0
@@ -29,7 +48,7 @@ export default function listNodesTool({
         .describe(
           "Filter by node types (e.g. ['document', 'image', 'table']). If omitted, all types are included.",
         ),
-      connectedTo: z
+      targetNode: z
         .object({
           nodeId: z.string().describe("The node ID to find connections for"),
           direction: z
@@ -75,10 +94,10 @@ export default function listNodesTool({
           canvasNodes.map((n) => [n.id, { x: n.position.x, y: n.position.y }]),
         );
 
-        // Resolve connected node IDs if connectedTo filter is set
+        // Resolve connected node IDs if targetNode filter is set
         let connectedNodeIds: Set<string> | null = null;
-        if (args.connectedTo) {
-          const { nodeId, direction } = args.connectedTo;
+        if (args.targetNode) {
+          const { nodeId, direction } = args.targetNode;
           connectedNodeIds = new Set<string>();
           for (const edge of canvasEdges) {
             if (direction === "output" || direction === "both") {
@@ -136,6 +155,9 @@ export default function listNodesTool({
         const nodeEntries = await Promise.all(
           filteredNodes.map(async (node) => {
             let title = "Untitled";
+            let embedUrl: string | null = null;
+            let embedIframeUrl: string | null = null;
+            let embedType: string | null = null;
             if (node.nodeDataId) {
               try {
                 const { nodeData } = await ctx.runQuery(
@@ -146,6 +168,32 @@ export default function listNodesTool({
                   },
                 );
                 title = getNodeDataTitle(nodeData);
+
+                if (
+                  node.type === "embed" &&
+                  typeof nodeData.values.embed === "object" &&
+                  nodeData.values.embed !== null
+                ) {
+                  const embed = nodeData.values.embed as {
+                    url?: unknown;
+                    embedUrl?: unknown;
+                    type?: unknown;
+                  };
+
+                  embedUrl =
+                    typeof embed.url === "string" && embed.url.length > 0
+                      ? embed.url
+                      : null;
+                  embedIframeUrl =
+                    typeof embed.embedUrl === "string" &&
+                    embed.embedUrl.length > 0
+                      ? embed.embedUrl
+                      : null;
+                  embedType =
+                    typeof embed.type === "string" && embed.type.length > 0
+                      ? embed.type
+                      : null;
+                }
               } catch {
                 // keep "Untitled"
               }
@@ -156,13 +204,9 @@ export default function listNodesTool({
               title,
               x: Math.trunc(node.position.x),
               y: Math.trunc(node.position.y),
-              schemaStatus: !isSchemaEligibleType(node.type)
-                ? "not_applicable"
-                : !node.nodeDataId
-                  ? "unavailable_no_data"
-                  : hasNodeSchema(node.type)
-                    ? "available"
-                    : "unavailable",
+              embedUrl,
+              embedIframeUrl,
+              embedType,
             };
           }),
         );
@@ -177,13 +221,37 @@ export default function listNodesTool({
           ? nodeEntries.slice(0, limit)
           : nodeEntries;
 
+        const uniqueDisplayedNodeTypes = [
+          ...new Set(displayedEntries.map((node) => node.type)),
+        ];
+
         const xml = [
           `<nodes count="${displayedEntries.length}"${truncated ? ` truncated="true" total="${nodeEntries.length}"` : ""}>`,
           ...displayedEntries.map(
-            ({ id, type, title, x, y, schemaStatus }) =>
-              `  <node id=${escapeXmlAttribute(id)} type=${escapeXmlAttribute(type)} title=${escapeXmlAttribute(title)} x=${escapeXmlAttribute(String(x))} y=${escapeXmlAttribute(String(y))} schemaStatus=${escapeXmlAttribute(schemaStatus)} />`,
+            ({ id, type, title, x, y, embedUrl, embedIframeUrl, embedType }) =>
+              type === "embed"
+                ? `  <node id="${id}" type="embed" title="${title}" x="${x}" y="${y}"${embedUrl ? ` url="${embedUrl}"` : ""}${embedIframeUrl ? ` embedUrl="${embedIframeUrl}"` : ""}${embedType ? ` embedType="${embedType}"` : ""} />`
+                : `  <node id="${id}" type="${type}" title="${title}" x="${x}" y="${y}" />`,
           ),
           "</nodes>",
+          "<nodeDataSchemas>",
+          ...uniqueDisplayedNodeTypes.map((nodeType) => {
+            if (nodeType === "document") {
+              return '<schema nodeType="document" edition_tools="insert_document_content,string_replace_document_content"></schema>';
+            }
+
+            if (nodeType === "table") {
+              return '<schema nodeType="table" edition_tools="table_update_schema,table_insert_rows,table_update_rows,table_delete_rows"></schema>';
+            }
+
+            const schema = getExpectedNodeDataSchemaString(nodeType);
+            if (!schema) {
+              return `<schema nodeType="${nodeType}" edition_tool="set_node_data">Schema JSON serialization is unavailable.</schema>`;
+            }
+
+            return `<schema nodeType="${nodeType}" edition_tool="set_node_data">${toXmlCdata(schema)}</schema>`;
+          }),
+          "</nodeDataSchemas>",
           "",
           truncated
             ? `Results truncated to ${limit} of ${nodeEntries.length} matching nodes. Add or refine filters to narrow down results.`

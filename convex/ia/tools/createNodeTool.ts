@@ -23,39 +23,83 @@ const nodeColorValues = [
   "default",
 ] as const;
 
-function isSchemaEligibleType(
-  nodeType: z.infer<typeof nodeTypeZodValidator>,
-): boolean {
-  return nodeType !== "document" && nodeType !== "table";
+type NodeRect = {
+  id: string;
+  position: { x: number; y: number };
+  width: number;
+  height: number;
+};
+
+type Side = "l" | "r" | "t" | "b";
+
+function getSidePoint(rect: NodeRect, side: Side): { x: number; y: number } {
+  const centerX = rect.position.x + rect.width / 2;
+  const centerY = rect.position.y + rect.height / 2;
+
+  switch (side) {
+    case "l":
+      return { x: rect.position.x, y: centerY };
+    case "r":
+      return { x: rect.position.x + rect.width, y: centerY };
+    case "t":
+      return { x: centerX, y: rect.position.y };
+    case "b":
+      return { x: centerX, y: rect.position.y + rect.height };
+  }
 }
 
-function getExpectedNodeDataSchemaString(
-  nodeType: z.infer<typeof nodeTypeZodValidator>,
-): string | null {
-  if (!isSchemaEligibleType(nodeType)) {
-    return null;
-  }
+function distanceSquared(
+  a: { x: number; y: number },
+  b: { x: number; y: number },
+): number {
+  const dx = a.x - b.x;
+  const dy = a.y - b.y;
+  return dx * dx + dy * dy;
+}
 
-  const nodeConfig = nodeDataConfig.find((item) => item.type === nodeType);
-  if (!nodeConfig) {
-    return null;
-  }
+function getClosestHandlesForDirectedEdge({
+  from,
+  to,
+}: {
+  from: NodeRect;
+  to: NodeRect;
+}): {
+  sourceHandle: string;
+  targetHandle: string;
+} {
+  const sides: Side[] = ["l", "r", "t", "b"];
 
-  const schema = nodeConfig.toolInputSchema ?? nodeConfig.dataValuesSchema;
+  let best:
+    | {
+        sourceSide: Side;
+        targetSide: Side;
+        distance: number;
+      }
+    | undefined;
 
-  try {
-    const zodWithJson = z as unknown as {
-      toJSONSchema?: (input: z.ZodTypeAny) => unknown;
-    };
+  for (const sourceSide of sides) {
+    for (const targetSide of sides) {
+      const sourcePoint = getSidePoint(from, sourceSide);
+      const targetPoint = getSidePoint(to, targetSide);
+      const d2 = distanceSquared(sourcePoint, targetPoint);
 
-    if (typeof zodWithJson.toJSONSchema === "function") {
-      return JSON.stringify(zodWithJson.toJSONSchema(schema), null, 2);
+      if (!best || d2 < best.distance) {
+        best = {
+          sourceSide,
+          targetSide,
+          distance: d2,
+        };
+      }
     }
-  } catch {
-    // Ignore JSON schema serialization failures.
   }
 
-  return "Schema JSON serialization is unavailable.";
+  const sourceSide = best?.sourceSide ?? "r";
+  const targetSide = best?.targetSide ?? "l";
+
+  return {
+    sourceHandle: `${from.id}_s${sourceSide}`,
+    targetHandle: `${to.id}_t${targetSide}`,
+  };
 }
 
 function applyNodeDataTitle({
@@ -196,6 +240,12 @@ export default function createNodeTool({
         .describe(
           "Optional node data title. Applied to title-like fields depending on node type.",
         ),
+      sourceNodes: z
+        .array(z.string())
+        .optional()
+        .describe(
+          "Optional list of existing nodeIds to connect FROM each source node TO the newly created node.",
+        ),
     }),
     handler: async (ctx, args) => {
       try {
@@ -252,25 +302,91 @@ export default function createNodeTool({
           ],
         });
 
-        const schemaEligible = isSchemaEligibleType(args.nodeType);
-        const hint =
+        const createdEdges: Array<{
+          id: string;
+          source: string;
+          target: string;
+          sourceHandle: string;
+          targetHandle: string;
+        }> = [];
+
+        if (args.sourceNodes && args.sourceNodes.length > 0) {
+          const toRect: NodeRect = {
+            id: nodeId,
+            position: args.position,
+            width: resolvedDimensions.width,
+            height: resolvedDimensions.height,
+          };
+
+          for (const sourceNodeId of args.sourceNodes) {
+            if (sourceNodeId === nodeId) {
+              return "Error: sourceNodes cannot contain the newly created node itself.";
+            }
+
+            const fromNodeLookup = await ctx.runQuery(
+              internal.wrappers.canvasNodeWrappers.getNodeWithNodeData,
+              {
+                canvasId,
+                nodeId: sourceNodeId,
+              },
+            );
+
+            const fromRect: NodeRect = {
+              id: fromNodeLookup.node.id,
+              position: fromNodeLookup.node.position,
+              width: fromNodeLookup.node.width,
+              height: fromNodeLookup.node.height,
+            };
+
+            const { sourceHandle, targetHandle } =
+              getClosestHandlesForDirectedEdge({
+                from: fromRect,
+                to: toRect,
+              });
+
+            const edgeId = generateLlmId();
+
+            await ctx.runMutation(internal.wrappers.canvasEdgeWrappers.add, {
+              canvasId,
+              edges: [
+                {
+                  id: edgeId,
+                  source: sourceNodeId,
+                  target: nodeId,
+                  sourceHandle,
+                  targetHandle,
+                },
+              ],
+            });
+
+            createdEdges.push({
+              id: edgeId,
+              source: sourceNodeId,
+              target: nodeId,
+              sourceHandle,
+              targetHandle,
+            });
+          }
+        }
+
+        const currentNodeData =
           args.nodeType === "document"
-            ? "Document node created. Use insert_document_content or string_replace_document_content to edit content."
-            : args.nodeType === "table"
-              ? "Table node created. First use table_update_schema (set or add_column), then use table_insert_rows / table_update_rows / table_delete_rows."
-              : "Node created. Use set_node_data with the expected schema below to set node values.";
+            ? { doc: args.nodeTitle?.trim() ? `# ${args.nodeTitle.trim()}` : "" }
+            : initialValues;
 
         return {
           success: true,
           nodeId,
           nodeType: args.nodeType,
-          schemaStatus: schemaEligible ? "available" : "not_applicable",
-          supportsSetNodeData: schemaEligible,
           titleApplied,
-          expectedNodeDataSchema: getExpectedNodeDataSchemaString(
-            args.nodeType,
-          ),
-          hint,
+          position: args.position,
+          color: args.color,
+          dimensions: {
+            width: resolvedDimensions.width,
+            height: resolvedDimensions.height,
+          },
+          currentNodeData,
+          createdEdges,
         };
       } catch (error) {
         return `Error while creating node: ${error instanceof Error ? error.message : String(error)}`;

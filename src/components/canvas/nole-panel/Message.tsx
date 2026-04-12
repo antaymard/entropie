@@ -4,7 +4,7 @@ import { MarkdownText } from "@/components/ai/MarkdownText";
 import type { TextPart } from "@/types/domain/message.types";
 import { RiLoaderLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
-import { TbChevronDown, TbTool } from "react-icons/tb";
+import { TbBrain, TbChevronDown, TbTool } from "react-icons/tb";
 
 type ToolPartState = "input-streaming" | "output-available" | "output-error";
 
@@ -43,6 +43,10 @@ export function Message({ message }: { message: UIMessage }) {
           // Ignorer les step-start (marqueurs de debut d'etape)
           if (part.type === "step-start") {
             return null;
+          }
+
+          if (part.type === "reasoning") {
+            return <ReasoningPartRenderer key={index} part={part} />;
           }
 
           // Afficher les parts texte avec Markdown
@@ -90,6 +94,51 @@ export function Message({ message }: { message: UIMessage }) {
           <ErrorInline message={messageError || "Une erreur est survenue."} />
         )}
       </div>
+    </div>
+  );
+}
+
+function ReasoningPartRenderer({
+  part,
+}: {
+  part: { type: "reasoning"; text: string; state?: "streaming" | "done" };
+}) {
+  const isStreaming = part.state === "streaming";
+  const [isExpanded, setIsExpanded] = useState(isStreaming);
+  const [visibleText] = useSmoothText(part.text ?? "", {
+    startStreaming: isStreaming,
+  });
+
+  if (!visibleText && !isStreaming) {
+    return null;
+  }
+
+  return (
+    <div className="rounded border border-slate-300 bg-slate-50 text-xs text-slate-700">
+      <button
+        type="button"
+        className="w-full flex items-center gap-1 px-2 py-1.5 text-left"
+        onClick={() => setIsExpanded((prev) => !prev)}
+      >
+        <TbBrain
+          size={12}
+          className={cn(isStreaming ? "animate-spin" : "opacity-70")}
+        />
+        <span>{isStreaming ? "Nole reflechit..." : "Thinking"}</span>
+        <TbChevronDown
+          size={12}
+          className={cn(
+            "ml-auto transition-transform",
+            isExpanded && "rotate-180",
+          )}
+        />
+      </button>
+
+      {isExpanded ? (
+        <div className="border-t border-slate-200 px-2 py-2 whitespace-pre-wrap overflow-x-auto">
+          <MarkdownText>{visibleText || "..."}</MarkdownText>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -264,7 +264,6 @@ export default function createNodeTool({
           success: true,
           nodeId,
           nodeType: args.nodeType,
-          schemaStatus: schemaEligible ? "available" : "not_applicable",
           supportsSetNodeData: schemaEligible,
           titleApplied,
           expectedNodeDataSchema: getExpectedNodeDataSchemaString(

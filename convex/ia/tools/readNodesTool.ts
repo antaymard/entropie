@@ -3,7 +3,7 @@ import { z } from "zod";
 import { internal } from "../../_generated/api";
 import { Id } from "../../_generated/dataModel";
 import { getNodeDataTitle } from "../../lib/getNodeDataTitle";
-import { escapeXmlAttribute, toXmlCdata } from "../../lib/xml";
+import { toXmlCdata } from "../../lib/xml";
 import { makeNodeDataLLMFriendly } from "../helpers/makeNodeDataLLMFriendly";
 import type { NoleToolRuntimeContext } from "../noleToolRuntimeContext";
 import { nodeDataConfig } from "../../config/nodeConfig";
@@ -219,7 +219,7 @@ export default function readNodesTool({
                     ? "No schema available for this node type."
                     : null;
 
-              return `<node id="${escapeXmlAttribute(nodeId)}" type="${escapeXmlAttribute(nodeType)}" schemaStatus="${escapeXmlAttribute(schemaStatus)}" connectedFrom="${escapeXmlAttribute(connectedFrom.join(" ; "))}" connectedTo="${escapeXmlAttribute(connectedTo.join(" ; "))}"${withPosition ? ` x="${escapeXmlAttribute(String(positionX))}" y="${escapeXmlAttribute(String(positionY))}"${width !== null ? ` width="${escapeXmlAttribute(String(width))}"` : "?"}${height !== null ? ` height="${escapeXmlAttribute(String(height))}"` : "?"}` : ""} title="${escapeXmlAttribute(title)}">
+              return `<node id="${nodeId}" type="${nodeType}" schemaStatus="${schemaStatus}" connectedFrom="${connectedFrom.join(" ; ")}" connectedTo="${connectedTo.join(" ; ")}"${withPosition ? ` x="${String(positionX)}" y="${String(positionY)}"${width !== null ? ` width="${String(width)}"` : "?"}${height !== null ? ` height="${String(height)}"` : "?"}` : ""} title="${title}">
 ${toXmlCdata(content)}
 ${expectedNodeDataSchema ? `<expectedNodeDataSchema>${toXmlCdata(expectedNodeDataSchema)}</expectedNodeDataSchema>` : ""}
 ${schemaHint ? `<schemaHint>${toXmlCdata(schemaHint)}</schemaHint>` : ""}

@@ -3,7 +3,7 @@ import { internalAction, mutation } from "../_generated/server";
 import { baseAgent, createNoleAgent } from "./agents";
 import { requireAuth } from "../lib/auth";
 import { generateNoleSystemPrompt } from "./nole/noleSystemPrompt";
-import { internal } from "../_generated/api";
+import { components, internal } from "../_generated/api";
 
 function isExpectedAbortedStreamError(error: unknown): boolean {
   if (!(error instanceof Error)) {
@@ -18,7 +18,7 @@ function isExpectedAbortedStreamError(error: unknown): boolean {
   );
 }
 
-// Save user message, then stream response asynchronously
+// Public entrypoint: persist user message, then schedule async streaming.
 export const saveMessage = mutation({
   args: {
     threadId: v.string(),
@@ -33,13 +33,13 @@ export const saveMessage = mutation({
   handler: async (ctx, { threadId, prompt, context, canvasId }) => {
     const authUserId = await requireAuth(ctx);
 
-    // Save the user message
+    // 1) Persist the user message first so it exists in thread history.
     const { messageId } = await baseAgent.saveMessage(ctx, {
       threadId,
       prompt,
     });
 
-    // Schedule the streaming action (no await needed for scheduler)
+    // 2) Schedule the response generation in background.
     void ctx.scheduler.runAfter(0, internal.ia.nole.streamResponse, {
       authUserId: authUserId,
       threadId,
@@ -71,7 +71,7 @@ export const streamResponse = internalAction({
     ctx,
     { authUserId, promptMessageId, userPrompt, threadId, context, canvasId },
   ) => {
-    // Generate nole context (canvas + user context)
+    // A) Build system prompt (long-lived context for this run).
     const noleSystemPrompt = await generateNoleSystemPrompt({
       canvasId,
       userId: authUserId,
@@ -84,10 +84,55 @@ export const streamResponse = internalAction({
         canvasId,
       },
     });
-    const llmPrompt = context?.messageContext?.trim()
-      ? `${context.messageContext}\n\n<user_message>\n${userPrompt}\n</user_message>`
+
+    // B) Retrieve the immediately previous message in the thread.
+    // We request two messages including `promptMessageId`, then keep the other one.
+    const previousMessages = await ctx.runQuery(
+      components.agent.messages.listMessagesByThreadId,
+      {
+        threadId,
+        order: "desc",
+        excludeToolMessages: true,
+        upToAndIncludingMessageId: promptMessageId,
+        paginationOpts: {
+          cursor: null,
+          numItems: 2,
+        },
+      },
+    );
+
+    const previousMessage = previousMessages.page.find(
+      (message) => message._id !== promptMessageId,
+    );
+
+    // C) Compute canvas changes since that previous message and format as XML.
+    // This is runtime-only context injected into the current prompt (not persisted).
+    const canvasChangesSinceLastMessageXml = previousMessage
+      ? await ctx.runQuery(
+          internal.ia.helpers.getCanvasChangesSinceLastMessage
+            .getCanvasChangesSinceLastMessage,
+          {
+            canvasId,
+            lastMessageAt: previousMessage._creationTime,
+          },
+        )
+      : "";
+
+    // D) Merge optional external messageContext + computed canvas changes context.
+    const runtimeMessageContext = [
+      context?.messageContext?.trim() ?? "",
+      canvasChangesSinceLastMessageXml,
+    ]
+      .filter((part) => part.length > 0)
+      .join("\n\n");
+
+    // E) Build final user prompt payload.
+    const llmPrompt = runtimeMessageContext
+      ? `${runtimeMessageContext}\n\n<user_message>\n${userPrompt}\n</user_message>`
       : userPrompt;
+
     try {
+      // F) Stream assistant response and persist deltas progressively.
       const result = await noleAgent.streamText(
         ctx,
         { threadId, userId: authUserId },
@@ -104,7 +149,7 @@ export const streamResponse = internalAction({
         },
       );
 
-      // Consume the stream to ensure it finishes.
+      // Ensure the stream is fully consumed to completion.
       await result.consumeStream();
     } catch (error) {
       if (isExpectedAbortedStreamError(error)) {

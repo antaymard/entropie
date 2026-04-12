@@ -18,6 +18,7 @@ import type * as config_errorsConfig from "../config/errorsConfig.js";
 import type * as config_nodeConfig from "../config/nodeConfig.js";
 import type * as http from "../http.js";
 import type * as ia_agents from "../ia/agents.js";
+import type * as ia_helpers_getCanvasChangesSinceLastMessage from "../ia/helpers/getCanvasChangesSinceLastMessage.js";
 import type * as ia_helpers_getCanvasNodeDatasWithOneLiners from "../ia/helpers/getCanvasNodeDatasWithOneLiners.js";
 import type * as ia_helpers_makeNodeDataLLMFriendly from "../ia/helpers/makeNodeDataLLMFriendly.js";
 import type * as ia_helpers_nodeFieldsAndTypesHelper from "../ia/helpers/nodeFieldsAndTypesHelper.js";
@@ -103,6 +104,7 @@ declare const fullApi: ApiFromModules<{
   "config/nodeConfig": typeof config_nodeConfig;
   http: typeof http;
   "ia/agents": typeof ia_agents;
+  "ia/helpers/getCanvasChangesSinceLastMessage": typeof ia_helpers_getCanvasChangesSinceLastMessage;
   "ia/helpers/getCanvasNodeDatasWithOneLiners": typeof ia_helpers_getCanvasNodeDatasWithOneLiners;
   "ia/helpers/makeNodeDataLLMFriendly": typeof ia_helpers_makeNodeDataLLMFriendly;
   "ia/helpers/nodeFieldsAndTypesHelper": typeof ia_helpers_nodeFieldsAndTypesHelper;

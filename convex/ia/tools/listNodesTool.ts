@@ -3,7 +3,6 @@ import { z } from "zod";
 import { internal } from "../../_generated/api";
 import { Id } from "../../_generated/dataModel";
 import { getNodeDataTitle } from "../../lib/getNodeDataTitle";
-import { escapeXmlAttribute } from "../../lib/xml";
 import type { NoleToolRuntimeContext } from "../noleToolRuntimeContext";
 import { nodeDataConfig } from "../../config/nodeConfig";
 
@@ -180,8 +179,8 @@ export default function listNodesTool({
         const xml = [
           `<nodes count="${displayedEntries.length}"${truncated ? ` truncated="true" total="${nodeEntries.length}"` : ""}>`,
           ...displayedEntries.map(
-            ({ id, type, title, x, y, schemaStatus }) =>
-              `  <node id=${escapeXmlAttribute(id)} type=${escapeXmlAttribute(type)} title=${escapeXmlAttribute(title)} x=${escapeXmlAttribute(String(x))} y=${escapeXmlAttribute(String(y))} schemaStatus=${escapeXmlAttribute(schemaStatus)} />`,
+            ({ id, type, title, x, y }) =>
+              `  <node id="${id}" type="${type}" title="${title}" x="${x}" y="${y}" />`,
           ),
           "</nodes>",
           "",

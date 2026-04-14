@@ -18,7 +18,6 @@ type ToolName =
   | "web_extract"
   | "view_image"
   | "read_pdf"
-  | "update_node_data_values"
   | "browser_use";
 
 export type AutomationStepType =

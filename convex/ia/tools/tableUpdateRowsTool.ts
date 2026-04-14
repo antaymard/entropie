@@ -2,7 +2,7 @@ import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
 import type { Id } from "../../_generated/dataModel";
 import { internal } from "../../_generated/api";
-import { toolError, compactErrorResult, CompactionConfig, ToolConfig } from "./toolHelpers";
+import { toolError, compactErrorResult, ToolConfig } from "./toolHelpers";
 // Tool compaction config
 export const tableUpdateRowsToolConfig: ToolConfig = {
   name: "table_update_rows",
@@ -10,7 +10,8 @@ export const tableUpdateRowsToolConfig: ToolConfig = {
   compactionForSuccessResult: {
     compactAfterMessages: 10,
     compactAfterIterations: 1,
-    toolUseCompaction: (toolUse) => `[table update: ${toolUse.args?.nodeId}]`,
+    toolUseCompaction: (toolUse) =>
+      `[table update: ${(toolUse as { args?: { nodeId?: string } }).args?.nodeId}]`,
     toolResultCompaction: (toolResult) => {
       // Could parse result for summary, but just show updated row count
       return `[table update result: ${toolResult}]`;

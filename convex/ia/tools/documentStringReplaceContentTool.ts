@@ -35,12 +35,13 @@ function countExactMatches(source: string, search: string): number {
 
 // Tool compaction config
 export const documentStringReplaceContentToolConfig: ToolConfig = {
-  name: "document_string_replace_content",
+  name: "string_replace_document_content",
   agents: ["nolë", "automation-agent"],
   compactionForSuccessResult: {
     compactAfterMessages: 10,
     compactAfterIterations: 1,
-    toolUseCompaction: (toolUse) => `[replace: ${toolUse.args?.nodeId}]`,
+    toolUseCompaction: (toolUse) =>
+      `[replace: ${(toolUse as { args?: { nodeId?: string } }).args?.nodeId}]`,
     toolResultCompaction: (toolResult) => {
       // Could parse result for summary, but just show replaced string count
       return `[replace result: ${toolResult}]`;
@@ -49,12 +50,17 @@ export const documentStringReplaceContentToolConfig: ToolConfig = {
   compactionForFailureResult: {
     compactAfterMessages: 0,
     compactAfterIterations: 0,
-    toolResultCompaction: (r) => compactErrorResult("document_string_replace_content", r),
+    toolResultCompaction: (r) =>
+      compactErrorResult("string_replace_document_content", r),
     hideCompletelyAfterMessages: 3,
   },
 };
 
-export default function documentStringReplaceContentTool({ canvasId }: { canvasId: Id<"canvases"> }) {
+export default function documentStringReplaceContentTool({
+  canvasId,
+}: {
+  canvasId: Id<"canvases">;
+}) {
   return createTool({
     description:
       "Replace an exact string inside a document node content from the current canvas.",

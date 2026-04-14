@@ -82,20 +82,27 @@ export function getClosestHandlesForDirectedEdge({
 export interface CompactionConfig {
   compactAfterMessages: number;
   compactAfterIterations: number; // -1 is never, 0 is always
-  toolUseCompaction?: (toolUse: any) => string;
-  toolResultCompaction?: (toolResult: any) => string;
+  toolUseCompaction?: (toolUse: unknown) => string;
+  toolResultCompaction?: (toolResult: unknown) => string;
   hideCompletelyAfterMessages?: number;
 }
 
+export type ToolAgentName =
+  | "nolë"
+  | "automation-agent"
+  | "clone"
+  | "supervisor"
+  | "worker";
+
 export interface ToolConfig {
   name: string;
-  agents: string[];
+  agents: ToolAgentName[];
   compactionForSuccessResult: CompactionConfig;
   compactionForFailureResult: CompactionConfig;
 }
 
 /** Extract compact error hint from the uniform {success:false, message} JSON error format. */
-export function compactErrorResult(toolName: string, toolResult: any): string {
+export function compactErrorResult(toolName: string, toolResult: unknown): string {
   try {
     const parsed =
       typeof toolResult === "string" ? JSON.parse(toolResult) : toolResult;

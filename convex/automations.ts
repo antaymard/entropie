@@ -1,11 +1,9 @@
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
 import { action } from "./_generated/server";
-import { api, components, internal } from "./_generated/api";
+import { components, internal } from "./_generated/api";
 import { createAutomationAgent } from "./ia/agents";
 import { createThread } from "@convex-dev/agent";
 import { requireAuth } from "./lib/auth";
-import { nodeDataConfig } from "./config/nodeConfig";
-import updateNodeDataValuesTool from "./ia/tools/updateNodeDataValuesTool";
 import {
   generateInputNodesContext,
   makeNodeDataLLMFriendly,
@@ -45,27 +43,9 @@ export const trigger = action({
         },
       );
 
-      // Prefer toolInputSchema when provided, otherwise fallback to dataValuesSchema.
-      const nodeConfig = nodeDataConfig.find(
-        (ndc) => ndc.type === currentNodeData.type,
-      );
-      const inputSchema =
-        nodeConfig?.toolInputSchema ?? nodeConfig?.dataValuesSchema;
-      if (!inputSchema) {
-        throw new ConvexError(
-          "Schéma d'entrée non trouvé pour le type de nodeData.",
-        );
-      }
-
       // 3. Exécuter l'agent associé au noeud courant
       const automationAgent = createAutomationAgent({
-        updateNodeDataValuesTool: updateNodeDataValuesTool({
-          ctx,
-          nodeData: currentNodeData,
-          inputSchema,
-          reportProgress,
-          updateValuesMutation: api.nodeDatas.updateValues,
-        }),
+        canvasId: currentNodeData.canvasId,
       });
       const threadId = await createThread(ctx, components.agent, {
         userId,

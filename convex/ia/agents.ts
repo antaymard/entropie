@@ -3,20 +3,7 @@ import { Agent } from "@convex-dev/agent";
 import { openrouter } from "@openrouter/ai-sdk-provider";
 import type { LanguageModel, ToolSet } from "ai";
 import type { NoleToolRuntimeContext } from "./noleToolRuntimeContext";
-import readNodesTool from "./tools/readNodesTool";
-import listNodesTool from "./tools/listNodesTool";
-import { openWebPageTool } from "./tools/openWebPageTool";
-import { websearchTool } from "./tools/websearchTool";
-import documentStringReplaceContentTool from "./tools/documentStringReplaceContentTool";
-import documentInsertContentTool from "./tools/documentInsertContentTool";
-import tableUpdateRowsTool from "./tools/tableUpdateRowsTool";
-import tableInsertRowsTool from "./tools/tableInsertRowsTool";
-import tableDeleteRowsTool from "./tools/tableDeleteRowsTools";
-import tableUpdateSchemaTool from "./tools/tableUpdateSchemaTool";
-import fullTextSearchTool from "./tools/fullTextSearchTool";
-import setNodeDataTool from "./tools/setNodeDataTool";
-import createNodeTool from "./tools/createNodeTool";
-import createConnectionTool from "./tools/createConnectionTool";
+import { getToolsForAgent } from "./tools";
 
 export function createBaseAgent({ model }: { model?: LanguageModel } = {}) {
   return new Agent(components.agent, {
@@ -30,19 +17,25 @@ export const baseAgent = createBaseAgent();
 
 export function createAutomationAgent({
   model,
-  updateNodeDataValuesTool,
+  canvasId,
+  tools = {},
 }: {
   model?: LanguageModel;
-  updateNodeDataValuesTool?: unknown;
+  canvasId?: NoleToolRuntimeContext["canvasId"];
+  tools?: ToolSet;
 }) {
-  void updateNodeDataValuesTool;
   return new Agent(components.agent, {
     name: "automation-agent",
     languageModel: model ?? openrouter("minimax/minimax-m2.7"),
     maxSteps: 5,
+    tools: getToolsForAgent({
+      agentName: "automation-agent",
+      canvasId,
+      extraTools: tools,
+    }),
     instructions: `Tu es un agent d'automatisation, lié à un node sur une app canvas-base type miro. Tu peux utiliser les outils à ta disposition pour accomplir les tâches demandées. Le noeud auquel tu es lié peut contenir des données d'entrée d'autres noeuds (input) que tu devras le plus souvent utiliser pour accomplir ta tâche. Utilise les outils à ta disposition pour trouver l'information.
       
-    Ne réponds pas à l'utilisateur directement comme un chat. Utilise l'outil update_node_data_values pour mettre à jour les données du noeud auquel tu es lié en guise de réponse et de livraison de ton travail. 
+    Ne réponds pas à l'utilisateur comme un chat généraliste. Utilise directement les tools standards disponibles si une action sur le canvas ou sur les contenus est nécessaire.
     
     Sois le plus concis possible, exact et factuel. Ne fabrique pas d'informations. Ne sois pas verbeux.`,
   });
@@ -57,61 +50,24 @@ export function createNoleAgent({
 }) {
   return new Agent(components.agent, {
     name: "Nolë",
-    maxSteps: 8,
+    maxSteps: 20,
     languageModel: openrouter("z-ai/glm-5.1"),
-    tools: {
-      list_nodes: listNodesTool(runtimeContext),
-      full_text_search: fullTextSearchTool(runtimeContext),
-      read_nodes: readNodesTool(runtimeContext),
-      open_webpage: openWebPageTool,
-      websearch: websearchTool,
-      string_replace_document_content: documentStringReplaceContentTool({
-        canvasId: runtimeContext.canvasId,
-      }),
-      insert_document_content: documentInsertContentTool({
-        canvasId: runtimeContext.canvasId,
-      }),
-      table_update_rows: tableUpdateRowsTool({
-        canvasId: runtimeContext.canvasId,
-      }),
-      table_insert_rows: tableInsertRowsTool({
-        canvasId: runtimeContext.canvasId,
-      }),
-      table_delete_rows: tableDeleteRowsTool({
-        canvasId: runtimeContext.canvasId,
-      }),
-      table_update_schema: tableUpdateSchemaTool({
-        canvasId: runtimeContext.canvasId,
-      }),
-      create_node: createNodeTool({
-        canvasId: runtimeContext.canvasId,
-      }),
-      create_connection: createConnectionTool({
-        canvasId: runtimeContext.canvasId,
-      }),
-      set_node_data: setNodeDataTool({
-        canvasId: runtimeContext.canvasId,
-      }),
-      ...tools,
-    },
+    tools: getToolsForAgent({
+      agentName: "nolë",
+      canvasId: runtimeContext.canvasId,
+      extraTools: tools,
+    }),
   });
 }
 
-export function createToolAgent({
-  modelName = "mistralai/mistral-small-2603",
-  tools = {},
-  instructions,
-}: {
-  modelName?: string;
-  tools?: ToolSet;
-  instructions?: string;
-} = {}) {
-  const model = openrouter(modelName);
+export function createSupervisorAgent({ tools = {} }: { tools?: ToolSet }) {
   return new Agent(components.agent, {
-    name: "tool-agent",
-    languageModel: model,
-    tools,
-    instructions,
-    maxSteps: 5,
+    name: "Supervisor",
+    maxSteps: 20,
+    languageModel: openrouter("z-ai/glm-5.1"),
+    tools: getToolsForAgent({
+      agentName: "supervisor",
+      extraTools: tools,
+    }),
   });
 }

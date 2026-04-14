@@ -10,7 +10,7 @@ import {
   parseStoredPlateDocument,
   stringifyPlateDocumentForStorage,
 } from "../../lib/plateDocumentStorage";
-import { toolError, compactErrorResult, CompactionConfig, ToolConfig } from "./toolHelpers";
+import { toolError, compactErrorResult, ToolConfig } from "./toolHelpers";
 
 const ERROR_TARGET_NOT_DOCUMENT = toolError("Target node must be a document.");
 const ERROR_INVALID_PLATE_DOC = toolError(
@@ -35,12 +35,13 @@ function countExactMatches(source: string, search: string): number {
 
 // Tool compaction config
 export const documentInsertContentToolConfig: ToolConfig = {
-  name: "document_insert_content",
+  name: "insert_document_content",
   agents: ["nolë", "automation-agent"],
   compactionForSuccessResult: {
     compactAfterMessages: 10,
     compactAfterIterations: 1,
-    toolUseCompaction: (toolUse) => `[insert: ${toolUse.args?.nodeId}]`,
+    toolUseCompaction: (toolUse) =>
+      `[insert: ${(toolUse as { args?: { nodeId?: string } }).args?.nodeId}]`,
     toolResultCompaction: (toolResult) => {
       // Could parse result for summary, but just show inserted content
       return `[insert result: ${toolResult}]`;
@@ -49,7 +50,7 @@ export const documentInsertContentToolConfig: ToolConfig = {
   compactionForFailureResult: {
     compactAfterMessages: 0,
     compactAfterIterations: 0,
-    toolResultCompaction: (r) => compactErrorResult("document_insert_content", r),
+    toolResultCompaction: (r) => compactErrorResult("insert_document_content", r),
     hideCompletelyAfterMessages: 3,
   },
 };

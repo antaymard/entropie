@@ -132,26 +132,23 @@ function CanvasContent({
 
   const isMobile = useIsMobile();
   const { screenToFlowPosition } = useReactFlow();
-  const isNolePanelExpanded = useNoleStore(
-    (state) => state.panelLayout === "expanded",
-  );
   const addNoleAttachments = useNoleStore((state) => state.addAttachments);
 
   const onNodeClick = useCallback(
     (event: MouseEvent, node: Parameters<typeof fromXyNodeToCanvasNode>[0]) => {
-      if (!event.altKey || !isNolePanelExpanded) {
+      if (!event.altKey) {
         return;
       }
 
       event.preventDefault();
       addNoleAttachments({ nodes: [fromXyNodeToCanvasNode(node)] }, true);
     },
-    [addNoleAttachments, isNolePanelExpanded],
+    [addNoleAttachments],
   );
 
   const onPaneClick = useCallback(
     (event: MouseEvent) => {
-      if (!event.altKey || event.button !== 0 || !isNolePanelExpanded) {
+      if (!event.altKey || event.button !== 0) {
         return;
       }
 
@@ -162,7 +159,7 @@ function CanvasContent({
       });
       addNoleAttachments({ position });
     },
-    [addNoleAttachments, isNolePanelExpanded, screenToFlowPosition],
+    [addNoleAttachments, screenToFlowPosition],
   );
 
   // Canvas nodes management

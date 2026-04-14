@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import { RiLoaderLine } from "react-icons/ri";
+import { cn } from "@/lib/utils";
 import { Message } from "./Message";
 
 const ChatInterface = memo(function ChatInterface({
@@ -39,6 +40,7 @@ const ChatInterface = memo(function ChatInterface({
     lastMessage.status === "streaming";
   const isWaitingForAssistant =
     !!lastMessage && lastMessage.role === "user" && !isAssistantThinking;
+  const showThinkingIndicator = isAssistantThinking || isWaitingForAssistant;
 
   const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
     const div = scrollViewportRef.current;
@@ -106,7 +108,7 @@ const ChatInterface = memo(function ChatInterface({
   }, [scrollToBottom]);
 
   return (
-    <div className="h-full flex flex-col w-full ">
+    <div className="h-full flex flex-col w-full relative">
       {/* Messages area - scrollable */}
       <div
         ref={scrollViewportRef}
@@ -114,7 +116,12 @@ const ChatInterface = memo(function ChatInterface({
         onScroll={handleScroll}
       >
         {messages.length > 0 ? (
-          <div className="flex flex-col gap-8">
+          <div
+            className={cn(
+              "flex flex-col gap-8",
+              showThinkingIndicator && "pb-12",
+            )}
+          >
             {status === "CanLoadMore" && (
               <button
                 onClick={() => loadMore(10)}
@@ -126,15 +133,6 @@ const ChatInterface = memo(function ChatInterface({
             {messages.map((m) => (
               <Message key={m.key} message={m} />
             ))}
-            {(isAssistantThinking || isWaitingForAssistant) && (
-              <ThinkingIndicator
-                label={
-                  isAssistantThinking
-                    ? "Nole reflechit..."
-                    : "En attente de la reponse..."
-                }
-              />
-            )}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-gray-500">
@@ -142,6 +140,20 @@ const ChatInterface = memo(function ChatInterface({
           </div>
         )}
       </div>
+      {/* Overlay: Nole réfléchit... */}
+      {showThinkingIndicator && (
+        <div className="absolute left-0 right-0 bottom-0 flex justify-center pointer-events-none z-20 pb-2">
+          <div>
+            <ThinkingIndicator
+              label={
+                isAssistantThinking
+                  ? "Nole reflechit..."
+                  : "En attente de la reponse..."
+              }
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 });

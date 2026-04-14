@@ -4,6 +4,7 @@ import { type Id } from "../../_generated/dataModel";
 import { nodeTypeValues } from "../../schemas/nodeTypeSchema";
 import { validateNodeInputSchemaForLLM } from "../helpers/nodeInputSchemaValidatorForLLM";
 import z from "zod";
+import { toolError } from "./toolHelpers";
 
 export default function setNodeDataTool({
   canvasId,
@@ -25,11 +26,15 @@ export default function setNodeDataTool({
     handler: async (ctx, args): Promise<string> => {
       try {
         if (args.nodeType === "document") {
-          return "Cannot set document data: use insert_document_content or string_replace_document_content.";
+          return toolError(
+            "Cannot set document data: use insert_document_content or string_replace_document_content.",
+          );
         }
 
         if (args.nodeType === "table") {
-          return "Cannot set table data: use table_insert_rows, table_delete_rows, or table_update_rows.";
+          return toolError(
+            "Cannot set table data: use table_insert_rows, table_delete_rows, or table_update_rows.",
+          );
         }
 
         const validationError = validateNodeInputSchemaForLLM({
@@ -37,7 +42,7 @@ export default function setNodeDataTool({
           input: args.data,
         });
         if (validationError) {
-          return validationError;
+          return toolError(validationError);
         }
 
         const nodeLookup = await ctx.runQuery(
@@ -49,7 +54,9 @@ export default function setNodeDataTool({
         );
 
         if (nodeLookup.node.type !== args.nodeType) {
-          return `Node type mismatch for nodeId ${args.nodeId}: expected ${args.nodeType}, got ${nodeLookup.node.type}.`;
+          return toolError(
+            `Node type mismatch for nodeId ${args.nodeId}: expected ${args.nodeType}, got ${nodeLookup.node.type}.`,
+          );
         }
 
         await ctx.runMutation(internal.wrappers.nodeDataWrappers.updateValues, {
@@ -59,7 +66,9 @@ export default function setNodeDataTool({
 
         return `Node data updated for nodeId ${args.nodeId}.`;
       } catch (error) {
-        return `Error while setting node data for nodeId ${args.nodeId}: ${error instanceof Error ? error.message : String(error)}`;
+        return toolError(
+          `Error while setting node data for nodeId ${args.nodeId}: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     },
   });

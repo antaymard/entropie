@@ -10,6 +10,11 @@ import {
   nodeDataConfig,
   nodeTypeZodValidator,
 } from "../../config/nodeConfig";
+import {
+  getClosestHandlesForDirectedEdge,
+  type NodeRect,
+  toolError,
+} from "./toolHelpers";
 
 const nodeColorValues = [
   "blue",
@@ -22,85 +27,6 @@ const nodeColorValues = [
   "orange",
   "default",
 ] as const;
-
-type NodeRect = {
-  id: string;
-  position: { x: number; y: number };
-  width: number;
-  height: number;
-};
-
-type Side = "l" | "r" | "t" | "b";
-
-function getSidePoint(rect: NodeRect, side: Side): { x: number; y: number } {
-  const centerX = rect.position.x + rect.width / 2;
-  const centerY = rect.position.y + rect.height / 2;
-
-  switch (side) {
-    case "l":
-      return { x: rect.position.x, y: centerY };
-    case "r":
-      return { x: rect.position.x + rect.width, y: centerY };
-    case "t":
-      return { x: centerX, y: rect.position.y };
-    case "b":
-      return { x: centerX, y: rect.position.y + rect.height };
-  }
-}
-
-function distanceSquared(
-  a: { x: number; y: number },
-  b: { x: number; y: number },
-): number {
-  const dx = a.x - b.x;
-  const dy = a.y - b.y;
-  return dx * dx + dy * dy;
-}
-
-function getClosestHandlesForDirectedEdge({
-  from,
-  to,
-}: {
-  from: NodeRect;
-  to: NodeRect;
-}): {
-  sourceHandle: string;
-  targetHandle: string;
-} {
-  const sides: Side[] = ["l", "r", "t", "b"];
-
-  let best:
-    | {
-        sourceSide: Side;
-        targetSide: Side;
-        distance: number;
-      }
-    | undefined;
-
-  for (const sourceSide of sides) {
-    for (const targetSide of sides) {
-      const sourcePoint = getSidePoint(from, sourceSide);
-      const targetPoint = getSidePoint(to, targetSide);
-      const d2 = distanceSquared(sourcePoint, targetPoint);
-
-      if (!best || d2 < best.distance) {
-        best = {
-          sourceSide,
-          targetSide,
-          distance: d2,
-        };
-      }
-    }
-  }
-
-  const sourceSide = best?.sourceSide ?? "r";
-  const targetSide = best?.targetSide ?? "l";
-
-  return {
-    sourceHandle: `${from.id}_s${sourceSide}`,
-    targetHandle: `${to.id}_t${targetSide}`,
-  };
-}
 
 function applyNodeDataTitle({
   nodeType,
@@ -253,16 +179,18 @@ export default function createNodeTool({
           (item) => item.type === args.nodeType,
         );
         if (!nodeConfig) {
-          return `Error: unsupported nodeType ${args.nodeType}.`;
+          return toolError(`Unsupported nodeType ${args.nodeType}.`);
         }
 
         const defaultValues = getDefaultNodeDataValues(args.nodeType);
         if (!defaultValues) {
-          return `Error: unsupported nodeType ${args.nodeType}.`;
+          return toolError(`Unsupported nodeType ${args.nodeType}.`);
         }
 
         if (typeof defaultValues !== "object" || defaultValues === null) {
-          return `Error: invalid default values for nodeType ${args.nodeType}.`;
+          return toolError(
+            `Invalid default values for nodeType ${args.nodeType}.`,
+          );
         }
 
         const defaultValuesRecord = defaultValues as Record<string, unknown>;
@@ -320,7 +248,9 @@ export default function createNodeTool({
 
           for (const sourceNodeId of args.sourceNodes) {
             if (sourceNodeId === nodeId) {
-              return "Error: sourceNodes cannot contain the newly created node itself.";
+              return toolError(
+                "sourceNodes cannot contain the newly created node itself.",
+              );
             }
 
             const fromNodeLookup = await ctx.runQuery(
@@ -371,11 +301,21 @@ export default function createNodeTool({
 
         const currentNodeData =
           args.nodeType === "document"
-            ? { doc: args.nodeTitle?.trim() ? `# ${args.nodeTitle.trim()}` : "" }
+            ? {
+                doc: args.nodeTitle?.trim() ? `# ${args.nodeTitle.trim()}` : "",
+              }
             : initialValues;
+
+        const canvas = await ctx.runQuery(
+          internal.wrappers.canvasWrappers.read,
+          {
+            canvasId,
+          },
+        );
 
         return {
           success: true,
+          canvasName: canvas.name,
           nodeId,
           nodeType: args.nodeType,
           titleApplied,
@@ -386,10 +326,11 @@ export default function createNodeTool({
             height: resolvedDimensions.height,
           },
           currentNodeData,
-          createdEdges,
         };
       } catch (error) {
-        return `Error while creating node: ${error instanceof Error ? error.message : String(error)}`;
+        return toolError(
+          `Error while creating node: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     },
   });

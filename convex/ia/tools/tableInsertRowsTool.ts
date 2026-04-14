@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { Id } from "../../_generated/dataModel";
 import { internal } from "../../_generated/api";
 import { generateLlmId } from "../../lib/llmId";
+import { toolError } from "./toolHelpers";
 
 type TableColumnType = "text" | "number" | "checkbox" | "date" | "link";
 
@@ -22,11 +23,13 @@ type StoredTableValue = {
   rows?: Array<TableRow>;
 };
 
-const ERROR_TARGET_NOT_TABLE = "Error: Target node must be a table.";
-const ERROR_INVALID_TABLE_CONTENT =
-  "Error: Table content is not valid (expected table.columns and table.rows arrays).";
-const ERROR_TABLE_SCHEMA_EMPTY =
-  "Error: Table schema is empty. Use table_update_schema first (operation: set or add_column) before inserting rows.";
+const ERROR_TARGET_NOT_TABLE = toolError("Target node must be a table.");
+const ERROR_INVALID_TABLE_CONTENT = toolError(
+  "Table content is not valid (expected table.columns and table.rows arrays).",
+);
+const ERROR_TABLE_SCHEMA_EMPTY = toolError(
+  "Table schema is empty. Use table_update_schema first (operation: set or add_column) before inserting rows.",
+);
 
 const linkValueSchema = z.object({
   href: z.string().min(1),
@@ -65,7 +68,9 @@ function normalizeCellValueForColumn({
       if (typeof rawValue !== "string") {
         return {
           ok: false,
-          error: `Error: Invalid value for column "${column.name}" (type ${column.type}). Expected a string.`,
+          error: toolError(
+            `Invalid value for column "${column.name}" (type ${column.type}). Expected a string.`,
+          ),
         };
       }
       return { ok: true, value: rawValue };
@@ -84,7 +89,9 @@ function normalizeCellValueForColumn({
       }
       return {
         ok: false,
-        error: `Error: Invalid value for column "${column.name}" (type number). Expected a number or numeric string.`,
+        error: toolError(
+          `Invalid value for column "${column.name}" (type number). Expected a number or numeric string.`,
+        ),
       };
     }
 
@@ -99,7 +106,9 @@ function normalizeCellValueForColumn({
       }
       return {
         ok: false,
-        error: `Error: Invalid value for column "${column.name}" (type checkbox). Expected true/false.`,
+        error: toolError(
+          `Invalid value for column "${column.name}" (type checkbox). Expected true/false.`,
+        ),
       };
     }
 
@@ -109,7 +118,9 @@ function normalizeCellValueForColumn({
         if (!href) {
           return {
             ok: false,
-            error: `Error: Invalid value for column "${column.name}" (type link). Expected a URL string or a link object with href.`,
+            error: toolError(
+              `Invalid value for column "${column.name}" (type link). Expected a URL string or a link object with href.`,
+            ),
           };
         }
         return {
@@ -136,14 +147,16 @@ function normalizeCellValueForColumn({
 
       return {
         ok: false,
-        error: `Error: Invalid value for column "${column.name}" (type link). Expected a URL string or an object { href, pageTitle? } .`,
+        error: toolError(
+          `Invalid value for column "${column.name}" (type link). Expected a URL string or an object { href, pageTitle? } .`,
+        ),
       };
     }
 
     default: {
       return {
         ok: false,
-        error: `Error: Unsupported column type for "${column.name}".`,
+        error: toolError(`Unsupported column type for "${column.name}".`),
       };
     }
   }
@@ -215,10 +228,14 @@ export default function tableInsertRowsTool({
           );
 
           if (anchorMatches.length === 0) {
-            return `Error: No match found for anchorRowId "${args.anchorRowId}".`;
+            return toolError(
+              `No match found for anchorRowId "${args.anchorRowId}".`,
+            );
           }
           if (anchorMatches.length > 1) {
-            return `Error: Found ${anchorMatches.length} matches for anchorRowId "${args.anchorRowId}". Please provide a unique rowId.`;
+            return toolError(
+              `Found ${anchorMatches.length} matches for anchorRowId "${args.anchorRowId}". Please provide a unique rowId.`,
+            );
           }
 
           const anchorIdx = rows.findIndex(
@@ -236,7 +253,7 @@ export default function tableInsertRowsTool({
           for (const [columnInput, rawValue] of Object.entries(rowInput)) {
             const columnId = columnInput.trim();
             if (!columnId) {
-              return "Error: columnId must be a non-empty string.";
+              return toolError("columnId must be a non-empty string.");
             }
 
             const matchedColumns = columns.filter(
@@ -244,10 +261,12 @@ export default function tableInsertRowsTool({
             );
 
             if (matchedColumns.length === 0) {
-              return `Error: No match found for columnId "${columnInput}".`;
+              return toolError(`No match found for columnId "${columnInput}".`);
             }
             if (matchedColumns.length > 1) {
-              return `Error: Found ${matchedColumns.length} matches for columnId "${columnInput}". Please provide a unique column id.`;
+              return toolError(
+                `Found ${matchedColumns.length} matches for columnId "${columnInput}". Please provide a unique column id.`,
+              );
             }
 
             const matchedColumn = matchedColumns[0];
@@ -256,7 +275,9 @@ export default function tableInsertRowsTool({
               (existing) => existing.columnId === matchedColumn.id,
             );
             if (duplicate) {
-              return `Error: Column "${matchedColumn.name}" is provided multiple times.`;
+              return toolError(
+                `Column "${matchedColumn.name}" is provided multiple times.`,
+              );
             }
 
             const normalized = normalizeCellValueForColumn({
@@ -309,7 +330,9 @@ export default function tableInsertRowsTool({
         return `Successfully added ${rowsToInsert.length} rows.`;
       } catch (error) {
         console.error("Table insert rows tool error:", error);
-        return `Error: ${error instanceof Error ? error.message : String(error)}`;
+        return toolError(
+          error instanceof Error ? error.message : String(error),
+        );
       }
     },
   });

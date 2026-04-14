@@ -5,7 +5,13 @@ import type { Id } from "@/../convex/_generated/dataModel";
 import { useWindowFrameContext } from "@/components/windows/WindowFrameContext";
 import InlineEditableText from "@/components/form-ui/InlineEditableText";
 import { Table } from "@/components/table";
-import type { TableData, TableColumn, TableRowData, CellValue, ColumnType } from "@/components/table";
+import type {
+  TableData,
+  TableColumn,
+  TableRowData,
+  CellValue,
+  ColumnType,
+} from "@/components/table";
 
 function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
   const { setDirty, setSaveHandler } = useWindowFrameContext();
@@ -224,4 +230,7 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
   );
 }
 
-export default memo(TableWindow, (prev, next) => prev.nodeDataId === next.nodeDataId);
+export default memo(
+  TableWindow,
+  (prev, next) => prev.nodeDataId === next.nodeDataId,
+);

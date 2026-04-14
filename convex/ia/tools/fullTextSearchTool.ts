@@ -134,6 +134,7 @@ export default function fullTextSearchTool({
 
       if (normalizedQuery.length < 2) {
         return toJsonString({
+          success: false,
           status: "invalid_query",
           query: normalizedQuery,
           mode: groupByNode ? "grouped" : "flat",
@@ -364,6 +365,7 @@ export default function fullTextSearchTool({
         console.error("full_text_search error:", error);
 
         return toJsonString({
+          success: false,
           status: "error",
           query: normalizedQuery,
           mode: groupByNode ? "grouped" : "flat",

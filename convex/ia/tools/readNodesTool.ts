@@ -7,6 +7,7 @@ import { toXmlCdata } from "../../lib/xml";
 import { makeNodeDataLLMFriendly } from "../helpers/makeNodeDataLLMFriendly";
 import type { NoleToolRuntimeContext } from "../noleToolRuntimeContext";
 import { nodeDataConfig } from "../../config/nodeConfig";
+import { toolError } from "./toolHelpers";
 
 function getExpectedNodeDataSchemaString(nodeType: string): string | null {
   if (nodeType === "document" || nodeType === "table") {
@@ -293,7 +294,7 @@ ${toXmlCdata(content)}
         return xml;
       } catch (error) {
         console.error("Read nodes error:", error);
-        throw new Error(
+        return toolError(
           `Failed to read nodes: ${error instanceof Error ? error.message : "Unknown error"}. Please verify the IDs and try again.`,
         );
       }

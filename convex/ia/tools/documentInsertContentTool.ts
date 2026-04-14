@@ -10,10 +10,12 @@ import {
   parseStoredPlateDocument,
   stringifyPlateDocumentForStorage,
 } from "../../lib/plateDocumentStorage";
+import { toolError, compactErrorResult, CompactionConfig, ToolConfig } from "./toolHelpers";
 
-const ERROR_TARGET_NOT_DOCUMENT = "Error: Target node must be a document.";
-const ERROR_INVALID_PLATE_DOC =
-  "Error: Document content is not valid PlateJSON.";
+const ERROR_TARGET_NOT_DOCUMENT = toolError("Target node must be a document.");
+const ERROR_INVALID_PLATE_DOC = toolError(
+  "Document content is not valid PlateJSON.",
+);
 
 function countExactMatches(source: string, search: string): number {
   if (!search) return 0;
@@ -31,11 +33,28 @@ function countExactMatches(source: string, search: string): number {
   return count;
 }
 
-export default function documentInsertContentTool({
-  canvasId,
-}: {
-  canvasId: Id<"canvases">;
-}) {
+// Tool compaction config
+export const documentInsertContentToolConfig: ToolConfig = {
+  name: "document_insert_content",
+  agents: ["nolë", "automation-agent"],
+  compactionForSuccessResult: {
+    compactAfterMessages: 10,
+    compactAfterIterations: 1,
+    toolUseCompaction: (toolUse) => `[insert: ${toolUse.args?.nodeId}]`,
+    toolResultCompaction: (toolResult) => {
+      // Could parse result for summary, but just show inserted content
+      return `[insert result: ${toolResult}]`;
+    },
+  },
+  compactionForFailureResult: {
+    compactAfterMessages: 0,
+    compactAfterIterations: 0,
+    toolResultCompaction: (r) => compactErrorResult("document_insert_content", r),
+    hideCompletelyAfterMessages: 3,
+  },
+};
+
+export default function documentInsertContentTool({ canvasId }: { canvasId: Id<"canvases"> }) {
   return createTool({
     description:
       "Insert new content into a document node from the current canvas.",
@@ -97,7 +116,9 @@ export default function documentInsertContentTool({
             : content;
         } else {
           if (!anchor_text) {
-            return "Error: No match found insertion. Please check your text and try again.";
+            return toolError(
+              "No match found insertion. Please check your text and try again.",
+            );
           }
 
           const matches = countExactMatches(markdownSource, anchor_text);
@@ -106,11 +127,15 @@ export default function documentInsertContentTool({
           );
 
           if (matches === 0) {
-            return "Error: No match found insertion. Please check your text and try again.";
+            return toolError(
+              "No match found insertion. Please check your text and try again.",
+            );
           }
 
           if (matches > 1) {
-            return `Error: Found ${matches} matches. Please provide more context to make a unique match.`;
+            return toolError(
+              `Found ${matches} matches. Please provide more context to make a unique match.`,
+            );
           }
 
           if (position === "after") {
@@ -143,7 +168,9 @@ export default function documentInsertContentTool({
         return "Successfully inserted text at exactly one location.";
       } catch (error) {
         console.error("Insert document tool error:", error);
-        return `Error: ${error instanceof Error ? error.message : String(error)}`;
+        return toolError(
+          error instanceof Error ? error.message : String(error),
+        );
       }
     },
   });

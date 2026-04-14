@@ -2,6 +2,7 @@ import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
 import type { Id } from "../../_generated/dataModel";
 import { internal } from "../../_generated/api";
+import { toolError } from "./toolHelpers";
 
 type TableRow = {
   id: string;
@@ -13,11 +14,13 @@ type StoredTableValue = {
   rows?: Array<TableRow>;
 };
 
-const ERROR_TARGET_NOT_TABLE = "Error: Target node must be a table.";
-const ERROR_INVALID_TABLE_CONTENT =
-  "Error: Table content is not valid (expected table.columns and table.rows arrays).";
-const ERROR_TABLE_SCHEMA_EMPTY =
-  "Error: Table schema is empty. Use table_update_schema first (operation: set or add_column) before deleting rows.";
+const ERROR_TARGET_NOT_TABLE = toolError("Target node must be a table.");
+const ERROR_INVALID_TABLE_CONTENT = toolError(
+  "Table content is not valid (expected table.columns and table.rows arrays).",
+);
+const ERROR_TABLE_SCHEMA_EMPTY = toolError(
+  "Table schema is empty. Use table_update_schema first (operation: set or add_column) before deleting rows.",
+);
 
 function normalizeRowId(value: string): string {
   return value.trim();
@@ -54,7 +57,9 @@ export default function tableDeleteRowsTool({
           (id, index) => normalizedRowIds.indexOf(id) !== index,
         );
         if (duplicateInput) {
-          return `Error: rowId "${duplicateInput}" is provided multiple times.`;
+          return toolError(
+            `rowId "${duplicateInput}" is provided multiple times.`,
+          );
         }
 
         const { node, nodeData } = await ctx.runQuery(
@@ -90,10 +95,12 @@ export default function tableDeleteRowsTool({
           );
 
           if (matches.length === 0) {
-            return `Error: No match found for rowId "${rawRowId}".`;
+            return toolError(`No match found for rowId "${rawRowId}".`);
           }
           if (matches.length > 1) {
-            return `Error: Found ${matches.length} matches for rowId "${rawRowId}". Please provide a unique rowId.`;
+            return toolError(
+              `Found ${matches.length} matches for rowId "${rawRowId}". Please provide a unique rowId.`,
+            );
           }
         }
 
@@ -121,7 +128,9 @@ export default function tableDeleteRowsTool({
         return `Successfully deleted ${normalizedRowIds.length} row.`;
       } catch (error) {
         console.error("Table delete rows tool error:", error);
-        return `Error: ${error instanceof Error ? error.message : String(error)}`;
+        return toolError(
+          error instanceof Error ? error.message : String(error),
+        );
       }
     },
   });

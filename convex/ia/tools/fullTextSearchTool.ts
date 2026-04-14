@@ -3,7 +3,17 @@ import { z } from "zod";
 import { internal } from "../../_generated/api";
 import { Id } from "../../_generated/dataModel";
 import { getNodeDataTitle } from "../../lib/getNodeDataTitle";
-import type { NoleToolRuntimeContext } from "../noleToolRuntimeContext";
+import { type ThreadCtx, toolAgentNames } from "../agentConfig";
+import { ToolConfig } from "./toolHelpers";
+
+export const fullTextSearchToolConfig: ToolConfig = {
+  name: "full_text_search",
+  authorized_agents: [
+    toolAgentNames.nole,
+    toolAgentNames.clone,
+    toolAgentNames.supervisor,
+  ],
+};
 
 type SearchStatus =
   | "ok"
@@ -96,8 +106,12 @@ function toJsonString(value: unknown): string {
 }
 
 export default function fullTextSearchTool({
-  canvasId,
-}: Pick<NoleToolRuntimeContext, "canvasId">) {
+  threadCtx,
+}: {
+  threadCtx: ThreadCtx;
+}) {
+  const { canvasId } = threadCtx;
+
   return createTool({
     description:
       "Search exact tokens in the current canvas using full-text indexed chunks. Use this for precise lookup (names, acronyms, reference IDs, rare words). Returns compact snippets and metadata to quickly decide what to read next.",

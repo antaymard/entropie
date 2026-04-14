@@ -1,4 +1,5 @@
 // Shared helpers for tool error formatting and compaction logic
+import type { ToolAgentName } from "../agentConfig";
 
 export type NodeRect = {
   id: string;
@@ -87,22 +88,35 @@ export interface CompactionConfig {
   hideCompletelyAfterMessages?: number;
 }
 
-export type ToolAgentName =
-  | "nolë"
-  | "automation-agent"
-  | "clone"
-  | "supervisor"
-  | "worker";
-
 export interface ToolConfig {
   name: string;
-  agents: ToolAgentName[];
-  compactionForSuccessResult: CompactionConfig;
-  compactionForFailureResult: CompactionConfig;
+  authorized_agents: ToolAgentName[];
+  compactionForSuccessResult?: CompactionConfig;
+  compactionForFailureResult?: CompactionConfig;
+}
+
+const defaultCompactionConfig: CompactionConfig = {
+  compactAfterMessages: 0,
+  compactAfterIterations: -1,
+};
+
+export function createDefaultToolConfig(
+  name: string,
+  agents: ToolAgentName[],
+): ToolConfig {
+  return {
+    name,
+    authorized_agents: agents,
+    compactionForSuccessResult: defaultCompactionConfig,
+    compactionForFailureResult: defaultCompactionConfig,
+  };
 }
 
 /** Extract compact error hint from the uniform {success:false, message} JSON error format. */
-export function compactErrorResult(toolName: string, toolResult: unknown): string {
+export function compactErrorResult(
+  toolName: string,
+  toolResult: unknown,
+): string {
   try {
     const parsed =
       typeof toolResult === "string" ? JSON.parse(toolResult) : toolResult;

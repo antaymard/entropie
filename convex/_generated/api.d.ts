@@ -17,6 +17,7 @@ import type * as canvases from "../canvases.js";
 import type * as config_errorsConfig from "../config/errorsConfig.js";
 import type * as config_nodeConfig from "../config/nodeConfig.js";
 import type * as http from "../http.js";
+import type * as ia_agentConfig from "../ia/agentConfig.js";
 import type * as ia_agents from "../ia/agents.js";
 import type * as ia_helpers_getCanvasChangesSinceLastMessage from "../ia/helpers/getCanvasChangesSinceLastMessage.js";
 import type * as ia_helpers_getCanvasNodeDatasWithOneLiners from "../ia/helpers/getCanvasNodeDatasWithOneLiners.js";
@@ -28,7 +29,6 @@ import type * as ia_helpers_pillMarkdownRules from "../ia/helpers/pillMarkdownRu
 import type * as ia_helpers_plateMarkdownConverter from "../ia/helpers/plateMarkdownConverter.js";
 import type * as ia_helpers_spatialCanvasOverviewGenerator from "../ia/helpers/spatialCanvasOverviewGenerator.js";
 import type * as ia_nole from "../ia/nole.js";
-import type * as ia_noleToolRuntimeContext from "../ia/noleToolRuntimeContext.js";
 import type * as ia_nole_noleSystemPrompt from "../ia/nole/noleSystemPrompt.js";
 import type * as ia_tools__toolTemplate from "../ia/tools/_toolTemplate.js";
 import type * as ia_tools_createConnectionTool from "../ia/tools/createConnectionTool.js";
@@ -106,6 +106,7 @@ declare const fullApi: ApiFromModules<{
   "config/errorsConfig": typeof config_errorsConfig;
   "config/nodeConfig": typeof config_nodeConfig;
   http: typeof http;
+  "ia/agentConfig": typeof ia_agentConfig;
   "ia/agents": typeof ia_agents;
   "ia/helpers/getCanvasChangesSinceLastMessage": typeof ia_helpers_getCanvasChangesSinceLastMessage;
   "ia/helpers/getCanvasNodeDatasWithOneLiners": typeof ia_helpers_getCanvasNodeDatasWithOneLiners;
@@ -117,7 +118,6 @@ declare const fullApi: ApiFromModules<{
   "ia/helpers/plateMarkdownConverter": typeof ia_helpers_plateMarkdownConverter;
   "ia/helpers/spatialCanvasOverviewGenerator": typeof ia_helpers_spatialCanvasOverviewGenerator;
   "ia/nole": typeof ia_nole;
-  "ia/noleToolRuntimeContext": typeof ia_noleToolRuntimeContext;
   "ia/nole/noleSystemPrompt": typeof ia_nole_noleSystemPrompt;
   "ia/tools/_toolTemplate": typeof ia_tools__toolTemplate;
   "ia/tools/createConnectionTool": typeof ia_tools_createConnectionTool;

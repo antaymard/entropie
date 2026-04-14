@@ -5,9 +5,19 @@ import { Id } from "../../_generated/dataModel";
 import { getNodeDataTitle } from "../../lib/getNodeDataTitle";
 import { toXmlCdata } from "../../lib/xml";
 import { makeNodeDataLLMFriendly } from "../helpers/makeNodeDataLLMFriendly";
-import type { NoleToolRuntimeContext } from "../noleToolRuntimeContext";
+import { toolAgentNames, type ThreadCtx } from "../agentConfig";
 import { nodeDataConfig } from "../../config/nodeConfig";
-import { toolError } from "./toolHelpers";
+import { type ToolConfig, toolError } from "./toolHelpers";
+
+export const readNodesToolConfig: ToolConfig = {
+  name: "read_nodes",
+  authorized_agents: [
+    toolAgentNames.nole,
+    toolAgentNames.clone,
+    toolAgentNames.supervisor,
+    toolAgentNames.worker,
+  ],
+};
 
 function getExpectedNodeDataSchemaString(nodeType: string): string | null {
   if (nodeType === "document" || nodeType === "table") {
@@ -37,9 +47,9 @@ function getExpectedNodeDataSchemaString(nodeType: string): string | null {
 }
 
 // is v1.0
-export default function readNodesTool({
-  canvasId,
-}: Pick<NoleToolRuntimeContext, "canvasId">) {
+export default function readNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
+  const { canvasId } = threadCtx;
+
   return createTool({
     description:
       "A tool to read multiple nodes from the current canvas and return their nodeData as LLM-friendly XML.",

@@ -1,9 +1,20 @@
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
-import type { Id } from "../../_generated/dataModel";
+import { toolAgentNames, type ThreadCtx } from "../agentConfig";
 import { internal } from "../../_generated/api";
 import { generateLlmId } from "../../lib/llmId";
-import { toolError } from "./toolHelpers";
+import { ToolConfig, toolError } from "./toolHelpers";
+
+// Tool compaction config
+export const tableUpdateSchemaToolConfig: ToolConfig = {
+  name: "table_update_schema",
+  authorized_agents: [
+    toolAgentNames.nole,
+    toolAgentNames.clone,
+    toolAgentNames.supervisor,
+    toolAgentNames.worker,
+  ],
+};
 
 type TableColumnType = "text" | "number" | "checkbox" | "date" | "link";
 
@@ -109,10 +120,12 @@ function validateNoDuplicateColumns(
 }
 
 export default function tableUpdateSchemaTool({
-  canvasId,
+  threadCtx,
 }: {
-  canvasId: Id<"canvases">;
+  threadCtx: ThreadCtx;
 }) {
+  const { canvasId } = threadCtx;
+
   return createTool({
     description:
       "Update table schema (columns) on a table node: initialize, add columns, or delete columns.",

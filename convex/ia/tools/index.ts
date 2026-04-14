@@ -1,155 +1,137 @@
 import type { ToolSet } from "ai";
-import type { Id } from "../../_generated/dataModel";
-import createConnectionTool from "./createConnectionTool";
-import createNodeTool from "./createNodeTool";
+import { type ThreadCtx, type ToolAgentName } from "../agentConfig";
+import createConnectionTool, {
+  createConnectionToolConfig,
+} from "./createConnectionTool";
+import createNodeTool, { createNodeToolConfig } from "./createNodeTool";
 import documentInsertContentTool, {
   documentInsertContentToolConfig,
 } from "./documentInsertContentTool";
 import documentStringReplaceContentTool, {
   documentStringReplaceContentToolConfig,
 } from "./documentStringReplaceContentTool";
-import fullTextSearchTool from "./fullTextSearchTool";
-import listNodesTool from "./listNodesTool";
-import { openWebPageTool } from "./openWebPageTool";
-import readNodesTool from "./readNodesTool";
-import setNodeDataTool from "./setNodeDataTool";
-import tableDeleteRowsTool from "./tableDeleteRowsTools";
-import tableInsertRowsTool from "./tableInsertRowsTool";
+import fullTextSearchTool, {
+  fullTextSearchToolConfig,
+} from "./fullTextSearchTool";
+import listNodesTool, { listNodesToolConfig } from "./listNodesTool";
+import { openWebPageTool, openWebPageToolConfig } from "./openWebPageTool";
+import readNodesTool, { readNodesToolConfig } from "./readNodesTool";
+import runSubagent, { runSubagentToolConfig } from "./runSubagent";
+import setNodeDataTool, { setNodeDataToolConfig } from "./setNodeDataTool";
+import tableDeleteRowsTool, {
+  tableDeleteRowsToolConfig,
+} from "./tableDeleteRowsTools";
+import tableInsertRowsTool, {
+  tableInsertRowsToolConfig,
+} from "./tableInsertRowsTool";
 import tableUpdateRowsTool, {
   tableUpdateRowsToolConfig,
 } from "./tableUpdateRowsTool";
-import tableUpdateSchemaTool from "./tableUpdateSchemaTool";
-import {
-  type CompactionConfig,
-  type ToolAgentName,
-  type ToolConfig,
-} from "./toolHelpers";
-import { websearchTool } from "./websearchTool";
+import tableUpdateSchemaTool, {
+  tableUpdateSchemaToolConfig,
+} from "./tableUpdateSchemaTool";
+import { type ToolConfig } from "./toolHelpers";
+import { websearchTool, websearchToolConfig } from "./websearchTool";
 
 type AgentTool = ToolSet[string];
 
-type AgentToolContext = {
-  canvasId?: Id<"canvases">;
-  extraTools?: ToolSet;
+type ToolFactoryContext = {
+  agentName: ToolAgentName;
+  threadCtx: ThreadCtx;
 };
 
 type ToolRegistration = {
   config: ToolConfig;
-  create: (context: AgentToolContext) => AgentTool | null;
+  factory: (context: ToolFactoryContext) => AgentTool | null;
 };
-
-const defaultCompactionConfig: CompactionConfig = {
-  compactAfterMessages: 0,
-  compactAfterIterations: -1,
-};
-
-function makeToolConfig(name: string, agents: ToolAgentName[]): ToolConfig {
-  return {
-    name,
-    agents,
-    compactionForSuccessResult: defaultCompactionConfig,
-    compactionForFailureResult: defaultCompactionConfig,
-  };
-}
-
-function createCanvasScopedTool(
-  factory: (args: { canvasId: Id<"canvases"> }) => AgentTool,
-): (context: AgentToolContext) => AgentTool | null {
-  return ({ canvasId }) => {
-    if (!canvasId) {
-      return null;
-    }
-
-    return factory({ canvasId });
-  };
-}
 
 const toolRegistry: ToolRegistration[] = [
   {
-    config: makeToolConfig("list_nodes", ["nolë", "automation-agent"]),
-    create: createCanvasScopedTool(listNodesTool),
+    config: listNodesToolConfig,
+    factory: ({ threadCtx }) => listNodesTool({ threadCtx }),
   },
   {
-    config: makeToolConfig("full_text_search", ["nolë", "automation-agent"]),
-    create: createCanvasScopedTool(fullTextSearchTool),
+    config: fullTextSearchToolConfig,
+    factory: ({ threadCtx }) => fullTextSearchTool({ threadCtx }),
   },
   {
-    config: makeToolConfig("read_nodes", ["nolë", "automation-agent"]),
-    create: createCanvasScopedTool(readNodesTool),
+    config: readNodesToolConfig,
+    factory: ({ threadCtx }) => readNodesTool({ threadCtx }),
   },
   {
-    config: makeToolConfig("open_webpage", ["nolë", "automation-agent"]),
-    create: () => openWebPageTool,
+    config: openWebPageToolConfig,
+    factory: () => openWebPageTool,
   },
   {
-    config: makeToolConfig("websearch", ["nolë", "automation-agent"]),
-    create: () => websearchTool,
+    config: websearchToolConfig,
+    factory: () => websearchTool,
+  },
+  {
+    config: runSubagentToolConfig,
+    factory: ({ agentName, threadCtx }) =>
+      runSubagent({ currentAgent: agentName, threadCtx }),
   },
   {
     config: documentStringReplaceContentToolConfig,
-    create: createCanvasScopedTool(documentStringReplaceContentTool),
+    factory: ({ threadCtx }) => documentStringReplaceContentTool({ threadCtx }),
   },
   {
     config: documentInsertContentToolConfig,
-    create: createCanvasScopedTool(documentInsertContentTool),
+    factory: ({ threadCtx }) => documentInsertContentTool({ threadCtx }),
   },
   {
     config: tableUpdateRowsToolConfig,
-    create: createCanvasScopedTool(tableUpdateRowsTool),
+    factory: ({ threadCtx }) => tableUpdateRowsTool({ threadCtx }),
   },
   {
-    config: makeToolConfig("table_insert_rows", ["nolë", "automation-agent"]),
-    create: createCanvasScopedTool(tableInsertRowsTool),
+    config: tableInsertRowsToolConfig,
+    factory: ({ threadCtx }) => tableInsertRowsTool({ threadCtx }),
   },
   {
-    config: makeToolConfig("table_delete_rows", ["nolë", "automation-agent"]),
-    create: createCanvasScopedTool(tableDeleteRowsTool),
+    config: tableDeleteRowsToolConfig,
+    factory: ({ threadCtx }) => tableDeleteRowsTool({ threadCtx }),
   },
   {
-    config: makeToolConfig("table_update_schema", ["nolë", "automation-agent"]),
-    create: createCanvasScopedTool(tableUpdateSchemaTool),
+    config: tableUpdateSchemaToolConfig,
+    factory: ({ threadCtx }) => tableUpdateSchemaTool({ threadCtx }),
   },
   {
-    config: makeToolConfig("create_node", ["nolë", "automation-agent"]),
-    create: createCanvasScopedTool(createNodeTool),
+    config: createNodeToolConfig,
+    factory: ({ threadCtx }) => createNodeTool({ threadCtx }),
   },
   {
-    config: makeToolConfig("create_connection", ["nolë", "automation-agent"]),
-    create: createCanvasScopedTool(createConnectionTool),
+    config: createConnectionToolConfig,
+    factory: ({ threadCtx }) => createConnectionTool({ threadCtx }),
   },
   {
-    config: makeToolConfig("set_node_data", ["nolë", "automation-agent"]),
-    create: createCanvasScopedTool(setNodeDataTool),
+    config: setNodeDataToolConfig,
+    factory: ({ threadCtx }) => setNodeDataTool({ threadCtx }),
   },
 ];
 
 export function getToolsForAgent({
   agentName,
-  canvasId,
+  threadCtx,
   extraTools = {},
 }: {
   agentName: ToolAgentName;
-  canvasId?: Id<"canvases">;
+  threadCtx: ThreadCtx;
   extraTools?: ToolSet;
 }): ToolSet {
-  const resolvedTools = toolRegistry.reduce<ToolSet>(
-    (accumulator, registration) => {
-      if (!registration.config.agents.includes(agentName)) {
-        return accumulator;
-      }
+  const resolvedTools: ToolSet = {};
 
-      const tool = registration.create({
-        canvasId,
-      });
-      if (!tool) {
-        return accumulator;
-      }
+  for (const registration of toolRegistry) {
+    if (!registration.config.authorized_agents.includes(agentName)) {
+      continue;
+    }
 
-      accumulator[registration.config.name] = tool;
-      return accumulator;
-    },
-    {},
-  );
+    const tool = registration.factory({ agentName, threadCtx });
+    if (!tool) {
+      continue;
+    }
+
+    resolvedTools[registration.config.name] = tool;
+  }
 
   return {
     ...resolvedTools,

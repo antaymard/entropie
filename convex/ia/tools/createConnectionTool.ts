@@ -1,19 +1,33 @@
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
-import type { Id } from "../../_generated/dataModel";
 import { internal } from "../../_generated/api";
+import { toolAgentNames, type ThreadCtx } from "../agentConfig";
 import { generateLlmId } from "../../lib/llmId";
 import {
   getClosestHandlesForDirectedEdge,
   type NodeRect,
+  ToolConfig,
   toolError,
 } from "./toolHelpers";
 
+// Tool compaction config
+export const createConnectionToolConfig: ToolConfig = {
+  name: "create_connection",
+  authorized_agents: [
+    toolAgentNames.nole,
+    toolAgentNames.clone,
+    toolAgentNames.supervisor,
+    toolAgentNames.worker,
+  ],
+};
+
 export default function createConnectionTool({
-  canvasId,
+  threadCtx,
 }: {
-  canvasId: Id<"canvases">;
+  threadCtx: ThreadCtx;
 }) {
+  const { canvasId } = threadCtx;
+
   return createTool({
     description: "Create a directed connection between two existing nodes.",
     args: z.object({

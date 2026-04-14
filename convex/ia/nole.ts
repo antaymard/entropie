@@ -79,7 +79,7 @@ export const streamResponse = internalAction({
     });
 
     const noleAgent = createNoleAgent({
-      runtimeContext: {
+      threadCtx: {
         authUserId,
         canvasId,
       },

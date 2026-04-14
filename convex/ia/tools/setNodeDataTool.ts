@@ -1,16 +1,29 @@
 import { createTool } from "@convex-dev/agent";
 import { internal } from "../../_generated/api";
-import { type Id } from "../../_generated/dataModel";
+import { toolAgentNames, type ThreadCtx } from "../agentConfig";
 import { nodeTypeValues } from "../../schemas/nodeTypeSchema";
 import { validateNodeInputSchemaForLLM } from "../helpers/nodeInputSchemaValidatorForLLM";
 import z from "zod";
-import { toolError } from "./toolHelpers";
+import { ToolConfig, toolError } from "./toolHelpers";
+
+// Tool compaction config
+export const setNodeDataToolConfig: ToolConfig = {
+  name: "set_node_data",
+  authorized_agents: [
+    toolAgentNames.nole,
+    toolAgentNames.clone,
+    toolAgentNames.supervisor,
+    toolAgentNames.worker,
+  ],
+};
 
 export default function setNodeDataTool({
-  canvasId,
+  threadCtx,
 }: {
-  canvasId: Id<"canvases">;
+  threadCtx: ThreadCtx;
 }) {
+  const { canvasId } = threadCtx;
+
   return createTool({
     description:
       "Set directement les valeurs du nodeData lié à un nodeId pour un type de node donné.",

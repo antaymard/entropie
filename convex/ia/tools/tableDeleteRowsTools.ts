@@ -1,8 +1,19 @@
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
-import type { Id } from "../../_generated/dataModel";
+import { toolAgentNames, type ThreadCtx } from "../agentConfig";
 import { internal } from "../../_generated/api";
-import { toolError } from "./toolHelpers";
+import { ToolConfig, toolError } from "./toolHelpers";
+
+// Tool compaction config
+export const tableDeleteRowsToolConfig: ToolConfig = {
+  name: "table_delete_rows",
+  authorized_agents: [
+    toolAgentNames.nole,
+    toolAgentNames.clone,
+    toolAgentNames.supervisor,
+    toolAgentNames.worker,
+  ],
+};
 
 type TableRow = {
   id: string;
@@ -27,10 +38,12 @@ function normalizeRowId(value: string): string {
 }
 
 export default function tableDeleteRowsTool({
-  canvasId,
+  threadCtx,
 }: {
-  canvasId: Id<"canvases">;
+  threadCtx: ThreadCtx;
 }) {
+  const { canvasId } = threadCtx;
+
   return createTool({
     description:
       "Delete one or multiple rows from a table node in the current canvas.",

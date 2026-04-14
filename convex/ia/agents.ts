@@ -2,7 +2,7 @@ import { components } from "../_generated/api";
 import { Agent } from "@convex-dev/agent";
 import { openrouter } from "@openrouter/ai-sdk-provider";
 import type { LanguageModel, ToolSet } from "ai";
-import type { NoleToolRuntimeContext } from "./noleToolRuntimeContext";
+import { toolAgentNames, type ThreadCtx } from "./agentConfig";
 import { getToolsForAgent } from "./tools";
 
 export function createBaseAgent({ model }: { model?: LanguageModel } = {}) {
@@ -17,20 +17,20 @@ export const baseAgent = createBaseAgent();
 
 export function createAutomationAgent({
   model,
-  canvasId,
+  threadCtx,
   tools = {},
 }: {
   model?: LanguageModel;
-  canvasId?: NoleToolRuntimeContext["canvasId"];
+  threadCtx: ThreadCtx;
   tools?: ToolSet;
 }) {
   return new Agent(components.agent, {
-    name: "automation-agent",
+    name: toolAgentNames.automation,
     languageModel: model ?? openrouter("minimax/minimax-m2.7"),
     maxSteps: 5,
     tools: getToolsForAgent({
-      agentName: "automation-agent",
-      canvasId,
+      agentName: toolAgentNames.automation,
+      threadCtx,
       extraTools: tools,
     }),
     instructions: `Tu es un agent d'automatisation, lié à un node sur une app canvas-base type miro. Tu peux utiliser les outils à ta disposition pour accomplir les tâches demandées. Le noeud auquel tu es lié peut contenir des données d'entrée d'autres noeuds (input) que tu devras le plus souvent utiliser pour accomplir ta tâche. Utilise les outils à ta disposition pour trouver l'information.
@@ -42,10 +42,10 @@ export function createAutomationAgent({
 }
 
 export function createNoleAgent({
-  runtimeContext,
+  threadCtx,
   tools = {},
 }: {
-  runtimeContext: NoleToolRuntimeContext;
+  threadCtx: ThreadCtx;
   tools?: ToolSet;
 }) {
   return new Agent(components.agent, {
@@ -53,20 +53,46 @@ export function createNoleAgent({
     maxSteps: 20,
     languageModel: openrouter("z-ai/glm-5.1"),
     tools: getToolsForAgent({
-      agentName: "nolë",
-      canvasId: runtimeContext.canvasId,
+      agentName: toolAgentNames.nole,
+      threadCtx,
       extraTools: tools,
     }),
   });
 }
 
-export function createSupervisorAgent({ tools = {} }: { tools?: ToolSet }) {
+export function createSupervisorAgent({
+  threadCtx,
+  tools = {},
+}: {
+  threadCtx: ThreadCtx;
+  tools?: ToolSet;
+}) {
   return new Agent(components.agent, {
     name: "Supervisor",
     maxSteps: 20,
     languageModel: openrouter("z-ai/glm-5.1"),
     tools: getToolsForAgent({
-      agentName: "supervisor",
+      agentName: toolAgentNames.supervisor,
+      threadCtx,
+      extraTools: tools,
+    }),
+  });
+}
+
+export function createWorkerAgent({
+  threadCtx,
+  tools = {},
+}: {
+  threadCtx: ThreadCtx;
+  tools?: ToolSet;
+}) {
+  return new Agent(components.agent, {
+    name: "Worker",
+    maxSteps: 20,
+    languageModel: openrouter("z-ai/glm-5.1"),
+    tools: getToolsForAgent({
+      agentName: toolAgentNames.worker,
+      threadCtx,
       extraTools: tools,
     }),
   });

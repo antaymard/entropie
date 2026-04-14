@@ -45,7 +45,10 @@ export const trigger = action({
 
       // 3. Exécuter l'agent associé au noeud courant
       const automationAgent = createAutomationAgent({
-        canvasId: currentNodeData.canvasId,
+        threadCtx: {
+          authUserId: userId,
+          canvasId: currentNodeData.canvasId,
+        },
       });
       const threadId = await createThread(ctx, components.agent, {
         userId,

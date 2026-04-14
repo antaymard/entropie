@@ -6,6 +6,7 @@ import { scheduledJobsValidator } from "./schemas/scheduledJobsSchema";
 import { sharesValidator } from "./schemas/sharesSchema";
 import { memoriesValidator } from "./schemas/memoriesSchema";
 import { searchableChunksValidator } from "./schemas/searchableChunksSchema";
+import { wishlistEmailsValidator } from "./schemas/wishlistEmailsSchema";
 
 const schema = defineSchema({
   ...authTables,
@@ -54,6 +55,10 @@ const schema = defineSchema({
       searchField: "text",
       filterFields: ["canvasId", "nodeDataId", "nodeType", "chunkType"],
     }),
+
+  wishlistEmails: defineTable(wishlistEmailsValidator).index("by_email", [
+    "email",
+  ]),
 });
 
 export default schema;

@@ -20,6 +20,8 @@ import PdfWindow from "./prebuilt/PdfWindow";
 import TableWindow from "./prebuilt/TableWindow";
 import { WindowFrameContext } from "./WindowFrameContext";
 import ConfirmableButton from "@/components/ui/ConfirmableButton";
+import { useIsNodeAttached, useNoleStore } from "@/stores/noleStore";
+import { fromXyNodeToCanvasNode } from "@/lib/node-types-converter";
 
 function WindowContent({ openedWindow }: { openedWindow: OpenedWindow }) {
   const { nodeType, xyNodeId, nodeDataId } = openedWindow;
@@ -76,7 +78,9 @@ export default function WindowFrame({
   const snapWindow = useWindowsStore((s) => s.snapWindow);
   const addDirtyNode = useWindowsStore((s) => s.addDirtyNode);
   const removeDirtyNode = useWindowsStore((s) => s.removeDirtyNode);
-  const { fitView } = useReactFlow();
+  const addAttachments = useNoleStore((s) => s.addAttachments);
+  const isAttachedToConversation = useIsNodeAttached(xyNodeId);
+  const { fitView, getNode } = useReactFlow();
 
   const title = useNodeDataTitle(nodeDataId);
   const nodeData = useNodeData(nodeDataId);
@@ -110,13 +114,29 @@ export default function WindowFrame({
     direction: ResizeDirection;
   } | null>(null);
 
-  const handleHeaderMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.button !== 0) return;
-    e.preventDefault();
-    dragRef.current = { startX: e.clientX, startY: e.clientY };
-    document.body.style.cursor = "grabbing";
-    document.body.style.userSelect = "none";
-  }, []);
+  const handleHeaderMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (e.button !== 0) return;
+      // Ignore clicks on buttons (contrôles)
+      if ((e.target as HTMLElement).closest('[data-window-control="true"]'))
+        return;
+
+      if (e.altKey) {
+        e.preventDefault();
+
+        const node = getNode(xyNodeId);
+        if (node) {
+          addAttachments({ nodes: [fromXyNodeToCanvasNode(node)] }, true);
+        }
+        return;
+      }
+      e.preventDefault();
+      dragRef.current = { startX: e.clientX, startY: e.clientY };
+      document.body.style.cursor = "grabbing";
+      document.body.style.userSelect = "none";
+    },
+    [xyNodeId, addAttachments, getNode],
+  );
 
   const handleResizeMouseDown = useCallback(
     (e: React.MouseEvent, direction: ResizeDirection) => {
@@ -243,146 +263,159 @@ export default function WindowFrame({
   return (
     <WindowFrameContext.Provider value={{ setDirty, setSaveHandler }}>
       <div
-        ref={containerRef}
-        className="relative flex h-full w-full flex-col overflow-hidden rounded-lg border bg-white shadow-2xl/10"
+        className={cn(
+          "relative h-full w-full",
+          isAttachedToConversation &&
+            "after:pointer-events-none after:absolute after:inset-0 after:rounded-[12px] after:border-2 after:border-dashed after:border-violet-500/90",
+        )}
       >
-        {/* ── Resize handles ───────────────────────────────────────── */}
-
-        {/* Corners (12×12, priority z-20) */}
         <div
-          className={cn(
-            "absolute -left-1 -top-1 z-20 h-3 w-3 rounded-sm transition-colors hover:bg-blue-400/50",
-            RESIZE_CURSOR.nw,
-          )}
-          onMouseDown={(e) => handleResizeMouseDown(e, "nw")}
-        />
-        <div
-          className={cn(
-            "absolute -right-1 -top-1 z-20 h-3 w-3 rounded-sm transition-colors hover:bg-blue-400/50",
-            RESIZE_CURSOR.ne,
-          )}
-          onMouseDown={(e) => handleResizeMouseDown(e, "ne")}
-        />
-        <div
-          className={cn(
-            "absolute -bottom-1 -left-1 z-20 h-3 w-3 rounded-sm transition-colors hover:bg-blue-400/50",
-            RESIZE_CURSOR.sw,
-          )}
-          onMouseDown={(e) => handleResizeMouseDown(e, "sw")}
-        />
-        <div
-          className={cn(
-            "absolute -bottom-1 -right-1 z-20 h-3 w-3 rounded-sm transition-colors hover:bg-blue-400/50",
-            RESIZE_CURSOR.se,
-          )}
-          onMouseDown={(e) => handleResizeMouseDown(e, "se")}
-        />
-
-        {/* Edges (z-10, inset slightly so corners win) */}
-        <div
-          className={cn(
-            "absolute -top-1 left-2 right-2 z-10 h-2 transition-colors hover:bg-blue-400/30",
-            RESIZE_CURSOR.n,
-          )}
-          onMouseDown={(e) => handleResizeMouseDown(e, "n")}
-        />
-        <div
-          className={cn(
-            "absolute -bottom-1 left-2 right-2 z-10 h-2 transition-colors hover:bg-blue-400/30",
-            RESIZE_CURSOR.s,
-          )}
-          onMouseDown={(e) => handleResizeMouseDown(e, "s")}
-        />
-        <div
-          className={cn(
-            "absolute -left-1 bottom-2 top-2 z-10 w-2 transition-colors hover:bg-blue-400/30",
-            RESIZE_CURSOR.w,
-          )}
-          onMouseDown={(e) => handleResizeMouseDown(e, "w")}
-        />
-        <div
-          className={cn(
-            "absolute -right-1 bottom-2 top-2 z-10 w-2 transition-colors hover:bg-blue-400/30",
-            RESIZE_CURSOR.e,
-          )}
-          onMouseDown={(e) => handleResizeMouseDown(e, "e")}
-        />
-
-        {/* ── Header (draggable) ────────────────────────────────────── */}
-        <div
-          className="flex cursor-grab select-none items-center gap-2 border-b px-3 py-2 hover:cursor-grab active:cursor-grabbing"
-          onMouseDown={handleHeaderMouseDown}
+          ref={containerRef}
+          className="relative flex h-full w-full flex-col overflow-hidden rounded-lg border bg-white shadow-2xl/10"
         >
-          {NodeIcon ? (
-            <NodeIcon className="size-4 shrink-0 text-slate-600" />
-          ) : null}
-          <span className="min-w-0 flex-1 truncate text-sm font-medium">
-            {title ?? "—"}
-          </span>
-          {saveHandler && (
-            <button
-              data-window-control="true"
-              className="flex shrink-0 items-center gap-1.5 rounded px-2 py-1 text-xs font-medium text-slate-500 transition-colors hover:bg-green-100 hover:text-green-800 disabled:pointer-events-none disabled:opacity-30 h-full"
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={saveHandler}
-              disabled={!isDirty}
-            >
-              <Save size={12} />
-              Save
-            </button>
-          )}
-          <button
-            data-window-control="true"
-            className="shrink-0 rounded p-0.5 opacity-50 hover:bg-blue-500/15 hover:text-blue-600 hover:opacity-100 h-full aspect-square flex items-center justify-center"
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={() =>
-              fitView({
-                nodes: [{ id: xyNodeId }],
-                duration: 500,
-                minZoom: 0.5,
-                maxZoom: 1,
-              })
-            }
-            aria-label="Go to node"
-          >
-            <TbLocation size={13} />
-          </button>
-          <button
-            data-window-control="true"
-            className="shrink-0 rounded p-0.5 opacity-50 hover:bg-black/10 hover:opacity-100 h-full aspect-square flex items-center justify-center"
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={() => toggleMinimizeWindow(xyNodeId)}
-            aria-label="Minimize"
-          >
-            <Minus size={14} />
-          </button>
-          <ConfirmableButton
-            title="Fermer sans sauvegarder ?"
-            text="Vous avez des modifications non sauvegardees. Voulez-vous fermer cette fenetre ?"
-            onCancel={() => closeWindow(xyNodeId)}
-            onConfirm={() => {
-              if (isDirty) saveHandler?.();
-              closeWindow(xyNodeId);
-            }}
-            shouldConfirm={isDirty}
-            cancelLabel="Fermer sans sauvegarder"
-            confirmLabel="Sauvegarder et fermer"
-            autoFocusConfirm
-          >
-            <button
-              data-window-control="true"
-              className="shrink-0 rounded p-0.5 opacity-50 hover:bg-red-500/15 hover:text-red-600 hover:opacity-100 h-full aspect-square flex items-center justify-center"
-              onMouseDown={(e) => e.stopPropagation()}
-              aria-label="Close"
-            >
-              <X size={14} />
-            </button>
-          </ConfirmableButton>
-        </div>
+          {/* ── Resize handles ───────────────────────────────────────── */}
 
-        {/* ── Body (non-draggable) ──────────────────────────────────── */}
-        <div className="min-h-0 flex-1 overflow-auto">
-          <WindowContent openedWindow={openedWindow} />
+          {/* Corners (12×12, priority z-20) */}
+          <div
+            className={cn(
+              "absolute -left-1 -top-1 z-20 h-3 w-3 rounded-sm transition-colors hover:bg-blue-400/50",
+              RESIZE_CURSOR.nw,
+            )}
+            onMouseDown={(e) => handleResizeMouseDown(e, "nw")}
+          />
+          <div
+            className={cn(
+              "absolute -right-1 -top-1 z-20 h-3 w-3 rounded-sm transition-colors hover:bg-blue-400/50",
+              RESIZE_CURSOR.ne,
+            )}
+            onMouseDown={(e) => handleResizeMouseDown(e, "ne")}
+          />
+          <div
+            className={cn(
+              "absolute -bottom-1 -left-1 z-20 h-3 w-3 rounded-sm transition-colors hover:bg-blue-400/50",
+              RESIZE_CURSOR.sw,
+            )}
+            onMouseDown={(e) => handleResizeMouseDown(e, "sw")}
+          />
+          <div
+            className={cn(
+              "absolute -bottom-1 -right-1 z-20 h-3 w-3 rounded-sm transition-colors hover:bg-blue-400/50",
+              RESIZE_CURSOR.se,
+            )}
+            onMouseDown={(e) => handleResizeMouseDown(e, "se")}
+          />
+
+          {/* Edges (z-10, inset slightly so corners win) */}
+          <div
+            className={cn(
+              "absolute -top-1 left-2 right-2 z-10 h-2 transition-colors hover:bg-blue-400/30",
+              RESIZE_CURSOR.n,
+            )}
+            onMouseDown={(e) => handleResizeMouseDown(e, "n")}
+          />
+          <div
+            className={cn(
+              "absolute -bottom-1 left-2 right-2 z-10 h-2 transition-colors hover:bg-blue-400/30",
+              RESIZE_CURSOR.s,
+            )}
+            onMouseDown={(e) => handleResizeMouseDown(e, "s")}
+          />
+          <div
+            className={cn(
+              "absolute -left-1 bottom-2 top-2 z-10 w-2 transition-colors hover:bg-blue-400/30",
+              RESIZE_CURSOR.w,
+            )}
+            onMouseDown={(e) => handleResizeMouseDown(e, "w")}
+          />
+          <div
+            className={cn(
+              "absolute -right-1 bottom-2 top-2 z-10 w-2 transition-colors hover:bg-blue-400/30",
+              RESIZE_CURSOR.e,
+            )}
+            onMouseDown={(e) => handleResizeMouseDown(e, "e")}
+          />
+
+          {/* ── Header (draggable) ────────────────────────────────────── */}
+          <div
+            className="flex cursor-grab select-none items-center gap-2 border-b px-3 py-2 hover:cursor-grab active:cursor-grabbing"
+            onMouseDown={handleHeaderMouseDown}
+            title={
+              isAttachedToConversation
+                ? "Alt+clic pour detacher de Nole"
+                : "Alt+clic pour attacher a Nole"
+            }
+          >
+            {NodeIcon ? (
+              <NodeIcon className="size-4 shrink-0 text-slate-600" />
+            ) : null}
+            <span className="min-w-0 flex-1 truncate text-sm font-medium">
+              {title ?? "—"}
+            </span>
+            {saveHandler && (
+              <button
+                data-window-control="true"
+                className="flex shrink-0 items-center gap-1.5 rounded px-2 py-1 text-xs font-medium text-slate-500 transition-colors hover:bg-green-100 hover:text-green-800 disabled:pointer-events-none disabled:opacity-30 h-full"
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={saveHandler}
+                disabled={!isDirty}
+              >
+                <Save size={12} />
+                Save
+              </button>
+            )}
+            <button
+              data-window-control="true"
+              className="shrink-0 rounded p-0.5 opacity-50 hover:bg-blue-500/15 hover:text-blue-600 hover:opacity-100 h-full aspect-square flex items-center justify-center"
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={() =>
+                fitView({
+                  nodes: [{ id: xyNodeId }],
+                  duration: 500,
+                  minZoom: 0.5,
+                  maxZoom: 1,
+                })
+              }
+              aria-label="Go to node"
+            >
+              <TbLocation size={13} />
+            </button>
+            <button
+              data-window-control="true"
+              className="shrink-0 rounded p-0.5 opacity-50 hover:bg-black/10 hover:opacity-100 h-full aspect-square flex items-center justify-center"
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={() => toggleMinimizeWindow(xyNodeId)}
+              aria-label="Minimize"
+            >
+              <Minus size={14} />
+            </button>
+            <ConfirmableButton
+              title="Fermer sans sauvegarder ?"
+              text="Vous avez des modifications non sauvegardees. Voulez-vous fermer cette fenetre ?"
+              onCancel={() => closeWindow(xyNodeId)}
+              onConfirm={() => {
+                if (isDirty) saveHandler?.();
+                closeWindow(xyNodeId);
+              }}
+              shouldConfirm={isDirty}
+              cancelLabel="Fermer sans sauvegarder"
+              confirmLabel="Sauvegarder et fermer"
+              autoFocusConfirm
+            >
+              <button
+                data-window-control="true"
+                className="shrink-0 rounded p-0.5 opacity-50 hover:bg-red-500/15 hover:text-red-600 hover:opacity-100 h-full aspect-square flex items-center justify-center"
+                onMouseDown={(e) => e.stopPropagation()}
+                aria-label="Close"
+              >
+                <X size={14} />
+              </button>
+            </ConfirmableButton>
+          </div>
+
+          {/* ── Body (non-draggable) ──────────────────────────────────── */}
+          <div className="min-h-0 flex-1 overflow-auto">
+            <WindowContent openedWindow={openedWindow} />
+          </div>
         </div>
       </div>
     </WindowFrameContext.Provider>

@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { Id } from "../../_generated/dataModel";
 import { internal } from "../../_generated/api";
 import { generateLlmId } from "../../lib/llmId";
+import { toolError } from "./toolHelpers";
 
 type TableColumnType = "text" | "number" | "checkbox" | "date" | "link";
 
@@ -22,9 +23,10 @@ type StoredTableValue = {
   rows?: Array<TableRow>;
 };
 
-const ERROR_TARGET_NOT_TABLE = "Error: Target node must be a table.";
-const ERROR_INVALID_TABLE_CONTENT =
-  "Error: Table content is not valid (expected table.columns and table.rows arrays).";
+const ERROR_TARGET_NOT_TABLE = toolError("Target node must be a table.");
+const ERROR_INVALID_TABLE_CONTENT = toolError(
+  "Table content is not valid (expected table.columns and table.rows arrays).",
+);
 
 const columnTypeSchema = z.enum(["text", "number", "checkbox", "date", "link"]);
 
@@ -93,10 +95,10 @@ function validateNoDuplicateColumns(
     const normalizedName = normalizeLookupKey(column.name);
 
     if (seenIds.has(normalizedId)) {
-      return `Error: Duplicate column id "${column.id}".`;
+      return toolError(`Duplicate column id "${column.id}".`);
     }
     if (seenNames.has(normalizedName)) {
-      return `Error: Duplicate column name "${column.name}".`;
+      return toolError(`Duplicate column name "${column.name}".`);
     }
 
     seenIds.add(normalizedId);
@@ -173,15 +175,19 @@ export default function tableUpdateSchemaTool({
         if (args.operation === "set") {
           const inputColumns = args.payload.columns;
           if (!inputColumns || inputColumns.length === 0) {
-            return "Error: payload.columns is required for set and must contain at least one column.";
+            return toolError(
+              "payload.columns is required for set and must contain at least one column.",
+            );
           }
 
           if (columns.length > 0) {
-            return "Error: set is allowed only when table schema is empty.";
+            return toolError("set is allowed only when table schema is empty.");
           }
 
           if (rows.length > 0) {
-            return "Error: set is allowed only when table schema is empty (no columns and no rows).";
+            return toolError(
+              "set is allowed only when table schema is empty (no columns and no rows).",
+            );
           }
 
           const nextColumns: Array<TableColumn> = inputColumns.map(
@@ -218,7 +224,7 @@ export default function tableUpdateSchemaTool({
         if (args.operation === "add_column") {
           const inputColumn = args.payload.column;
           if (!inputColumn) {
-            return "Error: payload.column is required for add_column.";
+            return toolError("payload.column is required for add_column.");
           }
 
           const nextColumn: TableColumn = {
@@ -253,7 +259,9 @@ export default function tableUpdateSchemaTool({
 
         const identifiers = args.payload.columnIdentifiers;
         if (!identifiers || identifiers.length === 0) {
-          return "Error: payload.columnIdentifiers is required for delete_column.";
+          return toolError(
+            "payload.columnIdentifiers is required for delete_column.",
+          );
         }
 
         const resolvedColumnIds: Array<string> = [];
@@ -266,15 +274,19 @@ export default function tableUpdateSchemaTool({
           });
 
           if (matches.length === 0) {
-            return `Error: No match found for column "${identifier}".`;
+            return toolError(`No match found for column "${identifier}".`);
           }
           if (matches.length > 1) {
-            return `Error: Found ${matches.length} matches for column "${identifier}". Please use a unique id.`;
+            return toolError(
+              `Found ${matches.length} matches for column "${identifier}". Please use a unique id.`,
+            );
           }
 
           const matchedColumn = matches[0];
           if (resolvedColumnIds.includes(matchedColumn.id)) {
-            return `Error: Column "${matchedColumn.name}" is provided multiple times.`;
+            return toolError(
+              `Column "${matchedColumn.name}" is provided multiple times.`,
+            );
           }
 
           resolvedColumnIds.push(matchedColumn.id);
@@ -292,7 +304,9 @@ export default function tableUpdateSchemaTool({
         });
 
         if (!shouldDeleteValues && rowsWithValues.length > 0) {
-          return "Error: Some rows contain values for columns to delete. Set deleteColumnsValues=true to remove these values.";
+          return toolError(
+            "Some rows contain values for columns to delete. Set deleteColumnsValues=true to remove these values.",
+          );
         }
 
         const nextColumns = columns.filter(
@@ -329,7 +343,9 @@ export default function tableUpdateSchemaTool({
         return `Successfully deleted ${resolvedColumns.length} column(s).`;
       } catch (error) {
         console.error("Table update schema tool error:", error);
-        return `Error: ${error instanceof Error ? error.message : String(error)}`;
+        return toolError(
+          error instanceof Error ? error.message : String(error),
+        );
       }
     },
   });

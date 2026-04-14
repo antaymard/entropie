@@ -16,6 +16,7 @@ import tableUpdateSchemaTool from "./tools/tableUpdateSchemaTool";
 import fullTextSearchTool from "./tools/fullTextSearchTool";
 import setNodeDataTool from "./tools/setNodeDataTool";
 import createNodeTool from "./tools/createNodeTool";
+import createConnectionTool from "./tools/createConnectionTool";
 
 export function createBaseAgent({ model }: { model?: LanguageModel } = {}) {
   return new Agent(components.agent, {
@@ -83,6 +84,9 @@ export function createNoleAgent({
         canvasId: runtimeContext.canvasId,
       }),
       create_node: createNodeTool({
+        canvasId: runtimeContext.canvasId,
+      }),
+      create_connection: createConnectionTool({
         canvasId: runtimeContext.canvasId,
       }),
       set_node_data: setNodeDataTool({

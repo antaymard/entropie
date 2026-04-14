@@ -1,6 +1,7 @@
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
 import Parallel from "parallel-web";
+import { toolError } from "./toolHelpers";
 
 const client = new Parallel({
   apiKey: process.env.PARALLEL_API_KEY!,
@@ -75,7 +76,7 @@ export const websearchTool = createTool({
       });
 
       if (!search.results || search.results.length === 0) {
-        return `No results found for: "${objective}"`;
+        return toolError(`No results found for: "${objective}"`);
       }
 
       console.log(
@@ -85,7 +86,9 @@ export const websearchTool = createTool({
       return search.results;
     } catch (error: any) {
       console.error("❌ Search error:", error);
-      return `Search failed: ${error.message}. Please try rephrasing your query.`;
+      return toolError(
+        `Search failed: ${error.message}. Please try rephrasing your query.`,
+      );
     }
   },
 });

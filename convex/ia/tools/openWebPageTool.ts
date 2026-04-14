@@ -1,6 +1,7 @@
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
 import Parallel from "parallel-web";
+import { toolError } from "./toolHelpers";
 
 const client = new Parallel({
   apiKey: process.env.PARALLEL_API_KEY!,
@@ -42,13 +43,15 @@ export const openWebPageTool = createTool({
       });
 
       if (!search.results || search.results.length === 0) {
-        return `No results found for: "${objective}"`;
+        return toolError(`No results found for: "${objective}"`);
       }
 
       return search.results;
     } catch (error: any) {
       console.error("❌ Extract error:", error);
-      return `Extraction failed: ${error.message}. Please try rephrasing your query.`;
+      return toolError(
+        `Extraction failed: ${error.message}. Please try rephrasing your query.`,
+      );
     }
   },
 });

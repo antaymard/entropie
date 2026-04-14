@@ -20,7 +20,9 @@ import {
   closestCenter,
   useSensor,
   useSensors,
+  type DraggableAttributes,
   type DragEndEvent,
+  type SyntheticListenerMap,
 } from "@dnd-kit/core";
 import {
   restrictToHorizontalAxis,
@@ -150,10 +152,19 @@ function DraggableCell({
   );
 }
 
-function RowDragHandle({ rowId }: { rowId: string }) {
-  const { attributes, listeners } = useSortable({ id: rowId });
+function RowDragHandle({
+  attributes,
+  listeners,
+  setActivatorNodeRef,
+}: {
+  attributes: DraggableAttributes;
+  listeners: SyntheticListenerMap | undefined;
+  setActivatorNodeRef: (element: HTMLElement | null) => void;
+}) {
   return (
     <button
+      ref={setActivatorNodeRef}
+      type="button"
       {...attributes}
       {...listeners}
       className="cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground px-0.5"
@@ -166,13 +177,28 @@ function RowDragHandle({ rowId }: { rowId: string }) {
 
 function DraggableRow({
   row,
+  canDrag,
   children,
 }: {
   row: Row<TableRowData>;
-  children: React.ReactNode;
+  canDrag: boolean;
+  children: (dragHandleProps: {
+    attributes: DraggableAttributes;
+    listeners: SyntheticListenerMap | undefined;
+    setActivatorNodeRef: (element: HTMLElement | null) => void;
+  }) => React.ReactNode;
 }) {
-  const { transform, transition, setNodeRef, isDragging } = useSortable({
+  const {
+    attributes,
+    listeners,
+    transform,
+    transition,
+    setActivatorNodeRef,
+    setNodeRef,
+    isDragging,
+  } = useSortable({
     id: row.original.id,
+    disabled: !canDrag,
   });
   const style: CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -183,7 +209,7 @@ function DraggableRow({
   };
   return (
     <TableRow ref={setNodeRef} style={style} className="group/tablerow">
-      {children}
+      {children({ attributes, listeners, setActivatorNodeRef })}
     </TableRow>
   );
 }
@@ -227,10 +253,7 @@ export function Table({
               enableSorting: false,
               enableGlobalFilter: false,
               header: () => null,
-              cell: ({ row }: { row: Row<TableRowData> }) =>
-                canReorderRowsRef.current ? (
-                  <RowDragHandle rowId={row.original.id} />
-                ) : null,
+              cell: () => null,
             } satisfies ColumnDef<TableRowData>,
           ]
         : []),
@@ -477,35 +500,50 @@ export function Table({
                     strategy={verticalListSortingStrategy}
                   >
                     {table.getRowModel().rows.map((row) => (
-                      <DraggableRow key={row.id} row={row}>
-                        <SortableContext
-                          items={sortableIds}
-                          strategy={horizontalListSortingStrategy}
-                        >
-                          {row.getVisibleCells().map((cell) => {
-                            if (
-                              cell.column.id === "__delete__" ||
-                              cell.column.id === "__drag__"
-                            ) {
+                      <DraggableRow
+                        key={row.id}
+                        row={row}
+                        canDrag={canReorderRowsRef.current}
+                      >
+                        {({ attributes, listeners, setActivatorNodeRef }) => (
+                          <SortableContext
+                            items={sortableIds}
+                            strategy={horizontalListSortingStrategy}
+                          >
+                            {row.getVisibleCells().map((cell) => {
+                              if (
+                                cell.column.id === "__delete__" ||
+                                cell.column.id === "__drag__"
+                              ) {
+                                return (
+                                  <TableCell key={cell.id} className="w-8 px-1">
+                                    {cell.column.id === "__drag__" &&
+                                    canReorderRowsRef.current ? (
+                                      <RowDragHandle
+                                        attributes={attributes}
+                                        listeners={listeners}
+                                        setActivatorNodeRef={setActivatorNodeRef}
+                                      />
+                                    ) : (
+                                      flexRender(
+                                        cell.column.columnDef.cell,
+                                        cell.getContext(),
+                                      )
+                                    )}
+                                  </TableCell>
+                                );
+                              }
                               return (
-                                <TableCell key={cell.id} className="w-8 px-1">
+                                <DraggableCell key={cell.id} cell={cell}>
                                   {flexRender(
                                     cell.column.columnDef.cell,
                                     cell.getContext(),
                                   )}
-                                </TableCell>
+                                </DraggableCell>
                               );
-                            }
-                            return (
-                              <DraggableCell key={cell.id} cell={cell}>
-                                {flexRender(
-                                  cell.column.columnDef.cell,
-                                  cell.getContext(),
-                                )}
-                              </DraggableCell>
-                            );
-                          })}
-                        </SortableContext>
+                            })}
+                          </SortableContext>
+                        )}
                       </DraggableRow>
                     ))}
                   </SortableContext>

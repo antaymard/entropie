@@ -31,6 +31,7 @@ import type * as ia_nole from "../ia/nole.js";
 import type * as ia_noleToolRuntimeContext from "../ia/noleToolRuntimeContext.js";
 import type * as ia_nole_noleSystemPrompt from "../ia/nole/noleSystemPrompt.js";
 import type * as ia_tools__toolTemplate from "../ia/tools/_toolTemplate.js";
+import type * as ia_tools_createConnectionTool from "../ia/tools/createConnectionTool.js";
 import type * as ia_tools_createNodeTool from "../ia/tools/createNodeTool.js";
 import type * as ia_tools_documentInsertContentTool from "../ia/tools/documentInsertContentTool.js";
 import type * as ia_tools_documentStringReplaceContentTool from "../ia/tools/documentStringReplaceContentTool.js";
@@ -43,6 +44,7 @@ import type * as ia_tools_tableDeleteRowsTools from "../ia/tools/tableDeleteRows
 import type * as ia_tools_tableInsertRowsTool from "../ia/tools/tableInsertRowsTool.js";
 import type * as ia_tools_tableUpdateRowsTool from "../ia/tools/tableUpdateRowsTool.js";
 import type * as ia_tools_tableUpdateSchemaTool from "../ia/tools/tableUpdateSchemaTool.js";
+import type * as ia_tools_toolHelpers from "../ia/tools/toolHelpers.js";
 import type * as ia_tools_updateNodeDataValuesTool from "../ia/tools/updateNodeDataValuesTool.js";
 import type * as ia_tools_viewImageTool from "../ia/tools/viewImageTool.js";
 import type * as ia_tools_websearchTool from "../ia/tools/websearchTool.js";
@@ -81,6 +83,7 @@ import type * as uploads from "../uploads.js";
 import type * as wishlist from "../wishlist.js";
 import type * as wrappers_canvasEdgeWrappers from "../wrappers/canvasEdgeWrappers.js";
 import type * as wrappers_canvasNodeWrappers from "../wrappers/canvasNodeWrappers.js";
+import type * as wrappers_canvasWrappers from "../wrappers/canvasWrappers.js";
 import type * as wrappers_memoryWrappers from "../wrappers/memoryWrappers.js";
 import type * as wrappers_nodeDataWrappers from "../wrappers/nodeDataWrappers.js";
 import type * as wrappers_searchableChunkWrappers from "../wrappers/searchableChunkWrappers.js";
@@ -116,6 +119,7 @@ declare const fullApi: ApiFromModules<{
   "ia/noleToolRuntimeContext": typeof ia_noleToolRuntimeContext;
   "ia/nole/noleSystemPrompt": typeof ia_nole_noleSystemPrompt;
   "ia/tools/_toolTemplate": typeof ia_tools__toolTemplate;
+  "ia/tools/createConnectionTool": typeof ia_tools_createConnectionTool;
   "ia/tools/createNodeTool": typeof ia_tools_createNodeTool;
   "ia/tools/documentInsertContentTool": typeof ia_tools_documentInsertContentTool;
   "ia/tools/documentStringReplaceContentTool": typeof ia_tools_documentStringReplaceContentTool;
@@ -128,6 +132,7 @@ declare const fullApi: ApiFromModules<{
   "ia/tools/tableInsertRowsTool": typeof ia_tools_tableInsertRowsTool;
   "ia/tools/tableUpdateRowsTool": typeof ia_tools_tableUpdateRowsTool;
   "ia/tools/tableUpdateSchemaTool": typeof ia_tools_tableUpdateSchemaTool;
+  "ia/tools/toolHelpers": typeof ia_tools_toolHelpers;
   "ia/tools/updateNodeDataValuesTool": typeof ia_tools_updateNodeDataValuesTool;
   "ia/tools/viewImageTool": typeof ia_tools_viewImageTool;
   "ia/tools/websearchTool": typeof ia_tools_websearchTool;
@@ -166,6 +171,7 @@ declare const fullApi: ApiFromModules<{
   wishlist: typeof wishlist;
   "wrappers/canvasEdgeWrappers": typeof wrappers_canvasEdgeWrappers;
   "wrappers/canvasNodeWrappers": typeof wrappers_canvasNodeWrappers;
+  "wrappers/canvasWrappers": typeof wrappers_canvasWrappers;
   "wrappers/memoryWrappers": typeof wrappers_memoryWrappers;
   "wrappers/nodeDataWrappers": typeof wrappers_nodeDataWrappers;
   "wrappers/searchableChunkWrappers": typeof wrappers_searchableChunkWrappers;

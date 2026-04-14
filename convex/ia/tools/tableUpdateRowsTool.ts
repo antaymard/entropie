@@ -2,6 +2,27 @@ import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
 import type { Id } from "../../_generated/dataModel";
 import { internal } from "../../_generated/api";
+import { toolError, compactErrorResult, CompactionConfig, ToolConfig } from "./toolHelpers";
+// Tool compaction config
+export const tableUpdateRowsToolConfig: ToolConfig = {
+  name: "table_update_rows",
+  agents: ["nolë", "automation-agent"],
+  compactionForSuccessResult: {
+    compactAfterMessages: 10,
+    compactAfterIterations: 1,
+    toolUseCompaction: (toolUse) => `[table update: ${toolUse.args?.nodeId}]`,
+    toolResultCompaction: (toolResult) => {
+      // Could parse result for summary, but just show updated row count
+      return `[table update result: ${toolResult}]`;
+    },
+  },
+  compactionForFailureResult: {
+    compactAfterMessages: 0,
+    compactAfterIterations: 0,
+    toolResultCompaction: (r) => compactErrorResult("table_update_rows", r),
+    hideCompletelyAfterMessages: 3,
+  },
+};
 
 type TableColumnType = "text" | "number" | "checkbox" | "date" | "link";
 
@@ -21,11 +42,13 @@ type StoredTableValue = {
   rows?: Array<TableRow>;
 };
 
-const ERROR_TARGET_NOT_TABLE = "Error: Target node must be a table.";
-const ERROR_INVALID_TABLE_CONTENT =
-  "Error: Table content is not valid (expected table.columns and table.rows arrays).";
-const ERROR_TABLE_SCHEMA_EMPTY =
-  "Error: Table schema is empty. Use table_update_schema first (operation: set or add_column) before updating rows.";
+const ERROR_TARGET_NOT_TABLE = toolError("Target node must be a table.");
+const ERROR_INVALID_TABLE_CONTENT = toolError(
+  "Table content is not valid (expected table.columns and table.rows arrays).",
+);
+const ERROR_TABLE_SCHEMA_EMPTY = toolError(
+  "Table schema is empty. Use table_update_schema first (operation: set or add_column) before updating rows.",
+);
 
 const linkValueSchema = z.object({
   href: z.string().min(1),
@@ -67,7 +90,9 @@ function normalizeCellValueForColumn({
       if (typeof rawValue !== "string") {
         return {
           ok: false,
-          error: `Error: Invalid value for column "${column.name}" (type ${column.type}). Expected a string.`,
+          error: toolError(
+            `Invalid value for column "${column.name}" (type ${column.type}). Expected a string.`,
+          ),
         };
       }
       return { ok: true, value: rawValue };
@@ -86,7 +111,9 @@ function normalizeCellValueForColumn({
       }
       return {
         ok: false,
-        error: `Error: Invalid value for column "${column.name}" (type number). Expected a number or numeric string.`,
+        error: toolError(
+          `Invalid value for column "${column.name}" (type number). Expected a number or numeric string.`,
+        ),
       };
     }
 
@@ -101,7 +128,9 @@ function normalizeCellValueForColumn({
       }
       return {
         ok: false,
-        error: `Error: Invalid value for column "${column.name}" (type checkbox). Expected true/false.`,
+        error: toolError(
+          `Invalid value for column "${column.name}" (type checkbox). Expected true/false.`,
+        ),
       };
     }
 
@@ -111,7 +140,9 @@ function normalizeCellValueForColumn({
         if (!href) {
           return {
             ok: false,
-            error: `Error: Invalid value for column "${column.name}" (type link). Expected a URL string or a link object with href.`,
+            error: toolError(
+              `Invalid value for column "${column.name}" (type link). Expected a URL string or a link object with href.`,
+            ),
           };
         }
         return {
@@ -138,14 +169,16 @@ function normalizeCellValueForColumn({
 
       return {
         ok: false,
-        error: `Error: Invalid value for column "${column.name}" (type link). Expected a URL string or an object { href, pageTitle? } .`,
+        error: toolError(
+          `Invalid value for column "${column.name}" (type link). Expected a URL string or an object { href, pageTitle? } .`,
+        ),
       };
     }
 
     default: {
       return {
         ok: false,
-        error: `Error: Unsupported column type for "${column.name}".`,
+        error: toolError(`Unsupported column type for "${column.name}".`),
       };
     }
   }
@@ -184,7 +217,7 @@ export default function tableUpdateRowsTool({
           (entry) => entry.rowId.length === 0,
         );
         if (emptyRowId) {
-          return "Error: rowId must be a non-empty string.";
+          return toolError("rowId must be a non-empty string.");
         }
 
         const duplicateRequestedRowId = requestedEntries.find(
@@ -194,7 +227,9 @@ export default function tableUpdateRowsTool({
             ) !== index,
         );
         if (duplicateRequestedRowId) {
-          return `Error: rowId "${duplicateRequestedRowId.rawRowId}" is provided multiple times.`;
+          return toolError(
+            `rowId "${duplicateRequestedRowId.rawRowId}" is provided multiple times.`,
+          );
         }
 
         const { node, nodeData } = await ctx.runQuery(
@@ -228,10 +263,12 @@ export default function tableUpdateRowsTool({
             (row) => (row.id ?? "").trim() === entry.rowId,
           );
           if (rowMatches.length === 0) {
-            return `Error: No match found for rowId "${entry.rawRowId}".`;
+            return toolError(`No match found for rowId "${entry.rawRowId}".`);
           }
           if (rowMatches.length > 1) {
-            return `Error: Found ${rowMatches.length} matches for rowId "${entry.rawRowId}". Please provide a unique rowId.`;
+            return toolError(
+              `Found ${rowMatches.length} matches for rowId "${entry.rawRowId}". Please provide a unique rowId.`,
+            );
           }
         }
 
@@ -249,7 +286,7 @@ export default function tableUpdateRowsTool({
           )) {
             const columnId = rawColumnId.trim();
             if (!columnId) {
-              return "Error: columnId must be a non-empty string.";
+              return toolError("columnId must be a non-empty string.");
             }
 
             const matchedColumns = columns.filter(
@@ -257,10 +294,12 @@ export default function tableUpdateRowsTool({
             );
 
             if (matchedColumns.length === 0) {
-              return `Error: No match found for columnId "${rawColumnId}".`;
+              return toolError(`No match found for columnId "${rawColumnId}".`);
             }
             if (matchedColumns.length > 1) {
-              return `Error: Found ${matchedColumns.length} matches for columnId "${rawColumnId}". Please provide a unique column id.`;
+              return toolError(
+                `Found ${matchedColumns.length} matches for columnId "${rawColumnId}". Please provide a unique column id.`,
+              );
             }
 
             const matchedColumn = matchedColumns[0];
@@ -269,7 +308,9 @@ export default function tableUpdateRowsTool({
               (existing) => existing.columnId === matchedColumn.id,
             );
             if (duplicate) {
-              return `Error: Column "${matchedColumn.name}" is provided multiple times.`;
+              return toolError(
+                `Column "${matchedColumn.name}" is provided multiple times.`,
+              );
             }
 
             const normalized = normalizeCellValueForColumn({
@@ -335,7 +376,9 @@ export default function tableUpdateRowsTool({
         return `Successfully updated ${requestedEntries.length} rows and ${updatedCellsCount} cells.`;
       } catch (error) {
         console.error("Table update rows tool error:", error);
-        return `Error: ${error instanceof Error ? error.message : String(error)}`;
+        return toolError(
+          error instanceof Error ? error.message : String(error),
+        );
       }
     },
   });

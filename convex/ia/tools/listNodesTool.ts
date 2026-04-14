@@ -6,6 +6,7 @@ import { getNodeDataTitle } from "../../lib/getNodeDataTitle";
 import { toXmlCdata } from "../../lib/xml";
 import type { NoleToolRuntimeContext } from "../noleToolRuntimeContext";
 import { nodeDataConfig } from "../../config/nodeConfig";
+import { toolError } from "./toolHelpers";
 
 function getExpectedNodeDataSchemaString(nodeType: string): string | null {
   if (nodeType === "document" || nodeType === "table") {
@@ -114,7 +115,7 @@ export default function listNodesTool({
         if (args.near) {
           const pos = nodePosById.get(args.near.nodeId);
           if (!pos) {
-            throw new Error(
+            return toolError(
               `Reference node "${args.near.nodeId}" not found on canvas`,
             );
           }
@@ -262,7 +263,7 @@ export default function listNodesTool({
         return xml;
       } catch (error) {
         console.error("List nodes error:", error);
-        throw new Error(
+        return toolError(
           `Failed to list nodes: ${error instanceof Error ? error.message : "Unknown error"}.`,
         );
       }

@@ -50,7 +50,7 @@ export default function CanvasToolbar({
       <div className="canvas-ui-container px-0!">
         <DropdownMenu open={isAddMenuOpen} onOpenChange={setIsAddMenuOpen}>
           <DropdownMenuTrigger asChild>
-            <Button variant="default" size="icon">
+            <Button variant="ghost" size="icon">
               <TbPlus size={20} />
             </Button>
           </DropdownMenuTrigger>

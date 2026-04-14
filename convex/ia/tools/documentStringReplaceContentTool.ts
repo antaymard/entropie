@@ -10,10 +10,12 @@ import {
   parseStoredPlateDocument,
   stringifyPlateDocumentForStorage,
 } from "../../lib/plateDocumentStorage";
+import { toolError, compactErrorResult, ToolConfig } from "./toolHelpers";
 
-const ERROR_TARGET_NOT_DOCUMENT = "Error: Target node must be a document.";
-const ERROR_INVALID_PLATE_DOC =
-  "Error: Document content is not valid PlateJSON.";
+const ERROR_TARGET_NOT_DOCUMENT = toolError("Target node must be a document.");
+const ERROR_INVALID_PLATE_DOC = toolError(
+  "Document content is not valid PlateJSON.",
+);
 
 function countExactMatches(source: string, search: string): number {
   if (!search) return 0;
@@ -31,11 +33,28 @@ function countExactMatches(source: string, search: string): number {
   return count;
 }
 
-export default function documentStringReplaceContentTool({
-  canvasId,
-}: {
-  canvasId: Id<"canvases">;
-}) {
+// Tool compaction config
+export const documentStringReplaceContentToolConfig: ToolConfig = {
+  name: "document_string_replace_content",
+  agents: ["nolë", "automation-agent"],
+  compactionForSuccessResult: {
+    compactAfterMessages: 10,
+    compactAfterIterations: 1,
+    toolUseCompaction: (toolUse) => `[replace: ${toolUse.args?.nodeId}]`,
+    toolResultCompaction: (toolResult) => {
+      // Could parse result for summary, but just show replaced string count
+      return `[replace result: ${toolResult}]`;
+    },
+  },
+  compactionForFailureResult: {
+    compactAfterMessages: 0,
+    compactAfterIterations: 0,
+    toolResultCompaction: (r) => compactErrorResult("document_string_replace_content", r),
+    hideCompletelyAfterMessages: 3,
+  },
+};
+
+export default function documentStringReplaceContentTool({ canvasId }: { canvasId: Id<"canvases"> }) {
   return createTool({
     description:
       "Replace an exact string inside a document node content from the current canvas.",
@@ -88,11 +107,15 @@ export default function documentStringReplaceContentTool({
         );
 
         if (matches === 0) {
-          return "Error: No match found for replacement. Please check your text and try again.";
+          return toolError(
+            "No match found for replacement. Please check your text and try again.",
+          );
         }
 
         if (matches > 1) {
-          return `Error: Found ${matches} matches for replacement text. Please provide more context to make a unique match.`;
+          return toolError(
+            `Found ${matches} matches for replacement text. Please provide more context to make a unique match.`,
+          );
         }
 
         const updatedMarkdown = markdownSource.replace(old_string, new_string);
@@ -114,7 +137,9 @@ export default function documentStringReplaceContentTool({
         return "Successfully replaced text at exactly one location.";
       } catch (error) {
         console.error("String replace tool error:", error);
-        return `Error: ${error instanceof Error ? error.message : String(error)}`;
+        return toolError(
+          error instanceof Error ? error.message : String(error),
+        );
       }
     },
   });

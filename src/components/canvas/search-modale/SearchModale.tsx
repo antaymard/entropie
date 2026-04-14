@@ -1,16 +1,19 @@
 import { Button } from "@/components/shadcn/button";
 import useRichQuery from "@/components/utils/useRichQuery";
 import { useDebounce } from "@/hooks/use-debounce";
+import { cn } from "@/lib/utils";
+import { fromXyNodeToCanvasNode } from "@/lib/node-types-converter";
 import type { Id } from "@/types";
 import type { NodeType } from "@/types/domain";
 import { useParams } from "@tanstack/react-router";
 import { useReactFlow } from "@xyflow/react";
 import { api } from "@/../convex/_generated/api";
-import { Fragment, useMemo } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TbLocation, TbSearch, TbX } from "react-icons/tb";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { useNodeDataTitle } from "@/hooks/useNodeTitle";
 import { useCanvasStore } from "@/stores/canvasStore";
+import { useIsNodeAttached, useNoleStore } from "@/stores/noleStore";
 import { useWindowsStore } from "@/stores/windowsStore";
 import { canNodeTypeBeOpenedInWindow } from "@/components/nodes/prebuilt-nodes/prebuiltNodesConfig";
 
@@ -40,6 +43,9 @@ export default function SearchModale() {
   const closeSearchModal = useCanvasStore((state) => state.closeSearchModal);
   const setSearchQuery = useCanvasStore((state) => state.setSearchQuery);
   const debouncedSearchQuery = useDebounce(searchQuery.trim(), 300);
+  const { getNode } = useReactFlow();
+  const openWindow = useWindowsStore((state) => state.openWindow);
+  const addAttachments = useNoleStore((state) => state.addAttachments);
   const { canvasId }: { canvasId: Id<"canvases"> } = useParams({
     from: "/canvas/$canvasId",
   });
@@ -54,6 +60,58 @@ export default function SearchModale() {
     api.searchableChunks.search,
     debouncedSearchQuery ? { query: debouncedSearchQuery, canvasId } : "skip",
   );
+  const results = useMemo(() => searchResults ?? [], [searchResults]);
+
+  // Keyboard navigation state
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const resultsContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleOpenResultWindow = useCallback(
+    (result: SearchResult) => {
+      if (!canNodeTypeBeOpenedInWindow(result.type)) return;
+
+      openWindow({
+        xyNodeId: result.nodeId,
+        nodeDataId: result.nodeDataId,
+        nodeType: result.type as NodeType,
+      });
+      closeSearchModal();
+    },
+    [closeSearchModal, openWindow],
+  );
+
+  const handleToggleResultAttachment = useCallback(
+    (nodeId: string) => {
+      const xyNode = getNode(nodeId);
+      if (!xyNode) return;
+
+      addAttachments({ nodes: [fromXyNodeToCanvasNode(xyNode)] }, true);
+    },
+    [addAttachments, getNode],
+  );
+
+  // Reset selection when results change or modal opens
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [debouncedSearchQuery, isOpen]);
+
+  useEffect(() => {
+    setSelectedIndex((currentIndex) => {
+      if (results.length === 0) return 0;
+      return Math.min(currentIndex, results.length - 1);
+    });
+  }, [results.length]);
+
+  // Scroll selected item into view
+  useEffect(() => {
+    if (!resultsContainerRef.current) return;
+    const selected = resultsContainerRef.current.querySelector(
+      '[data-selected="true"]',
+    );
+    if (selected && selected instanceof HTMLElement) {
+      selected.scrollIntoView({ block: "nearest" });
+    }
+  }, [selectedIndex, results.length]);
 
   if (!isOpen) return null;
   return (
@@ -76,6 +134,22 @@ export default function SearchModale() {
               className="bg-transparent outline-none border-none flex-1"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (isPending || error || results.length === 0) return;
+                if (e.key === "ArrowDown") {
+                  e.preventDefault();
+                  setSelectedIndex((i) => Math.min(i + 1, results.length - 1));
+                } else if (e.key === "ArrowUp") {
+                  e.preventDefault();
+                  setSelectedIndex((i) => Math.max(i - 1, 0));
+                } else if (e.key === "Enter") {
+                  e.preventDefault();
+                  const selected = results[selectedIndex];
+                  if (selected) {
+                    handleOpenResultWindow(selected);
+                  }
+                }
+              }}
             />
           </div>
 
@@ -90,15 +164,24 @@ export default function SearchModale() {
         ) : error ? (
           <div>Error: {error.message}</div>
         ) : (
-          <div className="flex flex-col gap-2 w-full h-full overflow-auto p-1">
-            {searchResults.length === 0 ? (
+          <div
+            className="flex flex-col gap-2 w-full h-full overflow-auto p-1"
+            ref={resultsContainerRef}
+          >
+            {results.length === 0 ? (
               <div>No results found</div>
             ) : (
-              searchResults.map((result) => (
+              results.map((result, idx) => (
                 <ResultCard
                   key={result.nodeId}
                   result={result}
                   query={debouncedSearchQuery}
+                  selected={idx === selectedIndex}
+                  onSelect={() => setSelectedIndex(idx)}
+                  onOpenWindow={() => handleOpenResultWindow(result)}
+                  onToggleAttachment={() =>
+                    handleToggleResultAttachment(result.nodeId)
+                  }
                 />
               ))
             )}
@@ -112,14 +195,22 @@ export default function SearchModale() {
 function ResultCard({
   result,
   query,
+  selected = false,
+  onSelect,
+  onOpenWindow,
+  onToggleAttachment,
 }: {
   result: SearchResult;
   query: string;
+  selected?: boolean;
+  onSelect: () => void;
+  onOpenWindow: () => void;
+  onToggleAttachment: () => void;
 }) {
   const nodeTitle = useNodeDataTitle(result.nodeDataId);
   const closeSearchModal = useCanvasStore((state) => state.closeSearchModal);
-  const openWindow = useWindowsStore((state) => state.openWindow);
   const { fitView } = useReactFlow();
+  const isAttachedToNole = useIsNodeAttached(result.nodeId);
   const previewImages = useMemo(() => result.images, [result.images]);
   const canOpenWindow = canNodeTypeBeOpenedInWindow(result.type);
   const sortedSnippets = useMemo(
@@ -146,21 +237,34 @@ function ResultCard({
 
   const handleOpenWindow = () => {
     if (!canOpenWindow) return;
-
-    openWindow({
-      xyNodeId: result.nodeId,
-      nodeDataId: result.nodeDataId,
-      nodeType: result.type as NodeType,
-    });
-    closeSearchModal();
+    onOpenWindow();
   };
 
   return (
     <div
-      className="relative flex flex-col rounded p-3 transition-colors hover:bg-slate-100 cursor-pointer"
-      onClick={handleOpenWindow}
+      className={cn(
+        "relative flex flex-col rounded p-3 transition-colors cursor-pointer",
+        selected ? "bg-slate-200" : "hover:bg-slate-100",
+        isAttachedToNole &&
+          "after:pointer-events-none after:absolute after:-inset-1 after:rounded-[8px] after:border-2 after:border-dashed after:border-violet-500/90",
+      )}
+      onMouseEnter={onSelect}
+      onClick={(event) => {
+        if (event.altKey) {
+          event.preventDefault();
+          onToggleAttachment();
+          return;
+        }
+        handleOpenWindow();
+      }}
       role={canOpenWindow ? "button" : undefined}
       tabIndex={canOpenWindow ? 0 : undefined}
+      title={
+        isAttachedToNole
+          ? "Alt+clic pour detacher de Nole"
+          : "Alt+clic pour attacher a Nole"
+      }
+      data-selected={selected ? "true" : undefined}
       onKeyDown={(event) => {
         if (!canOpenWindow) return;
         if (event.key !== "Enter" && event.key !== " ") return;

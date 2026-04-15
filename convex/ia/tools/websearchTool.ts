@@ -1,7 +1,18 @@
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
 import Parallel from "parallel-web";
-import { toolError } from "./toolHelpers";
+import { ToolConfig, toolError } from "./toolHelpers";
+import { toolAgentNames } from "../agentConfig";
+
+export const websearchToolConfig: ToolConfig = {
+  name: "websearch",
+  authorized_agents: [
+    toolAgentNames.nole,
+    toolAgentNames.clone,
+    toolAgentNames.supervisor,
+    toolAgentNames.worker,
+  ],
+};
 
 const client = new Parallel({
   apiKey: process.env.PARALLEL_API_KEY!,

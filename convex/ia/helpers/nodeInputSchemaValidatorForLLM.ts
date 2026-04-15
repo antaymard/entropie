@@ -56,7 +56,7 @@ export function validateNodeInputSchemaForLLM({
   const schemaJson = getSchemaAsJsonString(schema);
 
   return [
-    "Input validation failed for update_node_data_values.",
+    "Input validation failed.",
     `Node type: ${nodeType}`,
     "Incorrect fields:",
     incorrectFields || "- (unknown issue)",

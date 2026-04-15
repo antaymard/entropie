@@ -9,7 +9,7 @@ export async function readNodeData(
   { _id }: { _id: Id<"nodeDatas"> },
 ): Promise<Doc<"nodeDatas">> {
   const nodeData = await ctx.db.get("nodeDatas", _id);
-  if (!nodeData) throw new ConvexError("NodeData non trouvé");
+  if (!nodeData) throw new ConvexError("NodeData not found");
   return nodeData;
 }
 
@@ -44,7 +44,7 @@ export async function listNodeDataDependencies(
   },
 ): Promise<Array<Doc<"nodeDatas">>> {
   const nodeData = await ctx.db.get("nodeDatas", nodeDataId);
-  if (!nodeData) throw new ConvexError("NodeData non trouvé");
+  if (!nodeData) throw new ConvexError("NodeData not found");
   if (!nodeData.dependencies || nodeData.dependencies.length === 0) return [];
 
   const filteredDependencies = nodeData.dependencies.filter((dep) => {
@@ -56,7 +56,7 @@ export async function listNodeDataDependencies(
     filteredDependencies.map(async (dep) => {
       const dependencyNodeData = await ctx.db.get("nodeDatas", dep.nodeDataId);
       if (!dependencyNodeData)
-        throw new ConvexError("NodeData dépendant non trouvé");
+        throw new ConvexError("Dependent NodeData not found");
       return dependencyNodeData;
     }),
   );
@@ -75,7 +75,7 @@ export async function updateStatus(
   },
 ): Promise<boolean> {
   const existing = await ctx.db.get("nodeDatas", _id);
-  if (!existing) throw new ConvexError("NodeData non trouvé");
+  if (!existing) throw new ConvexError("NodeData not found");
 
   await ctx.db.patch("nodeDatas", _id, {
     status,
@@ -101,7 +101,7 @@ export async function updateAutomationProgress(
   },
 ): Promise<boolean> {
   const existing = await ctx.db.get("nodeDatas", _id);
-  if (!existing) throw new ConvexError("NodeData non trouvé");
+  if (!existing) throw new ConvexError("NodeData not found");
 
   await ctx.db.patch("nodeDatas", _id, {
     automationProgress: automationProgress
@@ -143,7 +143,7 @@ export async function updateValues(
 ): Promise<boolean> {
   console.log(`🔄 Updating values for nodeData ${_id}`);
   const existing = await ctx.db.get("nodeDatas", _id);
-  if (!existing) throw new ConvexError("NodeData non trouvé");
+  if (!existing) throw new ConvexError("NodeData not found");
 
   // Diff minimal: on ne conserve que les clés réellement modifiées.
   // Cela évite un patch DB + une reindexation quand la valeur entrante est identique.

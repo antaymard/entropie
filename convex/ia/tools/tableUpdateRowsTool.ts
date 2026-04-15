@@ -1,27 +1,18 @@
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
-import type { Id } from "../../_generated/dataModel";
+import { toolAgentNames, type ThreadCtx } from "../agentConfig";
 import { internal } from "../../_generated/api";
-import { toolError, compactErrorResult, CompactionConfig, ToolConfig } from "./toolHelpers";
+import { toolError, ToolConfig } from "./toolHelpers";
+
 // Tool compaction config
 export const tableUpdateRowsToolConfig: ToolConfig = {
   name: "table_update_rows",
-  agents: ["nolë", "automation-agent"],
-  compactionForSuccessResult: {
-    compactAfterMessages: 10,
-    compactAfterIterations: 1,
-    toolUseCompaction: (toolUse) => `[table update: ${toolUse.args?.nodeId}]`,
-    toolResultCompaction: (toolResult) => {
-      // Could parse result for summary, but just show updated row count
-      return `[table update result: ${toolResult}]`;
-    },
-  },
-  compactionForFailureResult: {
-    compactAfterMessages: 0,
-    compactAfterIterations: 0,
-    toolResultCompaction: (r) => compactErrorResult("table_update_rows", r),
-    hideCompletelyAfterMessages: 3,
-  },
+  authorized_agents: [
+    toolAgentNames.nole,
+    toolAgentNames.clone,
+    toolAgentNames.supervisor,
+    toolAgentNames.worker,
+  ],
 };
 
 type TableColumnType = "text" | "number" | "checkbox" | "date" | "link";
@@ -185,10 +176,12 @@ function normalizeCellValueForColumn({
 }
 
 export default function tableUpdateRowsTool({
-  canvasId,
+  threadCtx,
 }: {
-  canvasId: Id<"canvases">;
+  threadCtx: ThreadCtx;
 }) {
+  const { canvasId } = threadCtx;
+
   return createTool({
     description:
       "Update one or multiple existing rows in a table node from the current canvas.",

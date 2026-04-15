@@ -1,4 +1,5 @@
 // Shared helpers for tool error formatting and compaction logic
+import type { ToolAgentName } from "../agentConfig";
 
 export type NodeRect = {
   id: string;
@@ -82,20 +83,40 @@ export function getClosestHandlesForDirectedEdge({
 export interface CompactionConfig {
   compactAfterMessages: number;
   compactAfterIterations: number; // -1 is never, 0 is always
-  toolUseCompaction?: (toolUse: any) => string;
-  toolResultCompaction?: (toolResult: any) => string;
+  toolUseCompaction?: (toolUse: unknown) => string;
+  toolResultCompaction?: (toolResult: unknown) => string;
   hideCompletelyAfterMessages?: number;
 }
 
 export interface ToolConfig {
   name: string;
-  agents: string[];
-  compactionForSuccessResult: CompactionConfig;
-  compactionForFailureResult: CompactionConfig;
+  authorized_agents: ToolAgentName[];
+  compactionForSuccessResult?: CompactionConfig;
+  compactionForFailureResult?: CompactionConfig;
+}
+
+const defaultCompactionConfig: CompactionConfig = {
+  compactAfterMessages: 0,
+  compactAfterIterations: -1,
+};
+
+export function createDefaultToolConfig(
+  name: string,
+  agents: ToolAgentName[],
+): ToolConfig {
+  return {
+    name,
+    authorized_agents: agents,
+    compactionForSuccessResult: defaultCompactionConfig,
+    compactionForFailureResult: defaultCompactionConfig,
+  };
 }
 
 /** Extract compact error hint from the uniform {success:false, message} JSON error format. */
-export function compactErrorResult(toolName: string, toolResult: any): string {
+export function compactErrorResult(
+  toolName: string,
+  toolResult: unknown,
+): string {
   try {
     const parsed =
       typeof toolResult === "string" ? JSON.parse(toolResult) : toolResult;

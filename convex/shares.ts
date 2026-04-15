@@ -79,14 +79,16 @@ export const listCanvasShares = query({
   args: {
     canvasId: v.id("canvases"),
   },
-  returns: v.array(v.object({
-    _id: v.id("shares"),
-    userId: v.id("users"),
-    userName: v.string(),
-    userEmail: v.union(v.string(), v.null()),
-    permission: v.union(v.literal("viewer"), v.literal("editor")),
-    createdAt: v.number(),
-  })),
+  returns: v.array(
+    v.object({
+      _id: v.id("shares"),
+      userId: v.id("users"),
+      userName: v.string(),
+      userEmail: v.union(v.string(), v.null()),
+      permission: v.union(v.literal("viewer"), v.literal("editor")),
+      createdAt: v.number(),
+    }),
+  ),
   handler: async (ctx, args) => {
     const authUserId = await requireAuth(ctx);
 
@@ -105,7 +107,7 @@ export const listCanvasShares = query({
         return {
           _id: share._id,
           userId: share.userId,
-          userName: user?.name ?? user?.email ?? "Utilisateur inconnu",
+          userName: user?.name ?? user?.email ?? "Unknown user",
           userEmail: user?.email ?? null,
           permission: share.permission,
           createdAt: share._creationTime,

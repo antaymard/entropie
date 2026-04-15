@@ -423,7 +423,7 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
                 }}
                 className={cn(hasDirtyWindows && "")}
               >
-                Envoyer
+                Send
                 {isSending ? (
                   <TbLoader className="animate-spin" />
                 ) : hasDirtyWindows ? (

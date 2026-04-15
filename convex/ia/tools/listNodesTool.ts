@@ -4,9 +4,18 @@ import { internal } from "../../_generated/api";
 import { Id } from "../../_generated/dataModel";
 import { getNodeDataTitle } from "../../lib/getNodeDataTitle";
 import { toXmlCdata } from "../../lib/xml";
-import type { NoleToolRuntimeContext } from "../noleToolRuntimeContext";
+import { toolAgentNames, type ThreadCtx } from "../agentConfig";
 import { nodeDataConfig } from "../../config/nodeConfig";
-import { toolError } from "./toolHelpers";
+import { toolError, ToolConfig } from "./toolHelpers";
+
+export const listNodesToolConfig: ToolConfig = {
+  name: "list_nodes",
+  authorized_agents: [
+    toolAgentNames.nole,
+    toolAgentNames.clone,
+    toolAgentNames.supervisor,
+  ],
+};
 
 function getExpectedNodeDataSchemaString(nodeType: string): string | null {
   if (nodeType === "document" || nodeType === "table") {
@@ -36,9 +45,9 @@ function getExpectedNodeDataSchemaString(nodeType: string): string | null {
 }
 
 // is v1.0
-export default function listNodesTool({
-  canvasId,
-}: Pick<NoleToolRuntimeContext, "canvasId">) {
+export default function listNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
+  const { canvasId } = threadCtx;
+
   return createTool({
     description:
       "A tool to list and filter nodes from the current canvas. Returns a compact list of nodes (id, type, title, position) without their full content. Use read_nodes to get the full content of specific nodes after identifying them with this tool. All filters are combined with AND logic — call the tool multiple times to simulate OR. Results are capped at 20 nodes; if truncated, refine your filters to narrow down.",

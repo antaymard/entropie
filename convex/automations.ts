@@ -1,11 +1,9 @@
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
 import { action } from "./_generated/server";
-import { api, components, internal } from "./_generated/api";
+import { components, internal } from "./_generated/api";
 import { createAutomationAgent } from "./ia/agents";
 import { createThread } from "@convex-dev/agent";
 import { requireAuth } from "./lib/auth";
-import { nodeDataConfig } from "./config/nodeConfig";
-import updateNodeDataValuesTool from "./ia/tools/updateNodeDataValuesTool";
 import {
   generateInputNodesContext,
   makeNodeDataLLMFriendly,
@@ -45,27 +43,12 @@ export const trigger = action({
         },
       );
 
-      // Prefer toolInputSchema when provided, otherwise fallback to dataValuesSchema.
-      const nodeConfig = nodeDataConfig.find(
-        (ndc) => ndc.type === currentNodeData.type,
-      );
-      const inputSchema =
-        nodeConfig?.toolInputSchema ?? nodeConfig?.dataValuesSchema;
-      if (!inputSchema) {
-        throw new ConvexError(
-          "Schéma d'entrée non trouvé pour le type de nodeData.",
-        );
-      }
-
       // 3. Exécuter l'agent associé au noeud courant
       const automationAgent = createAutomationAgent({
-        updateNodeDataValuesTool: updateNodeDataValuesTool({
-          ctx,
-          nodeData: currentNodeData,
-          inputSchema,
-          reportProgress,
-          updateValuesMutation: api.nodeDatas.updateValues,
-        }),
+        threadCtx: {
+          authUserId: userId,
+          canvasId: currentNodeData.canvasId,
+        },
       });
       const threadId = await createThread(ctx, components.agent, {
         userId,
@@ -82,16 +65,16 @@ export const trigger = action({
         },
         { threadId },
         {
-          prompt: `Voici les données d'entrée disponibles pour le noeud actuel :
+          prompt: `Here are the available input data for the current node:
 ${generateInputNodesContext(inputNodeDatas)}
 
-          Voici les données actuelles du noeud (saisies par l'utilisateur, ou par toi lors d'une exécution précédente) :
+          Here are the current data of the node (entered by the user or by you in a previous execution):
 ${makeNodeDataLLMFriendly(currentNodeData)}
-          Si c'est pertinent, garde ces données à l'esprit pour produire ta réponse (structure, format, contraintes). Si les résultats de ton travail sont très différents, privilégie la qualité de ta réponse plutôt que la conformité aux données précédentes.
+          If relevant, keep this data in mind to produce your response (structure, format, constraints). If the results of your work are very different, prioritize the quality of your response over conformance to previous data.
 
           ------
 
-          Instructions de l'utilisateur pour ce noeud :
+          User instructions for this node:
           ${currentNodeData?.agent?.instructions}`,
         },
       );
@@ -110,7 +93,7 @@ ${makeNodeDataLLMFriendly(currentNodeData)}
       // X. Lancer les automations des noeuds suivants (à implémenter)
     } catch (error) {
       console.error(
-        "Erreur lors du déclenchement de l'automatisation :",
+        "Error triggering automation:",
         error,
       );
       // En cas d'erreur, passer le statut en error

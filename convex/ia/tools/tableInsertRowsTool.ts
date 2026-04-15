@@ -1,9 +1,20 @@
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
-import type { Id } from "../../_generated/dataModel";
+import { toolAgentNames, type ThreadCtx } from "../agentConfig";
 import { internal } from "../../_generated/api";
 import { generateLlmId } from "../../lib/llmId";
-import { toolError } from "./toolHelpers";
+import { ToolConfig, toolError } from "./toolHelpers";
+
+// Tool compaction config
+export const tableInsertRowsToolConfig: ToolConfig = {
+  name: "table_insert_rows",
+  authorized_agents: [
+    toolAgentNames.nole,
+    toolAgentNames.clone,
+    toolAgentNames.supervisor,
+    toolAgentNames.worker,
+  ],
+};
 
 type TableColumnType = "text" | "number" | "checkbox" | "date" | "link";
 
@@ -163,10 +174,12 @@ function normalizeCellValueForColumn({
 }
 
 export default function tableInsertRowsTool({
-  canvasId,
+  threadCtx,
 }: {
-  canvasId: Id<"canvases">;
+  threadCtx: ThreadCtx;
 }) {
+  const { canvasId } = threadCtx;
+
   return createTool({
     description: "Insert one or multiple rows in a table node.",
     args: z.object({

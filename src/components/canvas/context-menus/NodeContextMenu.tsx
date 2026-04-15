@@ -7,17 +7,16 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
 } from "@/components/shadcn/dropdown-menu";
-import { useCreateNode } from "@/hooks/useCreateNode";
 import type { Node } from "@xyflow/react";
 import { useReactFlow } from "@xyflow/react";
 import { useMutation } from "convex/react";
 import { api } from "@/../convex/_generated/api";
 import { useParams } from "@tanstack/react-router";
 import type { Id } from "@/../convex/_generated/dataModel";
-import { useNodeDataStore } from "@/stores/nodeDataStore";
 import { colors } from "@/components/ui/styles";
 import type { colorsEnum } from "@/types/domain";
 import { cn } from "@/lib/utils";
+import { useDuplicateNode } from "@/hooks/useDuplicateNode";
 
 // Icons
 import { HiOutlineTrash } from "react-icons/hi";
@@ -60,7 +59,7 @@ export default function NodeContextMenu({
 }) {
   const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
   const { deleteElements, updateNode } = useReactFlow();
-  const { createNode } = useCreateNode();
+  const { duplicateNode } = useDuplicateNode();
   const { updateCanvasNode } = useUpdateCanvasNode();
   const { canvasId }: { canvasId: Id<"canvases"> } = useParams({
     from: "/canvas/$canvasId",
@@ -68,7 +67,6 @@ export default function NodeContextMenu({
   const updatePositionOrDimensions = useMutation(
     api.canvasNodes.updatePositionOrDimensions,
   );
-  const getNodeData = useNodeDataStore((s) => s.getNodeData);
 
   const variants = prebuiltNodesConfig.find(
     (config) => config.node.type === xyNode.type,
@@ -157,29 +155,7 @@ export default function NodeContextMenu({
       label: "Duplicate",
       icon: TbCopyPlus,
       onClick: () => {
-        const nodeToDuplicate = xyNode;
-        if (nodeToDuplicate) {
-          // Get the values from the existing nodeData to duplicate them
-          let initialValues: Record<string, unknown> | undefined;
-          const nodeDataId = nodeToDuplicate.data?.nodeDataId as
-            | Id<"nodeDatas">
-            | undefined;
-          if (nodeDataId) {
-            const nodeData = getNodeData(nodeDataId);
-            if (nodeData) {
-              initialValues = nodeData.values;
-            }
-          }
-
-          createNode({
-            node: nodeToDuplicate,
-            position: {
-              x: nodeToDuplicate.position.x + 50,
-              y: nodeToDuplicate.position.y + 50,
-            },
-            initialValues,
-          });
-        }
+        void duplicateNode(xyNode);
       },
     },
     {

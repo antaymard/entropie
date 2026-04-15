@@ -1,6 +1,6 @@
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
-import type { Id } from "../../_generated/dataModel";
+import { toolAgentNames, type ThreadCtx } from "../agentConfig";
 import { internal } from "../../_generated/api";
 import {
   markdownToPlateJson,
@@ -10,7 +10,18 @@ import {
   parseStoredPlateDocument,
   stringifyPlateDocumentForStorage,
 } from "../../lib/plateDocumentStorage";
-import { toolError, compactErrorResult, ToolConfig } from "./toolHelpers";
+import { toolError, ToolConfig } from "./toolHelpers";
+
+// Tool compaction config
+export const documentStringReplaceContentToolConfig: ToolConfig = {
+  name: "string_replace_document_content",
+  authorized_agents: [
+    toolAgentNames.nole,
+    toolAgentNames.clone,
+    toolAgentNames.supervisor,
+    toolAgentNames.worker,
+  ],
+};
 
 const ERROR_TARGET_NOT_DOCUMENT = toolError("Target node must be a document.");
 const ERROR_INVALID_PLATE_DOC = toolError(
@@ -33,28 +44,13 @@ function countExactMatches(source: string, search: string): number {
   return count;
 }
 
-// Tool compaction config
-export const documentStringReplaceContentToolConfig: ToolConfig = {
-  name: "document_string_replace_content",
-  agents: ["nolë", "automation-agent"],
-  compactionForSuccessResult: {
-    compactAfterMessages: 10,
-    compactAfterIterations: 1,
-    toolUseCompaction: (toolUse) => `[replace: ${toolUse.args?.nodeId}]`,
-    toolResultCompaction: (toolResult) => {
-      // Could parse result for summary, but just show replaced string count
-      return `[replace result: ${toolResult}]`;
-    },
-  },
-  compactionForFailureResult: {
-    compactAfterMessages: 0,
-    compactAfterIterations: 0,
-    toolResultCompaction: (r) => compactErrorResult("document_string_replace_content", r),
-    hideCompletelyAfterMessages: 3,
-  },
-};
+export default function documentStringReplaceContentTool({
+  threadCtx,
+}: {
+  threadCtx: ThreadCtx;
+}) {
+  const { canvasId } = threadCtx;
 
-export default function documentStringReplaceContentTool({ canvasId }: { canvasId: Id<"canvases"> }) {
   return createTool({
     description:
       "Replace an exact string inside a document node content from the current canvas.",

@@ -92,12 +92,12 @@ function DocumentNode(xyNode: Node) {
             {isDocEmpty ? (
               <div className="h-full flex flex-col items-center justify-center gap-1.5 text-muted-foreground/40 select-none pointer-events-none">
                 <TbNews size={22} />
-                <span className="text-xs">Double-clic pour éditer</span>
+                <span className="text-xs">Double click to edit</span>
               </div>
             ) : isPreviewLoading ? (
               <div className="h-full flex flex-col items-center justify-center gap-2 text-muted-foreground/50 select-none pointer-events-none">
                 <Spinner className="size-4" />
-                <span className="text-xs">Chargement de l'aperçu...</span>
+                <span className="text-xs">Loading preview...</span>
               </div>
             ) : previewValue ? (
               <div className="relative">

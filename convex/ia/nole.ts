@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { internalAction, mutation } from "../_generated/server";
 import { baseAgent, createNoleAgent } from "./agents";
 import { requireAuth } from "../lib/auth";
-import { generateNoleSystemPrompt } from "./nole/noleSystemPrompt";
+import { generateNoleSystemPrompt } from "./systemPrompts/noleSystemPrompt";
 import { components, internal } from "../_generated/api";
 
 function isExpectedAbortedStreamError(error: unknown): boolean {
@@ -79,7 +79,7 @@ export const streamResponse = internalAction({
     });
 
     const noleAgent = createNoleAgent({
-      runtimeContext: {
+      threadCtx: {
         authUserId,
         canvasId,
       },

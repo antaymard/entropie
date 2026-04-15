@@ -48,6 +48,19 @@ import { useConvexAuth } from "convex/react";
 import OnboardingModal from "@/components/ui/OnboardingModal";
 import { generateLlmId } from "@/../convex/lib/llmId";
 import SearchModale from "@/components/canvas/search-modale/SearchModale";
+import { useHotkey } from "@tanstack/react-hotkeys";
+import { useDuplicateNode } from "@/hooks/useDuplicateNode";
+
+// Additional helper to prevent hotkeys from triggering when typing in inputs, textareas, selects or contenteditable elements
+function isEditableTarget(target: EventTarget | null): target is HTMLElement {
+  return (
+    target instanceof HTMLElement &&
+    (target.tagName === "INPUT" ||
+      target.tagName === "TEXTAREA" ||
+      target.tagName === "SELECT" ||
+      target.isContentEditable)
+  );
+}
 
 export const Route = createFileRoute("/canvas/$canvasId")({
   component: RouteComponent,
@@ -131,8 +144,11 @@ function CanvasContent({
   } = useContextMenu();
 
   const isMobile = useIsMobile();
-  const { screenToFlowPosition } = useReactFlow();
+  const { screenToFlowPosition, getNodes } = useReactFlow();
   const addNoleAttachments = useNoleStore((state) => state.addAttachments);
+  const focus = useCanvasStore((state) => state.focus);
+  const { duplicateNode } = useDuplicateNode();
+  const canDuplicateNodes = !!canvas && canvas._permission !== "viewer";
 
   const onNodeClick = useCallback(
     (event: MouseEvent, node: Parameters<typeof fromXyNodeToCanvasNode>[0]) => {
@@ -160,6 +176,28 @@ function CanvasContent({
       addNoleAttachments({ position });
     },
     [addNoleAttachments, screenToFlowPosition],
+  );
+
+  useHotkey(
+    "Mod+D",
+    (event) => {
+      if (!canDuplicateNodes || event.repeat || focus !== "canvas") {
+        return;
+      }
+
+      if (isEditableTarget(event.target)) {
+        return;
+      }
+
+      const selectedNodes = getNodes().filter((node) => node.selected);
+      if (selectedNodes.length !== 1) {
+        return;
+      }
+
+      event.preventDefault();
+      void duplicateNode(selectedNodes[0]);
+    },
+    { enabled: canDuplicateNodes && focus === "canvas" },
   );
 
   // Canvas nodes management

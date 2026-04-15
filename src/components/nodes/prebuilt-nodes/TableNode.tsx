@@ -66,13 +66,10 @@ function TableNode(xyNode: Node) {
             {isTableEmpty ? (
               <div className="h-full flex flex-col items-center justify-center gap-1.5 text-muted-foreground/40 select-none pointer-events-none">
                 <TbTable size={22} />
-                <span className="text-xs">Double-clic pour éditer</span>
+                <span className="text-xs">Double click to edit</span>
               </div>
             ) : (
-              <TablePreview
-                columns={tableData.columns}
-                rows={tableData.rows}
-              />
+              <TablePreview columns={tableData.columns} rows={tableData.rows} />
             )}
           </div>
         )}

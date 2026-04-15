@@ -140,15 +140,15 @@ const ChatInterface = memo(function ChatInterface({
           </div>
         )}
       </div>
-      {/* Overlay: Nole réfléchit... */}
+      {/* Overlay: Nole is thinking... */}
       {showThinkingIndicator && (
         <div className="absolute left-0 right-0 bottom-0 flex justify-center pointer-events-none z-20 pb-2">
           <div>
             <ThinkingIndicator
               label={
                 isAssistantThinking
-                  ? "Nole reflechit..."
-                  : "En attente de la reponse..."
+                  ? "Nole is thinking..."
+                  : "Waiting for response..."
               }
             />
           </div>

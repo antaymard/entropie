@@ -124,7 +124,7 @@ function ReasoningPartRenderer({
           size={12}
           className={cn(isStreaming ? "animate-spin" : "opacity-70")}
         />
-        <span>{isStreaming ? "Nole reflechit..." : "Thinking"}</span>
+        <span>{isStreaming ? "Nole is thinking..." : "Thinking"}</span>
         <TbChevronDown
           size={12}
           className={cn(

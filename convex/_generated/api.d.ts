@@ -29,7 +29,8 @@ import type * as ia_helpers_pillMarkdownRules from "../ia/helpers/pillMarkdownRu
 import type * as ia_helpers_plateMarkdownConverter from "../ia/helpers/plateMarkdownConverter.js";
 import type * as ia_helpers_spatialCanvasOverviewGenerator from "../ia/helpers/spatialCanvasOverviewGenerator.js";
 import type * as ia_nole from "../ia/nole.js";
-import type * as ia_nole_noleSystemPrompt from "../ia/nole/noleSystemPrompt.js";
+import type * as ia_subagentRuntime from "../ia/subagentRuntime.js";
+import type * as ia_systemPrompts_noleSystemPrompt from "../ia/systemPrompts/noleSystemPrompt.js";
 import type * as ia_tools__toolTemplate from "../ia/tools/_toolTemplate.js";
 import type * as ia_tools_createConnectionTool from "../ia/tools/createConnectionTool.js";
 import type * as ia_tools_createNodeTool from "../ia/tools/createNodeTool.js";
@@ -118,7 +119,8 @@ declare const fullApi: ApiFromModules<{
   "ia/helpers/plateMarkdownConverter": typeof ia_helpers_plateMarkdownConverter;
   "ia/helpers/spatialCanvasOverviewGenerator": typeof ia_helpers_spatialCanvasOverviewGenerator;
   "ia/nole": typeof ia_nole;
-  "ia/nole/noleSystemPrompt": typeof ia_nole_noleSystemPrompt;
+  "ia/subagentRuntime": typeof ia_subagentRuntime;
+  "ia/systemPrompts/noleSystemPrompt": typeof ia_systemPrompts_noleSystemPrompt;
   "ia/tools/_toolTemplate": typeof ia_tools__toolTemplate;
   "ia/tools/createConnectionTool": typeof ia_tools_createConnectionTool;
   "ia/tools/createNodeTool": typeof ia_tools_createNodeTool;

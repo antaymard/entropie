@@ -60,6 +60,25 @@ export function createNoleAgent({
   });
 }
 
+export function createCloneAgent({
+  threadCtx,
+  tools = {},
+}: {
+  threadCtx: ThreadCtx;
+  tools?: ToolSet;
+}) {
+  return new Agent(components.agent, {
+    name: "Clone",
+    maxSteps: 20,
+    languageModel: openrouter("z-ai/glm-5.1"),
+    tools: getToolsForAgent({
+      agentName: toolAgentNames.clone,
+      threadCtx,
+      extraTools: tools,
+    }),
+  });
+}
+
 export function createSupervisorAgent({
   threadCtx,
   tools = {},

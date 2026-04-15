@@ -1,4 +1,5 @@
 import { createTool } from "@convex-dev/agent";
+import { internal } from "../../_generated/api";
 import {
   toolAgentNames,
   type ThreadCtx,
@@ -37,6 +38,21 @@ const runSubagentConfig = {
   },
 } as const;
 
+type SupportedCurrentAgent =
+  | typeof toolAgentNames.nole
+  | typeof toolAgentNames.clone
+  | typeof toolAgentNames.supervisor;
+
+function isSupportedCurrentAgent(
+  agent: ToolAgentName,
+): agent is SupportedCurrentAgent {
+  return (
+    agent === toolAgentNames.nole ||
+    agent === toolAgentNames.clone ||
+    agent === toolAgentNames.supervisor
+  );
+}
+
 type SubagentType =
   (typeof runSubagentConfig.availableSubagentTypesByAgent)[keyof typeof runSubagentConfig.availableSubagentTypesByAgent][number];
 
@@ -47,8 +63,6 @@ export default function runSubagent({
   currentAgent: ToolAgentName;
   threadCtx: ThreadCtx;
 }) {
-  void threadCtx;
-
   const available =
     (
       runSubagentConfig.availableSubagentTypesByAgent as Record<
@@ -69,23 +83,48 @@ export default function runSubagent({
       instructions: z
         .string()
         .describe("The prompt or instructions for the sub-agent to follow."),
-      agentId: z
-        .string()
-        .optional()
-        .describe(
-          "Provide if you want to continue a conversation with an already spawned agent.",
-        ),
       agentType: z
         // `available` is guaranteed non-empty: only agents with an entry in
         // availableSubagentTypesByAgent are in authorized_agents.
         .enum(available as unknown as [SubagentType, ...SubagentType[]])
         .describe(`The type of agent to delegate to. ${descriptions}`),
     }),
-    handler: async (): Promise<string> => {
+    handler: async (ctx, args): Promise<string> => {
       try {
-        return `Node data updated for nodeId`;
-      } catch {
-        return toolError(`Error while setting node data for nodeId `);
+        if (!isSupportedCurrentAgent(currentAgent)) {
+          return toolError(
+            `Current agent ${currentAgent} cannot run run_subagent.`,
+          );
+        }
+
+        const trimmedExplanation = args.explanation.trim();
+        const trimmedInstructions = args.instructions.trim();
+
+        if (!trimmedExplanation) {
+          return toolError("`explanation` cannot be empty.");
+        }
+
+        if (!trimmedInstructions) {
+          return toolError("`instructions` cannot be empty.");
+        }
+
+        const result = await ctx.runAction(internal.ia.subagentRuntime.run, {
+          currentAgent,
+          agentType: args.agentType,
+          explanation: trimmedExplanation,
+          instructions: trimmedInstructions,
+          authUserId: threadCtx.authUserId,
+          canvasId: threadCtx.canvasId,
+        });
+
+        return JSON.stringify({
+          success: true,
+          ...result,
+        });
+      } catch (error) {
+        return toolError(
+          `Error while running subagent: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     },
   });

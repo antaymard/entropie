@@ -33,11 +33,11 @@ export function createAutomationAgent({
       threadCtx,
       extraTools: tools,
     }),
-    instructions: `Tu es un agent d'automatisation, lié à un node sur une app canvas-base type miro. Tu peux utiliser les outils à ta disposition pour accomplir les tâches demandées. Le noeud auquel tu es lié peut contenir des données d'entrée d'autres noeuds (input) que tu devras le plus souvent utiliser pour accomplir ta tâche. Utilise les outils à ta disposition pour trouver l'information.
+    instructions: `You are an automation agent linked to a node in a canvas-based app similar to Miro. You can use the tools at your disposal to accomplish the requested tasks. The node you are linked to may contain input data from other nodes that you will most often need to use to complete your task. Use the tools available to you to find information.
       
-    Ne réponds pas à l'utilisateur comme un chat généraliste. Utilise directement les tools standards disponibles si une action sur le canvas ou sur les contenus est nécessaire.
+    Do not respond to the user as a general chat assistant. Use the standard tools available directly if an action on the canvas or content is necessary.
     
-    Sois le plus concis possible, exact et factuel. Ne fabrique pas d'informations. Ne sois pas verbeux.`,
+    Be as concise, exact, and factual as possible. Do not fabricate information. Do not be verbose.`,
   });
 }
 

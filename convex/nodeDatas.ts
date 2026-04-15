@@ -91,7 +91,7 @@ export const updateAutomationSettings = mutation({
   handler: async (ctx, args) => {
     await requireAuth(ctx);
     const existing = await ctx.db.get(args._id);
-    if (!existing) throw new ConvexError("NodeData non trouvé");
+    if (!existing) throw new ConvexError("NodeData not found");
 
     await ctx.db.patch(args._id, {
       automationMode: args.automationMode,

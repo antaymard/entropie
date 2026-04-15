@@ -47,7 +47,7 @@ export const fetchLinkMetadata = action({
       };
     } catch (error) {
       console.error("Error fetching link metadata:", error);
-      throw new Error("Impossible de récupérer les métadonnées du lien");
+      throw new Error("Failed to fetch link metadata");
     }
   },
 });

@@ -51,7 +51,7 @@ export function createNoleAgent({
   return new Agent(components.agent, {
     name: "Nolë",
     maxSteps: 20,
-    languageModel: openrouter("z-ai/glm-5.1"),
+    languageModel: openrouter("google/gemini-3.1-pro-preview"),
     tools: getToolsForAgent({
       agentName: toolAgentNames.nole,
       threadCtx,

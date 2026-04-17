@@ -89,3 +89,79 @@ export const migrateFileNodesToPdf = internalMutation({
     };
   },
 });
+
+/**
+ * Migration: replace every canvas node type "floatingText" with "text"
+ * and update nodeDatas from "floatingText" to "text".
+ */
+export const migrateFloatingTextNodesToText = internalMutation({
+  args: {
+    dryRun: v.optional(v.boolean()),
+  },
+  returns: v.object({
+    dryRun: v.boolean(),
+    canvasesScanned: v.number(),
+    canvasesUpdated: v.number(),
+    canvasNodesUpdated: v.number(),
+    nodeDatasScanned: v.number(),
+    nodeDatasUpdated: v.number(),
+  }),
+  handler: async (ctx, { dryRun = true }) => {
+    const canvases = await ctx.db.query("canvases").collect();
+    const nodeDatas = await ctx.db.query("nodeDatas").collect();
+
+    let canvasesUpdated = 0;
+    let canvasNodesUpdated = 0;
+    let nodeDatasUpdated = 0;
+
+    for (const canvas of canvases) {
+      const nodes = canvas.nodes ?? [];
+      let canvasChanged = false;
+
+      const updatedNodes = nodes.map((node) => {
+        const currentType = node.type as string;
+        if (currentType !== "floatingText") return node;
+
+        canvasChanged = true;
+        canvasNodesUpdated += 1;
+
+        return {
+          ...node,
+          type: "text" as const,
+        };
+      });
+
+      if (!canvasChanged) continue;
+
+      canvasesUpdated += 1;
+      if (!dryRun) {
+        await ctx.db.patch("canvases", canvas._id, {
+          nodes: updatedNodes,
+          updatedAt: Date.now(),
+        });
+      }
+    }
+
+    for (const nodeData of nodeDatas) {
+      const currentType = nodeData.type as string;
+      if (currentType !== "floatingText") continue;
+
+      nodeDatasUpdated += 1;
+      if (!dryRun) {
+        await ctx.db.patch("nodeDatas", nodeData._id, {
+          type: "text",
+          updatedAt: Date.now(),
+        });
+      }
+    }
+
+    return {
+      dryRun,
+      canvasesScanned: canvases.length,
+      canvasesUpdated,
+      canvasNodesUpdated,
+      nodeDatasScanned: nodeDatas.length,
+      nodeDatasUpdated,
+    };
+  },
+});

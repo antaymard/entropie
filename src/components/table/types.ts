@@ -13,6 +13,7 @@ export interface TableColumn {
   id: string;
   name: string;
   type: ColumnType;
+  width?: number;
 }
 
 export interface TableRowData {

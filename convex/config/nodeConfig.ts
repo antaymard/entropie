@@ -30,8 +30,8 @@ type NodeDataConfigItem = {
 
 const nodeDataConfig: Array<NodeDataConfigItem> = [
   {
-    type: "floatingText",
-    label: "Floating text",
+    type: "text",
+    label: "Text",
     description:
       "Node for free text labels on the canvas. Supports h1/h2/h3/p heading levels for the whole text. Does not support rich markdown.",
     llmDescription:

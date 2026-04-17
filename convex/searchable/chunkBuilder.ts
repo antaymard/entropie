@@ -143,7 +143,7 @@ async function buildChunks(
   };
 
   switch (nodeData.type) {
-    case "floatingText": {
+    case "text": {
       const text = String(nodeData.values.text ?? "").trim();
       if (!text) return [];
       return [{ ...base, chunkType: "node", order: 0, text }];

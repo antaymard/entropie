@@ -121,7 +121,7 @@ function applyNodeDataTitle({
       };
     }
 
-    case "floatingText": {
+    case "text": {
       return {
         values: {
           ...defaultValues,

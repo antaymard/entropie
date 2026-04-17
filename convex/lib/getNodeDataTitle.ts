@@ -66,7 +66,7 @@ export function getNodeDataTitle(nodeData: Doc<"nodeDatas">): string {
         : "Image";
     }
 
-    case "floatingText": {
+    case "text": {
       const text = nodeData.values.text;
       return typeof text === "string" && text.length > 0 ? text : "Text";
     }

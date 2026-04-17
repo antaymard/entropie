@@ -161,43 +161,41 @@ function EmbedNode(xyNode: Node) {
         >
           <TbMaximize />
         </Button>
-        {!isTitleVariant && (
-          <Popover open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" title="Edit embed URL">
-                <TbPencil />
+        <Popover open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="icon" title="Edit embed URL">
+              <TbPencil />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent>
+            <div className="flex flex-col gap-2">
+              <Input
+                onDoubleClick={(e) => e.stopPropagation()}
+                type="text"
+                placeholder="URL or <iframe> embed code..."
+                value={inputUrl}
+                onChange={(e) => setInputUrl(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSave();
+                }}
+              />
+              <Input
+                onDoubleClick={(e) => e.stopPropagation()}
+                type="text"
+                placeholder="Title (optional)"
+                value={inputTitle}
+                onChange={(e) => setInputTitle(e.target.value)}
+              />
+              <Button
+                onClick={handleSave}
+                size="sm"
+                disabled={!inputUrl.trim()}
+              >
+                Save
               </Button>
-            </PopoverTrigger>
-            <PopoverContent>
-              <div className="flex flex-col gap-2">
-                <Input
-                  onDoubleClick={(e) => e.stopPropagation()}
-                  type="text"
-                  placeholder="URL or <iframe> embed code..."
-                  value={inputUrl}
-                  onChange={(e) => setInputUrl(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleSave();
-                  }}
-                />
-                <Input
-                  onDoubleClick={(e) => e.stopPropagation()}
-                  type="text"
-                  placeholder="Title (optional)"
-                  value={inputTitle}
-                  onChange={(e) => setInputTitle(e.target.value)}
-                />
-                <Button
-                  onClick={handleSave}
-                  size="sm"
-                  disabled={!inputUrl.trim()}
-                >
-                  Save
-                </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
-        )}
+            </div>
+          </PopoverContent>
+        </Popover>
       </CanvasNodeToolbar>
       <NodeFrame xyNode={xyNode} resizable={!isTitleVariant}>
         {isTitleVariant ? (

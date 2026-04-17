@@ -291,14 +291,6 @@ export async function moveToCanvas(
   for (const nodeDataId of movedNodeDataIds) {
     await ctx.db.patch(nodeDataId, { canvasId: targetCanvasId });
 
-    const memories = await ctx.db
-      .query("memories")
-      .withIndex("by_subject_and_type", (q) => q.eq("subjectId", nodeDataId))
-      .collect();
-    for (const memory of memories) {
-      await ctx.db.patch(memory._id, { canvasId: targetCanvasId });
-    }
-
     await SearchableChunkModels.updateCanvasId(ctx, {
       nodeDataId,
       canvasId: targetCanvasId,

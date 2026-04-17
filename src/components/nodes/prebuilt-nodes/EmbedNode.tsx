@@ -215,12 +215,10 @@ function EmbedNode(xyNode: Node) {
             </p>
           </div>
         ) : embedValue?.embedUrl ? (
-          <div className="w-full h-full">
+          <div className="w-full h-full flex flex-col overflow-hidden rounded-[4px]">
             <div
               className={cn(
-                "h-8 px-2 py-1 truncate line-clamp-1 font-medium rounded-t-[4px]",
-                nodeColor.textColor,
-                nodeColor.lightBg,
+                "h-8 shrink-0 px-2 py-1.5 truncate line-clamp-1 font-medium rounded-t-[4px]",
               )}
             >
               {embedValue.title ?? "Embed"}
@@ -228,7 +226,7 @@ function EmbedNode(xyNode: Node) {
             <iframe
               src={embedValue.embedUrl}
               title={embedValue.title ?? "Embedded content"}
-              className="w-full h-full border-0 rounded rounded-t-none"
+              className="w-full flex-1 min-h-0 border-0"
               allow="autoplay; fullscreen; clipboard-read; clipboard-write"
               allowFullScreen
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"

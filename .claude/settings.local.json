@@ -6,7 +6,8 @@
       "Bash(npm run dev:*)",
       "WebFetch(domain:docs.slatejs.org)",
       "WebFetch(domain:github.com)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(xargs cat *)"
     ]
   }
 }

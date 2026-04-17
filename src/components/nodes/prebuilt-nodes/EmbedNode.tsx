@@ -16,6 +16,9 @@ import { useNodeDataValues } from "@/hooks/useNodeData";
 import { useNodeDataTitle } from "@/hooks/useNodeTitle";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { useWindowsStore } from "@/stores/windowsStore";
+import { colors } from "@/components/ui/styles";
+import type { colorsEnum } from "@/types/domain";
+import { cn } from "@/lib/utils";
 
 type EmbedType =
   | "youtube"
@@ -115,6 +118,7 @@ function EmbedNode(xyNode: Node) {
 
   const embedValue = values?.embed as EmbedValueType | undefined;
   const isTitleVariant = xyNode.data.variant === "title";
+  const nodeColor = colors[(xyNode.data?.color as colorsEnum) || "default"];
 
   const handleOpenWindow = useCallback(() => {
     if (!nodeDataId) return;
@@ -199,21 +203,37 @@ function EmbedNode(xyNode: Node) {
       </CanvasNodeToolbar>
       <NodeFrame xyNode={xyNode} resizable={!isTitleVariant}>
         {isTitleVariant ? (
-          <div className="flex items-center gap-2 px-2 min-w-0 h-full relative">
+          <div
+            className={cn(
+              "flex items-center gap-2 px-2 min-w-0 h-full relative",
+              nodeColor.textColor,
+            )}
+          >
             <TbCode size={18} className="shrink-0" />
             <p className="truncate flex-1 min-w-0" title={embedTitle}>
               {embedTitle}
             </p>
           </div>
         ) : embedValue?.embedUrl ? (
-          <iframe
-            src={embedValue.embedUrl}
-            title={embedValue.title ?? "Embedded content"}
-            className="w-full h-full border-0 rounded"
-            allow="autoplay; fullscreen; clipboard-read; clipboard-write"
-            allowFullScreen
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
-          />
+          <div className="w-full h-full">
+            <div
+              className={cn(
+                "h-8 px-2 py-1 truncate line-clamp-1 font-medium rounded-t-[4px]",
+                nodeColor.textColor,
+                nodeColor.lightBg,
+              )}
+            >
+              {embedValue.title ?? "Embed"}
+            </div>
+            <iframe
+              src={embedValue.embedUrl}
+              title={embedValue.title ?? "Embedded content"}
+              className="w-full h-full border-0 rounded rounded-t-none"
+              allow="autoplay; fullscreen; clipboard-read; clipboard-write"
+              allowFullScreen
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
+            />
+          </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground select-none">
             <TbCode size={28} />

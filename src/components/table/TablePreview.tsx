@@ -23,7 +23,7 @@ export function TablePreview({ columns, rows, className }: TablePreviewProps) {
       <TableHeader>
         <TableRow>
           {columns.map((col) => (
-            <TableHead key={col.id}>{col.name}</TableHead>
+            <TableHead key={col.id} style={col.width ? { width: col.width } : undefined}>{col.name}</TableHead>
           ))}
         </TableRow>
       </TableHeader>
@@ -31,7 +31,7 @@ export function TablePreview({ columns, rows, className }: TablePreviewProps) {
         {rows.map((row) => (
           <TableRow key={row.id}>
             {columns.map((col) => (
-              <TableCell key={col.id}>
+              <TableCell key={col.id} style={col.width ? { width: col.width } : undefined}>
                 <CellDisplay type={col.type} value={row.cells[col.id]} />
               </TableCell>
             ))}

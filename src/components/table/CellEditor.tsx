@@ -129,7 +129,7 @@ export function CellEditor({
 
   return (
     <span
-      className={cn("block w-full min-h-[1.4em] rounded px-1 cursor-text hover:bg-muted/50")}
+      className={cn("block w-full min-h-[1.4em] rounded px-1 cursor-text hover:bg-muted/50 truncate")}
       onClick={onClick}
     >
       {value != null ? String(value) : ""}

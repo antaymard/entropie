@@ -14,7 +14,7 @@ import { useNodeDataValues } from "@/hooks/useNodeData";
 import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
 import type { Id } from "@/../convex/_generated/dataModel";
 
-function TextNode(xyNode: Node) {
+function TitleNode(xyNode: Node) {
   const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
   const values = useNodeDataValues(nodeDataId);
   const { updateNodeDataValues } = useUpdateNodeDataValues();
@@ -83,4 +83,4 @@ function TextNode(xyNode: Node) {
   );
 }
 
-export default memo(TextNode, areNodePropsEqual);
+export default memo(TitleNode, areNodePropsEqual);

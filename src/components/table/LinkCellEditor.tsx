@@ -29,11 +29,13 @@ export function LinkCellEditor({
   onBlur,
 }: LinkCellEditorProps) {
   const [linkUrl, setLinkUrl] = useState("");
+  const [linkTitle, setLinkTitle] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const fetchLinkMetadata = useAction(api.links.fetchLinkMetadata);
 
   const handleOpen = () => {
     setLinkUrl(value?.href ?? "");
+    setLinkTitle(value?.pageTitle ?? "");
   };
 
   const handleSave = async () => {
@@ -57,12 +59,12 @@ export function LinkCellEditor({
       const metadata = await fetchLinkMetadata({ url });
       onChange({
         href: url,
-        pageTitle: metadata.title || url,
+        pageTitle: linkTitle.trim() || metadata.title || url,
         pageImage: metadata.image || undefined,
         pageDescription: metadata.description || undefined,
       });
     } catch {
-      onChange({ href: url, pageTitle: url });
+      onChange({ href: url, pageTitle: linkTitle.trim() || url });
     } finally {
       setIsLoading(false);
       onBlur();
@@ -119,6 +121,20 @@ export function LinkCellEditor({
             placeholder="https://..."
             value={linkUrl}
             onChange={(e) => setLinkUrl(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleSave();
+              }
+              if (e.key === "Escape") onBlur();
+            }}
+            disabled={isLoading}
+          />
+          <Input
+            type="text"
+            placeholder="Titre (optionnel)"
+            value={linkTitle}
+            onChange={(e) => setLinkTitle(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();

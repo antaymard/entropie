@@ -24,7 +24,7 @@ Ce fichier doit rester léger pour éviter de surcharger le contexte des agents.
 ## Capacités produit déjà présentes
 
 - CRUD canvas + recherche full-text + partage + collaboration temps réel.
-- Nœuds principaux: document, image, link, pdf, value, embed, floating text.
+- Nœuds principaux: document, image, link, pdf, value, embed, title.
 - Automations de nœuds en mode agent et data processing.
 - Chat Nolë avec outils serveur (lecture/manipulation de nœuds, websearch, édition document).
 

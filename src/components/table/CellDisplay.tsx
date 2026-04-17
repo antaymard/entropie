@@ -64,7 +64,7 @@ export function CellDisplay({ type, value }: CellDisplayProps) {
   }
 
   return (
-    <span className="block w-full min-h-[1.4em] rounded px-1">
+    <span className="block w-full min-h-[1.4em] rounded px-1 truncate">
       {value != null ? String(value) : ""}
     </span>
   );

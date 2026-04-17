@@ -121,7 +121,7 @@ function applyNodeDataTitle({
       };
     }
 
-    case "text": {
+    case "title": {
       return {
         values: {
           ...defaultValues,

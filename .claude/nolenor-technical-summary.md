@@ -155,7 +155,7 @@ Chaque nœud vit sur le canvas React Flow avec drag & drop, redimensionnement, c
 
 6. **Embed** — contenu externe embarqué. Support YouTube, Google Docs/Sheets/Slides, et embeds génériques.
 
-7. **Floating Text** — labels simples positionnés sur le canvas. Niveaux : h1, h2, h3, p. Pas de stockage nodeData. Min 100x28px.
+7. **Title** — labels simples positionnés sur le canvas. Niveaux : h1, h2, h3, p. Stocké comme nodeData de type title. Taille par défaut 220x33px, redimensionnable.
 
 **Non disponible** : le nœud Fetch (requêtes HTTP) est dans le code mais pas encore implémenté.
 

@@ -144,7 +144,7 @@ export function makeNodeDataLLMFriendly(nodeData: Doc<"nodeDatas">): string {
       return images.map((img) => `![image](${img.url})`).join("\n");
     }
 
-    case "text": {
+    case "title": {
       const text = values.text ?? "";
       const level = values.level as string | undefined;
       const prefix =

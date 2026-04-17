@@ -39,6 +39,7 @@ import type * as ia_tools_documentStringReplaceContentTool from "../ia/tools/doc
 import type * as ia_tools_fullTextSearchTool from "../ia/tools/fullTextSearchTool.js";
 import type * as ia_tools_index from "../ia/tools/index.js";
 import type * as ia_tools_listNodesTool from "../ia/tools/listNodesTool.js";
+import type * as ia_tools_memoryTool from "../ia/tools/memoryTool.js";
 import type * as ia_tools_openWebPageTool from "../ia/tools/openWebPageTool.js";
 import type * as ia_tools_readNodesTool from "../ia/tools/readNodesTool.js";
 import type * as ia_tools_runSubagent from "../ia/tools/runSubagent.js";
@@ -129,6 +130,7 @@ declare const fullApi: ApiFromModules<{
   "ia/tools/fullTextSearchTool": typeof ia_tools_fullTextSearchTool;
   "ia/tools/index": typeof ia_tools_index;
   "ia/tools/listNodesTool": typeof ia_tools_listNodesTool;
+  "ia/tools/memoryTool": typeof ia_tools_memoryTool;
   "ia/tools/openWebPageTool": typeof ia_tools_openWebPageTool;
   "ia/tools/readNodesTool": typeof ia_tools_readNodesTool;
   "ia/tools/runSubagent": typeof ia_tools_runSubagent;

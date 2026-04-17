@@ -71,6 +71,7 @@ export interface TableProps {
   onColumnTypeChange?: (colId: string, type: ColumnType) => void;
   onColumnOrderChange?: (orderedIds: string[]) => void;
   onRowOrderChange?: (orderedIds: string[]) => void;
+  onColumnWidthChange?: (colId: string, width: number) => void;
   className?: string;
 }
 
@@ -104,12 +105,16 @@ function DraggableHeader({
 }) {
   const { attributes, isDragging, listeners, setNodeRef, transform } =
     useSortable({ id: header.column.id });
+  const isResizing = header.column.getIsResizing();
   const style: CSSProperties = {
     opacity: isDragging ? 0.8 : 1,
     position: "relative",
     transform: CSS.Translate.toString(transform),
-    transition: "width transform 0.2s ease-in-out",
+    transition: isResizing ? "transform 0.2s ease-in-out" : "width transform 0.2s ease-in-out",
     zIndex: isDragging ? 1 : 0,
+    width: header.getSize(),
+    userSelect: isResizing ? "none" : undefined,
+    overflow: "hidden",
   };
   return (
     <TableHead ref={setNodeRef} style={style}>
@@ -124,6 +129,14 @@ function DraggableHeader({
           ⠿
         </button>
       </div>
+      <div
+        onMouseDown={header.getResizeHandler()}
+        onTouchStart={header.getResizeHandler()}
+        className={cn(
+          "absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none hover:bg-border",
+          isResizing && "bg-primary/60",
+        )}
+      />
     </TableHead>
   );
 }
@@ -144,6 +157,8 @@ function DraggableCell({
     transform: CSS.Translate.toString(transform),
     transition: "width transform 0.2s ease-in-out",
     zIndex: isDragging ? 1 : 0,
+    width: cell.column.getSize(),
+    overflow: "hidden",
   };
   return (
     <TableCell ref={setNodeRef} style={style}>
@@ -227,6 +242,7 @@ export function Table({
   onColumnTypeChange,
   onColumnOrderChange,
   onRowOrderChange,
+  onColumnWidthChange,
   className,
 }: TableProps) {
   const tableRootRef = useRef<HTMLDivElement>(null);
@@ -239,10 +255,21 @@ export function Table({
     ...tableColumns.map((c) => c.id),
     ...(!readOnly ? ["__delete__"] : []),
   ]);
+  const [columnSizing, setColumnSizing] = useState<Record<string, number>>(
+    () =>
+      Object.fromEntries(
+        tableColumns
+          .filter((c) => c.width != null)
+          .map((c) => [c.id, c.width!]),
+      ),
+  );
 
   // Hide row drag handle when sorting or filtering is active (order becomes ambiguous)
   const canReorderRowsRef = useRef(true);
   canReorderRowsRef.current = !readOnly && sorting.length === 0 && globalFilter === "";
+
+  const onColumnWidthChangeRef = useRef(onColumnWidthChange);
+  onColumnWidthChangeRef.current = onColumnWidthChange;
 
   const columns = useMemo<ColumnDef<TableRowData>[]>(
     () => [
@@ -250,8 +277,10 @@ export function Table({
         ? [
             {
               id: "__drag__",
+              size: 32,
               enableSorting: false,
               enableGlobalFilter: false,
+              enableColumnResizing: false,
               header: () => null,
               cell: () => null,
             } satisfies ColumnDef<TableRowData>,
@@ -259,6 +288,7 @@ export function Table({
         : []),
       ...tableColumns.map(
         (col): ColumnDef<TableRowData> => ({
+          enableColumnResizing: true,
           id: col.id,
           accessorFn: (row) => row.cells[col.id],
           header: ({ column: tanstackCol }) => (
@@ -313,8 +343,10 @@ export function Table({
         ? [
             {
               id: "__delete__",
+              size: 32,
               enableSorting: false,
               enableGlobalFilter: false,
+              enableColumnResizing: false,
               header: () => null,
               cell: ({ row }: { row: { original: TableRowData } }) => (
                 <Button
@@ -353,8 +385,24 @@ export function Table({
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
     onColumnOrderChange: setColumnOrder,
+    columnResizeMode: "onChange",
+    defaultColumn: { size: 150, minSize: 80 },
+    onColumnSizingChange: (updaterOrValue) => {
+      setColumnSizing((prev) => {
+        const next =
+          typeof updaterOrValue === "function"
+            ? updaterOrValue(prev)
+            : updaterOrValue;
+        for (const [colId, width] of Object.entries(next)) {
+          if (prev[colId] !== width) {
+            onColumnWidthChangeRef.current?.(colId, Math.round(width));
+          }
+        }
+        return next;
+      });
+    },
     globalFilterFn,
-    state: { sorting, globalFilter, columnOrder },
+    state: { sorting, globalFilter, columnOrder, columnSizing },
   });
 
   const sensors = useSensors(
@@ -403,6 +451,19 @@ export function Table({
       ...currentColIds,
       ...(!readOnly ? ["__delete__"] : []),
     ]);
+    const colIdSet = new Set(currentColIds);
+    setColumnSizing((prev) => {
+      const next: Record<string, number> = {};
+      for (const col of tableColumns) {
+        if (col.id in prev) next[col.id] = prev[col.id];
+        else if (col.width != null) next[col.id] = col.width;
+      }
+      // Drop removed columns
+      for (const key of Object.keys(prev)) {
+        if (colIdSet.has(key) && !(key in next)) next[key] = prev[key];
+      }
+      return next;
+    });
   }
 
   // IDs for column SortableContext — exclude utility columns
@@ -446,7 +507,7 @@ export function Table({
           </div>
         )}
         <div className="flex-1 overflow-auto">
-          <ShadcnTable>
+          <ShadcnTable style={{ tableLayout: "fixed", width: table.getTotalSize() }}>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>

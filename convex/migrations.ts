@@ -18,14 +18,18 @@ export const migrateFileNodesToPdf = internalMutation({
     linkedNodeDatasFound: v.number(),
     nodeDatasUpdated: v.number(),
     nodeDatasMissing: v.number(),
+    searchableChunksScanned: v.number(),
+    searchableChunksUpdated: v.number(),
   }),
   handler: async (ctx, { dryRun = true }) => {
     const canvases = await ctx.db.query("canvases").collect();
+    const searchableChunks = await ctx.db.query("searchableChunks").collect();
 
     let canvasesUpdated = 0;
     let canvasNodesUpdated = 0;
     let nodeDatasUpdated = 0;
     let nodeDatasMissing = 0;
+    let searchableChunksUpdated = 0;
 
     const linkedNodeDataIds = new Set<Id<"nodeDatas">>();
 
@@ -78,6 +82,17 @@ export const migrateFileNodesToPdf = internalMutation({
       }
     }
 
+    for (const chunk of searchableChunks) {
+      if (chunk.nodeType !== "file") continue;
+
+      searchableChunksUpdated += 1;
+      if (!dryRun) {
+        await ctx.db.patch("searchableChunks", chunk._id, {
+          nodeType: "pdf",
+        });
+      }
+    }
+
     return {
       dryRun,
       canvasesScanned: canvases.length,
@@ -86,15 +101,17 @@ export const migrateFileNodesToPdf = internalMutation({
       linkedNodeDatasFound: linkedNodeDataIds.size,
       nodeDatasUpdated,
       nodeDatasMissing,
+      searchableChunksScanned: searchableChunks.length,
+      searchableChunksUpdated,
     };
   },
 });
 
 /**
- * Migration: replace every canvas node type "floatingText" with "text"
- * and update nodeDatas from "floatingText" to "text".
+ * Migration: replace every canvas node type "floatingText" or "text" with "title"
+ * and update nodeDatas and searchableChunks to "title".
  */
-export const migrateFloatingTextNodesToText = internalMutation({
+export const migrateFloatingTextNodesToTitle = internalMutation({
   args: {
     dryRun: v.optional(v.boolean()),
   },
@@ -105,14 +122,18 @@ export const migrateFloatingTextNodesToText = internalMutation({
     canvasNodesUpdated: v.number(),
     nodeDatasScanned: v.number(),
     nodeDatasUpdated: v.number(),
+    searchableChunksScanned: v.number(),
+    searchableChunksUpdated: v.number(),
   }),
   handler: async (ctx, { dryRun = true }) => {
     const canvases = await ctx.db.query("canvases").collect();
     const nodeDatas = await ctx.db.query("nodeDatas").collect();
+    const searchableChunks = await ctx.db.query("searchableChunks").collect();
 
     let canvasesUpdated = 0;
     let canvasNodesUpdated = 0;
     let nodeDatasUpdated = 0;
+    let searchableChunksUpdated = 0;
 
     for (const canvas of canvases) {
       const nodes = canvas.nodes ?? [];
@@ -120,14 +141,16 @@ export const migrateFloatingTextNodesToText = internalMutation({
 
       const updatedNodes = nodes.map((node) => {
         const currentType = node.type as string;
-        if (currentType !== "floatingText") return node;
+        if (currentType !== "floatingText" && currentType !== "text") {
+          return node;
+        }
 
         canvasChanged = true;
         canvasNodesUpdated += 1;
 
         return {
           ...node,
-          type: "text" as const,
+          type: "title" as const,
         };
       });
 
@@ -144,13 +167,29 @@ export const migrateFloatingTextNodesToText = internalMutation({
 
     for (const nodeData of nodeDatas) {
       const currentType = nodeData.type as string;
-      if (currentType !== "floatingText") continue;
+      if (currentType !== "floatingText" && currentType !== "text") {
+        continue;
+      }
 
       nodeDatasUpdated += 1;
       if (!dryRun) {
         await ctx.db.patch("nodeDatas", nodeData._id, {
-          type: "text",
+          type: "title",
           updatedAt: Date.now(),
+        });
+      }
+    }
+
+    for (const chunk of searchableChunks) {
+      const currentType = chunk.nodeType as string;
+      if (currentType !== "floatingText" && currentType !== "text") {
+        continue;
+      }
+
+      searchableChunksUpdated += 1;
+      if (!dryRun) {
+        await ctx.db.patch("searchableChunks", chunk._id, {
+          nodeType: "title",
         });
       }
     }
@@ -162,6 +201,8 @@ export const migrateFloatingTextNodesToText = internalMutation({
       canvasNodesUpdated,
       nodeDatasScanned: nodeDatas.length,
       nodeDatasUpdated,
+      searchableChunksScanned: searchableChunks.length,
+      searchableChunksUpdated,
     };
   },
 });

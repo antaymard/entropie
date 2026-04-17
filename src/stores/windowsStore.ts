@@ -24,7 +24,7 @@ const WINDOW_SIZE_BY_TYPE: Partial<Record<NodeType, WindowSizePreset>> = {
   link: { width: 480, height: 360 },
   pdf: { widthRatio: 1 / 2.66, heightRatio: 0.9 },
   value: { width: 400, height: 300 },
-  text: { width: 480, height: 320 },
+  title: { width: 480, height: 320 },
   table: { widthRatio: 1 / 2.66, heightRatio: 0.9 },
 };
 

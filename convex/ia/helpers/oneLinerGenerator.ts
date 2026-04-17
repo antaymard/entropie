@@ -93,7 +93,7 @@ export const generateMany = internalAction({
 
 function getExamplesFromNodeType(nodeType: string): string {
   const examplesByType: Record<string, string> = {
-    text: `- The text node contains a short label such as "Q2 Roadmap" or a concise note about project updates.`,
+    title: `- The title node contains a short label such as "Q2 Roadmap" or a concise note about project updates.`,
     image: `- The image (imageUrl) represents a chart showing the sales growth of the company over the last quarter.`,
     link: `- The link (https://example.com | pageTitle) leads to a research paper discussing the impact of climate change on polar bear populations.`,
     value: `- The value ($value + $unit) is a numerical representation of the average customer satisfaction score for the month of June.`,
@@ -107,7 +107,7 @@ function getExamplesFromNodeType(nodeType: string): string {
 }
 function getGuidelinesFromNodeType(nodeType: string): string {
   const guidelinesByType: Record<string, string> = {
-    text: `For text nodes, return the text if short (< 100 chars) or a concise summary if long (e.g. "a long note about project updates").`,
+    title: `For title nodes, return the text if short (< 100 chars) or a concise summary if long (e.g. "a long note about project updates").`,
     image: `The image is passed to you. First, describe objectively what the image represents (without interpretation). Then, if possible, summarize it in one line. If the image is a diagram or chart, focus on the key insights it conveys rather than describing every element.`,
     link: `The link is passed to you with its URL and page title. First, go to the site using the URL and read its content. Then, describe objectively what the page represents (without interpretation). Finally, summarize it in one line.`,
     value: `The value is passed to you. First, describe objectively what the value represents (without interpretation). Then, if possible, summarize it in one line.`,

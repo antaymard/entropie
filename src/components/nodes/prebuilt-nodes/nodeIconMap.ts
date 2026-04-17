@@ -12,7 +12,7 @@ import {
 } from "react-icons/tb";
 
 export const NODE_TYPE_ICON_MAP: Record<string, IconType> = {
-  text: TbAbc,
+  title: TbAbc,
   document: TbNews,
   image: TbPhoto,
   link: TbLink,

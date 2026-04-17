@@ -6,7 +6,7 @@ import type { colorsEnum } from "./style.types";
  * These types bridge the gap between our Canvas types and React Flow types
  */
 
-export interface FloatingTextCanvasNodeData {
+export interface TextCanvasNodeData {
   text: string;
   level: "h1" | "h2" | "h3" | "p";
 }

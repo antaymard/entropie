@@ -195,6 +195,16 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
     [markDirty],
   );
 
+  const updateColumnWidth = useCallback(
+    (colId: string, width: number) => {
+      setLocalColumns((cols) =>
+        cols.map((c) => (c.id === colId ? { ...c, width } : c)),
+      );
+      markDirty();
+    },
+    [markDirty],
+  );
+
   if (!nodeDataValues) return null;
 
   return (
@@ -224,6 +234,7 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
         onColumnTypeChange={updateColumnType}
         onColumnOrderChange={reorderColumns}
         onRowOrderChange={reorderRows}
+        onColumnWidthChange={updateColumnWidth}
         className="flex-1 min-h-0"
       />
     </div>

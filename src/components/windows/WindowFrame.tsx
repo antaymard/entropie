@@ -341,8 +341,8 @@ export default function WindowFrame({
             onMouseDown={handleHeaderMouseDown}
             title={
               isAttachedToConversation
-                ? "Alt+clic pour detacher de Nole"
-                : "Alt+clic pour attacher a Nole"
+                ? "Alt+click to detach from Nole"
+                : "Alt+click to attach to Nole"
             }
           >
             {NodeIcon ? (
@@ -389,16 +389,16 @@ export default function WindowFrame({
               <Minus size={14} />
             </button>
             <ConfirmableButton
-              title="Fermer sans sauvegarder ?"
-              text="Vous avez des modifications non sauvegardees. Voulez-vous fermer cette fenetre ?"
+              title="Close without saving?"
+              text="You have unsaved changes. Do you want to close this window?"
               onCancel={() => closeWindow(xyNodeId)}
               onConfirm={() => {
                 if (isDirty) saveHandler?.();
                 closeWindow(xyNodeId);
               }}
               shouldConfirm={isDirty}
-              cancelLabel="Fermer sans sauvegarder"
-              confirmLabel="Sauvegarder et fermer"
+              cancelLabel="Close without saving"
+              confirmLabel="Save and close"
               autoFocusConfirm
             >
               <button

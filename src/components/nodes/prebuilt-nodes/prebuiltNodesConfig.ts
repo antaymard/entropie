@@ -6,7 +6,7 @@ import { nodeDataConfig } from "@/../convex/config/nodeConfig";
 import type { NodeDataConfigItem } from "@/../convex/config/nodeConfig";
 import { NODE_TYPE_ICON_MAP } from "./nodeIconMap";
 import DocumentNode from "./DocumentNode";
-import FloatingTextNode from "./FloatingTextNode";
+import TextNode from "./FloatingTextNode";
 import ImageNode from "./ImageNode";
 import LinkNode from "./LinkNode";
 import ValueNode from "./ValueNode";
@@ -26,9 +26,9 @@ type PrebuiltNodeConfig = NodeDataConfigItem &
   NodeUiConfigItem & { node: Node };
 
 const nodeUiConfig: Record<string, NodeUiConfigItem> = {
-  floatingText: {
-    nodeComponent: FloatingTextNode,
-    nodeIcon: NODE_TYPE_ICON_MAP.floatingText,
+  text: {
+    nodeComponent: TextNode,
+    nodeIcon: NODE_TYPE_ICON_MAP.text,
     canBeOpenInWindow: false,
   },
   link: {

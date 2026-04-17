@@ -15,6 +15,7 @@ import {
   Navigation2,
 } from "lucide-react";
 import { useMemo } from "react";
+import { TbArrowLeft } from "react-icons/tb";
 
 export default function SlideshowEditor({
   canvasId,
@@ -90,8 +91,8 @@ export default function SlideshowEditor({
 
   if (!slideshow) {
     return (
-      <div className="canvas-ui-container w-48 flex-col items-stretch overflow-hidden shadow-lg backdrop-blur-sm">
-        <div className="p-2 text-sm text-muted-foreground">
+      <div className="canvas-ui-container h-48 w-64 flex-col items-stretch overflow-hidden shadow-lg backdrop-blur-sm">
+        <div className="flex-1 p-3 text-sm text-muted-foreground">
           Slideshow not found.
         </div>
       </div>
@@ -99,32 +100,34 @@ export default function SlideshowEditor({
   }
 
   return (
-    <div className="canvas-ui-container w-56 flex-col items-stretch overflow-hidden shadow-lg backdrop-blur-sm">
-      <div className="flex items-center justify-between w-full p-2">
+    <div className="canvas-ui-container p-0! h-96 max-h-[70vh] w-64 flex-col items-stretch overflow-hidden shadow-lg backdrop-blur-sm">
+      <div className="flex w-full items-center justify-between gap-2 border-b">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          className="shrink-0 text-xs text-muted-foreground hover:text-foreground"
+          onClick={() => setLayout("list")}
+        >
+          <TbArrowLeft size={15} />
+        </Button>
         <InlineEditableText
           value={slideshow.name}
           onSave={renameSlideshow}
           as="h3"
-          className="max-w-40 truncate text-sm font-semibold"
+          className="min-w-0 flex-1 truncate text-sm font-semibold"
           inputClassName="text-sm font-semibold"
           placeholder="Untitled slideshow"
         />
-        <button
-          type="button"
-          className="shrink-0 text-xs text-muted-foreground hover:text-foreground"
-          onClick={() => setLayout("list")}
-        >
-          Back
-        </button>
       </div>
 
-      <ScrollArea className="max-h-60 w-full">
+      <ScrollArea className="min-h-0 flex-1 w-full pr-1">
         {slides.length === 0 ? (
-          <div className="px-2 pb-2 text-center text-xs text-muted-foreground">
+          <div className="px-3 py-4 text-center text-xs text-muted-foreground">
             No slides yet. Capture your current view to add one.
           </div>
         ) : (
-          <div className="flex flex-col gap-1 px-1 pb-1">
+          <div className="flex flex-col gap-1 p-1">
             {slides.map((slide, index) => (
               <div
                 key={`${slide.name}-${index}`}

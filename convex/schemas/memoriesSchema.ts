@@ -8,12 +8,7 @@ const subjectTypeValidator = v.union(
   v.literal("user"),
 );
 
-const typeValidator = v.union(
-  v.literal("one-liner"),
-  v.literal("insight"),
-  v.literal("preference"),
-  v.literal("transcript"),
-);
+const typeValidator = v.union(v.literal("one-liner"), v.literal("memory"));
 
 const subjectIdValidator = v.union(
   v.id("nodeDatas"),
@@ -24,7 +19,6 @@ const subjectIdValidator = v.union(
 // ── Main validator ──────────────────────────────────────────────────────
 
 const memoriesValidator = v.object({
-  canvasId: v.id("canvases"),
   subjectType: subjectTypeValidator,
   subjectId: subjectIdValidator,
   type: typeValidator,

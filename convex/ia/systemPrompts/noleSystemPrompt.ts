@@ -8,6 +8,32 @@ const nodeTypesContext = nodeDataConfig
   .map((item) => `- ${item.type} : ${item.llmDescription}`)
   .join("\n");
 
+function formatMemorySnapshot(rawContent?: string | null): string {
+  if (!rawContent) {
+    return "No persisted memory.";
+  }
+
+  try {
+    const parsed = JSON.parse(rawContent);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      return "No persisted memory.";
+    }
+
+    const entries = parsed.filter(
+      (entry): entry is string =>
+        typeof entry === "string" && entry.trim().length > 0,
+    );
+
+    if (entries.length === 0) {
+      return "No persisted memory.";
+    }
+
+    return entries.map((entry) => `- ${escapeXmlText(entry)}`).join("\n");
+  } catch {
+    return "No persisted memory.";
+  }
+}
+
 async function generateNoleSystemPrompt({
   ctx,
   canvasId,
@@ -17,20 +43,22 @@ async function generateNoleSystemPrompt({
   canvasId: Id<"canvases">;
   userId: Id<"users">;
 }) {
-  const [spatialCanvasOverview, user] = await Promise.all([
-    ctx.runQuery(internal.ia.helpers.spatialCanvasOverviewGenerator.generate, {
-      canvasId,
-    }),
+  const [user, userMemory, canvasMemory] = await Promise.all([
     ctx.runQuery(internal.wrappers.userWrappers.read, {
       userId,
     }),
+    ctx.runQuery(internal.wrappers.memoryWrappers.read, {
+      subjectId: userId,
+      type: "memory",
+    }),
+    ctx.runQuery(internal.wrappers.memoryWrappers.read, {
+      subjectId: canvasId,
+      type: "memory",
+    }),
   ]);
 
-  const userContext = user
-    ? `
-${user.name ? `The user's name is ${escapeXmlText(user.name)}.` : "No name is known about the user."}
-`
-    : "";
+  const userMemoryContext = formatMemorySnapshot(userMemory?.content);
+  const canvasMemoryContext = formatMemorySnapshot(canvasMemory?.content);
 
   return `
 <identity>
@@ -38,7 +66,7 @@ You are Nolë, the assistant of the Nolënor application.
 </identity>
 
 <about_nolenor>
-Nolënor is a Miro-style app with an unlimited canvas. Nolënor is the ultimate interface for visual thinking, idea organization, human-agent collaboration, agentic workflow management, machine-augmented search and work.
+Nolënor is a Miro-style app with an unlimited canvas, for knowledge management and parallel agentic execution. Nolënor is the ultimate interface for visual thinking, idea organization, human-agent collaboration, agentic workflow management, machine-augmented search and work.
 
 As Nolë, you are like Jarvis is to Tony Stark: an assistant that helps users think, organize their ideas, and work more efficiently. Your role is to be the user's thinking assistant, providing short, efficient text responses that serve to ask for clarification, provide status updates on your thinking or work progress, say what you plan to do, or answer directly if the question is simple.
 
@@ -87,9 +115,17 @@ ${nodeTypesContext}
 3. Respond in the user's language.
 </communication_style>
 
-<user_context>
-${userContext}
-</user_context>
+<memory_context>
+This memory is managed by you. Make it your own. Manage it with the memory tool, and use it to keep track of important information that should be persisted across sessions.
+<user_memory>
+${userMemoryContext}
+</user_memory>
+
+<canvas_memory>
+<description>Please use and update the canvas memory when you gain global insights about the canvas that should be persisted for future sessions, or when you want to keep track of important information that is not tied to specific nodes. E.g the purpose of the canvas, key clusters of information, 
+${canvasMemoryContext}
+</canvas_memory>
+</memory_context>
 
 `;
 }

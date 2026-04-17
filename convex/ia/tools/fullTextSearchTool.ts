@@ -184,28 +184,9 @@ export default function fullTextSearchTool({
           },
         );
 
-        const { nodes: canvasNodes } = await ctx.runQuery(
-          internal.wrappers.canvasNodeWrappers.getCanvasNodesAndEdges,
-          {
-            canvasId: canvasId as Id<"canvases">,
-          },
-        );
-
-        const nodePositionById = new Map(
-          canvasNodes.map((node) => [
-            node.id,
-            {
-              x: Math.trunc(node.position.x),
-              y: Math.trunc(node.position.y),
-            },
-          ]),
-        );
-
         const hits = result.hits.map((hit) => ({
           ...hit,
           snippet: buildSnippet(hit.text, normalizedQuery),
-          x: nodePositionById.get(hit.nodeId)?.x,
-          y: nodePositionById.get(hit.nodeId)?.y,
         }));
 
         // De-duplicate same snippet per node to reduce repetitive noise.
@@ -228,8 +209,6 @@ export default function fullTextSearchTool({
               snippet: hit.snippet,
               page: hit.page,
               sectionTitle: hit.sectionTitle,
-              x: hit.x,
-              y: hit.y,
             }));
 
           const truncated =
@@ -266,8 +245,6 @@ export default function fullTextSearchTool({
               page?: number;
               sectionTitle?: string;
             }>;
-            x?: number;
-            y?: number;
           }
         >();
 
@@ -294,8 +271,6 @@ export default function fullTextSearchTool({
                   sectionTitle: hit.sectionTitle,
                 },
               ],
-              x: hit.x,
-              y: hit.y,
             });
           }
         }
@@ -339,8 +314,6 @@ export default function fullTextSearchTool({
             nodeId: group.nodeId,
             nodeType: group.nodeType,
             title: titlesByNodeId.get(group.nodeId) ?? "Untitled",
-            x: group.x,
-            y: group.y,
             hitCount: group.hitCount,
             bestSnippet: best?.snippet,
             bestPage: best?.page,

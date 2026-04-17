@@ -14,6 +14,7 @@ import fullTextSearchTool, {
   fullTextSearchToolConfig,
 } from "./fullTextSearchTool";
 import listNodesTool, { listNodesToolConfig } from "./listNodesTool";
+import memoryToolFactory, { memoryToolConfig } from "./memoryTool";
 import { openWebPageTool, openWebPageToolConfig } from "./openWebPageTool";
 import readNodesTool, { readNodesToolConfig } from "./readNodesTool";
 import runSubagent, { runSubagentToolConfig } from "./runSubagent";
@@ -53,6 +54,10 @@ const toolRegistry: ToolRegistration[] = [
   {
     config: fullTextSearchToolConfig,
     factory: ({ threadCtx }) => fullTextSearchTool({ threadCtx }),
+  },
+  {
+    config: memoryToolConfig,
+    factory: ({ threadCtx }) => memoryToolFactory({ threadCtx }),
   },
   {
     config: readNodesToolConfig,

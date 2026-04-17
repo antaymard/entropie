@@ -320,6 +320,11 @@ export default function createNodeTool({
               }
             : initialValues;
 
+        const titleHint =
+          args.nodeType === "document" && titleApplied && args.nodeTitle?.trim()
+            ? `The title is already present in the document as "# ${args.nodeTitle.trim()}". Do not repeat it during later edits.`
+            : undefined;
+
         const canvas = await ctx.runQuery(
           internal.wrappers.canvasWrappers.read,
           {
@@ -332,7 +337,7 @@ export default function createNodeTool({
           canvasName: canvas.name,
           nodeId,
           nodeType: args.nodeType,
-          titleApplied,
+          ...(titleHint ? { hint: titleHint } : { titleApplied }),
           position: args.position,
           color: args.color,
           dimensions: {

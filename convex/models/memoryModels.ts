@@ -1,4 +1,4 @@
-import type { Doc, Id } from "../_generated/dataModel";
+import type { Doc } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 
 type Memory = Doc<"memories">;
@@ -14,10 +14,7 @@ export async function upsert(
     subjectId,
     type,
     content,
-    canvasId,
-  }: Pick<Memory, "subjectType" | "subjectId" | "type" | "content"> & {
-    canvasId: Id<"canvases">;
-  },
+  }: Pick<Memory, "subjectType" | "subjectId" | "type" | "content">,
 ): Promise<boolean> {
   const existingMemory = await ctx.db
     .query("memories")
@@ -32,7 +29,6 @@ export async function upsert(
     await ctx.db.patch(existingMemory._id, {
       content,
       subjectType,
-      canvasId,
       updatedAt: now,
     });
   } else {
@@ -41,7 +37,6 @@ export async function upsert(
       subjectId,
       type,
       content,
-      canvasId,
       updatedAt: now,
     });
   }

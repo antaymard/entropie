@@ -51,6 +51,14 @@ const slideshowsValidator = v.object({
   ),
 });
 
+const hotspotsValidator = v.object({
+  id: v.string(),
+  name: v.string(),
+  description: v.optional(v.string()),
+  color: v.optional(v.string()),
+  viewport: v.any(),
+});
+
 // ── Main validator ──────────────────────────────────────────────────────
 
 const canvasesValidator = v.object({
@@ -64,6 +72,8 @@ const canvasesValidator = v.object({
 
   slideshows: v.optional(v.array(slideshowsValidator)),
 
+  hotspots: v.optional(v.array(hotspotsValidator)),
+
   updatedAt: v.number(),
 });
 
@@ -71,5 +81,6 @@ export {
   canvasNodesValidator,
   edgesValidator,
   slideshowsValidator,
+  hotspotsValidator,
   canvasesValidator,
 };

@@ -16,6 +16,7 @@ import type * as canvasNodes from "../canvasNodes.js";
 import type * as canvases from "../canvases.js";
 import type * as config_errorsConfig from "../config/errorsConfig.js";
 import type * as config_nodeConfig from "../config/nodeConfig.js";
+import type * as hotposts from "../hotposts.js";
 import type * as http from "../http.js";
 import type * as ia_agentConfig from "../ia/agentConfig.js";
 import type * as ia_agents from "../ia/agents.js";
@@ -106,6 +107,7 @@ declare const fullApi: ApiFromModules<{
   canvases: typeof canvases;
   "config/errorsConfig": typeof config_errorsConfig;
   "config/nodeConfig": typeof config_nodeConfig;
+  hotposts: typeof hotposts;
   http: typeof http;
   "ia/agentConfig": typeof ia_agentConfig;
   "ia/agents": typeof ia_agents;

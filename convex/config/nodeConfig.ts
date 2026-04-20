@@ -35,7 +35,7 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
     description:
       "Node for free text labels on the canvas. Supports h1/h2/h3/p heading levels for the whole text. Does not support rich markdown.",
     llmDescription:
-      "For free text labels and sections headings. Use this node for titles (for branches in trees of thought), subtitles, or any standalone text that doesn't require rich formatting. If you need rich text formatting (bold, italic, lists, etc.), use the Document node instead. \nThe required data values for this node are 'text' (the content of the label) and 'level' (the heading level, which can be 'h1', 'h2', 'h3', or 'p').",
+      "For sections headings, hubs nodes, parents of related sub nodes. Use this node for titles (for branches in trees of thought), subtitles, or any standalone text that doesn't require rich formatting. If you need rich text formatting (bold, italic, lists, etc.), use the Document node instead. \nThe required data values for this node are 'text' (the content of the label) and 'level' (the heading level, which can be 'h1', 'h2', 'h3', or 'p').",
     defaultDimensions: { width: 220, height: 33, resizable: true },
     canHaveAutomation: true,
     defaultColor: "transparent",

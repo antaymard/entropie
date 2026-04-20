@@ -43,10 +43,7 @@ async function generateNoleSystemPrompt({
   canvasId: Id<"canvases">;
   userId: Id<"users">;
 }) {
-  const [user, userMemory, canvasMemory] = await Promise.all([
-    ctx.runQuery(internal.wrappers.userWrappers.read, {
-      userId,
-    }),
+  const [userMemory, canvasMemory, minimapResult] = await Promise.all([
     ctx.runQuery(internal.wrappers.memoryWrappers.read, {
       subjectId: userId,
       type: "memory",
@@ -54,6 +51,9 @@ async function generateNoleSystemPrompt({
     ctx.runQuery(internal.wrappers.memoryWrappers.read, {
       subjectId: canvasId,
       type: "memory",
+    }),
+    ctx.runQuery(internal.ia.helpers.generateCanvasMinimap.generate, {
+      canvasId,
     }),
   ]);
 
@@ -115,18 +115,28 @@ ${nodeTypesContext}
 3. Respond in the user's language.
 </communication_style>
 
+<canvas_structure>
+<hint>Structural map of the canvas derived from title nodes. 📍 = major section (rank-1 hub), ├─/└─ = children. Use this to navigate without reading every node.</hint>
+${minimapResult.minimapText || "No structure detected."}
+</canvas_structure>
+
 <memory_context>
 This memory is managed by you. Make it your own. Manage it with the memory tool, and use it to keep track of important information that should be persisted across sessions.
+
 <user_memory>
+<hint>Use this to personalize your interactions with the user (e.g., say their name when greeting). If empty, ask the user for relevant information to fill it up. </hint>
 ${userMemoryContext}
 </user_memory>
 
 <canvas_memory>
-<description>Please use and update the canvas memory when you gain global insights about the canvas that should be persisted for future sessions, or when you want to keep track of important information that is not tied to specific nodes. E.g the purpose of the canvas, key clusters of information, 
+<hint>This is your persistent notepad for this specific canvas. Note that the structural layout is already provided automatically in <canvas_structure>. Use this memory exclusively to store semantic context: 
+1. The current active objectives or focus (e.g., "Currently working on the DEV Backlog").
+2. Specific local conventions (e.g., "Blue nodes = Validated, Red = WIP").
+3. Semantic meaning of specific Hubs if their title isn't explicit enough.
+Update it dynamically using the memory tool when needed: to remember important context or changes, details that are not present in the structural layout...</hint>
 ${canvasMemoryContext}
 </canvas_memory>
 </memory_context>
-
 `;
 }
 

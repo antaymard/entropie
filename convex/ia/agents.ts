@@ -51,7 +51,7 @@ export function createNoleAgent({
   return new Agent(components.agent, {
     name: "Nolë",
     maxSteps: 20,
-    languageModel: openrouter("z-ai/glm-5.1"),
+    languageModel: openrouter("openrouter/elephant-alpha"),
     tools: getToolsForAgent({
       agentName: toolAgentNames.nole,
       threadCtx,

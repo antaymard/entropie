@@ -143,7 +143,7 @@ export const streamResponse = internalAction({
         },
         {
           saveStreamDeltas: {
-            chunking: "line", // Stream line by line
+            chunking: "word", // Stream word by word
             throttleMs: 200, // 200ms between each update
           },
         },

@@ -50,6 +50,7 @@ import { generateLlmId } from "@/../convex/lib/llmId";
 import SearchModale from "@/components/canvas/search-modale/SearchModale";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { useDuplicateNode } from "@/hooks/useDuplicateNode";
+import { useHotspotHotkeys } from "@/hooks/useHotspotHotkeys";
 
 // Additional helper to prevent hotkeys from triggering when typing in inputs, textareas, selects or contenteditable elements
 function isEditableTarget(target: EventTarget | null): target is HTMLElement {
@@ -199,6 +200,9 @@ function CanvasContent({
     },
     { enabled: canDuplicateNodes && focus === "canvas" },
   );
+
+  // Hotspot keyboard shortcuts (Alt+1 … Alt+9)
+  useHotspotHotkeys();
 
   // Canvas nodes management
   const { nodes, handleNodeChange } = useCanvasNodes(

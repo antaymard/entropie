@@ -79,7 +79,7 @@ export const update = mutation({
   },
 });
 
-export const deleteSlideshow = mutation({
+export const remove = mutation({
   args: {
     canvasId: v.id("canvases"),
     id: v.string(),

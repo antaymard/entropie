@@ -1,9 +1,22 @@
 import { v } from "convex/values";
 import { internalAction, mutation } from "../_generated/server";
-import { baseAgent, createNoleAgent } from "./agents";
+import {
+  baseAgent,
+  createNoleAgent,
+  models,
+  vChatModelPreference,
+} from "./agents";
 import { requireAuth } from "../lib/auth";
 import { generateNoleSystemPrompt } from "./systemPrompts/noleSystemPrompt";
 import { components, internal } from "../_generated/api";
+import { generateMessageContext } from "./helpers/generateMessageContext";
+
+const vMetadata = v.optional(
+  v.object({
+    messageContext: v.optional(v.any()),
+    model: v.optional(vChatModelPreference),
+  }),
+);
 
 function isExpectedAbortedStreamError(error: unknown): boolean {
   if (!(error instanceof Error)) {
@@ -23,14 +36,10 @@ export const saveMessage = mutation({
   args: {
     threadId: v.string(),
     prompt: v.string(),
-    context: v.optional(
-      v.object({
-        messageContext: v.string(), // Déja balisé
-      }),
-    ),
+    metadata: vMetadata,
     canvasId: v.id("canvases"),
   },
-  handler: async (ctx, { threadId, prompt, context, canvasId }) => {
+  handler: async (ctx, { threadId, prompt, metadata, canvasId }) => {
     const authUserId = await requireAuth(ctx);
 
     // 1) Persist the user message first so it exists in thread history.
@@ -45,7 +54,7 @@ export const saveMessage = mutation({
       threadId,
       promptMessageId: messageId,
       userPrompt: prompt,
-      context,
+      metadata,
       canvasId,
     });
 
@@ -60,16 +69,12 @@ export const streamResponse = internalAction({
     promptMessageId: v.string(),
     userPrompt: v.string(),
     threadId: v.string(),
-    context: v.optional(
-      v.object({
-        messageContext: v.string(), // Déja balisé
-      }),
-    ),
+    metadata: vMetadata,
     canvasId: v.id("canvases"),
   },
   handler: async (
     ctx,
-    { authUserId, promptMessageId, userPrompt, threadId, context, canvasId },
+    { authUserId, promptMessageId, userPrompt, threadId, metadata, canvasId },
   ) => {
     // A) Build system prompt (long-lived context for this run).
     const noleSystemPrompt = await generateNoleSystemPrompt({
@@ -79,6 +84,7 @@ export const streamResponse = internalAction({
     });
 
     const noleAgent = createNoleAgent({
+      model: metadata?.model ? models[metadata.model] : undefined,
       threadCtx: {
         authUserId,
         canvasId,
@@ -105,9 +111,9 @@ export const streamResponse = internalAction({
       (message) => message._id !== promptMessageId,
     );
 
-    // C) Compute canvas changes since that previous message and format as XML.
+    // C) Compute canvas changes since that previous message.
     // This is runtime-only context injected into the current prompt (not persisted).
-    const canvasChangesSinceLastMessageXml = previousMessage
+    const canvasChangesSinceLastMessage = previousMessage
       ? await ctx.runQuery(
           internal.ia.helpers.getCanvasChangesSinceLastMessage
             .getCanvasChangesSinceLastMessage,
@@ -118,17 +124,15 @@ export const streamResponse = internalAction({
         )
       : "";
 
-    // D) Merge optional external messageContext + computed canvas changes context.
-    const runtimeMessageContext = [
-      context?.messageContext?.trim() ?? "",
-      canvasChangesSinceLastMessageXml,
-    ]
-      .filter((part) => part.length > 0)
-      .join("\n\n");
+    // D) Merge optional message metadata + computed canvas changes context.
+    const generatedMessageContext = generateMessageContext({
+      metadata,
+      canvasChangesSinceLastMessage,
+    });
 
     // E) Build final user prompt payload.
-    const llmPrompt = runtimeMessageContext
-      ? `${runtimeMessageContext}\n\n<user_message>\n${userPrompt}\n</user_message>`
+    const llmPrompt = generatedMessageContext
+      ? `${generatedMessageContext}\n\n<user_message>\n${userPrompt}\n</user_message>`
       : userPrompt;
 
     try {

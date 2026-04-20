@@ -9,7 +9,7 @@ type CanvasInStore = Omit<Doc<"canvases">, "nodes" | "edges"> & {
 
 type Status = "idle" | "unsynced" | "saving" | "saved" | "error";
 type Focus = "canvas" | "platejs";
-type Tool = "edit" | "slides" | "draw";
+type Tool = "edit" | "slides" | "draw" | "hotspots";
 
 interface CanvasStore {
   canvas: CanvasInStore | null;

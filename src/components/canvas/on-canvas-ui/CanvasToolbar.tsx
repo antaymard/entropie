@@ -3,8 +3,9 @@ import type { Id } from "@/../convex/_generated/dataModel";
 import { useCanvasStore } from "@/stores/canvasStore";
 import SlideshowContainer from "./slideshow/SlideshowContainer";
 import SlideshowProgressToolbar from "./slideshow/SlideshowProgressToolbar";
+import HotspotContainer from "./hotspot/HotspotContainer";
 import { BiSlideshow } from "react-icons/bi";
-import { TbPlus, TbSearch, TbUpload, TbX } from "react-icons/tb";
+import { TbGps, TbPlus, TbSearch, TbX } from "react-icons/tb";
 import { Kbd } from "@/components/shadcn/kbd";
 import { useSlideshowStore } from "@/stores/slideshowStore";
 import {
@@ -85,8 +86,22 @@ export default function CanvasToolbar({
         >
           {tool === "slides" ? <TbX size={20} /> : <BiSlideshow size={20} />}
         </Button>
+        <Button
+          variant={tool === "hotspots" ? "default" : "ghost"}
+          size="icon"
+          onClick={() => {
+            if (tool === "hotspots") {
+              setTool("edit");
+            } else {
+              setTool("hotspots");
+            }
+          }}
+        >
+          {tool === "hotspots" ? <TbX size={20} /> : <TbGps size={20} />}
+        </Button>
       </div>
       {tool === "slides" && <SlideshowContainer canvasId={canvasId} />}
+      {tool === "hotspots" && <HotspotContainer canvasId={canvasId} />}
     </div>
   );
 }

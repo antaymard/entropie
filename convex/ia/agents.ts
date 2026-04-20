@@ -1,14 +1,33 @@
 import { components } from "../_generated/api";
 import { Agent } from "@convex-dev/agent";
 import { openrouter } from "@openrouter/ai-sdk-provider";
+import { v } from "convex/values";
 import type { LanguageModel, ToolSet } from "ai";
 import { toolAgentNames, type ThreadCtx } from "./agentConfig";
 import { getToolsForAgent } from "./tools";
 
+export const vChatModelPreference = v.union(
+  v.literal("best"),
+  v.literal("high"),
+  v.literal("regular"),
+  v.literal("free"),
+  v.literal("fast"),
+);
+
+export type ChatModelPreference = typeof vChatModelPreference.type;
+
+export const models: Record<ChatModelPreference, LanguageModel> = {
+  best: openrouter("google/gemini-3.1-pro-preview"),
+  high: openrouter("z-ai/glm-5.1"),
+  regular: openrouter("qwen/qwen3.6-plus"),
+  free: openrouter("openrouter/elephant-alpha"),
+  fast: openrouter("mistralai/mistral-small-2603"),
+};
+
 export function createBaseAgent({ model }: { model?: LanguageModel } = {}) {
   return new Agent(components.agent, {
     name: "base",
-    languageModel: model ?? openrouter("mistralai/mistral-small-2603"),
+    languageModel: model ?? models.regular,
   });
 }
 
@@ -26,7 +45,7 @@ export function createAutomationAgent({
 }) {
   return new Agent(components.agent, {
     name: toolAgentNames.automation,
-    languageModel: model ?? openrouter("minimax/minimax-m2.7"),
+    languageModel: model ?? models.regular,
     maxSteps: 5,
     tools: getToolsForAgent({
       agentName: toolAgentNames.automation,
@@ -42,16 +61,18 @@ export function createAutomationAgent({
 }
 
 export function createNoleAgent({
+  model,
   threadCtx,
   tools = {},
 }: {
+  model?: LanguageModel;
   threadCtx: ThreadCtx;
   tools?: ToolSet;
 }) {
   return new Agent(components.agent, {
     name: "Nolë",
     maxSteps: 20,
-    languageModel: openrouter("openrouter/elephant-alpha"),
+    languageModel: model ?? models.regular,
     tools: getToolsForAgent({
       agentName: toolAgentNames.nole,
       threadCtx,
@@ -63,14 +84,16 @@ export function createNoleAgent({
 export function createCloneAgent({
   threadCtx,
   tools = {},
+  model,
 }: {
   threadCtx: ThreadCtx;
   tools?: ToolSet;
+  model?: LanguageModel;
 }) {
   return new Agent(components.agent, {
     name: "Clone",
     maxSteps: 20,
-    languageModel: openrouter("z-ai/glm-5.1"),
+    languageModel: model ?? models.regular,
     tools: getToolsForAgent({
       agentName: toolAgentNames.clone,
       threadCtx,
@@ -82,14 +105,16 @@ export function createCloneAgent({
 export function createSupervisorAgent({
   threadCtx,
   tools = {},
+  model,
 }: {
   threadCtx: ThreadCtx;
   tools?: ToolSet;
+  model?: LanguageModel;
 }) {
   return new Agent(components.agent, {
     name: "Supervisor",
     maxSteps: 20,
-    languageModel: openrouter("z-ai/glm-5.1"),
+    languageModel: model ?? models.regular,
     tools: getToolsForAgent({
       agentName: toolAgentNames.supervisor,
       threadCtx,
@@ -101,14 +126,16 @@ export function createSupervisorAgent({
 export function createWorkerAgent({
   threadCtx,
   tools = {},
+  model,
 }: {
   threadCtx: ThreadCtx;
   tools?: ToolSet;
+  model?: LanguageModel;
 }) {
   return new Agent(components.agent, {
     name: "Worker",
     maxSteps: 20,
-    languageModel: openrouter("z-ai/glm-5.1"),
+    languageModel: model ?? models.regular,
     tools: getToolsForAgent({
       agentName: toolAgentNames.worker,
       threadCtx,

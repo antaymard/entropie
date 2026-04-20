@@ -25,7 +25,7 @@ const WINDOW_SIZE_BY_TYPE: Partial<Record<NodeType, WindowSizePreset>> = {
   pdf: { widthRatio: 1 / 2.66, heightRatio: 0.9 },
   value: { width: 400, height: 300 },
   title: { width: 480, height: 320 },
-  table: { widthRatio: 1 / 2.66, heightRatio: 0.9 },
+  table: { widthRatio: 1 / 2, heightRatio: 0.9 },
 };
 
 function resolveWindowSize(preset: WindowSizePreset): WindowSize {
@@ -452,7 +452,7 @@ export const useWindowsStore = create<WindowsStore>()(
           const current = store.openedWindows[index];
           const viewportWidth = window.innerWidth;
           const viewportHeight = window.innerHeight;
-          const snapWidth = Math.round(viewportWidth * 0.4) - SNAP_PADDING * 2;
+          const snapWidth = Math.round(viewportWidth * 0.33) - SNAP_PADDING * 2;
 
           const nextOpenedWindows = store.openedWindows.slice();
           nextOpenedWindows[index] = {

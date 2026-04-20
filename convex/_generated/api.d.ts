@@ -20,6 +20,7 @@ import type * as http from "../http.js";
 import type * as ia_agentConfig from "../ia/agentConfig.js";
 import type * as ia_agents from "../ia/agents.js";
 import type * as ia_helpers_generateCanvasMinimap from "../ia/helpers/generateCanvasMinimap.js";
+import type * as ia_helpers_generateMessageContext from "../ia/helpers/generateMessageContext.js";
 import type * as ia_helpers_getCanvasChangesSinceLastMessage from "../ia/helpers/getCanvasChangesSinceLastMessage.js";
 import type * as ia_helpers_makeNodeDataLLMFriendly from "../ia/helpers/makeNodeDataLLMFriendly.js";
 import type * as ia_helpers_nodeFieldsAndTypesHelper from "../ia/helpers/nodeFieldsAndTypesHelper.js";
@@ -109,6 +110,7 @@ declare const fullApi: ApiFromModules<{
   "ia/agentConfig": typeof ia_agentConfig;
   "ia/agents": typeof ia_agents;
   "ia/helpers/generateCanvasMinimap": typeof ia_helpers_generateCanvasMinimap;
+  "ia/helpers/generateMessageContext": typeof ia_helpers_generateMessageContext;
   "ia/helpers/getCanvasChangesSinceLastMessage": typeof ia_helpers_getCanvasChangesSinceLastMessage;
   "ia/helpers/makeNodeDataLLMFriendly": typeof ia_helpers_makeNodeDataLLMFriendly;
   "ia/helpers/nodeFieldsAndTypesHelper": typeof ia_helpers_nodeFieldsAndTypesHelper;

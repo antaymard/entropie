@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import RichTextArea from "./RichTextArea";
 import { Button } from "@/components/shadcn/button";
 import {
+  TbCheck,
   TbCloudExclamation,
   TbExclamationCircle,
   TbLoader,
@@ -18,6 +19,8 @@ import prebuiltNodesConfig from "@/components/nodes/prebuilt-nodes/prebuiltNodes
 import { useNodeDataStore } from "@/stores/nodeDataStore";
 import { useNoleStore } from "@/stores/noleStore";
 import type { Id } from "@/../convex/_generated/dataModel";
+import type { ChatModelPreference } from "@/types/convex";
+import { chatModelPreferences } from "@/types/convex";
 import { cn } from "@/lib/utils";
 import { useWindowsStore } from "@/stores/windowsStore";
 import ChatInterface from "./ChatInterface";
@@ -38,6 +41,13 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/shadcn/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/shadcn/dropdown-menu";
+import { TbBrain } from "react-icons/tb";
 import toast from "react-hot-toast";
 import {
   generateMessageContext,
@@ -60,6 +70,8 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
   const threadId = overrideThreadId ?? initialThreadId;
 
   const [userInput, setUserInput] = useState("");
+  const [selectedModel, setSelectedModel] =
+    useState<ChatModelPreference>("free");
   const [isSending, setIsSending] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const attachedNodes = useNoleStore((state) => state.attachedNodes);
@@ -197,8 +209,9 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
       await sendMessage({
         threadId,
         prompt,
-        context: {
+        metadata: {
           messageContext,
+          model: selectedModel,
         },
         canvasId,
       });
@@ -354,7 +367,34 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
             />
           </div>
           <div className="flex items-center justify-between gap-2 pr-2 pb-2">
-            <div className="flex items-center pl-2">
+            <div className="flex items-center gap-2 pl-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    disabled={isSending || isAssistantResponding}
+                    className="h-8 px-2 text-xs text-slate-500 gap-1"
+                  >
+                    <TbBrain size={10} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  {chatModelPreferences.map((model) => (
+                    <DropdownMenuItem
+                      key={model}
+                      onSelect={() => setSelectedModel(model)}
+                      className={cn(
+                        selectedModel === model && "font-medium",
+                        "capitalize flex items-center justify-between",
+                      )}
+                    >
+                      {model}
+                      {selectedModel === model && <TbCheck />}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
               {!isRecording && !isTranscribing && (
                 <span className="text-slate-500 text-xs">
                   <TbMicrophone size={14} className="inline-block mr-1" />

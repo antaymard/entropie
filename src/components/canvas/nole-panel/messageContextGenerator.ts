@@ -30,6 +30,36 @@ type MessageContextParams = {
 
 type NodeDatasMap = Map<Id<"nodeDatas">, Doc<"nodeDatas">>;
 
+export type MessageContextNodeSummary = {
+  id: string;
+  type: string;
+  title: string;
+  position: {
+    x: number;
+    y: number;
+  };
+  size: {
+    width: number;
+    height: number;
+  };
+};
+
+export type MessageContextPayload = {
+  generatedAt: string;
+  openNodes: MessageContextNodeSummary[];
+  viewport: {
+    bounds: ViewportBounds;
+    size: {
+      width: number;
+      height: number;
+    };
+    zoom: number;
+    visibleNodeIds: string[];
+  };
+  attachedPosition: { x: number; y: number } | null;
+  attachedNodes: MessageContextNodeSummary[];
+};
+
 export function getCanvasNodeTitle(
   node: CanvasNode,
   nodeDatas: NodeDatasMap,
@@ -44,20 +74,26 @@ export function getCanvasNodeTitle(
   return nodeData ? getNodeDataTitle(nodeData) : nodeConfig?.label || node.type;
 }
 
-function escapeXml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&apos;");
-}
-
-function nodeToXml(
+function nodeToMessageContextNodeSummary(
   node: CanvasNode,
   getNodeTitle: (node: CanvasNode) => string,
-) {
-  return `    <node id="${escapeXml(node.id)}" type="${escapeXml(node.type)}" title="${escapeXml(getNodeTitle(node))}" />`;
+): MessageContextNodeSummary {
+  const width = Math.max(1, node.width ?? 200);
+  const height = Math.max(1, node.height ?? 100);
+
+  return {
+    id: node.id,
+    type: node.type,
+    title: getNodeTitle(node),
+    position: {
+      x: Math.round(node.position.x),
+      y: Math.round(node.position.y),
+    },
+    size: {
+      width: Math.round(width),
+      height: Math.round(height),
+    },
+  };
 }
 
 function formatTimeNaturalLanguage(time: Date): string {
@@ -128,7 +164,7 @@ export function generateMessageContext({
   viewportHeight,
   getNodeTitle,
   time = new Date(),
-}: MessageContextParams): string {
+}: MessageContextParams): MessageContextPayload {
   const nodesById = new Map(nodes.map((node) => [node.id, node]));
   const openedNodes = dedupeNodes(
     openedNodeIds
@@ -145,65 +181,33 @@ export function generateMessageContext({
   );
   const uniqueAttachedNodes = dedupeNodes(attachedNodes);
 
-  const boundsAttr = `${Math.round(viewportBounds.x1)},${Math.round(viewportBounds.y1)},${Math.round(viewportBounds.x2)},${Math.round(viewportBounds.y2)}`;
-
-  const openNodesXml = openedNodes
-    .map((node) => nodeToXml(node, getNodeTitle))
-    .join("\n");
-
-  const visibleNodeIdsXml =
-    visibleNodes.length > 0
-      ? `    <in_viewport_node_ids>${escapeXml(visibleNodes.map((node) => node.id).join(" | "))}</in_viewport_node_ids>`
-      : "    <!-- No nodes visible in the current viewport -->";
-
-  const attachedNodesXml = uniqueAttachedNodes
-    .map((node) => nodeToXml(node, getNodeTitle))
-    .join("\n");
-
-  const openNodesSection =
-    openedNodes.length > 0
-      ? [
-          "<open_nodes>",
-          "<hint>Nodes currently open in windows.</hint>",
-          openNodesXml,
-          "</open_nodes>",
-          "",
-        ]
-      : [];
-
-  const attachedNodesSection =
-    uniqueAttachedNodes.length > 0
-      ? [
-          "<attached_nodes>",
-          "<hint>Nodes explicitly attached to this message.</hint>",
-          attachedNodesXml,
-          "</attached_nodes>",
-        ]
-      : [];
-
-  const attachedPositionSection = attachedPosition
-    ? [
-        "<attached_position>",
-        "<hint>Empty position the user attached to this message. Use it to create new nodes or place existing nodes.</hint>",
-        `    <position x="${Math.round(attachedPosition.x)}" y="${Math.round(attachedPosition.y)}" />`,
-        "</attached_position>",
-      ]
-    : [];
-
-  return [
-    "<message_context>",
-    "<hint>Context snapshot generated when the user sent this message.</hint>",
-    `<time>${escapeXml(formatTimeNaturalLanguage(time))}</time>`,
-    "",
-    ...openNodesSection,
-    `<viewport bounds="${escapeXml(boundsAttr)}">`,
-    "<hint>Use the viewport coordinates to place new nodes, if relevant to the question asked. Visible nodes and current viewport may or may not be relevant to the current task.</hint>",
-    visibleNodeIdsXml,
-    "</viewport>",
-    ...(attachedPositionSection.length > 0
-      ? ["", ...attachedPositionSection]
-      : []),
-    ...(attachedNodesSection.length > 0 ? ["", ...attachedNodesSection] : []),
-    "</message_context>",
-  ].join("\n");
+  return {
+    generatedAt: formatTimeNaturalLanguage(time),
+    openNodes: openedNodes.map((node) =>
+      nodeToMessageContextNodeSummary(node, getNodeTitle),
+    ),
+    viewport: {
+      bounds: {
+        x1: Math.round(viewportBounds.x1),
+        y1: Math.round(viewportBounds.y1),
+        x2: Math.round(viewportBounds.x2),
+        y2: Math.round(viewportBounds.y2),
+      },
+      size: {
+        width: Math.round(viewportWidth),
+        height: Math.round(viewportHeight),
+      },
+      zoom: viewport.zoom,
+      visibleNodeIds: visibleNodes.map((node) => node.id),
+    },
+    attachedPosition: attachedPosition
+      ? {
+          x: Math.round(attachedPosition.x),
+          y: Math.round(attachedPosition.y),
+        }
+      : null,
+    attachedNodes: uniqueAttachedNodes.map((node) =>
+      nodeToMessageContextNodeSummary(node, getNodeTitle),
+    ),
+  };
 }

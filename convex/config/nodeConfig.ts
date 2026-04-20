@@ -46,8 +46,14 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
           .enum(["h1", "h2", "h3", "p"])
           .describe("The heading level of the text.")
           .default("p"),
+        autoresize: z
+          .enum(["off", "line", "height"])
+          .describe(
+            "How the node dimensions adapt to the text: 'off' = manual resize, 'line' = width grows with the text on a single line, 'height' = user sets the width and the height grows with wrapped text.",
+          )
+          .default("line"),
       })
-      .default({ text: "", level: "p" }),
+      .default({ text: "", level: "p", autoresize: "line" }),
   },
   {
     type: "link",

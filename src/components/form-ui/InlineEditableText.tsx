@@ -51,16 +51,9 @@ interface InlineEditableTextProps {
   as?: keyof JSX.IntrinsicElements;
 
   /**
-   * Si true, utilise un textarea au lieu d'un input (pour le texte multiligne)
-   * @default false
+   * Callback appelé à chaque modification du texte en mode édition
    */
-  multiline?: boolean;
-
-  /**
-   * Nombre minimum de lignes pour le textarea (uniquement si multiline=true)
-   * @default 1
-   */
-  minRows?: number;
+  onChange?: (value: string) => void;
 }
 
 /**
@@ -94,17 +87,15 @@ function InlineEditableText({
   saveOnBlur = true,
   as: Element = "span",
   disabled = false,
-  multiline = false,
-  minRows = 1,
+  onChange,
 }: InlineEditableTextProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Récupérer le contexte Formik de manière sûre (undefined si pas dans un contexte Formik)
   // NOTE: On appelle toujours le hook, respectant ainsi la règle des hooks React
-  const formikContext = useFormikContextSafe<any>();
+  const formikContext = useFormikContextSafe<Record<string, unknown>>();
 
   // Déterminer la valeur actuelle (Formik ou externe)
   const currentValue =
@@ -113,16 +104,11 @@ function InlineEditableText({
       : externalValue || "";
 
   useEffect(() => {
-    if (isEditing) {
-      if (multiline && textareaRef.current) {
-        textareaRef.current.focus();
-        textareaRef.current.select();
-      } else if (!multiline && inputRef.current) {
-        inputRef.current.focus();
-        inputRef.current.select();
-      }
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
     }
-  }, [isEditing, multiline]);
+  }, [isEditing]);
 
   // OPTIMISATION: useCallback empêche la recréation des handlers à chaque render
   const handleStartEdit = useCallback(() => {
@@ -150,11 +136,18 @@ function InlineEditableText({
     setEditValue(currentValue);
   }, [currentValue]);
 
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const val = e.target.value;
+      setEditValue(val);
+      onChange?.(val);
+    },
+    [onChange],
+  );
+
   const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      // En mode multiline, Enter crée une nouvelle ligne au lieu de sauvegarder
-      // Utiliser Ctrl+Enter ou Cmd+Enter pour sauvegarder
-      if (e.key === "Enter" && (!multiline || e.ctrlKey || e.metaKey)) {
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
         e.preventDefault();
         handleSave();
       } else if (e.key === "Escape") {
@@ -162,7 +155,7 @@ function InlineEditableText({
         handleCancel();
       }
     },
-    [handleSave, handleCancel, multiline]
+    [handleSave, handleCancel],
   );
 
   const handleBlur = useCallback(() => {
@@ -180,8 +173,8 @@ function InlineEditableText({
       <Element
         className={cn(
           "invisible col-start-1 row-start-1",
-          multiline ? "whitespace-pre-wrap" : "whitespace-normal",
-          !currentValue && "text-muted-foreground/50 italic"
+          "whitespace-normal",
+          !currentValue && "text-muted-foreground/50 italic",
         )}
         aria-hidden="true"
       >
@@ -189,52 +182,29 @@ function InlineEditableText({
       </Element>
 
       {isEditing ? (
-        multiline ? (
-          <textarea
-            ref={textareaRef}
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onBlur={handleBlur}
-            placeholder={placeholder}
-            rows={minRows}
-            className={cn(
-              "col-start-1 row-start-1 bg-transparent border-none outline-none nodrag resize-none",
-              inputClassName
-            )}
-            style={{
-              font: "inherit",
-              padding: 0,
-              margin: 0,
-              overflow: "hidden",
-            }}
-          />
-        ) : (
-          <input
-            ref={inputRef}
-            type="text"
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onBlur={handleBlur}
-            placeholder={placeholder}
-            className={cn(
-              "col-start-1 row-start-1 bg-transparent border-none outline-none nodrag",
-              inputClassName
-            )}
-            style={{
-              font: "inherit",
-              padding: 0,
-              margin: 0,
-            }}
-          />
-        )
+        <input
+          ref={inputRef}
+          type="text"
+          value={editValue}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          onBlur={handleBlur}
+          placeholder={placeholder}
+          className={cn(
+            "col-start-1 row-start-1 bg-transparent border-none outline-none nodrag",
+            inputClassName,
+          )}
+          style={{
+            font: "inherit",
+            padding: 0,
+            margin: 0,
+          }}
+        />
       ) : (
         <Element
           className={cn(
             "col-start-1 row-start-1 cursor-text",
-            multiline && "whitespace-pre-wrap",
-            !currentValue && "text-muted-foreground/50 italic"
+            !currentValue && "text-muted-foreground/50 italic",
           )}
           onDoubleClick={(e) => {
             if (disabled) return;

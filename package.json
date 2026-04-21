@@ -83,6 +83,7 @@
     "@tanstack/react-router": "^1.134.9",
     "@tanstack/react-router-devtools": "^1.134.9",
     "@tanstack/react-table": "^8.21.3",
+    "@tanstack/react-virtual": "^3.13.24",
     "@toon-format/toon": "^2.1.0",
     "@types/lodash": "^4.17.20",
     "@udecode/cn": "^51.1.2",

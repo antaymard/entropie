@@ -8,8 +8,8 @@ import { getToolsForAgent } from "./tools";
 
 export const chatModelOptions = [
   {
-    label: "Elephant (free)",
-    value: "openrouter/elephant-alpha",
+    label: "Nemotron 3 Super 120B A12B",
+    value: "nvidia/nemotron-3-super-120b-a12b:free",
     price: "Free",
   },
   {
@@ -60,40 +60,14 @@ export function createBaseAgent({ model }: { model?: LanguageModel } = {}) {
 // Minimal agent used for utility operations (e.g. saveMessage) that don't require a specific model.
 export const baseAgent = createBaseAgent();
 
-export function createAutomationAgent({
-  model,
-  threadCtx,
-  tools = {},
-}: {
-  model?: LanguageModel;
-  threadCtx: ThreadCtx;
-  tools?: ToolSet;
-}) {
-  return new Agent(components.agent, {
-    name: toolAgentNames.automation,
-    languageModel: model ?? defaultModels.fast,
-    maxSteps: 5,
-    tools: getToolsForAgent({
-      agentName: toolAgentNames.automation,
-      threadCtx,
-      extraTools: tools,
-    }),
-    instructions: `You are an automation agent linked to a node in a canvas-based app similar to Miro. You can use the tools at your disposal to accomplish the requested tasks. The node you are linked to may contain input data from other nodes that you will most often need to use to complete your task. Use the tools available to you to find information.
-      
-    Do not respond to the user as a general chat assistant. Use the standard tools available directly if an action on the canvas or content is necessary.
-    
-    Be as concise, exact, and factual as possible. Do not fabricate information. Do not be verbose.`,
-  });
-}
-
 export function createNoleAgent({
   model,
   threadCtx,
-  tools = {},
+  extraTools = {},
 }: {
   model?: LanguageModel;
   threadCtx: ThreadCtx;
-  tools?: ToolSet;
+  extraTools?: ToolSet;
 }) {
   return new Agent(components.agent, {
     name: "Nolë",
@@ -102,18 +76,18 @@ export function createNoleAgent({
     tools: getToolsForAgent({
       agentName: toolAgentNames.nole,
       threadCtx,
-      extraTools: tools,
+      extraTools,
     }),
   });
 }
 
 export function createCloneAgent({
   threadCtx,
-  tools = {},
+  extraTools = {},
   model,
 }: {
   threadCtx: ThreadCtx;
-  tools?: ToolSet;
+  extraTools?: ToolSet;
   model?: LanguageModel;
 }) {
   return new Agent(components.agent, {
@@ -123,18 +97,18 @@ export function createCloneAgent({
     tools: getToolsForAgent({
       agentName: toolAgentNames.clone,
       threadCtx,
-      extraTools: tools,
+      extraTools,
     }),
   });
 }
 
 export function createSupervisorAgent({
   threadCtx,
-  tools = {},
+  extraTools = {},
   model,
 }: {
   threadCtx: ThreadCtx;
-  tools?: ToolSet;
+  extraTools?: ToolSet;
   model?: LanguageModel;
 }) {
   return new Agent(components.agent, {
@@ -144,18 +118,18 @@ export function createSupervisorAgent({
     tools: getToolsForAgent({
       agentName: toolAgentNames.supervisor,
       threadCtx,
-      extraTools: tools,
+      extraTools,
     }),
   });
 }
 
 export function createWorkerAgent({
   threadCtx,
-  tools = {},
+  extraTools = {},
   model,
 }: {
   threadCtx: ThreadCtx;
-  tools?: ToolSet;
+  extraTools?: ToolSet;
   model?: LanguageModel;
 }) {
   return new Agent(components.agent, {
@@ -165,7 +139,33 @@ export function createWorkerAgent({
     tools: getToolsForAgent({
       agentName: toolAgentNames.worker,
       threadCtx,
-      extraTools: tools,
+      extraTools,
     }),
+  });
+}
+
+export function createAutomationAgent({
+  model,
+  threadCtx,
+  extraTools = {},
+}: {
+  model?: LanguageModel;
+  threadCtx: ThreadCtx;
+  extraTools?: ToolSet;
+}) {
+  return new Agent(components.agent, {
+    name: toolAgentNames.automation,
+    languageModel: model ?? defaultModels.fast,
+    maxSteps: 5,
+    tools: getToolsForAgent({
+      agentName: toolAgentNames.automation,
+      threadCtx,
+      extraTools,
+    }),
+    instructions: `You are an automation agent linked to a node in a canvas-based app similar to Miro. You can use the tools at your disposal to accomplish the requested tasks. The node you are linked to may contain input data from other nodes that you will most often need to use to complete your task. Use the tools available to you to find information.
+      
+    Do not respond to the user as a general chat assistant. Use the standard tools available directly if an action on the canvas or content is necessary.
+    
+    Be as concise, exact, and factual as possible. Do not fabricate information. Do not be verbose.`,
   });
 }

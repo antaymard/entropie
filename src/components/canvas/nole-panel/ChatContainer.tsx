@@ -19,8 +19,7 @@ import prebuiltNodesConfig from "@/components/nodes/prebuilt-nodes/prebuiltNodes
 import { useNodeDataStore } from "@/stores/nodeDataStore";
 import { useNoleStore } from "@/stores/noleStore";
 import type { Id } from "@/../convex/_generated/dataModel";
-import type { ChatModelPreference } from "@/types/convex";
-import { chatModelPreferences } from "@/types/convex";
+import type { ChatModelValues } from "@/types/convex";
 import { cn } from "@/lib/utils";
 import { useWindowsStore } from "@/stores/windowsStore";
 import ChatInterface from "./ChatInterface";
@@ -68,10 +67,10 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
 
   const [overrideThreadId, setOverrideThreadId] = useState<string | null>(null);
   const threadId = overrideThreadId ?? initialThreadId;
+  const modelOptions = useQuery(api.ia.nole.listChatModels, {});
 
   const [userInput, setUserInput] = useState("");
-  const [selectedModel, setSelectedModel] =
-    useState<ChatModelPreference>("free");
+  const [selectedModel, setSelectedModel] = useState<ChatModelValues>();
   const [isSending, setIsSending] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const attachedNodes = useNoleStore((state) => state.attachedNodes);
@@ -97,6 +96,12 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
   // Track Ctrl+Alt hold for push-to-talk
   const keysHeldRef = useRef<Set<string>>(new Set());
   const sttActiveRef = useRef(false);
+
+  useEffect(() => {
+    if (!selectedModel && modelOptions && modelOptions.length > 0) {
+      setSelectedModel(modelOptions[0]?.value);
+    }
+  }, [modelOptions, selectedModel]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -373,24 +378,31 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    disabled={isSending || isAssistantResponding}
+                    disabled={
+                      isSending ||
+                      isAssistantResponding ||
+                      (modelOptions?.length ?? 0) === 0
+                    }
                     className="h-8 px-2 text-xs text-slate-500 gap-1"
                   >
                     <TbBrain size={10} />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
-                  {chatModelPreferences.map((model) => (
+                  {(modelOptions ?? []).map((model) => (
                     <DropdownMenuItem
-                      key={model}
-                      onSelect={() => setSelectedModel(model)}
+                      key={model.value}
+                      onSelect={() => setSelectedModel(model.value)}
                       className={cn(
-                        selectedModel === model && "font-medium",
+                        selectedModel === model.value && "font-medium",
                         "capitalize flex items-center justify-between",
                       )}
                     >
-                      {model}
-                      {selectedModel === model && <TbCheck />}
+                      <p>{model.label}</p>
+                      <span className="text-xs text-slate-400">
+                        {model.price.replace("_", " - ")}
+                      </span>
+                      {selectedModel === model.value && <TbCheck />}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>

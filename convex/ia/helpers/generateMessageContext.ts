@@ -1,9 +1,4 @@
-import type { ChatModelPreference } from "../agents";
-
-export type NoleMessageMetadata = {
-  messageContext?: unknown;
-  model?: ChatModelPreference;
-};
+import type { NoleMessageMetadata } from "../nole";
 
 function escapeXml(value: string): string {
   return value

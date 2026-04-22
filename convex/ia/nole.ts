@@ -1,22 +1,25 @@
 import { v } from "convex/values";
-import { internalAction, mutation } from "../_generated/server";
+import { internalAction, mutation, query } from "../_generated/server";
 import {
   baseAgent,
+  chatModelOptions,
   createNoleAgent,
-  models,
-  vChatModelPreference,
+  getChatModel,
+  vChatModelValues,
 } from "./agents";
 import { requireAuth } from "../lib/auth";
 import { generateNoleSystemPrompt } from "./systemPrompts/noleSystemPrompt";
 import { components, internal } from "../_generated/api";
 import { generateMessageContext } from "./helpers/generateMessageContext";
 
-const vMetadata = v.optional(
+export const vMetadata = v.optional(
   v.object({
     messageContext: v.optional(v.any()),
-    model: v.optional(vChatModelPreference),
+    model: v.optional(vChatModelValues),
   }),
 );
+
+export type NoleMessageMetadata = typeof vMetadata.type;
 
 function isExpectedAbortedStreamError(error: unknown): boolean {
   if (!(error instanceof Error)) {
@@ -30,6 +33,13 @@ function isExpectedAbortedStreamError(error: unknown): boolean {
     (message.includes("trying to finish") || message.includes("finish"))
   );
 }
+
+export const listChatModels = query({
+  args: {},
+  handler: async () => {
+    return chatModelOptions;
+  },
+});
 
 // Public entrypoint: persist user message, then schedule async streaming.
 export const saveMessage = mutation({
@@ -84,7 +94,7 @@ export const streamResponse = internalAction({
     });
 
     const noleAgent = createNoleAgent({
-      model: metadata?.model ? models[metadata.model] : undefined,
+      model: metadata?.model ? getChatModel(metadata.model) : undefined,
       threadCtx: {
         authUserId,
         canvasId,

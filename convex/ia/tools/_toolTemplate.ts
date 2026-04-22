@@ -6,7 +6,7 @@ import { reportToolProgress } from "../../automation/progressReporter";
 
 export const toolTemplate = createTool({
   description: "Description",
-  args: z.object({
+  inputSchema: z.object({
     url: z.string().describe("The URL of the image to analyze"),
     objective: z
       .string()
@@ -14,9 +14,9 @@ export const toolTemplate = createTool({
         "THIS MUST BE IN ENGLISH. Natural-language description of what information you're looking for concerning the image. The AI will analyze the image and provide a response focused on this objective.",
       ),
   }),
-  handler: async (ctx, args): Promise<string> => {
-    console.log(`🖼️ Analyzing image from URL: ${args.url}`);
-    console.log(`📋 Objective: ${args.objective}`);
+  execute: async (ctx, input): Promise<string> => {
+    console.log(`🖼️ Analyzing image from URL: ${input.url}`);
+    console.log(`📋 Objective: ${input.objective}`);
 
     await reportToolProgress(ctx, {
       stepType: "tool_launched=view_image",

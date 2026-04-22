@@ -129,7 +129,7 @@ export default function tableUpdateSchemaTool({
   return createTool({
     description:
       "Update table schema (columns) on a table node: initialize, add columns, or delete columns.",
-    args: z.object({
+    inputSchema: z.object({
       nodeId: z.string().describe("The node ID in the current canvas."),
       operation: operationSchema.describe(
         "Operation to apply: set (only when schema is empty), add_column, or delete_column.",
@@ -157,9 +157,9 @@ export default function tableUpdateSchemaTool({
         .describe("Operation payload."),
       explanation: z.string().describe("3-5 words explaining the edit intent."),
     }),
-    handler: async (ctx, args): Promise<string> => {
+    execute: async (ctx, input): Promise<string> => {
       console.log(
-        `🧮 Table schema update requested on node ${args.nodeId} (${args.operation})`,
+        `🧮 Table schema update requested on node ${input.nodeId} (${input.operation})`,
       );
 
       try {
@@ -167,7 +167,7 @@ export default function tableUpdateSchemaTool({
           internal.wrappers.canvasNodeWrappers.getNodeWithNodeData,
           {
             canvasId,
-            nodeId: args.nodeId,
+            nodeId: input.nodeId,
           },
         );
 
@@ -185,8 +185,8 @@ export default function tableUpdateSchemaTool({
           return ERROR_INVALID_TABLE_CONTENT;
         }
 
-        if (args.operation === "set") {
-          const inputColumns = args.payload.columns;
+        if (input.operation === "set") {
+          const inputColumns = input.payload.columns;
           if (!inputColumns || inputColumns.length === 0) {
             return toolError(
               "payload.columns is required for set and must contain at least one column.",
@@ -234,8 +234,8 @@ export default function tableUpdateSchemaTool({
           return `Successfully set table schema with ${nextColumns.length} columns.`;
         }
 
-        if (args.operation === "add_column") {
-          const inputColumn = args.payload.column;
+        if (input.operation === "add_column") {
+          const inputColumn = input.payload.column;
           if (!inputColumn) {
             return toolError("payload.column is required for add_column.");
           }
@@ -270,7 +270,7 @@ export default function tableUpdateSchemaTool({
           return `Successfully added column "${nextColumn.name}".`;
         }
 
-        const identifiers = args.payload.columnIdentifiers;
+        const identifiers = input.payload.columnIdentifiers;
         if (!identifiers || identifiers.length === 0) {
           return toolError(
             "payload.columnIdentifiers is required for delete_column.",
@@ -306,7 +306,7 @@ export default function tableUpdateSchemaTool({
           resolvedColumns.push(matchedColumn);
         }
 
-        const shouldDeleteValues = args.deleteColumnsValues ?? false;
+        const shouldDeleteValues = input.deleteColumnsValues ?? false;
         const idsToDelete = new Set(resolvedColumnIds);
 
         const rowsWithValues = rows.filter((row) => {

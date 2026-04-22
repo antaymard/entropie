@@ -2,7 +2,9 @@ import { components } from "../_generated/api";
 import { Agent } from "@convex-dev/agent";
 import { openrouter } from "@openrouter/ai-sdk-provider";
 import { v } from "convex/values";
-import type { LanguageModel, ToolSet } from "ai";
+import type { LanguageModelV3 } from "@ai-sdk/provider";
+import type { ToolSet } from "ai";
+import { stepCountIs } from "ai";
 import { toolAgentNames, type ThreadCtx } from "./agentConfig";
 import { getToolsForAgent } from "./tools";
 
@@ -41,7 +43,7 @@ export type ChatModelValues = typeof vChatModelValues.type;
 
 export type ChatModelOption = (typeof chatModelOptions)[number];
 
-export function getChatModel(modelPreference: ChatModelValues): LanguageModel {
+export function getChatModel(modelPreference: ChatModelValues): LanguageModelV3 {
   return openrouter(modelPreference);
 }
 
@@ -50,7 +52,7 @@ const defaultModels = {
   fast: openrouter("mistralai/mistral-small-2603"),
 };
 
-export function createBaseAgent({ model }: { model?: LanguageModel } = {}) {
+export function createBaseAgent({ model }: { model?: LanguageModelV3 } = {}) {
   return new Agent(components.agent, {
     name: "base",
     languageModel: model ?? defaultModels.fast,
@@ -65,13 +67,13 @@ export function createNoleAgent({
   threadCtx,
   extraTools = {},
 }: {
-  model?: LanguageModel;
+  model?: LanguageModelV3;
   threadCtx: ThreadCtx;
   extraTools?: ToolSet;
 }) {
   return new Agent(components.agent, {
     name: "Nolë",
-    maxSteps: 20,
+    stopWhen: stepCountIs(20),
     languageModel: model ?? defaultModels.nole,
     tools: getToolsForAgent({
       agentName: toolAgentNames.nole,
@@ -88,11 +90,11 @@ export function createCloneAgent({
 }: {
   threadCtx: ThreadCtx;
   extraTools?: ToolSet;
-  model?: LanguageModel;
+  model?: LanguageModelV3;
 }) {
   return new Agent(components.agent, {
     name: "Clone",
-    maxSteps: 20,
+    stopWhen: stepCountIs(20),
     languageModel: model ?? defaultModels.nole,
     tools: getToolsForAgent({
       agentName: toolAgentNames.clone,
@@ -109,11 +111,11 @@ export function createSupervisorAgent({
 }: {
   threadCtx: ThreadCtx;
   extraTools?: ToolSet;
-  model?: LanguageModel;
+  model?: LanguageModelV3;
 }) {
   return new Agent(components.agent, {
     name: "Supervisor",
-    maxSteps: 20,
+    stopWhen: stepCountIs(20),
     languageModel: model ?? defaultModels.nole,
     tools: getToolsForAgent({
       agentName: toolAgentNames.supervisor,
@@ -130,11 +132,11 @@ export function createWorkerAgent({
 }: {
   threadCtx: ThreadCtx;
   extraTools?: ToolSet;
-  model?: LanguageModel;
+  model?: LanguageModelV3;
 }) {
   return new Agent(components.agent, {
     name: "Worker",
-    maxSteps: 20,
+    stopWhen: stepCountIs(20),
     languageModel: model ?? defaultModels.fast,
     tools: getToolsForAgent({
       agentName: toolAgentNames.worker,
@@ -149,14 +151,14 @@ export function createAutomationAgent({
   threadCtx,
   extraTools = {},
 }: {
-  model?: LanguageModel;
+  model?: LanguageModelV3;
   threadCtx: ThreadCtx;
   extraTools?: ToolSet;
 }) {
   return new Agent(components.agent, {
     name: toolAgentNames.automation,
     languageModel: model ?? defaultModels.fast,
-    maxSteps: 5,
+    stopWhen: stepCountIs(5),
     tools: getToolsForAgent({
       agentName: toolAgentNames.automation,
       threadCtx,

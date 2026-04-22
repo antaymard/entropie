@@ -20,7 +20,7 @@ const client = new Parallel({
 
 export const websearchTool = createTool({
   description: "Search the web for relevant information.",
-  args: z.object({
+  inputSchema: z.object({
     explanation: z
       .string()
       .describe("3-5 words explaining the research intent."),
@@ -42,7 +42,7 @@ export const websearchTool = createTool({
         "Determines the number of search results to retrieve, and the conciseness of the summaries. A high effort is token-intensive, but may yield better results for complex queries. If not specified, defaults to 'low'. For complex, niche or ambiguous queries, consider using 'medium' or 'high'. You can start with 'low' and increase if results are insufficient.",
       ),
   }),
-  handler: async (
+  execute: async (
     ctx,
     { objective, search_queries = [], search_effort = "low" },
   ) => {

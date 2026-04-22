@@ -53,7 +53,7 @@ export default function readNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
   return createTool({
     description:
       "A tool to read multiple nodes from the current canvas and return their nodeData as LLM-friendly XML.",
-    args: z.object({
+    inputSchema: z.object({
       nodeIds: z
         .array(z.string())
         .min(1)
@@ -65,13 +65,13 @@ export default function readNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
           "Whether to include x/y position and dimensions attributes in each node tag",
         ),
     }),
-    handler: async (ctx, args): Promise<string> => {
+    execute: async (ctx, input): Promise<string> => {
       console.log(
-        `🖼️ Reading ${args.nodeIds.length} node(s) from canvas ${canvasId}`,
+        `🖼️ Reading ${input.nodeIds.length} node(s) from canvas ${canvasId}`,
       );
 
       try {
-        const withPosition = args.withPosition ?? true;
+        const withPosition = input.withPosition ?? true;
         const { nodes: canvasNodes, edges: canvasEdges } = await ctx.runQuery(
           internal.wrappers.canvasNodeWrappers.getCanvasNodesAndEdges,
           {
@@ -83,10 +83,10 @@ export default function readNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
           canvasNodes.map((node) => [node.id, node.type]),
         );
 
-        const requestedNodeIdSet = new Set(args.nodeIds);
+        const requestedNodeIdSet = new Set(input.nodeIds);
 
         const nodes = await Promise.all(
-          args.nodeIds.map(async (nodeId) => {
+          input.nodeIds.map(async (nodeId) => {
             try {
               const { node, nodeData } = await ctx.runQuery(
                 internal.wrappers.canvasNodeWrappers.getNodeWithNodeData,

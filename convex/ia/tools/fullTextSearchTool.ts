@@ -115,7 +115,7 @@ export default function fullTextSearchTool({
   return createTool({
     description:
       "Search exact tokens in the current canvas using full-text indexed chunks. Use this for precise lookup (names, acronyms, reference IDs, rare words). Returns compact snippets and metadata to quickly decide what to read next.",
-    args: z.object({
+    inputSchema: z.object({
       query: z
         .string()
         .describe("The exact token or short phrase to search for."),
@@ -140,11 +140,11 @@ export default function fullTextSearchTool({
         .optional()
         .describe("Maximum number of hits to return (default 20, max 50)."),
     }),
-    handler: async (ctx, args): Promise<string> => {
-      const normalizedQuery = args.query.trim();
-      const limit = clampLimit(args.limit);
-      const groupByNode = args.groupByNode ?? false;
-      const hitsPerNode = clampHitsPerNode(args.hitsPerNode);
+    execute: async (ctx, input): Promise<string> => {
+      const normalizedQuery = input.query.trim();
+      const limit = clampLimit(input.limit);
+      const groupByNode = input.groupByNode ?? false;
+      const hitsPerNode = clampHitsPerNode(input.hitsPerNode);
 
       if (normalizedQuery.length < 2) {
         return toJsonString({
@@ -179,7 +179,7 @@ export default function fullTextSearchTool({
           {
             canvasId: canvasId as Id<"canvases">,
             query: normalizedQuery,
-            nodeIds: args.nodeIds,
+            nodeIds: input.nodeIds,
             limit: searchLimit,
           },
         );

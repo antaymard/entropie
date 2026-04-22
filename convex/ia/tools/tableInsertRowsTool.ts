@@ -182,7 +182,7 @@ export default function tableInsertRowsTool({
 
   return createTool({
     description: "Insert one or multiple rows in a table node.",
-    args: z.object({
+    inputSchema: z.object({
       nodeId: z.string().describe("The node ID in the current canvas."),
       anchorRowId: z
         .string()
@@ -198,15 +198,15 @@ export default function tableInsertRowsTool({
         ),
       explanation: z.string().describe("3-5 words explaining the edit intent."),
     }),
-    handler: async (ctx, args): Promise<string> => {
+    execute: async (ctx, input): Promise<string> => {
       console.log(
-        `🧮 Table row insert requested on node ${args.nodeId}, anchor ${args.anchorRowId ?? "<start>"}`,
+        `🧮 Table row insert requested on node ${input.nodeId}, anchor ${input.anchorRowId ?? "<start>"}`,
       );
 
       try {
-        const { nodeId } = args;
-        const anchorRowId = args.anchorRowId?.trim() ?? "";
-        const values = args.values;
+        const { nodeId } = input;
+        const anchorRowId = input.anchorRowId?.trim() ?? "";
+        const values = input.values;
 
         const { node, nodeData } = await ctx.runQuery(
           internal.wrappers.canvasNodeWrappers.getNodeWithNodeData,
@@ -242,12 +242,12 @@ export default function tableInsertRowsTool({
 
           if (anchorMatches.length === 0) {
             return toolError(
-              `No match found for anchorRowId "${args.anchorRowId}".`,
+              `No match found for anchorRowId "${input.anchorRowId}".`,
             );
           }
           if (anchorMatches.length > 1) {
             return toolError(
-              `Found ${anchorMatches.length} matches for anchorRowId "${args.anchorRowId}". Please provide a unique rowId.`,
+              `Found ${anchorMatches.length} matches for anchorRowId "${input.anchorRowId}". Please provide a unique rowId.`,
             );
           }
 

@@ -76,7 +76,7 @@ export default function runSubagent({
 
   return createTool({
     description: `Run a sub-agent to execute a complex task or a part of the task. Use it for exploration or deep searches, token-heavy or horizontal tasks, or independent tasks that can be achieved by a separate agent. The more capable the agent, the more detailed the instructions you should provide. Think and plan with the user, but explore or execute with subagents. Never delegate understanding. Subagents have no context of the conversation with the user, so you need to provide all necessary information and instructions in the prompt. The current agent can delegate to: ${available.join(", ")}.`,
-    args: z.object({
+    inputSchema: z.object({
       explanation: z
         .string()
         .describe("3-5 words explaining the delegation intent."),
@@ -89,7 +89,7 @@ export default function runSubagent({
         .enum(available as unknown as [SubagentType, ...SubagentType[]])
         .describe(`The type of agent to delegate to. ${descriptions}`),
     }),
-    handler: async (ctx, args): Promise<string> => {
+    execute: async (ctx, input): Promise<string> => {
       try {
         if (!isSupportedCurrentAgent(currentAgent)) {
           return toolError(
@@ -97,8 +97,8 @@ export default function runSubagent({
           );
         }
 
-        const trimmedExplanation = args.explanation.trim();
-        const trimmedInstructions = args.instructions.trim();
+        const trimmedExplanation = input.explanation.trim();
+        const trimmedInstructions = input.instructions.trim();
 
         if (!trimmedExplanation) {
           return toolError("`explanation` cannot be empty.");
@@ -110,7 +110,7 @@ export default function runSubagent({
 
         const result = await ctx.runAction(internal.ia.subagentRuntime.run, {
           currentAgent,
-          agentType: args.agentType,
+          agentType: input.agentType,
           explanation: trimmedExplanation,
           instructions: trimmedInstructions,
           authUserId: threadCtx.authUserId,

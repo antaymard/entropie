@@ -156,7 +156,7 @@ export default function createNodeTool({
   return createTool({
     description:
       "Create an empty node you can then populate with data or manipulate using other tools.",
-    args: z.object({
+    inputSchema: z.object({
       nodeType: nodeTypeZodValidator.describe("Type of the node."),
       position: z
         .object({
@@ -187,41 +187,41 @@ export default function createNodeTool({
           "Optional list of existing nodeIds to connect FROM each source node TO the newly created node.",
         ),
     }),
-    handler: async (ctx, args) => {
+    execute: async (ctx, input) => {
       try {
         const nodeConfig = nodeDataConfig.find(
-          (item) => item.type === args.nodeType,
+          (item) => item.type === input.nodeType,
         );
         if (!nodeConfig) {
-          return toolError(`Unsupported nodeType ${args.nodeType}.`);
+          return toolError(`Unsupported nodeType ${input.nodeType}.`);
         }
 
-        const defaultValues = getDefaultNodeDataValues(args.nodeType);
+        const defaultValues = getDefaultNodeDataValues(input.nodeType);
         if (!defaultValues) {
-          return toolError(`Unsupported nodeType ${args.nodeType}.`);
+          return toolError(`Unsupported nodeType ${input.nodeType}.`);
         }
 
         if (typeof defaultValues !== "object" || defaultValues === null) {
           return toolError(
-            `Invalid default values for nodeType ${args.nodeType}.`,
+            `Invalid default values for nodeType ${input.nodeType}.`,
           );
         }
 
         const defaultValuesRecord = defaultValues as Record<string, unknown>;
 
         const resolvedDimensions =
-          args.dimensions ?? nodeConfig.defaultDimensions;
+          input.dimensions ?? nodeConfig.defaultDimensions;
 
         const { values: initialValues, titleApplied } = applyNodeDataTitle({
-          nodeType: args.nodeType,
+          nodeType: input.nodeType,
           defaultValues: defaultValuesRecord,
-          nodeTitle: args.nodeTitle,
+          nodeTitle: input.nodeTitle,
         });
 
         const nodeDataId = await ctx.runMutation(
           internal.wrappers.nodeDataWrappers.create,
           {
-            type: args.nodeType,
+            type: input.nodeType,
             values: initialValues,
             canvasId,
           },
@@ -235,11 +235,11 @@ export default function createNodeTool({
             {
               id: nodeId,
               nodeDataId,
-              type: args.nodeType,
-              position: args.position,
+              type: input.nodeType,
+              position: input.position,
               width: resolvedDimensions.width,
               height: resolvedDimensions.height,
-              color: args.color,
+              color: input.color,
             },
           ],
         });
@@ -252,15 +252,15 @@ export default function createNodeTool({
           targetHandle: string;
         }> = [];
 
-        if (args.sourceNodes && args.sourceNodes.length > 0) {
+        if (input.sourceNodes && input.sourceNodes.length > 0) {
           const toRect: NodeRect = {
             id: nodeId,
-            position: args.position,
+            position: input.position,
             width: resolvedDimensions.width,
             height: resolvedDimensions.height,
           };
 
-          for (const sourceNodeId of args.sourceNodes) {
+          for (const sourceNodeId of input.sourceNodes) {
             if (sourceNodeId === nodeId) {
               return toolError(
                 "sourceNodes cannot contain the newly created node itself.",
@@ -314,15 +314,15 @@ export default function createNodeTool({
         }
 
         const currentNodeData =
-          args.nodeType === "document"
+          input.nodeType === "document"
             ? {
-                doc: args.nodeTitle?.trim() ? `# ${args.nodeTitle.trim()}` : "",
+                doc: input.nodeTitle?.trim() ? `# ${input.nodeTitle.trim()}` : "",
               }
             : initialValues;
 
         const titleHint =
-          args.nodeType === "document" && titleApplied && args.nodeTitle?.trim()
-            ? `The title is already present in the document as "# ${args.nodeTitle.trim()}". Do not repeat it during later edits.`
+          input.nodeType === "document" && titleApplied && input.nodeTitle?.trim()
+            ? `The title is already present in the document as "# ${input.nodeTitle.trim()}". Do not repeat it during later edits.`
             : undefined;
 
         const canvas = await ctx.runQuery(
@@ -336,10 +336,10 @@ export default function createNodeTool({
           success: true,
           canvasName: canvas.name,
           nodeId,
-          nodeType: args.nodeType,
+          nodeType: input.nodeType,
           ...(titleHint ? { hint: titleHint } : { titleApplied }),
-          position: args.position,
-          color: args.color,
+          position: input.position,
+          color: input.color,
           dimensions: {
             width: resolvedDimensions.width,
             height: resolvedDimensions.height,

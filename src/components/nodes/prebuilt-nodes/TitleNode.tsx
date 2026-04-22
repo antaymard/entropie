@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { type Node } from "@xyflow/react";
 import { areNodePropsEqual } from "../areNodePropsEqual";
 import NodeFrame from "../NodeFrame";
@@ -33,6 +33,9 @@ function TitleNode(xyNode: Node) {
   const textColor =
     colors[(xyNode.data.color as colorsEnum) || "default"]?.textColor;
 
+  const [editing, setEditing] = useState(false);
+  const [editingText, setEditingText] = useState("");
+
   if (!xyNode || !nodeDataId) return null;
 
   return (
@@ -65,13 +68,13 @@ function TitleNode(xyNode: Node) {
       <NodeFrame xyNode={xyNode}>
         <div className={cn(textClassName, textColor, "p-1 px-2")}>
           <InlineEditableText
-            multiline
             value={text}
-            onSave={(text) => {
+            onSave={(newText) => {
               if (nodeDataId) {
+                // Sauvegarder le texte
                 updateNodeDataValues({
                   nodeDataId,
-                  values: { text },
+                  values: { text: newText },
                 });
               }
             }}

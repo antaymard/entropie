@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { type Node } from "@xyflow/react";
 import { areNodePropsEqual } from "../areNodePropsEqual";
 import { useNodeDataValues } from "@/hooks/useNodeData";
@@ -74,6 +74,20 @@ function DocumentNode(xyNode: Node) {
 
   const documentTitle = useNodeDataTitle(nodeDataId) ?? "Document";
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { rootMargin: "300px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <>
       <CanvasNodeToolbar xyNode={xyNode}>
@@ -88,25 +102,32 @@ function DocumentNode(xyNode: Node) {
       </CanvasNodeToolbar>
       <NodeFrame xyNode={xyNode}>
         {xyNode.data.variant !== "title" && (
-          <div className="h-full overflow-auto [content-visibility:auto] [contain-intrinsic-size:auto_300px]">
-            {isDocEmpty ? (
-              <div className="h-full flex flex-col items-center justify-center gap-1.5 text-muted-foreground/40 select-none pointer-events-none">
-                <TbNews size={22} />
-                <span className="text-xs">Double click to edit</span>
-              </div>
-            ) : isPreviewLoading ? (
-              <div className="h-full flex flex-col items-center justify-center gap-2 text-muted-foreground/50 select-none pointer-events-none">
-                <Spinner className="size-4" />
-                <span className="text-xs">Loading preview...</span>
-              </div>
-            ) : previewValue ? (
-              <div className="relative">
-                <DocumentStaticField
-                  value={{ doc: previewValue }}
-                  allowDrag={!xyNode.selected}
-                  preview
-                />
-              </div>
+          <div
+            ref={containerRef}
+            className="h-full [content-visibility:auto] [contain-intrinsic-size:auto_300px]"
+          >
+            {isVisible ? (
+              <>
+                {isDocEmpty ? (
+                  <div className="h-full flex flex-col items-center justify-center gap-1.5 text-muted-foreground/40 select-none pointer-events-none">
+                    <TbNews size={22} />
+                    <span className="text-xs">Double click to edit</span>
+                  </div>
+                ) : isPreviewLoading ? (
+                  <div className="h-full flex flex-col items-center justify-center gap-2 text-muted-foreground/50 select-none pointer-events-none">
+                    <Spinner className="size-4" />
+                    <span className="text-xs">Loading preview...</span>
+                  </div>
+                ) : previewValue ? (
+                  <div className="relative h-full min-h-0">
+                    <DocumentStaticField
+                      value={{ doc: previewValue }}
+                      allowDrag={!xyNode.selected}
+                      preview
+                    />
+                  </div>
+                ) : null}
+              </>
             ) : null}
           </div>
         )}

@@ -20,6 +20,7 @@ import type * as hotposts from "../hotposts.js";
 import type * as http from "../http.js";
 import type * as ia_agentConfig from "../ia/agentConfig.js";
 import type * as ia_agents from "../ia/agents.js";
+import type * as ia_helpers_composioSanitizer from "../ia/helpers/composioSanitizer.js";
 import type * as ia_helpers_generateCanvasMinimap from "../ia/helpers/generateCanvasMinimap.js";
 import type * as ia_helpers_generateMessageContext from "../ia/helpers/generateMessageContext.js";
 import type * as ia_helpers_getCanvasChangesSinceLastMessage from "../ia/helpers/getCanvasChangesSinceLastMessage.js";
@@ -29,6 +30,7 @@ import type * as ia_helpers_nodeInputSchemaValidatorForLLM from "../ia/helpers/n
 import type * as ia_helpers_pillMarkdownRules from "../ia/helpers/pillMarkdownRules.js";
 import type * as ia_helpers_plateMarkdownConverter from "../ia/helpers/plateMarkdownConverter.js";
 import type * as ia_nole from "../ia/nole.js";
+import type * as ia_noleCompletion from "../ia/noleCompletion.js";
 import type * as ia_subagentRuntime from "../ia/subagentRuntime.js";
 import type * as ia_systemPrompts_noleSystemPrompt from "../ia/systemPrompts/noleSystemPrompt.js";
 import type * as ia_tools__toolTemplate from "../ia/tools/_toolTemplate.js";
@@ -111,6 +113,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   "ia/agentConfig": typeof ia_agentConfig;
   "ia/agents": typeof ia_agents;
+  "ia/helpers/composioSanitizer": typeof ia_helpers_composioSanitizer;
   "ia/helpers/generateCanvasMinimap": typeof ia_helpers_generateCanvasMinimap;
   "ia/helpers/generateMessageContext": typeof ia_helpers_generateMessageContext;
   "ia/helpers/getCanvasChangesSinceLastMessage": typeof ia_helpers_getCanvasChangesSinceLastMessage;
@@ -120,6 +123,7 @@ declare const fullApi: ApiFromModules<{
   "ia/helpers/pillMarkdownRules": typeof ia_helpers_pillMarkdownRules;
   "ia/helpers/plateMarkdownConverter": typeof ia_helpers_plateMarkdownConverter;
   "ia/nole": typeof ia_nole;
+  "ia/noleCompletion": typeof ia_noleCompletion;
   "ia/subagentRuntime": typeof ia_subagentRuntime;
   "ia/systemPrompts/noleSystemPrompt": typeof ia_systemPrompts_noleSystemPrompt;
   "ia/tools/_toolTemplate": typeof ia_tools__toolTemplate;

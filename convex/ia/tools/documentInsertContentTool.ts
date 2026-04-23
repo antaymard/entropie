@@ -54,7 +54,7 @@ export default function documentInsertContentTool({
   return createTool({
     description:
       "Insert new content into a document node from the current canvas.",
-    args: z.object({
+    inputSchema: z.object({
       nodeId: z.string().describe("The node ID in the current canvas."),
       anchor_text: z
         .string()
@@ -72,13 +72,13 @@ export default function documentInsertContentTool({
         .describe("The content to insert. Use markdown formatting."),
       explanation: z.string().describe("3-5 words explaining the edit intent."),
     }),
-    handler: async (ctx, args): Promise<string> => {
+    execute: async (ctx, input): Promise<string> => {
       console.log(
-        `📝 Insert requested on node ${args.nodeId} (canvas ${canvasId}) at position ${args.position}`,
+        `📝 Insert requested on node ${input.nodeId} (canvas ${canvasId}) at position ${input.position}`,
       );
 
       try {
-        const { nodeId, anchor_text, position, content } = args;
+        const { nodeId, anchor_text, position, content } = input;
 
         const { node, nodeData } = await ctx.runQuery(
           internal.wrappers.canvasNodeWrappers.getNodeWithNodeData,

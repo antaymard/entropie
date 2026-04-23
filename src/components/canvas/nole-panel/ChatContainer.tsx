@@ -225,6 +225,9 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
     } catch (error) {
       console.error("Erreur lors de l'envoi:", error);
       setUserInput(prompt);
+      toast.error("Impossible d'envoyer le message. Réessayez.", {
+        position: "bottom-left",
+      });
     } finally {
       setIsSending(false);
     }
@@ -314,7 +317,10 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
 
       {/* Chat */}
       <div className="w-full flex-1 min-h-0">
-        <ChatInterface threadId={threadId} />
+        <ChatInterface
+          threadId={threadId}
+          onRetry={(userMessage) => setUserInput(userMessage)}
+        />
       </div>
 
       {/* Input */}

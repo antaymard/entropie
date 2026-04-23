@@ -47,7 +47,7 @@ export default function tableDeleteRowsTool({
   return createTool({
     description:
       "Delete one or multiple rows from a table node in the current canvas.",
-    args: z.object({
+    inputSchema: z.object({
       nodeId: z.string().describe("The node ID in the current canvas."),
       rowIds: z
         .array(z.string().min(1))
@@ -57,13 +57,13 @@ export default function tableDeleteRowsTool({
         ),
       explanation: z.string().describe("3-5 words explaining the edit intent."),
     }),
-    handler: async (ctx, args): Promise<string> => {
+    execute: async (ctx, input): Promise<string> => {
       console.log(
-        `🧮 Table row delete requested on node ${args.nodeId} for ${args.rowIds.length} row id(s)`,
+        `🧮 Table row delete requested on node ${input.nodeId} for ${input.rowIds.length} row id(s)`,
       );
 
       try {
-        const { nodeId, rowIds } = args;
+        const { nodeId, rowIds } = input;
         const normalizedRowIds = rowIds.map(normalizeRowId);
 
         const duplicateInput = normalizedRowIds.find(

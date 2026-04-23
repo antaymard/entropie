@@ -42,7 +42,7 @@ export default function memoryToolFactory({
   return createTool({
     description:
       "Read or update persistent user or canvas memories. User and canvas memories are already loaded into the system prompt at the beginning of the session as a frozen snapshot. Use this tool to read or modify them so changes stay persisted for future sessions.",
-    args: z.object({
+    inputSchema: z.object({
       action: z.enum(["add", "remove", "replace", "read"]),
       target: z.enum(["user", "canvas"]),
       content: z.string().optional().describe("Required for add and replace."),
@@ -51,10 +51,10 @@ export default function memoryToolFactory({
         .optional()
         .describe("Required for remove and replace."),
     }),
-    handler: async (ctx, args): Promise<string> => {
+    execute: async (ctx, input): Promise<string> => {
       try {
         const targetConfig =
-          args.target === "user"
+          input.target === "user"
             ? {
                 subjectType: "user" as const,
                 subjectId: threadCtx.authUserId,
@@ -74,7 +74,7 @@ export default function memoryToolFactory({
 
         const entries = parseEntries(existingMemory?.content);
         const maxChars =
-          args.target === "user"
+          input.target === "user"
             ? MAX_USER_MEMORY_CHARS
             : MAX_CANVAS_MEMORY_CHARS;
 
@@ -82,7 +82,7 @@ export default function memoryToolFactory({
           const serialized = JSON.stringify(nextEntries);
           return JSON.stringify({
             success: true,
-            target: args.target,
+            target: input.target,
             entries: nextEntries,
             usage: formatUsage(serialized.length, maxChars),
             entry_count: nextEntries.length,
@@ -93,7 +93,7 @@ export default function memoryToolFactory({
           const serialized = JSON.stringify(nextEntries);
           if (serialized.length > maxChars) {
             const currentSerialized = JSON.stringify(entries);
-            const candidateLength = args.content?.length ?? 0;
+            const candidateLength = input.content?.length ?? 0;
             return toolError(
               `Memory at ${currentSerialized.length}/${maxChars} chars. Adding this entry (${candidateLength} chars) would exceed the limit.`,
             );
@@ -109,12 +109,12 @@ export default function memoryToolFactory({
           return buildSuccessResult(nextEntries);
         };
 
-        if (args.action === "read") {
+        if (input.action === "read") {
           return buildSuccessResult(entries);
         }
 
-        if (args.action === "add") {
-          const newEntry = args.content?.trim();
+        if (input.action === "add") {
+          const newEntry = input.content?.trim();
           if (!newEntry) {
             return toolError("content is required for add.");
           }
@@ -122,8 +122,8 @@ export default function memoryToolFactory({
           return await saveEntries([...entries, newEntry]);
         }
 
-        if (args.action === "remove") {
-          const oldString = args.old_string?.trim();
+        if (input.action === "remove") {
+          const oldString = input.old_string?.trim();
           if (!oldString) {
             return toolError("old_string is required for remove.");
           }
@@ -141,8 +141,8 @@ export default function memoryToolFactory({
           return await saveEntries(nextEntries);
         }
 
-        const oldString = args.old_string?.trim();
-        const replacement = args.content?.trim();
+        const oldString = input.old_string?.trim();
+        const replacement = input.content?.trim();
 
         if (!oldString) {
           return toolError("old_string is required for replace.");

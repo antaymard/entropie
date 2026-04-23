@@ -9,13 +9,16 @@ import {
   useState,
 } from "react";
 import { RiLoaderLine } from "react-icons/ri";
+import { TbAlertCircle, TbCheck } from "react-icons/tb";
 import { cn } from "@/lib/utils";
-import { Message } from "./Message";
+import { extractUserMessageForDisplay, Message } from "./Message";
 
 const ChatInterface = memo(function ChatInterface({
   threadId,
+  onRetry,
 }: {
   threadId: string;
+  onRetry?: (userMessage: string) => void;
 }) {
   const {
     results: messages,
@@ -41,6 +44,29 @@ const ChatInterface = memo(function ChatInterface({
   const isWaitingForAssistant =
     !!lastMessage && lastMessage.role === "user" && !isAssistantThinking;
   const showThinkingIndicator = isAssistantThinking || isWaitingForAssistant;
+  const isLastMessageFailed =
+    !!lastMessage &&
+    lastMessage.role === "assistant" &&
+    lastMessage.status === "failed";
+
+  const lastUserMessage = messages.findLast((m) => m.role === "user");
+  const lastUserText = lastUserMessage
+    ? extractUserMessageForDisplay(lastUserMessage.text ?? "")
+    : undefined;
+
+  const prevThinkingRef = useRef(false);
+  const [showDone, setShowDone] = useState(false);
+
+  useEffect(() => {
+    if (prevThinkingRef.current && !isAssistantThinking) {
+      if (lastMessage?.status === "done") {
+        setShowDone(true);
+        const t = setTimeout(() => setShowDone(false), 2000);
+        return () => clearTimeout(t);
+      }
+    }
+    prevThinkingRef.current = isAssistantThinking;
+  }, [isAssistantThinking, lastMessage?.status]);
 
   const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
     const div = scrollViewportRef.current;
@@ -119,7 +145,7 @@ const ChatInterface = memo(function ChatInterface({
           <div
             className={cn(
               "flex flex-col gap-8",
-              showThinkingIndicator && "pb-12",
+              (showThinkingIndicator || isLastMessageFailed) && "pb-12",
             )}
           >
             {status === "CanLoadMore" && (
@@ -140,18 +166,34 @@ const ChatInterface = memo(function ChatInterface({
           </div>
         )}
       </div>
-      {/* Overlay: Nole is thinking... */}
-      {showThinkingIndicator && (
-        <div className="absolute left-0 right-0 bottom-0 flex justify-center pointer-events-none z-20 pb-2">
-          <div>
-            <ThinkingIndicator
-              label={
-                isAssistantThinking
-                  ? "Nole is thinking..."
-                  : "Waiting for response..."
+      {/* Overlay bottom: thinking / done / failed */}
+      {(showThinkingIndicator || showDone || isLastMessageFailed) && (
+        <div className="absolute left-0 right-0 bottom-0 flex justify-center z-20 pb-2">
+          {showThinkingIndicator && (
+            <div className="pointer-events-none">
+              <ThinkingIndicator
+                label={
+                  isAssistantThinking
+                    ? "Nole is thinking..."
+                    : "Waiting for response..."
+                }
+              />
+            </div>
+          )}
+          {showDone && !showThinkingIndicator && (
+            <div className="pointer-events-none">
+              <DoneIndicator />
+            </div>
+          )}
+          {isLastMessageFailed && !showThinkingIndicator && (
+            <FailedIndicator
+              onRetry={
+                lastUserText && onRetry
+                  ? () => onRetry(lastUserText)
+                  : undefined
               }
             />
-          </div>
+          )}
         </div>
       )}
     </div>
@@ -163,6 +205,33 @@ function ThinkingIndicator({ label }: { label: string }) {
     <div className="flex items-center gap-2 text-xs text-slate-500 px-2 py-1">
       <RiLoaderLine size={14} className="animate-spin" />
       <span>{label}</span>
+    </div>
+  );
+}
+
+function DoneIndicator() {
+  return (
+    <div className="flex items-center gap-2 text-xs text-green-600 px-2 py-1">
+      <TbCheck size={14} />
+      <span>Done</span>
+    </div>
+  );
+}
+
+function FailedIndicator({ onRetry }: { onRetry?: () => void }) {
+  return (
+    <div className="flex items-center gap-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded px-2 py-1 mx-3">
+      <TbAlertCircle size={14} className="shrink-0" />
+      <span className="flex-1">La réponse a échoué.</span>
+      {onRetry && (
+        <button
+          type="button"
+          onClick={onRetry}
+          className="underline text-red-700 hover:text-red-900 font-medium"
+        >
+          Réessayer
+        </button>
+      )}
     </div>
   );
 }

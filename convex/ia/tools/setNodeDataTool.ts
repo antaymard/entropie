@@ -27,7 +27,7 @@ export default function setNodeDataTool({
   return createTool({
     description:
       "Set directement les valeurs du nodeData lié à un nodeId pour un type de node donné.",
-    args: z.object({
+    inputSchema: z.object({
       nodeType: z
         .enum(nodeTypeValues)
         .describe("Type du node cible (doit correspondre au nodeId fourni)."),
@@ -36,23 +36,23 @@ export default function setNodeDataTool({
         .record(z.string(), z.unknown())
         .describe("Objet values à écrire directement dans le nodeData lié."),
     }),
-    handler: async (ctx, args): Promise<string> => {
+    execute: async (ctx, input): Promise<string> => {
       try {
-        if (args.nodeType === "document") {
+        if (input.nodeType === "document") {
           return toolError(
             "Cannot set document data: use insert_document_content or string_replace_document_content.",
           );
         }
 
-        if (args.nodeType === "table") {
+        if (input.nodeType === "table") {
           return toolError(
             "Cannot set table data: use table_insert_rows, table_delete_rows, or table_update_rows.",
           );
         }
 
         const validationError = validateNodeInputSchemaForLLM({
-          nodeType: args.nodeType,
-          input: args.data,
+          nodeType: input.nodeType,
+          input: input.data,
         });
         if (validationError) {
           return toolError(validationError);
@@ -62,25 +62,25 @@ export default function setNodeDataTool({
           internal.wrappers.canvasNodeWrappers.getNodeWithNodeData,
           {
             canvasId,
-            nodeId: args.nodeId,
+            nodeId: input.nodeId,
           },
         );
 
-        if (nodeLookup.node.type !== args.nodeType) {
+        if (nodeLookup.node.type !== input.nodeType) {
           return toolError(
-            `Node type mismatch for nodeId ${args.nodeId}: expected ${args.nodeType}, got ${nodeLookup.node.type}.`,
+            `Node type mismatch for nodeId ${input.nodeId}: expected ${input.nodeType}, got ${nodeLookup.node.type}.`,
           );
         }
 
         await ctx.runMutation(internal.wrappers.nodeDataWrappers.updateValues, {
           _id: nodeLookup.nodeData._id,
-          values: args.data,
+          values: input.data,
         });
 
-        return `Node data updated for nodeId ${args.nodeId}.`;
+        return `Node data updated for nodeId ${input.nodeId}.`;
       } catch (error) {
         return toolError(
-          `Error while setting node data for nodeId ${args.nodeId}: ${error instanceof Error ? error.message : String(error)}`,
+          `Error while setting node data for nodeId ${input.nodeId}: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
     },

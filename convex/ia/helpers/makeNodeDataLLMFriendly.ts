@@ -158,7 +158,6 @@ export function makeNodeDataLLMFriendly(nodeData: Doc<"nodeDatas">): string {
       return `${prefix}${text}`;
     }
 
-    case "file": // To DEP
     case "pdf": {
       const files = values.files as
         | Array<{ url: string; filename: string; mimeType?: string }>

@@ -7,6 +7,11 @@ import type { ToolSet } from "ai";
 import { stepCountIs } from "ai";
 import { toolAgentNames, type ThreadCtx } from "./agentConfig";
 import { getToolsForAgent } from "./tools";
+import {
+  createActionTool,
+  defineAgentApi,
+  streamHandlerAction,
+} from "convex-durable-agents";
 
 export const chatModelOptions = [
   {
@@ -167,9 +172,14 @@ export function createAutomationAgent({
       extraTools,
     }),
     instructions: `You are an automation agent linked to a node in a canvas-based app similar to Miro. You can use the tools at your disposal to accomplish the requested tasks. The node you are linked to may contain input data from other nodes that you will most often need to use to complete your task. Use the tools available to you to find information.
-      
     Do not respond to the user as a general chat assistant. Use the standard tools available directly if an action on the canvas or content is necessary.
-    
     Be as concise, exact, and factual as possible. Do not fabricate information. Do not be verbose.`,
   });
 }
+
+export const supervisorAgent = streamHandlerAction(components.durable_agents, {
+  model: "anthropic/claude-haiku-4.5",
+  system: "You are a helpful AI assistant.",
+  tools: {},
+  saveStreamDeltas: true, // Enable real-time streaming
+});

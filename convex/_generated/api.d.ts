@@ -33,6 +33,7 @@ import type * as ia_nole from "../ia/nole.js";
 import type * as ia_noleCompletion from "../ia/noleCompletion.js";
 import type * as ia_subagentRuntime from "../ia/subagentRuntime.js";
 import type * as ia_systemPrompts_noleSystemPrompt from "../ia/systemPrompts/noleSystemPrompt.js";
+import type * as ia_systemPrompts_supervisorSystemPrompt from "../ia/systemPrompts/supervisorSystemPrompt.js";
 import type * as ia_tools__toolTemplate from "../ia/tools/_toolTemplate.js";
 import type * as ia_tools_createConnectionTool from "../ia/tools/createConnectionTool.js";
 import type * as ia_tools_createNodeTool from "../ia/tools/createNodeTool.js";
@@ -128,6 +129,7 @@ declare const fullApi: ApiFromModules<{
   "ia/noleCompletion": typeof ia_noleCompletion;
   "ia/subagentRuntime": typeof ia_subagentRuntime;
   "ia/systemPrompts/noleSystemPrompt": typeof ia_systemPrompts_noleSystemPrompt;
+  "ia/systemPrompts/supervisorSystemPrompt": typeof ia_systemPrompts_supervisorSystemPrompt;
   "ia/tools/_toolTemplate": typeof ia_tools__toolTemplate;
   "ia/tools/createConnectionTool": typeof ia_tools_createConnectionTool;
   "ia/tools/createNodeTool": typeof ia_tools_createNodeTool;
@@ -5048,6 +5050,483 @@ export declare const components: {
           null
         >;
       };
+    };
+  };
+  durable_agents: {
+    agent: {
+      continueStream: FunctionReference<
+        "mutation",
+        "internal",
+        { threadId: string },
+        null
+      >;
+      tryContinueAllThreads: FunctionReference<"action", "internal", {}, null>;
+    };
+    messages: {
+      add: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          committedSeq?: number;
+          msg: {
+            id?: string;
+            metadata?: any;
+            parts: Array<any>;
+            role: "system" | "user" | "assistant";
+          };
+          overwrite?: boolean;
+          streaming?: boolean;
+          threadId: string;
+        },
+        string
+      >;
+      applyToolOutcomes: FunctionReference<
+        "mutation",
+        "internal",
+        { threadId: string },
+        Array<{
+          _creationTime: number;
+          _id: string;
+          committedSeq?: number;
+          id: string;
+          metadata?: any;
+          parts: Array<any>;
+          role: "system" | "user" | "assistant";
+          threadId: string;
+        }>
+      >;
+      list: FunctionReference<
+        "query",
+        "internal",
+        { excludeSystemMessages?: boolean; threadId: string },
+        Array<{
+          _creationTime: number;
+          _id: string;
+          committedSeq?: number;
+          id: string;
+          metadata?: any;
+          parts: Array<any>;
+          role: "system" | "user" | "assistant";
+          threadId: string;
+        }>
+      >;
+    };
+    streams: {
+      abort: FunctionReference<
+        "mutation",
+        "internal",
+        { reason: string; streamId: string },
+        boolean
+      >;
+      addDelta: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          lockId: string;
+          msgId: string;
+          parts: Array<any>;
+          seq: number;
+          streamId: string;
+        },
+        boolean
+      >;
+      cancelInactiveStreams: FunctionReference<
+        "mutation",
+        "internal",
+        { activeStreamId: string; threadId: string },
+        null
+      >;
+      create: FunctionReference<
+        "mutation",
+        "internal",
+        { threadId: string },
+        string
+      >;
+      deleteStreamAsync: FunctionReference<
+        "mutation",
+        "internal",
+        { cursor?: string; streamId: string },
+        null
+      >;
+      finish: FunctionReference<
+        "mutation",
+        "internal",
+        { streamId: string },
+        null
+      >;
+      heartbeat: FunctionReference<
+        "mutation",
+        "internal",
+        { lockId: string; streamId: string },
+        boolean
+      >;
+      queryStreamingMessageUpdates: FunctionReference<
+        "query",
+        "internal",
+        { fromSeq?: number; threadId: string },
+        { messages: Array<{ msgId: string; parts: Array<any> }> }
+      >;
+      take: FunctionReference<
+        "mutation",
+        "internal",
+        { lockId: string; streamId: string; threadId: string },
+        any
+      >;
+    };
+    threads: {
+      clearRetryState: FunctionReference<
+        "mutation",
+        "internal",
+        { threadId: string },
+        null
+      >;
+      clearStreamId: FunctionReference<
+        "mutation",
+        "internal",
+        { streamId?: string; threadId: string },
+        boolean
+      >;
+      create: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          onStatusChangeHandle?: string;
+          streamFnHandle: string;
+          toolExecutionWorkpoolEnqueueAction?: string;
+          workpoolEnqueueAction?: string;
+        },
+        {
+          _creationTime: number;
+          _id: string;
+          retryState?: {
+            attempt: number;
+            error: string;
+            kind?: string;
+            maxAttempts: number;
+            nextRetryAt: number;
+            requiresExplicitHandling: boolean;
+            retryFnId?: string;
+            retryable: boolean;
+            scope: "stream";
+          };
+          status:
+            | "streaming"
+            | "awaiting_tool_results"
+            | "completed"
+            | "failed"
+            | "stopped";
+          stopSignal: boolean;
+          streamFnHandle: string;
+          streamId?: string | null;
+          toolExecutionWorkpoolEnqueueAction?: string;
+          workpoolEnqueueAction?: string;
+        }
+      >;
+      finalizeStreamTurn: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          expectedSeq?: number;
+          status?:
+            | "streaming"
+            | "awaiting_tool_results"
+            | "completed"
+            | "failed"
+            | "stopped";
+          streamId: string;
+          threadId: string;
+        },
+        boolean
+      >;
+      get: FunctionReference<
+        "query",
+        "internal",
+        { threadId: string },
+        {
+          _creationTime: number;
+          _id: string;
+          retryState?: {
+            attempt: number;
+            error: string;
+            kind?: string;
+            maxAttempts: number;
+            nextRetryAt: number;
+            requiresExplicitHandling: boolean;
+            retryFnId?: string;
+            retryable: boolean;
+            scope: "stream";
+          };
+          status:
+            | "streaming"
+            | "awaiting_tool_results"
+            | "completed"
+            | "failed"
+            | "stopped";
+          stopSignal: boolean;
+          streamFnHandle: string;
+          streamId?: string | null;
+          toolExecutionWorkpoolEnqueueAction?: string;
+          workpoolEnqueueAction?: string;
+        } | null
+      >;
+      list: FunctionReference<
+        "query",
+        "internal",
+        { limit?: number },
+        Array<{
+          _creationTime: number;
+          _id: string;
+          retryState?: {
+            attempt: number;
+            error: string;
+            kind?: string;
+            maxAttempts: number;
+            nextRetryAt: number;
+            requiresExplicitHandling: boolean;
+            retryFnId?: string;
+            retryable: boolean;
+            scope: "stream";
+          };
+          status:
+            | "streaming"
+            | "awaiting_tool_results"
+            | "completed"
+            | "failed"
+            | "stopped";
+          stopSignal: boolean;
+          streamFnHandle: string;
+          streamId?: string | null;
+          toolExecutionWorkpoolEnqueueAction?: string;
+          workpoolEnqueueAction?: string;
+        }>
+      >;
+      listIncomplete: FunctionReference<"query", "internal", {}, Array<string>>;
+      remove: FunctionReference<
+        "mutation",
+        "internal",
+        { threadId: string },
+        null
+      >;
+      resume: FunctionReference<
+        "mutation",
+        "internal",
+        { threadId: string },
+        null
+      >;
+      scheduleRetry: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          attempt: number;
+          error: string;
+          kind?: string;
+          maxAttempts: number;
+          nextRetryAt: number;
+          requiresExplicitHandling: boolean;
+          retryable: boolean;
+          scope: "stream";
+          threadId: string;
+        },
+        null
+      >;
+      setStatus: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          status:
+            | "streaming"
+            | "awaiting_tool_results"
+            | "completed"
+            | "failed"
+            | "stopped";
+          streamId?: string;
+          threadId: string;
+        },
+        null
+      >;
+      setStopSignal: FunctionReference<
+        "mutation",
+        "internal",
+        { stopSignal: boolean; threadId: string },
+        null
+      >;
+    };
+    tool_calls: {
+      addToolError: FunctionReference<
+        "mutation",
+        "internal",
+        { error: string; threadId: string; toolCallId: string },
+        null
+      >;
+      addToolResult: FunctionReference<
+        "mutation",
+        "internal",
+        { result: any; threadId: string; toolCallId: string },
+        null
+      >;
+      create: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          args: any;
+          callback?: string;
+          handler?: string;
+          msgId: string;
+          retry?: any;
+          saveDelta: boolean;
+          threadId: string;
+          toolCallId: string;
+          toolName: string;
+        },
+        {
+          _creationTime: number;
+          _id: string;
+          args: any;
+          callbackAttempt?: number;
+          callbackLastError?: string;
+          error?: string;
+          executionAttempt?: number;
+          executionLastError?: string;
+          executionMaxAttempts?: number;
+          executionRetryPolicy?: any;
+          handler?: string;
+          msgId: string;
+          nextRetryAt?: number;
+          result?: any;
+          status: "pending" | "completed" | "failed";
+          threadId: string;
+          toolCallId: string;
+          toolName: string;
+        }
+      >;
+      getByToolCallId: FunctionReference<
+        "query",
+        "internal",
+        { threadId: string; toolCallId: string },
+        {
+          _creationTime: number;
+          _id: string;
+          args: any;
+          callbackAttempt?: number;
+          callbackLastError?: string;
+          error?: string;
+          executionAttempt?: number;
+          executionLastError?: string;
+          executionMaxAttempts?: number;
+          executionRetryPolicy?: any;
+          handler?: string;
+          msgId: string;
+          nextRetryAt?: number;
+          result?: any;
+          status: "pending" | "completed" | "failed";
+          threadId: string;
+          toolCallId: string;
+          toolName: string;
+        } | null
+      >;
+      list: FunctionReference<
+        "query",
+        "internal",
+        { threadId: string },
+        Array<{
+          _creationTime: number;
+          _id: string;
+          args: any;
+          callbackAttempt?: number;
+          callbackLastError?: string;
+          error?: string;
+          executionAttempt?: number;
+          executionLastError?: string;
+          executionMaxAttempts?: number;
+          executionRetryPolicy?: any;
+          handler?: string;
+          msgId: string;
+          nextRetryAt?: number;
+          result?: any;
+          status: "pending" | "completed" | "failed";
+          threadId: string;
+          toolCallId: string;
+          toolName: string;
+        }>
+      >;
+      listPending: FunctionReference<
+        "query",
+        "internal",
+        { threadId: string },
+        Array<{
+          _creationTime: number;
+          _id: string;
+          args: any;
+          callbackAttempt?: number;
+          callbackLastError?: string;
+          error?: string;
+          executionAttempt?: number;
+          executionLastError?: string;
+          executionMaxAttempts?: number;
+          executionRetryPolicy?: any;
+          handler?: string;
+          msgId: string;
+          nextRetryAt?: number;
+          result?: any;
+          status: "pending" | "completed" | "failed";
+          threadId: string;
+          toolCallId: string;
+          toolName: string;
+        }>
+      >;
+      resumePendingSyncToolExecutions: FunctionReference<
+        "mutation",
+        "internal",
+        { limit?: number },
+        number
+      >;
+      scheduleAsyncToolCall: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          args: any;
+          callback: string;
+          msgId: string;
+          saveDelta: boolean;
+          threadId: string;
+          toolCallId: string;
+          toolName: string;
+        },
+        null
+      >;
+      scheduleToolCall: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          args: any;
+          handler: string;
+          msgId: string;
+          retry?: any;
+          saveDelta: boolean;
+          threadId: string;
+          toolCallId: string;
+          toolName: string;
+        },
+        null
+      >;
+      setError: FunctionReference<
+        "mutation",
+        "internal",
+        { error: string; id: string },
+        boolean
+      >;
+      setResult: FunctionReference<
+        "mutation",
+        "internal",
+        { id: string; result: any },
+        boolean
+      >;
+      setToolCallTimeout: FunctionReference<
+        "mutation",
+        "internal",
+        { threadId: string; timeout: number | null; toolCallId: string },
+        null
+      >;
     };
   };
 };

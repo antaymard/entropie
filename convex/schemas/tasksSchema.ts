@@ -19,7 +19,7 @@ const tasksValidator = v.object({
   nodeId: v.optional(v.string()), // canvasNodeId, llmId format
   startTime: v.optional(v.number()), // timestamp
   endTime: v.optional(v.number()), // timestamp
-  threadId: v.id("threads"), // supervisor threadId
+  threadId: v.optional(v.id("threads")), // supervisor threadId
   resultMessage: v.optional(v.string()),
   errorMessage: v.optional(v.string()),
 });

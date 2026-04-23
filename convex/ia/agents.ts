@@ -12,6 +12,7 @@ import {
   defineAgentApi,
   streamHandlerAction,
 } from "convex-durable-agents";
+import { generateSupervisorSystemPrompt } from "./systemPrompts/supervisorSystemPrompt";
 
 export const chatModelOptions = [
   {
@@ -178,8 +179,7 @@ export function createAutomationAgent({
 }
 
 export const supervisorAgent = streamHandlerAction(components.durable_agents, {
-  model: "anthropic/claude-haiku-4.5",
-  system: "You are a helpful AI assistant.",
+  model: openrouter("tencent/hy3-preview:free"),
+  system: generateSupervisorSystemPrompt(),
   tools: {},
-  saveStreamDeltas: true, // Enable real-time streaming
 });

@@ -1,4 +1,4 @@
-async function generateSupervisorSystemPrompt() {
+function generateSupervisorSystemPrompt(): string {
   return `
   <identity>
 

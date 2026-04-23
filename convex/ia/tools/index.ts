@@ -33,7 +33,8 @@ import tableUpdateSchemaTool, {
 } from "./tableUpdateSchemaTool";
 import { type ToolConfig } from "./toolHelpers";
 import { websearchTool, websearchToolConfig } from "./websearchTool";
-import { taskTool, taskToolConfig } from "./taskTool";
+import { runTaskTool, runTaskToolConfig } from "./runTaskTool";
+import { readTaskTool, readTaskToolConfig } from "./readTaskTool";
 
 type AgentTool = ToolSet[string];
 
@@ -114,8 +115,12 @@ const toolRegistry: ToolRegistration[] = [
     factory: ({ threadCtx }) => setNodeDataTool({ threadCtx }),
   },
   {
-    config: taskToolConfig,
-    factory: ({ threadCtx }) => taskTool({ threadCtx }),
+    config: runTaskToolConfig,
+    factory: ({ threadCtx }) => runTaskTool({ threadCtx }),
+  },
+  {
+    config: readTaskToolConfig,
+    factory: ({ threadCtx }) => readTaskTool({ threadCtx }),
   },
 ];
 

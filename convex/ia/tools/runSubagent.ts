@@ -10,11 +10,7 @@ import { type ToolConfig, toolError } from "./toolHelpers";
 
 export const runSubagentToolConfig: ToolConfig = {
   name: "run_subagent",
-  authorized_agents: [
-    toolAgentNames.nole,
-    toolAgentNames.clone,
-    toolAgentNames.supervisor,
-  ],
+  authorized_agents: [],
 };
 
 // Single source of truth: fill/update this object and the rest stays in sync.

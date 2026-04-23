@@ -8,7 +8,6 @@ const nodeTypeValues = [
   "embed",
   "title",
   "pdf",
-  "file",
   "table",
 ] as const;
 

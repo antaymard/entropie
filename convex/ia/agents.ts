@@ -10,8 +10,8 @@ import { getToolsForAgent } from "./tools";
 
 export const chatModelOptions = [
   {
-    label: "Nemotron 3 Super 120B A12B",
-    value: "nvidia/nemotron-3-super-120b-a12b:free",
+    label: "Tencent Hy3 Free",
+    value: "tencent/hy3-preview:free",
     price: "Free",
   },
   {
@@ -25,9 +25,9 @@ export const chatModelOptions = [
     price: "1.05_3.50",
   },
   {
-    label: "Mistral Large 3",
-    value: "mistralai/mistral-large-2512",
-    price: "0.50_1.50",
+    label: "Qwen 3.5 Flash",
+    value: "qwen/qwen3.5-flash-02-23",
+    price: "0.065_0.26",
   },
 ] as const;
 
@@ -43,7 +43,9 @@ export type ChatModelValues = typeof vChatModelValues.type;
 
 export type ChatModelOption = (typeof chatModelOptions)[number];
 
-export function getChatModel(modelPreference: ChatModelValues): LanguageModelV3 {
+export function getChatModel(
+  modelPreference: ChatModelValues,
+): LanguageModelV3 {
   return openrouter(modelPreference);
 }
 

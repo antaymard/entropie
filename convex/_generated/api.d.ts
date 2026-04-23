@@ -50,11 +50,11 @@ import type * as ia_tools_tableDeleteRowsTools from "../ia/tools/tableDeleteRows
 import type * as ia_tools_tableInsertRowsTool from "../ia/tools/tableInsertRowsTool.js";
 import type * as ia_tools_tableUpdateRowsTool from "../ia/tools/tableUpdateRowsTool.js";
 import type * as ia_tools_tableUpdateSchemaTool from "../ia/tools/tableUpdateSchemaTool.js";
+import type * as ia_tools_taskTool from "../ia/tools/taskTool.js";
 import type * as ia_tools_toolHelpers from "../ia/tools/toolHelpers.js";
 import type * as ia_tools_viewImageTool from "../ia/tools/viewImageTool.js";
 import type * as ia_tools_websearchTool from "../ia/tools/websearchTool.js";
 import type * as lib_auth from "../lib/auth.js";
-import type * as lib_generateLlmId from "../lib/generateLlmId.js";
 import type * as lib_getNodeDataTitle from "../lib/getNodeDataTitle.js";
 import type * as lib_llmId from "../lib/llmId.js";
 import type * as lib_plateDocumentStorage from "../lib/plateDocumentStorage.js";
@@ -62,13 +62,13 @@ import type * as lib_r2 from "../lib/r2.js";
 import type * as lib_xml from "../lib/xml.js";
 import type * as links from "../links.js";
 import type * as memories from "../memories.js";
-import type * as migrations from "../migrations.js";
 import type * as models_canvasEdgeModels from "../models/canvasEdgeModels.js";
 import type * as models_canvasModels from "../models/canvasModels.js";
 import type * as models_canvasNodeModels from "../models/canvasNodeModels.js";
 import type * as models_memoryModels from "../models/memoryModels.js";
 import type * as models_nodeDataModels from "../models/nodeDataModels.js";
 import type * as models_searchableChunkModels from "../models/searchableChunkModels.js";
+import type * as models_taskModels from "../models/taskModels.js";
 import type * as nodeDatas from "../nodeDatas.js";
 import type * as schemas_canvasesSchema from "../schemas/canvasesSchema.js";
 import type * as schemas_memoriesSchema from "../schemas/memoriesSchema.js";
@@ -77,6 +77,7 @@ import type * as schemas_nodeTypeSchema from "../schemas/nodeTypeSchema.js";
 import type * as schemas_scheduledJobsSchema from "../schemas/scheduledJobsSchema.js";
 import type * as schemas_searchableChunksSchema from "../schemas/searchableChunksSchema.js";
 import type * as schemas_sharesSchema from "../schemas/sharesSchema.js";
+import type * as schemas_tasksSchema from "../schemas/tasksSchema.js";
 import type * as schemas_wishlistEmailsSchema from "../schemas/wishlistEmailsSchema.js";
 import type * as searchableChunks from "../searchableChunks.js";
 import type * as searchable_chunkBuilder from "../searchable/chunkBuilder.js";
@@ -92,6 +93,7 @@ import type * as wrappers_canvasWrappers from "../wrappers/canvasWrappers.js";
 import type * as wrappers_memoryWrappers from "../wrappers/memoryWrappers.js";
 import type * as wrappers_nodeDataWrappers from "../wrappers/nodeDataWrappers.js";
 import type * as wrappers_searchableChunkWrappers from "../wrappers/searchableChunkWrappers.js";
+import type * as wrappers_taskWrappers from "../wrappers/taskWrappers.js";
 import type * as wrappers_userWrappers from "../wrappers/userWrappers.js";
 
 import type {
@@ -143,11 +145,11 @@ declare const fullApi: ApiFromModules<{
   "ia/tools/tableInsertRowsTool": typeof ia_tools_tableInsertRowsTool;
   "ia/tools/tableUpdateRowsTool": typeof ia_tools_tableUpdateRowsTool;
   "ia/tools/tableUpdateSchemaTool": typeof ia_tools_tableUpdateSchemaTool;
+  "ia/tools/taskTool": typeof ia_tools_taskTool;
   "ia/tools/toolHelpers": typeof ia_tools_toolHelpers;
   "ia/tools/viewImageTool": typeof ia_tools_viewImageTool;
   "ia/tools/websearchTool": typeof ia_tools_websearchTool;
   "lib/auth": typeof lib_auth;
-  "lib/generateLlmId": typeof lib_generateLlmId;
   "lib/getNodeDataTitle": typeof lib_getNodeDataTitle;
   "lib/llmId": typeof lib_llmId;
   "lib/plateDocumentStorage": typeof lib_plateDocumentStorage;
@@ -155,13 +157,13 @@ declare const fullApi: ApiFromModules<{
   "lib/xml": typeof lib_xml;
   links: typeof links;
   memories: typeof memories;
-  migrations: typeof migrations;
   "models/canvasEdgeModels": typeof models_canvasEdgeModels;
   "models/canvasModels": typeof models_canvasModels;
   "models/canvasNodeModels": typeof models_canvasNodeModels;
   "models/memoryModels": typeof models_memoryModels;
   "models/nodeDataModels": typeof models_nodeDataModels;
   "models/searchableChunkModels": typeof models_searchableChunkModels;
+  "models/taskModels": typeof models_taskModels;
   nodeDatas: typeof nodeDatas;
   "schemas/canvasesSchema": typeof schemas_canvasesSchema;
   "schemas/memoriesSchema": typeof schemas_memoriesSchema;
@@ -170,6 +172,7 @@ declare const fullApi: ApiFromModules<{
   "schemas/scheduledJobsSchema": typeof schemas_scheduledJobsSchema;
   "schemas/searchableChunksSchema": typeof schemas_searchableChunksSchema;
   "schemas/sharesSchema": typeof schemas_sharesSchema;
+  "schemas/tasksSchema": typeof schemas_tasksSchema;
   "schemas/wishlistEmailsSchema": typeof schemas_wishlistEmailsSchema;
   searchableChunks: typeof searchableChunks;
   "searchable/chunkBuilder": typeof searchable_chunkBuilder;
@@ -185,6 +188,7 @@ declare const fullApi: ApiFromModules<{
   "wrappers/memoryWrappers": typeof wrappers_memoryWrappers;
   "wrappers/nodeDataWrappers": typeof wrappers_nodeDataWrappers;
   "wrappers/searchableChunkWrappers": typeof wrappers_searchableChunkWrappers;
+  "wrappers/taskWrappers": typeof wrappers_taskWrappers;
   "wrappers/userWrappers": typeof wrappers_userWrappers;
 }>;
 

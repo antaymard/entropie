@@ -4,6 +4,18 @@ import { openrouter } from "@openrouter/ai-sdk-provider";
 import { generateText } from "ai";
 import { reportToolProgress } from "../../automation/progressReporter";
 
+import { ToolConfig } from "./toolHelpers";
+import { toolAgentNames } from "../agentConfig";
+
+export const runSubagentToolConfig: ToolConfig = {
+  name: "run_subagent",
+  authorized_agents: [
+    toolAgentNames.nole,
+    toolAgentNames.clone,
+    toolAgentNames.supervisor,
+  ],
+};
+
 export const toolTemplate = createTool({
   description: "Description",
   inputSchema: z.object({

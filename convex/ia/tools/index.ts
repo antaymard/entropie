@@ -18,9 +18,6 @@ import loadSkillTool, { loadSkillToolConfig } from "./loadSkillTool";
 import memoryToolFactory, { memoryToolConfig } from "./memoryTool";
 import { openWebPageTool, openWebPageToolConfig } from "./openWebPageTool";
 import readNodesTool, { readNodesToolConfig } from "./readNodesTool";
-import readSkillAttachmentTool, {
-  readSkillAttachmentToolConfig,
-} from "./readSkillAttachmentTool";
 import runSubagent, { runSubagentToolConfig } from "./runSubagent";
 import setNodeDataTool, { setNodeDataToolConfig } from "./setNodeDataTool";
 import tableDeleteRowsTool, {
@@ -119,10 +116,6 @@ const toolRegistry: ToolRegistration[] = [
   {
     config: loadSkillToolConfig,
     factory: ({ threadCtx }) => loadSkillTool({ threadCtx }),
-  },
-  {
-    config: readSkillAttachmentToolConfig,
-    factory: ({ threadCtx }) => readSkillAttachmentTool({ threadCtx }),
   },
 ];
 

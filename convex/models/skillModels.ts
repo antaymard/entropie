@@ -70,6 +70,23 @@ export async function findAttachmentByName(
     .unique();
 }
 
+export async function findAttachmentByNameForUser(
+  ctx: QueryCtx,
+  { userId, name }: { userId: Id<"users">; name: string },
+): Promise<{ attachment: SkillAttachment; skill: Skill } | null> {
+  const skills = await listAvailableForUser(ctx, { userId });
+  for (const skill of skills) {
+    const attachment = await findAttachmentByName(ctx, {
+      skillId: skill._id,
+      name,
+    });
+    if (attachment) {
+      return { attachment, skill };
+    }
+  }
+  return null;
+}
+
 export async function insertSkill(
   ctx: MutationCtx,
   args: {

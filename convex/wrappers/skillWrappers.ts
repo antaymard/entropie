@@ -31,3 +31,12 @@ export const findAttachmentByName = internalQuery({
   },
   handler: async (ctx, args) => SkillModels.findAttachmentByName(ctx, args),
 });
+
+export const findAttachmentByNameForUser = internalQuery({
+  args: {
+    userId: v.id("users"),
+    name: v.string(),
+  },
+  handler: async (ctx, args) =>
+    SkillModels.findAttachmentByNameForUser(ctx, args),
+});

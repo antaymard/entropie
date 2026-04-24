@@ -17,11 +17,13 @@ export default function loadSkillTool({
 }) {
   return createTool({
     description:
-      "Load a skill's full content by its exact name. Use this when the user's request matches one of the skills listed in <available_skills>. Returns the skill body and the list of its attachments (name + type). To read an attachment's content, use read_skill_attachment.",
+      "Load a resource by its exact name. First tries to match a skill listed in <available_skills> (returns the skill body and the list of its attachments). If no skill matches, tries to match an attachment that belongs to one of your accessible skills (returns the attachment content). Use this tool when the user's request matches a skill, then again with an attachment name as referenced in the skill body.",
     args: z.object({
       name: z
         .string()
-        .describe("The exact name of the skill, as listed in <available_skills>."),
+        .describe(
+          "The exact name of a skill (as listed in <available_skills>) or of an attachment (as referenced in a previously loaded skill's body).",
+        ),
     }),
     handler: async (ctx, args): Promise<string> => {
       try {
@@ -33,27 +35,49 @@ export default function loadSkillTool({
           },
         );
 
-        if (!skill) {
-          return toolError(`No skill named '${args.name}' is available.`);
+        if (skill) {
+          const attachments = await ctx.runQuery(
+            internal.wrappers.skillWrappers.listAttachments,
+            { skillId: skill._id },
+          );
+
+          return JSON.stringify({
+            success: true,
+            kind: "skill",
+            name: skill.name,
+            description: skill.description,
+            body: skill.content,
+            attachments: attachments.map(
+              (attachment: Doc<"skillAttachments">) => ({
+                name: attachment.name,
+                type: attachment.type,
+              }),
+            ),
+          });
         }
 
-        const attachments = await ctx.runQuery(
-          internal.wrappers.skillWrappers.listAttachments,
-          { skillId: skill._id },
+        const attachmentMatch = await ctx.runQuery(
+          internal.wrappers.skillWrappers.findAttachmentByNameForUser,
+          {
+            userId: threadCtx.authUserId,
+            name: args.name,
+          },
         );
 
-        return JSON.stringify({
-          success: true,
-          name: skill.name,
-          description: skill.description,
-          body: skill.content,
-          attachments: attachments.map(
-            (attachment: Doc<"skillAttachments">) => ({
-              name: attachment.name,
-              type: attachment.type,
-            }),
-          ),
-        });
+        if (attachmentMatch) {
+          return JSON.stringify({
+            success: true,
+            kind: "attachment",
+            name: attachmentMatch.attachment.name,
+            type: attachmentMatch.attachment.type,
+            content: attachmentMatch.attachment.content,
+            parent_skill: attachmentMatch.skill.name,
+          });
+        }
+
+        return toolError(
+          `No skill or attachment named '${args.name}' is available.`,
+        );
       } catch (error) {
         return toolError(
           `Error while loading skill: ${error instanceof Error ? error.message : String(error)}`,

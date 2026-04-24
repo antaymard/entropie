@@ -14,9 +14,13 @@ import fullTextSearchTool, {
   fullTextSearchToolConfig,
 } from "./fullTextSearchTool";
 import listNodesTool, { listNodesToolConfig } from "./listNodesTool";
+import loadSkillTool, { loadSkillToolConfig } from "./loadSkillTool";
 import memoryToolFactory, { memoryToolConfig } from "./memoryTool";
 import { openWebPageTool, openWebPageToolConfig } from "./openWebPageTool";
 import readNodesTool, { readNodesToolConfig } from "./readNodesTool";
+import readSkillAttachmentTool, {
+  readSkillAttachmentToolConfig,
+} from "./readSkillAttachmentTool";
 import runSubagent, { runSubagentToolConfig } from "./runSubagent";
 import setNodeDataTool, { setNodeDataToolConfig } from "./setNodeDataTool";
 import tableDeleteRowsTool, {
@@ -111,6 +115,14 @@ const toolRegistry: ToolRegistration[] = [
   {
     config: setNodeDataToolConfig,
     factory: ({ threadCtx }) => setNodeDataTool({ threadCtx }),
+  },
+  {
+    config: loadSkillToolConfig,
+    factory: ({ threadCtx }) => loadSkillTool({ threadCtx }),
+  },
+  {
+    config: readSkillAttachmentToolConfig,
+    factory: ({ threadCtx }) => readSkillAttachmentTool({ threadCtx }),
   },
 ];
 

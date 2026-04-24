@@ -11,7 +11,6 @@ import { BaseLineHeightKit } from "./line-height-base-kit";
 import { BaseLinkKit } from "./link-base-kit";
 import { BaseListKit } from "./list-base-kit";
 import { MarkdownKit } from "./markdown-kit";
-import { BaseMathKit } from "./math-base-kit";
 import { BaseMediaKit } from "./media-base-kit";
 import { BaseMentionKit } from "./mention-base-kit";
 import { BaseSuggestionKit } from "./suggestion-base-kit";
@@ -28,7 +27,6 @@ export const BaseEditorKit = [
   ...BaseMediaKit,
   ...BaseCalloutKit,
   ...BaseColumnKit,
-  ...BaseMathKit,
   ...BaseDateKit,
   ...BaseLinkKit,
   ...BaseMentionKit,

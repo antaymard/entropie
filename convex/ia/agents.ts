@@ -2,20 +2,18 @@ import { components } from "../_generated/api";
 import { Agent } from "@convex-dev/agent";
 import { openrouter } from "@openrouter/ai-sdk-provider";
 import { v } from "convex/values";
-import type { LanguageModel, ToolSet } from "ai";
+import type { LanguageModelV3 } from "@ai-sdk/provider";
+import type { ToolSet } from "ai";
+import { stepCountIs } from "ai";
 import { toolAgentNames, type ThreadCtx } from "./agentConfig";
 import { getToolsForAgent } from "./tools";
+import { generateSupervisorSystemPrompt } from "./systemPrompts/supervisorSystemPrompt";
 
 export const chatModelOptions = [
   {
-    label: "Nemotron 3 Super 120B A12B",
-    value: "nvidia/nemotron-3-super-120b-a12b:free",
+    label: "Tencent Hy3 Free",
+    value: "tencent/hy3-preview:free",
     price: "Free",
-  },
-  {
-    label: "Kimi K.2.6",
-    value: "moonshotai/kimi-k2.6",
-    price: "0.60_2.80",
   },
   {
     label: "GML 5.1",
@@ -23,9 +21,14 @@ export const chatModelOptions = [
     price: "1.05_3.50",
   },
   {
-    label: "Mistral Large 3",
-    value: "mistralai/mistral-large-2512",
-    price: "0.50_1.50",
+    label: "Kimi K.2.6",
+    value: "moonshotai/kimi-k2.6",
+    price: "0.60_2.80",
+  },
+  {
+    label: "DeepSeek V4 Flash",
+    value: "deepseek/deepseek-v4-flash",
+    price: "0.14_0.28",
   },
 ] as const;
 
@@ -41,7 +44,9 @@ export type ChatModelValues = typeof vChatModelValues.type;
 
 export type ChatModelOption = (typeof chatModelOptions)[number];
 
-export function getChatModel(modelPreference: ChatModelValues): LanguageModel {
+export function getChatModel(
+  modelPreference: ChatModelValues,
+): LanguageModelV3 {
   return openrouter(modelPreference);
 }
 
@@ -50,7 +55,7 @@ const defaultModels = {
   fast: openrouter("mistralai/mistral-small-2603"),
 };
 
-export function createBaseAgent({ model }: { model?: LanguageModel } = {}) {
+export function createBaseAgent({ model }: { model?: LanguageModelV3 } = {}) {
   return new Agent(components.agent, {
     name: "base",
     languageModel: model ?? defaultModels.fast,
@@ -65,13 +70,13 @@ export function createNoleAgent({
   threadCtx,
   extraTools = {},
 }: {
-  model?: LanguageModel;
+  model?: LanguageModelV3;
   threadCtx: ThreadCtx;
   extraTools?: ToolSet;
 }) {
   return new Agent(components.agent, {
     name: "Nolë",
-    maxSteps: 20,
+    stopWhen: stepCountIs(20),
     languageModel: model ?? defaultModels.nole,
     tools: getToolsForAgent({
       agentName: toolAgentNames.nole,
@@ -88,11 +93,11 @@ export function createCloneAgent({
 }: {
   threadCtx: ThreadCtx;
   extraTools?: ToolSet;
-  model?: LanguageModel;
+  model?: LanguageModelV3;
 }) {
   return new Agent(components.agent, {
     name: "Clone",
-    maxSteps: 20,
+    stopWhen: stepCountIs(20),
     languageModel: model ?? defaultModels.nole,
     tools: getToolsForAgent({
       agentName: toolAgentNames.clone,
@@ -109,11 +114,12 @@ export function createSupervisorAgent({
 }: {
   threadCtx: ThreadCtx;
   extraTools?: ToolSet;
-  model?: LanguageModel;
+  model?: LanguageModelV3;
 }) {
   return new Agent(components.agent, {
     name: "Supervisor",
-    maxSteps: 20,
+    stopWhen: stepCountIs(20),
+    instructions: generateSupervisorSystemPrompt(),
     languageModel: model ?? defaultModels.nole,
     tools: getToolsForAgent({
       agentName: toolAgentNames.supervisor,
@@ -130,11 +136,11 @@ export function createWorkerAgent({
 }: {
   threadCtx: ThreadCtx;
   extraTools?: ToolSet;
-  model?: LanguageModel;
+  model?: LanguageModelV3;
 }) {
   return new Agent(components.agent, {
     name: "Worker",
-    maxSteps: 20,
+    stopWhen: stepCountIs(20),
     languageModel: model ?? defaultModels.fast,
     tools: getToolsForAgent({
       agentName: toolAgentNames.worker,
@@ -149,23 +155,21 @@ export function createAutomationAgent({
   threadCtx,
   extraTools = {},
 }: {
-  model?: LanguageModel;
+  model?: LanguageModelV3;
   threadCtx: ThreadCtx;
   extraTools?: ToolSet;
 }) {
   return new Agent(components.agent, {
     name: toolAgentNames.automation,
     languageModel: model ?? defaultModels.fast,
-    maxSteps: 5,
+    stopWhen: stepCountIs(5),
     tools: getToolsForAgent({
       agentName: toolAgentNames.automation,
       threadCtx,
       extraTools,
     }),
     instructions: `You are an automation agent linked to a node in a canvas-based app similar to Miro. You can use the tools at your disposal to accomplish the requested tasks. The node you are linked to may contain input data from other nodes that you will most often need to use to complete your task. Use the tools available to you to find information.
-      
     Do not respond to the user as a general chat assistant. Use the standard tools available directly if an action on the canvas or content is necessary.
-    
     Be as concise, exact, and factual as possible. Do not fabricate information. Do not be verbose.`,
   });
 }

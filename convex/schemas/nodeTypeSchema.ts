@@ -8,8 +8,8 @@ const nodeTypeValues = [
   "embed",
   "title",
   "pdf",
-  "file",
   "table",
+  "app",
 ] as const;
 
 const nodeTypeValidator = v.union(

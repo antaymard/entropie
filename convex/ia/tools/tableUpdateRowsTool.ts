@@ -185,20 +185,20 @@ export default function tableUpdateRowsTool({
   return createTool({
     description:
       "Update one or multiple existing rows in a table node from the current canvas.",
-    args: z.object({
+    inputSchema: z.object({
       nodeId: z.string().describe("The node ID in the current canvas."),
       values: valuesByRowIdSchema.describe(
         'Row updates in this format: `{"rowId":{"columnId":value}}`. Example: `{"588P493x":{"description":"Contenu embarque"},"412Z233E":{"type":"Document","color":"Navy"}}`.',
       ),
       explanation: z.string().describe("3-5 words explaining the edit intent."),
     }),
-    handler: async (ctx, args): Promise<string> => {
-      console.log(`🧮 Table rows update requested on node ${args.nodeId}`);
+    execute: async (ctx, input): Promise<string> => {
+      console.log(`🧮 Table rows update requested on node ${input.nodeId}`);
 
       try {
-        const { nodeId } = args;
+        const { nodeId } = input;
 
-        const requestedEntries = Object.entries(args.values).map(
+        const requestedEntries = Object.entries(input.values).map(
           ([rawRowId, rowValues]) => ({
             rawRowId,
             rowId: rawRowId.trim(),

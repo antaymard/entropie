@@ -4,7 +4,7 @@ import { MarkdownText } from "@/components/ai/MarkdownText";
 import type { TextPart } from "@/types/domain/message.types";
 import { RiLoaderLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
-import { TbBrain, TbChevronDown, TbTool } from "react-icons/tb";
+import { TbAlertCircle, TbBrain, TbChevronDown, TbTool } from "react-icons/tb";
 
 type ToolPartState = "input-streaming" | "output-available" | "output-error";
 
@@ -86,7 +86,7 @@ export function Message({ message }: { message: UIMessage }) {
 
         {isProcessing && (
           <div className="flex items-center py-1 px-1">
-            <RiLoaderLine size={15} className="animate-spin text-white" />
+            <RiLoaderLine size={15} className="animate-spin text-slate-400" />
           </div>
         )}
 
@@ -221,9 +221,13 @@ function ErrorInline({
 }) {
   return (
     <div
-      className={cn("bg-red-100/90 px-2 py-1 text-xs text-red-800", className)}
+      className={cn(
+        "flex items-start gap-2 rounded bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-800",
+        className,
+      )}
     >
-      {message}
+      <TbAlertCircle size={14} className="mt-0.5 shrink-0 text-red-500" />
+      <span>{message}</span>
     </div>
   );
 }
@@ -276,11 +280,12 @@ function readErrorLike(value: unknown): string | undefined {
     return undefined;
   }
 
-  const keys = ["error", "message", "detail", "details"];
+  const keys = ["error", "message", "detail", "details", "cause", "reason", "statusText"];
   for (const key of keys) {
     const candidate = value[key];
     if (typeof candidate === "string" && candidate.trim()) {
-      return candidate;
+      const text = candidate.trim();
+      return text.length > 200 ? text.slice(0, 200) + "…" : text;
     }
   }
 
@@ -303,7 +308,7 @@ function stringifyForDebug(value: unknown): string {
   }
 }
 
-function extractUserMessageForDisplay(text: string): string {
+export function extractUserMessageForDisplay(text: string): string {
   const match = /<user_message>\s*([\s\S]*?)\s*<\/user_message>/i.exec(text);
   if (!match) {
     return text;

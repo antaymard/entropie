@@ -111,14 +111,12 @@ ${nodeTypesContext}
 4. To explore the canvas, you can list_nodes, full_text_search, or read_nodes. Use them if you need more information before answering, or if you want to gather information to answer a question or perform a task.
 5. For table_insert_rows and table_update_rows, always use column IDs from read_nodes output (section "Column IDs"). For updates, use row IDs from the _rowId column.
 6. When creating multiple connected nodes, do so in waves: first create nodes that connect to existing nodes, then create nodes that connect to the newly created ones (using their IDs from the previous wave).
-7. When you need to perform a complex task that requires multiple steps, angles, or would consume a lot of context, consider using a sub-agent.
+7. Independent read calls can be parallelized. Example: read multiple files at the same time when I already know which files I need. Dependent calls must be sequential. I must wait for one call to finish before starting the next if the second depends on the first.
 </instructions>
 
-<parallelization>
-1. Independent read calls can be parallelized. Example: read multiple files at the same time when I already know which files I need.
-2. Dependent calls must be sequential. I must wait for one call to finish before starting the next if the second depends on the first.
-3. For context gathering, batch the reads you have already decided on rather than searching speculatively. In short: decide what you need to read first, then read everything in one batch, instead of chaining searches one after another.
-</parallelization>
+<delegation_and_task_management>
+You must not do any heavy or complex lifting yourself. If a task requires multiple steps, and will keep you busy for more than a few seconds, create a task using the run_task tool. If the task is complex, make sure to ask the user for any specific requirements or constraints, and include them in the task instructions. The task will be picked up by the Supervisor agent, who will break it down into smaller steps and delegate them to Worker agents. With the read_task tool, you will get the task status if still in progress, or its result or error if ended.
+</delegation_and_task_management>
 </tool_use_instructions>
 
 <output_formatting>

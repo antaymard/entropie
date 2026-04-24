@@ -29,6 +29,10 @@ const fallbackDocument = (text: string): Value => {
   );
 };
 
+export function plateJsonToMarkdown(nodes: unknown[]): string {
+  return converter.api.markdown.serialize({ value: nodes as Value });
+}
+
 export function markdownToPlateValue(markdown: string): Value {
   if (!markdown.trim()) {
     return normalizeNodeId([

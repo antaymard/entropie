@@ -10,28 +10,24 @@ export const loadSkillToolConfig: ToolConfig = {
   authorized_agents: [toolAgentNames.nole],
 };
 
-export default function loadSkillTool({
-  threadCtx,
-}: {
-  threadCtx: ThreadCtx;
-}) {
+export default function loadSkillTool({ threadCtx }: { threadCtx: ThreadCtx }) {
   return createTool({
     description:
       "Load a resource by its exact name. First tries to match a skill listed in <available_skills> (returns the skill body and the list of its attachments). If no skill matches, tries to match an attachment that belongs to one of your accessible skills (returns the attachment content). Use this tool when the user's request matches a skill, then again with an attachment name as referenced in the skill body.",
-    args: z.object({
+    inputSchema: z.object({
       name: z
         .string()
         .describe(
           "The exact name of a skill (as listed in <available_skills>) or of an attachment (as referenced in a previously loaded skill's body).",
         ),
     }),
-    handler: async (ctx, args): Promise<string> => {
+    execute: async (ctx, input): Promise<string> => {
       try {
         const skill = await ctx.runQuery(
           internal.wrappers.skillWrappers.findByNameForUser,
           {
             userId: threadCtx.authUserId,
-            name: args.name,
+            name: input.name,
           },
         );
 
@@ -41,42 +37,33 @@ export default function loadSkillTool({
             { skillId: skill._id },
           );
 
-          return JSON.stringify({
-            success: true,
-            kind: "skill",
-            name: skill.name,
-            description: skill.description,
-            body: skill.content,
-            attachments: attachments.map(
-              (attachment: Doc<"skillAttachments">) => ({
-                name: attachment.name,
-                type: attachment.type,
-              }),
-            ),
-          });
+          const attachmentsXml =
+            attachments.length > 0
+              ? `\n<attachments>\n${attachments
+                  .map(
+                    (a: Doc<"skillAttachments">) =>
+                      `  <attachment name="${a.name}" type="${a.type}" />`,
+                  )
+                  .join("\n")}\n</attachments>`
+              : "";
+
+          return `<skill title="${skill.name}" description="${skill.description}">\n${skill.content}${attachmentsXml}\n</skill>`;
         }
 
         const attachmentMatch = await ctx.runQuery(
           internal.wrappers.skillWrappers.findAttachmentByNameForUser,
           {
             userId: threadCtx.authUserId,
-            name: args.name,
+            name: input.name,
           },
         );
 
         if (attachmentMatch) {
-          return JSON.stringify({
-            success: true,
-            kind: "attachment",
-            name: attachmentMatch.attachment.name,
-            type: attachmentMatch.attachment.type,
-            content: attachmentMatch.attachment.content,
-            parent_skill: attachmentMatch.skill.name,
-          });
+          return `<attachment name="${attachmentMatch.attachment.name}" type="${attachmentMatch.attachment.type}" parent_skill="${attachmentMatch.skill.name}">\n${attachmentMatch.attachment.content}\n</attachment>`;
         }
 
         return toolError(
-          `No skill or attachment named '${args.name}' is available.`,
+          `No skill or attachment named '${input.name}' is available.`,
         );
       } catch (error) {
         return toolError(

@@ -54,7 +54,7 @@ export default function documentStringReplaceContentTool({
   return createTool({
     description:
       "Replace an exact string inside a document node content from the current canvas.",
-    args: z.object({
+    inputSchema: z.object({
       nodeId: z.string().describe("The node ID in the current canvas."),
       old_string: z
         .string()
@@ -69,13 +69,13 @@ export default function documentStringReplaceContentTool({
         ),
       explanation: z.string().describe("3-5 words explaining the edit intent."),
     }),
-    handler: async (ctx, args): Promise<string> => {
+    execute: async (ctx, input): Promise<string> => {
       console.log(
-        `📝 String replace requested on node ${args.nodeId} - old_string: "${args.old_string}", new_string: "${args.new_string}"`,
+        `📝 String replace requested on node ${input.nodeId} - old_string: "${input.old_string}", new_string: "${input.new_string}"`,
       );
 
       try {
-        const { nodeId, old_string, new_string } = args;
+        const { nodeId, old_string, new_string } = input;
 
         const { node, nodeData } = await ctx.runQuery(
           internal.wrappers.canvasNodeWrappers.getNodeWithNodeData,

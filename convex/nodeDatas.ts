@@ -12,7 +12,8 @@ import {
 export const create = mutation({
   args: nodeDatasValidator,
   handler: async (ctx, args) => {
-    await requireAuth(ctx);
+    const authUserId = await requireAuth(ctx);
+    await requireCanvasAccess(ctx, args.canvasId, authUserId, "editor");
 
     const nodeDataId = await ctx.db.insert("nodeDatas", {
       ...args,
@@ -26,9 +27,13 @@ export const create = mutation({
 export const read = query({
   args: { nodeDataId: v.id("nodeDatas") },
   handler: async (ctx, args) => {
-    await requireAuth(ctx);
+    const authUserId = await optionalAuth(ctx);
     const nodeData = await ctx.db.get(args.nodeDataId);
-    return nodeData ?? null;
+    if (!nodeData) return null;
+    await requireCanvasAccess(ctx, nodeData.canvasId, authUserId, "viewer", {
+      allowPublic: true,
+    });
+    return nodeData;
   },
 });
 
@@ -69,7 +74,10 @@ export const updateValues = mutation({
   },
   returns: v.boolean(),
   handler: async (ctx, { _id, values }): Promise<boolean> => {
-    await requireAuth(ctx);
+    const authUserId = await requireAuth(ctx);
+    const existing = await ctx.db.get(_id);
+    if (!existing) throw new ConvexError("NodeData not found");
+    await requireCanvasAccess(ctx, existing.canvasId, authUserId, "editor");
     return NodeDataModel.updateValues(ctx, { _id, values });
   },
 });
@@ -89,9 +97,10 @@ export const updateAutomationSettings = mutation({
   },
   returns: v.boolean(),
   handler: async (ctx, args) => {
-    await requireAuth(ctx);
+    const authUserId = await requireAuth(ctx);
     const existing = await ctx.db.get(args._id);
     if (!existing) throw new ConvexError("NodeData not found");
+    await requireCanvasAccess(ctx, existing.canvasId, authUserId, "editor");
 
     await ctx.db.patch(args._id, {
       automationMode: args.automationMode,

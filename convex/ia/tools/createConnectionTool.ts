@@ -30,7 +30,7 @@ export default function createConnectionTool({
 
   return createTool({
     description: "Create a directed connection between two existing nodes.",
-    args: z.object({
+    inputSchema: z.object({
       sourceNodeId: z
         .string()
         .describe("Source node ID in the current canvas."),
@@ -38,9 +38,9 @@ export default function createConnectionTool({
         .string()
         .describe("Target node ID in the current canvas."),
     }),
-    handler: async (ctx, args) => {
+    execute: async (ctx, input) => {
       try {
-        const { sourceNodeId, targetNodeId } = args;
+        const { sourceNodeId, targetNodeId } = input;
 
         if (sourceNodeId === targetNodeId) {
           return toolError("sourceNodeId and targetNodeId must be different.");

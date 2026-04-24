@@ -51,7 +51,7 @@ export default function listNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
   return createTool({
     description:
       "A tool to list and filter nodes from the current canvas. Returns a compact list of nodes (id, type, title, position) without their full content. Use read_nodes to get the full content of specific nodes after identifying them with this tool. All filters are combined with AND logic — call the tool multiple times to simulate OR. Results are capped at 20 nodes; if truncated, refine your filters to narrow down.",
-    args: z.object({
+    inputSchema: z.object({
       nodeTypes: z
         .array(z.string())
         .optional()
@@ -89,7 +89,7 @@ export default function listNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
           "Filter nodes within 500 canvas units of the specified node's position",
         ),
     }),
-    handler: async (ctx, args): Promise<string> => {
+    execute: async (ctx, input): Promise<string> => {
       console.log(`📋 Listing nodes from canvas ${canvasId}`);
 
       try {
@@ -106,8 +106,8 @@ export default function listNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
 
         // Resolve connected node IDs if targetNode filter is set
         let connectedNodeIds: Set<string> | null = null;
-        if (args.targetNode) {
-          const { nodeId, direction } = args.targetNode;
+        if (input.targetNode) {
+          const { nodeId, direction } = input.targetNode;
           connectedNodeIds = new Set<string>();
           for (const edge of canvasEdges) {
             if (direction === "output" || direction === "both") {
@@ -121,11 +121,11 @@ export default function listNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
 
         // Resolve near center position if set
         let nearCenter: { x: number; y: number } | null = null;
-        if (args.near) {
-          const pos = nodePosById.get(args.near.nodeId);
+        if (input.near) {
+          const pos = nodePosById.get(input.near.nodeId);
           if (!pos) {
             return toolError(
-              `Reference node "${args.near.nodeId}" not found on canvas`,
+              `Reference node "${input.near.nodeId}" not found on canvas`,
             );
           }
           nearCenter = pos;
@@ -133,22 +133,22 @@ export default function listNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
 
         // Apply filters
         const filteredNodes = canvasNodes.filter((node) => {
-          if (args.nodeTypes && args.nodeTypes.length > 0) {
-            if (!args.nodeTypes.includes(node.type)) return false;
+          if (input.nodeTypes && input.nodeTypes.length > 0) {
+            if (!input.nodeTypes.includes(node.type)) return false;
           }
 
           if (connectedNodeIds !== null) {
             if (!connectedNodeIds.has(node.id)) return false;
           }
 
-          if (args.area) {
-            const { x1, y1, x2, y2 } = args.area;
+          if (input.area) {
+            const { x1, y1, x2, y2 } = input.area;
             const nx = node.position.x;
             const ny = node.position.y;
             if (nx < x1 || nx > x2 || ny < y1 || ny > y2) return false;
           }
 
-          if (args.near && nearCenter) {
+          if (input.near && nearCenter) {
             const dx = node.position.x - nearCenter.x;
             const dy = node.position.y - nearCenter.y;
             if (Math.sqrt(dx * dx + dy * dy) > 500) return false;

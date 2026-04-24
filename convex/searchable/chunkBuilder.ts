@@ -211,8 +211,7 @@ async function buildChunks(
       return [{ ...base, chunkType: "node", order: 0, text }];
     }
 
-    case "pdf":
-    case "file": {
+    case "pdf": {
       return await buildPdfChunks(base, nodeData);
     }
 

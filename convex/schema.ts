@@ -7,6 +7,7 @@ import { sharesValidator } from "./schemas/sharesSchema";
 import { memoriesValidator } from "./schemas/memoriesSchema";
 import { searchableChunksValidator } from "./schemas/searchableChunksSchema";
 import { wishlistEmailsValidator } from "./schemas/wishlistEmailsSchema";
+import { tasksValidator } from "./schemas/tasksSchema";
 import { skillsValidator } from "./schemas/skillsSchema";
 import { skillAttachmentsValidator } from "./schemas/skillAttachmentsSchema";
 
@@ -61,6 +62,11 @@ const schema = defineSchema({
     "email",
   ]),
 
+  tasks: defineTable(tasksValidator)
+    .index("by_threadId", ["threadId"])
+    .index("by_canvasId_and_status", ["canvasId", "status"])
+    .index("by_nodeId", ["nodeId"])
+    .index("by_taskId", ["id"]),
   // ============================================================================
   // SKILLS
   // ============================================================================

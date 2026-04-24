@@ -28,7 +28,6 @@ import { LineHeightKit } from "@/components/plate/line-height-kit";
 import { LinkKit } from "@/components/plate/link-kit";
 import { ListKit } from "@/components/plate/list-kit";
 import { MarkdownKit } from "@/components/plate/markdown-kit";
-import { MathKit } from "@/components/plate/math-kit";
 import { MediaKit } from "@/components/plate/media-kit";
 import { MentionKit } from "@/components/plate/mention-kit";
 import { SlashKit } from "@/components/plate/slash-kit";
@@ -47,7 +46,6 @@ export const EditorKit = [
   ...MediaKit,
   ...CalloutKit,
   ...ColumnKit,
-  ...MathKit,
   ...DateKit,
   ...LinkKit,
   ...MentionKit,

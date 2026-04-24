@@ -1,14 +1,17 @@
-# Specs du AppNode
+# Navigation vers les nodes mentionnés par Nolë
 
-## Adapter le header du AppNode
+## Problème
 
-Comme le embed node, le header doit garder la couleur du node + l'icône du nodeType.
+Quand Nolë crée un node, ou lit, ou édite, l'utilisateur ne voit pas facilement de quel node il s'agit.
 
-## Variant title
+## Dans les tools call du ChatInterface
 
-Comme embed node.
-Bien mettre à jour les config etc.
+Il faudrait que dans les petit container du chat, où on met tool execute: {toolName}, quand le container est collapsed, on ajoute des petits nodes cards cliquables, qui navigate vers le node. Il suffit de parser nodeId ou nodeIds dans les args du tool.
 
-## Window
+## Dans les réponses texte de Nolë
 
-Comme embednode, on a une window pour AppNode. Au double clic, l'app s'ouvre en grand. Rien de compliqué.
+Si Nolë mentionne un nodeId (facile à reconnaitre, cf llmId), on remplace l'id par une petite card cliquable également.
+
+## Card cliquable
+
+C'est l'icône (voir iconMap) et le titre, coupé après X caractères.

@@ -5102,11 +5102,6 @@ convert-source-map@^2.0.0:
   resolved "https://registry.yarnpkg.com/convert-source-map/-/convert-source-map-2.0.0.tgz#4b560f649fc4e918dd0ab75cf4961e8bc882d82a"
   integrity sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==
 
-convex-durable-agents@^0.2.5:
-  version "0.2.5"
-  resolved "https://registry.yarnpkg.com/convex-durable-agents/-/convex-durable-agents-0.2.5.tgz#5702b3614596a7bd17bca1f9120d32486c923c76"
-  integrity sha512-Fp8xrWXumR2QlvhzInZ+rnIEtemLfOuI2vcUrc4iM2v9I8dSrJIgcSczWoGf9+vlzlggyUC6D2kxQdCoetfEyw==
-
 convex-helpers@^0.1.114:
   version "0.1.114"
   resolved "https://registry.yarnpkg.com/convex-helpers/-/convex-helpers-0.1.114.tgz#bf954b7bd605947befb790d40b373696be826bac"

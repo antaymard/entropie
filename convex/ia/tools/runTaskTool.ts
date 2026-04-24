@@ -2,7 +2,6 @@ import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
 import { internal } from "../../_generated/api";
 import { generateLlmId } from "../../lib/llmId";
-import type { GenericId } from "convex/values";
 
 import { ToolConfig } from "./toolHelpers";
 import { ThreadCtx, toolAgentNames } from "../agentConfig";
@@ -79,13 +78,10 @@ export function runTaskTool({ threadCtx }: { threadCtx: ThreadCtx }) {
           } satisfies RunTaskResult);
         }
 
-        const typedThreadId = threadId as GenericId<"threads">;
-
         const taskId = generateLlmId();
         await ctx.runMutation(internal.wrappers.taskWrappers.create, {
           id: taskId,
           canvasId,
-          threadId: typedThreadId,
           instructions: input.instructions,
           status: "ready",
           name: buildTaskName(input.instructions),

@@ -177,9 +177,3 @@ export function createAutomationAgent({
     Be as concise, exact, and factual as possible. Do not fabricate information. Do not be verbose.`,
   });
 }
-
-export const supervisorAgent = streamHandlerAction(components.durable_agents, {
-  model: openrouter("tencent/hy3-preview:free"),
-  system: generateSupervisorSystemPrompt(),
-  tools: {},
-});

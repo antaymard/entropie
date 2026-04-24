@@ -14,6 +14,7 @@ import FetchNode from "./FetchNode";
 import PdfNode from "./PdfNode";
 import EmbedNode from "./EmbedNode";
 import TableNode from "./TableNode";
+import AppNode from "./AppNode";
 
 type NodeUiConfigItem = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -71,6 +72,11 @@ const nodeUiConfig: Record<string, NodeUiConfigItem> = {
     nodeComponent: TableNode,
     nodeIcon: NODE_TYPE_ICON_MAP.table,
     canBeOpenInWindow: true,
+  },
+  app: {
+    nodeComponent: AppNode,
+    nodeIcon: NODE_TYPE_ICON_MAP.app,
+    canBeOpenInWindow: false,
   },
 };
 

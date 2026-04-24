@@ -1,0 +1,46 @@
+export function buildSrcdoc(code: string, state: unknown | null): string {
+  const serializedState = JSON.stringify(state ?? null);
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.2/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #root { width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const initialState = ${serializedState};
+
+    const nolenor = {
+      _request(type, payload) {
+        const requestId = Math.random().toString(36).slice(2);
+        return new Promise(resolve => {
+          window.addEventListener("message", function handler(e) {
+            if (e.data.requestId === requestId) {
+              window.removeEventListener("message", handler);
+              resolve(e.data.payload);
+            }
+          });
+          window.parent.postMessage({ type, requestId, ...payload }, "*");
+        });
+      },
+      getData()        { return this._request("nolenor:getData", {}); },
+      saveState(state) { return this._request("nolenor:saveState", { state }); },
+    };
+
+    ${code}
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>`;
+}

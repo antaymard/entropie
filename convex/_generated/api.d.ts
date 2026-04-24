@@ -32,6 +32,7 @@ import type * as ia_helpers_plateMarkdownConverter from "../ia/helpers/plateMark
 import type * as ia_nole from "../ia/nole.js";
 import type * as ia_noleCompletion from "../ia/noleCompletion.js";
 import type * as ia_subagentRuntime from "../ia/subagentRuntime.js";
+import type * as ia_systemPrompts_appNodeSkillPrompt from "../ia/systemPrompts/appNodeSkillPrompt.js";
 import type * as ia_systemPrompts_noleSystemPrompt from "../ia/systemPrompts/noleSystemPrompt.js";
 import type * as ia_tools__toolTemplate from "../ia/tools/_toolTemplate.js";
 import type * as ia_tools_createConnectionTool from "../ia/tools/createConnectionTool.js";
@@ -127,6 +128,7 @@ declare const fullApi: ApiFromModules<{
   "ia/nole": typeof ia_nole;
   "ia/noleCompletion": typeof ia_noleCompletion;
   "ia/subagentRuntime": typeof ia_subagentRuntime;
+  "ia/systemPrompts/appNodeSkillPrompt": typeof ia_systemPrompts_appNodeSkillPrompt;
   "ia/systemPrompts/noleSystemPrompt": typeof ia_systemPrompts_noleSystemPrompt;
   "ia/tools/_toolTemplate": typeof ia_tools__toolTemplate;
   "ia/tools/createConnectionTool": typeof ia_tools_createConnectionTool;

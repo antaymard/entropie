@@ -75,6 +75,11 @@ export function getNodeDataTitle(nodeData: Doc<"nodeDatas">): string {
       return typeof title === "string" ? title : "Table";
     }
 
+    case "app": {
+      const title = nodeData.values.title;
+      return typeof title === "string" ? title : "App";
+    }
+
     default:
       return nodeData.type ?? "Node";
   }

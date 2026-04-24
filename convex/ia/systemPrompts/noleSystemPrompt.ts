@@ -3,6 +3,7 @@ import { ActionCtx } from "../../_generated/server";
 import { Id } from "../../_generated/dataModel";
 import { internal } from "../../_generated/api";
 import { escapeXmlText } from "../../lib/xml";
+import { appNodeSkillPrompt } from "./appNodeSkillPrompt";
 
 const nodeTypesContext = nodeDataConfig
   .map((item) => `- ${item.type} : ${item.llmDescription}`)
@@ -77,6 +78,8 @@ Each node type has a specific purpose and can be used to represent different kin
 <available_node_types>
 ${nodeTypesContext}
 </available_node_types>
+
+${appNodeSkillPrompt}
 </about_nolenor>
 
 <thinking_process>

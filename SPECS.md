@@ -1,172 +1,135 @@
-# Spec: Amélioration SDK nolenor.getData()
+# Améliorer l'injection de contexte message
 
-## 1. Problème rencontré
+## Envoi côté client
 
-### Symptôme
+Le `ChatInterface` envoie un objet JSON assez complet sur ce que le user a à l'écran.
 
-Lors de la création d'un App Node pour visualiser les données d'un tableau, le graphique s'affiche (axes, titres) mais les lignes/courbes n'apparaissent pas.
+## Ce qui est introduit dans le LLM
 
-### Cause racine
-
-Incohérence entre la structure de données retournée par `nolenor.getData()` et les informations fournies par `read_nodes`.
-
-**Structure retournée par `nolenor.getData()` :**
-
-```javascript
-{
-  "pzf8Kou1GNo1cDt0": {
-    "type": "table",
-    "rows": [
-      {
-        "id": "bcP4iuJ9bmC7Kgg0",
-        "cells": {           // <- Données imbriquées dans "cells"
-          "annee": "1990",
-          "dette": "~363",
-          "pib": "~36%"
-        }
-      }
-    ]
-  }
-}
-```
-
-**Informations affichées par `read_nodes` :**
+Il y a transformation du JSON en du pseudo XML.
 
 ```
-Column IDs (use these IDs for table_insert_rows and table_update_rows):
-- annee: Année
-- dette: Dette (Mds €)
-- pib: % du PIB
+<message_context>
+  <attachedNodes>
+    <item>
+      <id>994k403g</id>
+      <position>
+        <x>649</x>
+        <y>960</y>
+      </position>
+      <size>
+        <height>226</height>
+        <width>321</width>
+      </size>
+      <title>Benefits du Thé Vert</title>
+      <type>document</type>
+    </item>
+  </attachedNodes>
+  <attachedPosition />
+  <generatedAt>Friday, April 24, 2026 at 01:23:35 PM</generatedAt>
+  <openNodes />
+  <viewport>
+    <bounds>
+      <x1>0</x1>
+      <x2>2560</x2>
+      <y1>267</y1>
+      <y2>1649</y2>
+    </bounds>
+    <size>
+      <height>1037</height>
+      <width>1920</width>
+    </size>
+    <visibleNodeIds>
+      <item>462h131v</item>
+      <item>366J320g</item>
+      <item>791v384n</item>
+      <item>070x997U</item>
+      <item>518C739z</item>
+      <item>139c704z</item>
+      <item>454B154E</item>
+      <item>718T352a</item>
+      <item>020g611f</item>
+      <item>764w568B</item>
+      <item>238h694p</item>
+      <item>918E225y</item>
+      <item>007q269R</item>
+      <item>151z776n</item>
+      <item>308W967T</item>
+      <item>884i360X</item>
+      <item>920P832G</item>
+      <item>658B365R</item>
+      <item>931E861f</item>
+      <item>218M890d</item>
+      <item>792F946U</item>
+      <item>757n384o</item>
+      <item>660k976J</item>
+      <item>498L781U</item>
+      <item>428F659l</item>
+      <item>131k755k</item>
+      <item>650p960T</item>
+      <item>019V156M</item>
+      <item>387s354Z</item>
+      <item>564X823D</item>
+      <item>365u213P</item>
+      <item>770A516c</item>
+      <item>994k403g</item>
+      <item>644t846s</item>
+      <item>654g891g</item>
+      <item>460J487O</item>
+      <item>598K489B</item>
+      <item>dxl5CGY4YSV8YiJ0</item>
+    </visibleNodeIds>
+    <zoom>0.75</zoom>
+  </viewport>
+</message_context>
 ```
 
-L'IA (et le développeur) suppose que les données sont accessibles via `row.annee`, alors qu'il faut utiliser `row.cells.annee`.
+## Coordonnées
 
-### Impact
+Les coordonnées des nodes passent du format x,y de l'origine à [point haut-gauche -> point bas-droite], ex [100, 200 -> 300, 400]. Il faut donc utiliser width et height pour le calculer.
+Les valeurs sont arrondies à l'unité.
 
-- Erreur de développement fréquente
-- Données lues comme `undefined` → `NaN` dans les graphiques
-- Temps de debug important (console.log, essais successifs)
+## Nouveau format d'injection
 
----
+Sans nécessairement changer ce qui est envoyé du client, on va améliorer l'injection dans le prompt.
 
-## 2. Solution proposée
+### Suppression de certaines informations
 
-### Option choisie : Aplatissement des données (Flatten)
+- `<zoom>` est retiré
+- `<size>` et son contenu sont retirés
+- `<generatedAt>` est supprimé
 
-Modifier `nolenor.getData()` pour retourner une structure plate, correspondant aux Column IDs affichés par `read_nodes`.
+Quand une balise est vide (par exemple `<openNodes/>`, `<attachedPosition/>`), elle est masquée plutôt que mise vide.
 
-**Nouvelle structure :**
+### Changement de format du balisage
 
-```javascript
-{
-  "pzf8Kou1GNo1cDt0": {
-    "type": "table",
-    "rows": [
-      {
-        "id": "bcP4iuJ9bmC7Kgg0",
-        "annee": "1990",      // <- Directement accessible
-        "dette": "~363",
-        "pib": "~36%"
-      }
-    ]
-  }
-}
-```
+On va faire un mix de xml pour le balisage grossier, et du texte libre.
 
-### Avantages
+- `<viewport>` va contenir inline les bounds : `<viewport bounds=[x1, y1 -> x2, y2]>` par exemple
+- `<openNodes>` devient `<open_nodes>`
+- `<attachedPosition>` devient `<target_position_on_canvas/>`
+- `<attachedNodes>`devient `<attached_nodes>`
+- `<visibleNodeIds>`devient `<visible_nodes>`
 
-1. ✅ Correspond exactement aux Column IDs de `read_nodes`
-2. ✅ Intuitif : `row.annee` fonctionne directement
-3. ✅ Pas de modification du SDK côté client
-4. ✅ Rétrocompatibilité : les apps existantes utilisant `row.cells?.annee` continueront de fonctionner avec un petit ajustement
+### Syntaxe des nodes
 
----
+Plutôt que du xml verbeux, on va s'inspirer de la logique présente dans `generateCanvasMinimap.ts`.
+A chaque fois, retour à la ligne. Une liste simple en plain text donc.
 
-## 3. Changements techniques
+Pour les `<attached_nodes>` :
+`nodeId [nodeType] [x1, y1 -> x2, y2] nodeTitle`
 
-### Dans le SDK (nolenor.getData)
+Pour les `<visible_nodes>` :
+`nodeId [nodeType] nodeTitle`
 
-```javascript
-// Avant
-rows.map((row) => ({
-  id: row.id,
-  cells: row.cells,
-}));
+Pour `<open_nodes>`:
+`nodeId [nodeType] (x, y) nodeTitle`
 
-// Après
-rows.map((row) => ({
-  id: row.id,
-  ...row.cells, // Aplatit toutes les cellules au niveau racine
-}));
-```
+### Optimisation
 
-### Côté IA / Développeur
+Pour les visible_nodes, si n > 10, on passe en truncated.
+En dessous de la liste, on ajoute ...truncated list. total is XX
 
-**Avant (incorrect) :**
+## Aide à l'utilisation du contexte
 
-```javascript
-const labels = rows.map((r) => r.annee); // undefined
-const dette = rows.map((r) => r.dette); // undefined
-```
-
-**Après (correct) :**
-
-```javascript
-const labels = rows.map((r) => r.annee); // "1990", "1995", etc.
-const dette = rows.map((r) => r.dette); // "~363", etc.
-```
-
----
-
-## 4. Impact et bénéfices
-
-| Aspect                    | Avant             | Après       |
-| ------------------------- | ----------------- | ----------- |
-| Lisibilité                | `row.cells.annee` | `row.annee` |
-| Correspondance read_nodes | ❌ Non            | ✅ Oui      |
-| Courbe d'apprentissage    | Raide             | Intuitive   |
-| Debug                     | Nécessaire        | Minimisé    |
-
----
-
-## 5. Exemple avant/après
-
-### Code de l'App Node (avant)
-
-```javascript
-React.useEffect(() => {
-  nolenor.getData().then((d) => {
-    const tableData = d["pzf8Kou1GNo1cDt0"];
-    const rows = tableData.rows;
-
-    // ❌ Ne fonctionne pas
-    const labels = rows.map((r) => r.annee);
-
-    // ✅ Fonctionne mais pas intuitif
-    const labels = rows.map((r) => r.cells.annee);
-  });
-}, []);
-```
-
-### Code de l'App Node (après)
-
-```javascript
-React.useEffect(() => {
-  nolenor.getData().then((d) => {
-    const tableData = d["pzf8Kou1GNo1cDt0"];
-    const rows = tableData.rows;
-
-    // ✅ Fonctionne directement
-    const labels = rows.map((r) => r.annee);
-    const dette = rows.map((r) => r.dette);
-  });
-}, []);
-```
-
----
-
-## 6. Migration
-
-- Les Apps existantes utilisant `row.cells?.prop` continueront de fonctionner si on garde une rétrocompatibilité
-- Recommandation : migrer vers la structure plate progressivement
-- Mise à jour de la documentation SDK nécessaire
+En dessous de la balise <message_context>, on précise que les coordonnées sont données en [point haut-gauche -> point bas-droite], ex [100, 200 -> 300, 400].

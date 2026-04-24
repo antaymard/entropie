@@ -67,7 +67,7 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
   }, [nodeDataId, updateNodeDataValues]);
 
   useEffect(() => {
-    setSaveHandler(() => handleSave);
+    setSaveHandler(handleSave);
     return () => setSaveHandler(null);
   }, [handleSave, setSaveHandler]);
 

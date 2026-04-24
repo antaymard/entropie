@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useCallback, useState, useMemo } from "react";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { cn } from "@/lib/utils";
 import {
@@ -266,14 +266,18 @@ export default function WindowFrame({
     };
   }, [xyNodeId, moveWindow, resizeWindow, snapWindow, updateSnapPreview]);
 
+  const contextValue = useMemo(
+    () => ({
+      setDirty,
+      setSaveHandler: (fn: (() => void) | null) => setSaveHandler(() => fn),
+      setRefreshHandler: (fn: (() => void) | null) =>
+        setRefreshHandler(() => fn),
+    }),
+    [setDirty],
+  );
+
   return (
-    <WindowFrameContext.Provider
-      value={{
-        setDirty,
-        setSaveHandler: (fn) => setSaveHandler(() => fn),
-        setRefreshHandler: (fn) => setRefreshHandler(() => fn),
-      }}
-    >
+    <WindowFrameContext.Provider value={contextValue}>
       <div
         className={cn(
           "relative h-full w-full",

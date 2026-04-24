@@ -37,9 +37,30 @@ export function buildSrcdoc(code: string, state: unknown | null): string {
       saveState(state) { return this._request("nolenor:saveState", { state }); },
     };
 
-    ${code}
+    ${
+      code.trim()
+        ? code
+        : `
+    function App() {
+      return (
+        <div className="flex items-center justify-center h-full w-full bg-slate-50 text-slate-500 font-medium font-sans">
+          <i>App code will be written here...</i>
+        </div>
+      );
+    }
+    `
+    }
 
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    if (typeof App !== 'undefined') {
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    } else {
+      ReactDOM.createRoot(document.getElementById("root")).render(
+        <div className="flex items-center justify-center p-4 text-red-500 font-mono text-sm text-center h-full w-full bg-red-50">
+          ReferenceError: App is not defined.<br/>
+          Make sure your code exports an App component.
+        </div>
+      );
+    }
   </script>
 </body>
 </html>`;

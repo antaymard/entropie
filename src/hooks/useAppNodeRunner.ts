@@ -18,6 +18,7 @@ export function useAppNodeRunner(
   xyNodeId: string,
   nodeDataId: Id<"nodeDatas"> | undefined,
   values: Record<string, unknown> | null | undefined,
+  refreshKey: number,
 ) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const rfStore = useStoreApi();
@@ -89,7 +90,8 @@ export function useAppNodeRunner(
     const code = (values.code as string) ?? "";
     const state = values.state ?? null;
     return buildSrcdoc(code, state);
-  }, [values]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [values?.code, refreshKey]); // state exclu intentionnellement : saveState ne doit pas recharger l'iframe
 
   return { iframeRef, srcdoc };
 }

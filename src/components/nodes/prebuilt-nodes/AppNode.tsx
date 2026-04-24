@@ -39,7 +39,7 @@ function AppNode(xyNode: Node) {
 
   const Icon = NODE_TYPE_ICON_MAP.app;
 
-  const { iframeRef, srcdoc } = useAppNodeRunner(xyNode.id, nodeDataId, values);
+  const { iframeRef, srcdoc } = useAppNodeRunner(xyNode.id, nodeDataId, values, refreshKey);
 
   const handleOpenWindow = useCallback(() => {
     if (!nodeDataId) return;

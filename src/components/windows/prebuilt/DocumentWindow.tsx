@@ -38,7 +38,7 @@ function DocumentWindow({ xyNodeId, nodeDataId }: DocumentWindowProps) {
   }, []);
 
   useEffect(() => {
-    setSaveHandler(() => handleSaveClick);
+    setSaveHandler(handleSaveClick);
     return () => setSaveHandler(null);
   }, [handleSaveClick, setSaveHandler]);
 

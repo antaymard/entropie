@@ -23,7 +23,7 @@ function AppWindow({ xyNodeId, nodeDataId }: AppWindowProps) {
     return () => setRefreshHandler(null);
   }, [handleRefresh, setRefreshHandler]);
 
-  const { iframeRef, srcdoc } = useAppNodeRunner(xyNodeId, nodeDataId, values);
+  const { iframeRef, srcdoc } = useAppNodeRunner(xyNodeId, nodeDataId, values, refreshKey);
 
   if (!values) return null;
 

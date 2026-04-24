@@ -100,7 +100,7 @@ ${appNodeSkillPrompt}
 7. Independent read calls can be parallelized. Example: read multiple files at the same time when I already know which files I need. Dependent calls must be sequential. I must wait for one call to finish before starting the next if the second depends on the first.
 </instructions>
 
-<delegatiion_and_task_management>
+<delegation_and_task_management>
 You must not do any heavy or complex lifting yourself. If a task requires multiple steps, and will keep you busy for more than a few seconds, create a task using the run_task tool. If the task is complex, make sure to ask the user for any specific requirements or constraints, and include them in the task instructions. The task will be picked up by the Supervisor agent, who will break it down into smaller steps and delegate them to Worker agents. With the read_task tool, you will get the task status if still in progress, or its result or error if ended.
 </delegation_and_task_management>
 </tool_use_instructions>

@@ -54,7 +54,7 @@ export type MessageContextPayload = {
       height: number;
     };
     zoom: number;
-    visibleNodeIds: string[];
+    visibleNodes: { id: string; type: string; title: string }[];
   };
   attachedPosition: { x: number; y: number } | null;
   attachedNodes: MessageContextNodeSummary[];
@@ -198,7 +198,11 @@ export function generateMessageContext({
         height: Math.round(viewportHeight),
       },
       zoom: viewport.zoom,
-      visibleNodeIds: visibleNodes.map((node) => node.id),
+      visibleNodes: visibleNodes.map((node) => ({
+        id: node.id,
+        type: node.type,
+        title: getNodeTitle(node),
+      })),
     },
     attachedPosition: attachedPosition
       ? {

@@ -90,10 +90,66 @@ export function useCanvasNodes(
 
   // CONVEX MUTATIONS
   const addCanvasNodesToConvex = useMutation(api.canvasNodes.add);
+  // Optimistic updates mirror the mutation on the local canvas query so the
+  // sync effect above does not briefly re-read stale server data and bounce
+  // nodes back to their pre-mutation state.
   const updateCanvasNodesPositionOrDimensionsInConvex = useMutation(
     api.canvasNodes.updatePositionOrDimensions,
-  );
-  const removeCanvasNodesToConvex = useMutation(api.canvasNodes.remove);
+  ).withOptimisticUpdate((localStore, { canvasId: targetCanvasId, nodeChanges }) => {
+    const existing = localStore.getQuery(api.canvases.readCanvas, {
+      canvasId: targetCanvasId,
+    });
+    if (!existing || !existing.nodes) return;
+    const changeById = new Map<
+      string,
+      {
+        position?: { x: number; y: number };
+        dimensions?: { width: number; height: number };
+      }
+    >();
+    for (const change of nodeChanges as Array<{
+      id: string;
+      position?: { x: number; y: number };
+      dimensions?: { width: number; height: number };
+    }>) {
+      changeById.set(change.id, change);
+    }
+    const nextNodes = existing.nodes.map((node: CanvasNode) => {
+      const change = changeById.get(node.id);
+      if (!change) return node;
+      const next = { ...node };
+      if (change.position) next.position = change.position;
+      if (change.dimensions) {
+        next.width = change.dimensions.width;
+        next.height = change.dimensions.height;
+      }
+      return next;
+    });
+    localStore.setQuery(
+      api.canvases.readCanvas,
+      { canvasId: targetCanvasId },
+      { ...existing, nodes: nextNodes },
+    );
+  });
+  const removeCanvasNodesToConvex = useMutation(
+    api.canvasNodes.remove,
+  ).withOptimisticUpdate((localStore, { canvasId: targetCanvasId, nodeCanvasIds }) => {
+    const existing = localStore.getQuery(api.canvases.readCanvas, {
+      canvasId: targetCanvasId,
+    });
+    if (!existing || !existing.nodes) return;
+    const removedIds = new Set(nodeCanvasIds);
+    localStore.setQuery(
+      api.canvases.readCanvas,
+      { canvasId: targetCanvasId },
+      {
+        ...existing,
+        nodes: existing.nodes.filter(
+          (node: CanvasNode) => !removedIds.has(node.id),
+        ),
+      },
+    );
+  });
 
   // Sync Convex -> React Flow nodes while preserving drag/resize state
   // and selection.

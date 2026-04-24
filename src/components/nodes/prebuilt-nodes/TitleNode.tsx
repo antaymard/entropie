@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo } from "react";
 import { type Node } from "@xyflow/react";
 import { areNodePropsEqual } from "../areNodePropsEqual";
 import NodeFrame from "../NodeFrame";
@@ -32,9 +32,6 @@ function TitleNode(xyNode: Node) {
   const textClassName = levels.find((l) => l.value === level)?.className || "";
   const textColor =
     colors[(xyNode.data.color as colorsEnum) || "default"]?.textColor;
-
-  const [editing, setEditing] = useState(false);
-  const [editingText, setEditingText] = useState("");
 
   if (!xyNode || !nodeDataId) return null;
 

@@ -8,7 +8,7 @@ const GAP_MS = 30; // idle gap between renders so the UI stays responsive
 
 type Task = () => void;
 
-let queue: Task[] = [];
+const queue: Task[] = [];
 let running = false;
 
 function processNext() {

@@ -9,11 +9,9 @@ import { useWindowsStore } from "@/stores/windowsStore";
 
 export default function WindowPanelFrame({
   xyNode,
-  title,
   children,
 }: {
   xyNode: Node;
-  title: string;
   children: React.ReactNode;
 }) {
   const nodeColor = colors[(xyNode?.data?.color as colorsEnum) || "default"];

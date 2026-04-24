@@ -14,10 +14,8 @@ export default function ErrorDisplay({
   title,
   message,
   error,
-  icon = "404",
   cta = null,
 }: {
-  icon?: "404";
   cta?: React.ReactNode;
   title?: string;
   message?: string;

@@ -1,6 +1,5 @@
 import { memo, useRef, useState, useEffect, useCallback } from "react";
 import { useReactFlow } from "@xyflow/react";
-import WindowPanelFrame from "../WindowPanelFrame";
 import { useNodeDataValues } from "@/hooks/useNodeData";
 import type { Id } from "@/../convex/_generated/dataModel";
 import type { FileFieldType } from "@/components/fields/file-fields/FileNameField";

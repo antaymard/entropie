@@ -1,12 +1,42 @@
 import { useSmoothText, type UIMessage } from "@convex-dev/agent/react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { MarkdownText } from "@/components/ai/MarkdownText";
 import type { TextPart } from "@/types/domain/message.types";
 import { RiLoaderLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
 import { TbAlertCircle, TbBrain, TbChevronDown, TbTool } from "react-icons/tb";
+import { matchLlmIdsInText } from "@/../convex/lib/llmId";
+import { MentionedNodeCard } from "@/components/canvas/nole-panel/MentionedNodeCard";
+import type { Components } from "react-markdown";
 
 type ToolPartState = "input-streaming" | "output-available" | "output-error";
+
+function preprocessTextWithNodeLinks(text: string): string {
+  if (!text) return "";
+  return text.replace(
+    /\b((?:[A-Za-z]{3}\d){4})\b/g,
+    (match) => `[${match}](#node-${match})`,
+  );
+}
+
+const markdownComponents: Components = {
+  a: ({ href, children }) => {
+    if (href?.startsWith("#node-")) {
+      const nodeId = href.replace("#node-", "");
+      return <MentionedNodeCard nodeId={nodeId} inline />;
+    }
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        className="text-blue-500 hover:underline"
+      >
+        {children}
+      </a>
+    );
+  },
+};
 
 export function Message({ message }: { message: UIMessage }) {
   const isUser = message.role === "user";
@@ -136,7 +166,9 @@ function ReasoningPartRenderer({
 
       {isExpanded ? (
         <div className="border-t border-slate-200 px-2 py-2 whitespace-pre-wrap overflow-x-auto">
-          <MarkdownText>{visibleText || "..."}</MarkdownText>
+          <MarkdownText components={markdownComponents}>
+            {preprocessTextWithNodeLinks(visibleText || "...")}
+          </MarkdownText>
         </div>
       ) : null}
     </div>
@@ -166,6 +198,11 @@ function ToolPlaceholder({
 
   const hasDebugData = input !== undefined || output !== undefined || !!error;
 
+  const nodeIdsInTool = useMemo(() => {
+    const textToParse = `${JSON.stringify(input || {})} ${JSON.stringify(output || {})}`;
+    return matchLlmIdsInText(textToParse);
+  }, [input, output]);
+
   return (
     <div className="py-2 rounded border border-slate-300 bg-slate-50 p-2 text-xs text-slate-700">
       <button
@@ -186,6 +223,15 @@ function ToolPlaceholder({
           )}
         />
       </button>
+
+      {!isExpanded && nodeIdsInTool.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {nodeIdsInTool.map((id) => (
+            <MentionedNodeCard key={id} nodeId={id} />
+          ))}
+        </div>
+      )}
+
       {isExpanded && hasDebugData ? (
         <div className="mt-2 space-y-2 ">
           <DebugBlock label="Args" value={input} />
@@ -280,7 +326,15 @@ function readErrorLike(value: unknown): string | undefined {
     return undefined;
   }
 
-  const keys = ["error", "message", "detail", "details", "cause", "reason", "statusText"];
+  const keys = [
+    "error",
+    "message",
+    "detail",
+    "details",
+    "cause",
+    "reason",
+    "statusText",
+  ];
   for (const key of keys) {
     const candidate = value[key];
     if (typeof candidate === "string" && candidate.trim()) {
@@ -328,7 +382,9 @@ export function TextPartRenderer({ part }: { part: TextPart }) {
 
   return (
     <div className="whitespace-pre-wrap px-1 overflow-x-auto">
-      <MarkdownText>{visibleText}</MarkdownText>
+      <MarkdownText components={markdownComponents}>
+        {preprocessTextWithNodeLinks(visibleText)}
+      </MarkdownText>
     </div>
   );
 }

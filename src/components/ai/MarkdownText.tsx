@@ -7,12 +7,15 @@ import { SyntaxHighlighter } from "./shiki-highlighter";
 
 interface MarkdownTextProps {
   children: string;
+  components?: import("react-markdown").Components;
 }
 
-const MarkdownTextImpl: FC<MarkdownTextProps> = ({ children }) => {
+const MarkdownTextImpl: FC<MarkdownTextProps> = ({ children, components }) => {
+  const mergedComponents = { ...defaultComponents, ...components };
+
   return (
     <div className="aui-md min-w-0 flex flex-col gap-2 break-words [overflow-wrap:anywhere]">
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={defaultComponents}>
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={mergedComponents}>
         {children}
       </ReactMarkdown>
     </div>

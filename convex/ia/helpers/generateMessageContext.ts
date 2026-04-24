@@ -1,14 +1,5 @@
 import type { NoleMessageMetadata } from "../nole";
 
-function escapeXml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&apos;");
-}
-
 function sanitizeXmlTagName(value: string): string {
   const sanitized = value.replace(/[^A-Za-z0-9_-]/g, "_");
   return /^[A-Za-z_]/.test(sanitized) ? sanitized : `value_${sanitized}`;
@@ -48,7 +39,7 @@ function valueToXml(tagName: string, value: unknown, indent = 0): string {
     return `${prefix}<${safeTagName}>\n${children}\n${prefix}</${safeTagName}>`;
   }
 
-  return `${prefix}<${safeTagName}>${escapeXml(String(value))}</${safeTagName}>`;
+  return `${prefix}<${safeTagName}>${String(value)}</${safeTagName}>`;
 }
 
 function formatStructuredMessageContext(context: any): string {

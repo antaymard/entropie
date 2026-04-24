@@ -14,6 +14,7 @@ import fullTextSearchTool, {
   fullTextSearchToolConfig,
 } from "./fullTextSearchTool";
 import listNodesTool, { listNodesToolConfig } from "./listNodesTool";
+import loadSkillTool, { loadSkillToolConfig } from "./loadSkillTool";
 import memoryToolFactory, { memoryToolConfig } from "./memoryTool";
 import { openWebPageTool, openWebPageToolConfig } from "./openWebPageTool";
 import readNodesTool, { readNodesToolConfig } from "./readNodesTool";
@@ -121,6 +122,10 @@ const toolRegistry: ToolRegistration[] = [
   {
     config: readTaskToolConfig,
     factory: ({ threadCtx }) => readTaskTool({ threadCtx }),
+  },
+  {
+    config: loadSkillToolConfig,
+    factory: ({ threadCtx }) => loadSkillTool({ threadCtx }),
   },
 ];
 

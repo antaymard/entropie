@@ -34,6 +34,11 @@ const settingsSidebarSections: SettingsSidebarSection[] = [
         icon: "settings",
         route: "/settings/",
       },
+      {
+        label: "Skills",
+        icon: "settings",
+        route: "/settings/skills",
+      },
     ],
   },
   {

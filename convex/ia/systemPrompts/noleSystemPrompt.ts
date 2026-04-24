@@ -34,6 +34,18 @@ function formatMemorySnapshot(rawContent?: string | null): string {
   }
 }
 
+function formatAvailableSkills(
+  skills: { name: string; description: string }[],
+): string {
+  if (skills.length === 0) {
+    return "No skills available.";
+  }
+  const sorted = [...skills].sort((a, b) => a.name.localeCompare(b.name));
+  return sorted
+    .map((skill) => `- ${skill.name}: ${skill.description}`)
+    .join("\n");
+}
+
 async function generateNoleSystemPrompt({
   ctx,
   canvasId,
@@ -43,22 +55,27 @@ async function generateNoleSystemPrompt({
   canvasId: Id<"canvases">;
   userId: Id<"users">;
 }) {
-  const [userMemory, canvasMemory, minimapResult] = await Promise.all([
-    ctx.runQuery(internal.wrappers.memoryWrappers.read, {
-      subjectId: userId,
-      type: "memory",
-    }),
-    ctx.runQuery(internal.wrappers.memoryWrappers.read, {
-      subjectId: canvasId,
-      type: "memory",
-    }),
-    ctx.runQuery(internal.ia.helpers.generateCanvasMinimap.generate, {
-      canvasId,
-    }),
-  ]);
+  const [userMemory, canvasMemory, minimapResult, availableSkills] =
+    await Promise.all([
+      ctx.runQuery(internal.wrappers.memoryWrappers.read, {
+        subjectId: userId,
+        type: "memory",
+      }),
+      ctx.runQuery(internal.wrappers.memoryWrappers.read, {
+        subjectId: canvasId,
+        type: "memory",
+      }),
+      ctx.runQuery(internal.ia.helpers.generateCanvasMinimap.generate, {
+        canvasId,
+      }),
+      ctx.runQuery(internal.wrappers.skillWrappers.listAvailableForUser, {
+        userId,
+      }),
+    ]);
 
   const userMemoryContext = formatMemorySnapshot(userMemory?.content);
   const canvasMemoryContext = formatMemorySnapshot(canvasMemory?.content);
+  const availableSkillsContext = formatAvailableSkills(availableSkills);
 
   return `
 <identity>
@@ -125,6 +142,11 @@ This memory is managed by you. Make it your own. Manage it with the memory tool,
 <hint>Use this to personalize your interactions with the user (e.g., say their name when greeting). If empty, ask the user for relevant information to fill it up. </hint>
 ${userMemoryContext}
 </user_memory>
+
+<available_skills>
+<hint>Skills are reusable prompt modules you can activate when they match the user's request. Use the load_skill tool with the exact name below to read a skill's full content before following its instructions. Once loaded, a skill's body may reference attachments (scripts, reference docs) by name — call load_skill again with that exact attachment name to fetch its content on demand.</hint>
+${availableSkillsContext}
+</available_skills>
 
 <canvas_memory>
 <hint>This is your persistent notepad for this specific canvas. Note that the structural layout is already provided automatically in <canvas_structure>. Use this memory exclusively to store semantic context: 

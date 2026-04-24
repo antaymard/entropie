@@ -8,6 +8,8 @@ import { memoriesValidator } from "./schemas/memoriesSchema";
 import { searchableChunksValidator } from "./schemas/searchableChunksSchema";
 import { wishlistEmailsValidator } from "./schemas/wishlistEmailsSchema";
 import { tasksValidator } from "./schemas/tasksSchema";
+import { skillsValidator } from "./schemas/skillsSchema";
+import { skillAttachmentsValidator } from "./schemas/skillAttachmentsSchema";
 
 const schema = defineSchema({
   ...authTables,
@@ -65,6 +67,17 @@ const schema = defineSchema({
     .index("by_canvasId_and_status", ["canvasId", "status"])
     .index("by_nodeId", ["nodeId"])
     .index("by_taskId", ["id"]),
+  // ============================================================================
+  // SKILLS
+  // ============================================================================
+  skills: defineTable(skillsValidator)
+    .index("by_user", ["userId"])
+    .index("by_user_and_name", ["userId", "name"])
+    .index("by_isSystem", ["isSystem"]),
+
+  skillAttachments: defineTable(skillAttachmentsValidator)
+    .index("by_skill", ["skillId"])
+    .index("by_skill_and_name", ["skillId", "name"]),
 });
 
 export default schema;

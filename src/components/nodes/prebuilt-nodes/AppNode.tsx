@@ -120,7 +120,7 @@ function AppNode(xyNode: Node) {
             </p>
           </div>
         ) : (
-          <div className="w-full h-full flex flex-col overflow-hidden rounded-[4px] bg-background">
+          <div className="w-full h-full flex flex-col overflow-hidden rounded-[4px]">
             <div
               className={cn(
                 "flex items-center gap-2 h-8 shrink-0 px-2 py-1.5 font-medium rounded-t-[4px]",
@@ -148,7 +148,7 @@ function AppNode(xyNode: Node) {
               srcDoc={srcdoc}
               sandbox="allow-scripts"
               className="w-full flex-1 min-h-0 border-0"
-              title="App Node"
+              title={appTitle ?? "App Node"}
             />
           </div>
         )}

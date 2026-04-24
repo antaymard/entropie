@@ -4,38 +4,61 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { Button } from "@/components/shadcn/button";
+import { Input } from "@/components/shadcn/input";
 import { toastError } from "@/components/utils/errorUtils";
+import { parseSkillFrontmatter } from "@/../convex/lib/parseSkillFrontmatter";
 import SkillAttachments from "./SkillAttachments";
 import { buildRawSkillContent } from "./skillSerialization";
 
 type SkillEditorProps = {
-  skillId: Id<"skills">;
-  onDeleted: () => void;
+  skillId?: Id<"skills"> | null;
+  draftSkill?: { name: string; description: string; content: string } | null;
+  onDeleted?: () => void;
+  onCreated?: (skillId: Id<"skills">) => void;
 };
 
-export default function SkillEditor({ skillId, onDeleted }: SkillEditorProps) {
-  const skill = useQuery(api.skills.read, { skillId });
+export default function SkillEditor({
+  skillId,
+  draftSkill,
+  onDeleted,
+  onCreated,
+}: SkillEditorProps) {
+  const skill = useQuery(api.skills.read, skillId ? { skillId } : "skip");
   const updateSkill = useMutation(api.skills.update);
   const removeSkill = useMutation(api.skills.remove);
+  const createSkill = useMutation(api.skills.create);
 
-  const [draft, setDraft] = useState<string>("");
-  const [hydratedFor, setHydratedFor] = useState<Id<"skills"> | null>(null);
+  const isDraft = !skillId && draftSkill;
+  const isExisting = !!skillId && skill;
+
+  const [draftName, setDraftName] = useState("");
+  const [draftDescription, setDraftDescription] = useState("");
+  const [draftContent, setDraftContent] = useState("");
+  const [hydratedFor, setHydratedFor] = useState<Id<"skills"> | string | null>(
+    null,
+  );
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (!skill) return;
-    if (hydratedFor === skill._id) return;
-    setDraft(
-      buildRawSkillContent({
-        name: skill.name,
-        description: skill.description,
-        body: skill.content,
-      }),
-    );
-    setHydratedFor(skill._id);
-  }, [skill, hydratedFor]);
+    if (isDraft && draftSkill && hydratedFor !== "draft") {
+      setDraftName(draftSkill.name);
+      setDraftDescription(draftSkill.description);
+      setDraftContent(draftSkill.content);
+      setHydratedFor("draft");
+    }
+  }, [isDraft, draftSkill, hydratedFor]);
 
-  if (skill === undefined) {
+  useEffect(() => {
+    if (isExisting && skill && hydratedFor !== skill._id) {
+      const { meta, body } = parseSkillFrontmatter(skill.content);
+      setDraftName(meta.name || skill.name);
+      setDraftDescription(meta.description || skill.description);
+      setDraftContent(body);
+      setHydratedFor(skill._id);
+    }
+  }, [isExisting, skill, hydratedFor]);
+
+  if (isExisting && skill === undefined) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500">
         Loading…
@@ -43,7 +66,7 @@ export default function SkillEditor({ skillId, onDeleted }: SkillEditorProps) {
     );
   }
 
-  if (skill === null) {
+  if (isExisting && skill === null) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500">
         Skill not found.
@@ -51,31 +74,69 @@ export default function SkillEditor({ skillId, onDeleted }: SkillEditorProps) {
     );
   }
 
-  const readOnly = skill.isSystem && skill.userId === undefined;
-  const isOwn = !readOnly;
+  if (!isDraft && !isExisting) {
+    return (
+      <div className="flex items-center justify-center h-full text-gray-500 text-sm">
+        Select a skill on the left, or create a new one.
+      </div>
+    );
+  }
+
+  const currentSkill =
+    skill ||
+    (isDraft ? { name: draftName, description: draftDescription } : null);
+  const readOnly =
+    (isExisting && skill && skill.isSystem && !skill.userId) ?? false;
+  const canEdit = isDraft || !readOnly;
 
   const handleSave = async () => {
-    if (!isOwn) return;
+    if (!canEdit) return;
+
+    // Validate name
+    if (!draftName.trim()) {
+      toast.error("Skill name is required.");
+      return;
+    }
+
     setIsSaving(true);
     try {
-      await updateSkill({ skillId: skill._id, rawContent: draft });
-      toast.success("Skill saved.");
+      const rawContent = buildRawSkillContent({
+        name: draftName.trim(),
+        description: draftDescription.trim(),
+        body: draftContent,
+      });
+
+      if (isDraft) {
+        const newId = await createSkill({ rawContent });
+        toast.success("Skill created.");
+        onCreated?.(newId);
+      } else if (skillId) {
+        await updateSkill({ skillId, rawContent });
+        toast.success("Skill saved.");
+      }
     } catch (error) {
-      toastError(error, "Failed to save skill.");
+      toastError(
+        error,
+        isDraft ? "Failed to create skill." : "Failed to save skill.",
+      );
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!isOwn) return;
-    if (!confirm(`Delete skill "${skill.name}"? This cannot be undone.`)) {
+    if (!canEdit || isDraft) return;
+    if (
+      !confirm(`Delete skill "${currentSkill?.name}"? This cannot be undone.`)
+    ) {
       return;
     }
     try {
-      await removeSkill({ skillId: skill._id });
-      toast.success(`Skill "${skill.name}" deleted.`);
-      onDeleted();
+      if (skillId) {
+        await removeSkill({ skillId });
+        toast.success(`Skill "${currentSkill?.name}" deleted.`);
+        onDeleted?.();
+      }
     } catch (error) {
       toastError(error, "Failed to delete skill.");
     }
@@ -83,26 +144,38 @@ export default function SkillEditor({ skillId, onDeleted }: SkillEditorProps) {
 
   return (
     <div className="flex flex-col gap-4 h-full overflow-y-auto pr-2">
-      <div className="flex items-start justify-between gap-3">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3 pb-3 border-b border-gray-200">
         <div className="flex flex-col">
-          <h2 className="text-xl font-bold">{skill.name}</h2>
-          <p className="text-sm text-gray-500">{skill.description}</p>
+          <h2 className="text-xl font-bold">
+            {currentSkill?.name || "New skill"}
+          </h2>
+          <p className="text-sm text-gray-500">
+            {currentSkill?.description || "No description yet"}
+          </p>
+          {isDraft && (
+            <span className="mt-1 inline-block self-start uppercase tracking-wide bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+              Draft (unsaved)
+            </span>
+          )}
           {readOnly && (
-            <span className="mt-1 inline-block self-start text-xs uppercase tracking-wide bg-gray-200 text-gray-700 px-2 py-0.5 rounded">
+            <span className="mt-1 inline-block self-start uppercase tracking-wide bg-gray-200 text-gray-700 px-2 py-0.5 rounded">
               System (read-only)
             </span>
           )}
         </div>
-        {isOwn && (
+        {canEdit && (
           <div className="flex gap-2 shrink-0">
-            <Button
-              type="button"
-              variant="outline"
-              className="text-red-600 hover:text-red-700"
-              onClick={handleDelete}
-            >
-              Delete
-            </Button>
+            {!isDraft && (
+              <Button
+                type="button"
+                variant="outline"
+                className="text-red-600 hover:text-red-700"
+                onClick={handleDelete}
+              >
+                Delete
+              </Button>
+            )}
             <Button type="button" onClick={handleSave} disabled={isSaving}>
               {isSaving ? "Saving…" : "Save"}
             </Button>
@@ -110,32 +183,67 @@ export default function SkillEditor({ skillId, onDeleted }: SkillEditorProps) {
         )}
       </div>
 
+      {/* Name Field */}
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="skill-name" className="font-semibold text-gray-700">
+          Name
+        </label>
+        <Input
+          id="skill-name"
+          type="text"
+          value={draftName}
+          onChange={(e) => setDraftName(e.target.value)}
+          disabled={readOnly}
+          placeholder="e.g. my_skill"
+          className="font-mono"
+        />
+      </div>
+
+      {/* Description Field */}
       <div className="flex flex-col gap-1.5">
         <label
-          htmlFor="skill-raw"
-          className="text-sm font-semibold text-gray-700"
+          htmlFor="skill-description"
+          className="font-semibold text-gray-700"
         >
-          Skill source
+          Description
+        </label>
+        <Input
+          id="skill-description"
+          type="text"
+          value={draftDescription}
+          onChange={(e) => setDraftDescription(e.target.value)}
+          disabled={readOnly}
+          placeholder="Short description used to match this skill"
+          className=""
+        />
+      </div>
+
+      {/* Content Field */}
+      <div className="flex flex-col gap-1.5 flex-1 min-h-0">
+        <label htmlFor="skill-content" className="font-semibold text-gray-700">
+          Content
         </label>
         <textarea
-          id="skill-raw"
-          value={draft}
+          id="skill-content"
+          value={draftContent}
           readOnly={readOnly}
-          onChange={(e) => setDraft(e.target.value)}
-          className="w-full font-mono text-xs border rounded-md px-3 py-2 bg-white min-h-[320px] flex-1"
+          onChange={(e) => setDraftContent(e.target.value)}
+          placeholder="The full prompt body loaded by Nolë…"
+          className="w-full font-mono border rounded-md px-3 py-2 bg-white flex-1 resize-none"
         />
         <p className="text-xs text-gray-500">
-          Front-matter (<code>---</code>) at the top defines{" "}
-          <code>name</code> and <code>description</code>. The body below is the
-          full prompt loaded by Nolë.
+          The body is the full prompt loaded by Nolë. Markdown format supported.
         </p>
       </div>
 
-      <SkillAttachments
-        skillId={skill._id}
-        attachments={skill.attachments}
-        readOnly={readOnly}
-      />
+      {/* Attachments Section (only for saved skills) */}
+      {isExisting && skill && (
+        <SkillAttachments
+          skillId={skill._id}
+          attachments={skill.attachments}
+          readOnly={readOnly}
+        />
+      )}
     </div>
   );
 }

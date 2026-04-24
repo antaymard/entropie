@@ -79,7 +79,10 @@ export default function SkillAttachments({
     }
   };
 
-  const handleRemove = async (attachmentId: Id<"skillAttachments">, name: string) => {
+  const handleRemove = async (
+    attachmentId: Id<"skillAttachments">,
+    name: string,
+  ) => {
     if (!confirm(`Remove attachment "${name}"?`)) return;
     try {
       await removeAttachment({ attachmentId });
@@ -176,7 +179,7 @@ export default function SkillAttachments({
               value={newContent}
               onChange={(e) => setNewContent(e.target.value)}
               placeholder="Paste the attachment content here…"
-              className="w-full font-mono text-xs border rounded-md px-3 py-2 bg-white min-h-[160px]"
+              className="w-full font-mono border rounded-md px-3 py-2 bg-white min-h-40"
             />
           </div>
 

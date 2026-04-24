@@ -204,12 +204,7 @@ async function fetchTitleData(
         if (nd) {
           if (typeof nd.values?.text === "string") text = nd.values.text;
           const lvl = nd.values?.level;
-          if (
-            lvl === "h1" ||
-            lvl === "h2" ||
-            lvl === "h3" ||
-            lvl === "p"
-          ) {
+          if (lvl === "h1" || lvl === "h2" || lvl === "h3" || lvl === "p") {
             level = lvl;
           }
         }
@@ -242,7 +237,8 @@ function findNearestTitleAbove(
     if (vertGap < 0 || vertGap > IMPLICIT_VERTICAL_THRESHOLD) continue;
 
     const titleLeft = title.position.x - IMPLICIT_HORIZONTAL_MARGIN;
-    const titleRight = title.position.x + title.width + IMPLICIT_HORIZONTAL_MARGIN;
+    const titleRight =
+      title.position.x + title.width + IMPLICIT_HORIZONTAL_MARGIN;
     if (nodeLeft > titleRight || nodeRight < titleLeft) continue;
 
     if (vertGap < bestGap) {
@@ -295,7 +291,12 @@ function buildRank1Hub(
       const node = nodeById.get(childId);
       if (node) {
         assignedLeaves.add(childId);
-        leaves.push({ id: childId, type: node.type, title: null, infoWeight: 0 });
+        leaves.push({
+          id: childId,
+          type: node.type,
+          title: null,
+          infoWeight: 0,
+        });
       }
     }
   }
@@ -305,7 +306,12 @@ function buildRank1Hub(
       const node = nodeById.get(childId);
       if (node) {
         assignedLeaves.add(childId);
-        leaves.push({ id: childId, type: node.type, title: null, infoWeight: 0 });
+        leaves.push({
+          id: childId,
+          type: node.type,
+          title: null,
+          infoWeight: 0,
+        });
       }
     }
   }
@@ -352,7 +358,12 @@ function buildRank2Hub(
       const node = nodeById.get(childId);
       if (node) {
         assignedLeaves.add(childId);
-        leaves.push({ id: childId, type: node.type, title: null, infoWeight: 0 });
+        leaves.push({
+          id: childId,
+          type: node.type,
+          title: null,
+          infoWeight: 0,
+        });
       }
     }
   }
@@ -362,7 +373,12 @@ function buildRank2Hub(
       const node = nodeById.get(childId);
       if (node) {
         assignedLeaves.add(childId);
-        leaves.push({ id: childId, type: node.type, title: null, infoWeight: 0 });
+        leaves.push({
+          id: childId,
+          type: node.type,
+          title: null,
+          infoWeight: 0,
+        });
       }
     }
   }
@@ -395,7 +411,10 @@ async function fetchLeafNodeDatas(
   leafIds: string[],
   nodeById: Map<string, RawCanvasNode>,
 ): Promise<Map<string, { type: string; values: Record<string, unknown> }>> {
-  const map = new Map<string, { type: string; values: Record<string, unknown> }>();
+  const map = new Map<
+    string,
+    { type: string; values: Record<string, unknown> }
+  >();
   await Promise.all(
     leafIds.map(async (lid) => {
       const node = nodeById.get(lid);
@@ -522,8 +541,8 @@ function formatMinimapText(hubs: Hub[]): string {
 
 function formatRank1Hub(hub: Hub): string {
   const { title, childHubs, leaves } = hub;
-  const label = title.text.trim() || title.id.slice(0, 8);
-  const header = `📍 ${label} (x:${Math.round(title.position.x)}, y:${Math.round(title.position.y)})`;
+  const textPart = title.text.trim() ? ` ${title.text.trim()}` : "";
+  const header = `📍 ${title.id.slice(0, 8)}${textPart} (x:${Math.round(title.position.x)}, y:${Math.round(title.position.y)})`;
 
   const lines: string[] = [header];
 
@@ -544,9 +563,9 @@ function formatRank2Hub(hub: Hub, isLast: boolean): string[] {
   const { title, leaves, totalChildren } = hub;
   const prefix = isLast ? "└─" : "├─";
   const indent = isLast ? "   " : "│  ";
-  const label = title.text.trim() || title.id.slice(0, 8);
+  const textPart = title.text.trim() ? ` ${title.text.trim()}` : "";
   const childrenLabel = totalChildren > 0 ? ` (${totalChildren} children)` : "";
-  const header = `${prefix} ${title.id.slice(0, 8)} [title] ${label}${childrenLabel}`;
+  const header = `${prefix} ${title.id.slice(0, 8)} [title]${textPart}${childrenLabel}`;
 
   const leafLines = leaves.map((leaf, i) => {
     const isLastLeaf = i === leaves.length - 1;

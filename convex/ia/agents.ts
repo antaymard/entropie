@@ -7,11 +7,6 @@ import type { ToolSet } from "ai";
 import { stepCountIs } from "ai";
 import { toolAgentNames, type ThreadCtx } from "./agentConfig";
 import { getToolsForAgent } from "./tools";
-import {
-  createActionTool,
-  defineAgentApi,
-  streamHandlerAction,
-} from "convex-durable-agents";
 import { generateSupervisorSystemPrompt } from "./systemPrompts/supervisorSystemPrompt";
 
 export const chatModelOptions = [
@@ -21,19 +16,19 @@ export const chatModelOptions = [
     price: "Free",
   },
   {
-    label: "Kimi K.2.6",
-    value: "moonshotai/kimi-k2.6",
-    price: "0.60_2.80",
-  },
-  {
     label: "GML 5.1",
     value: "z-ai/glm-5.1",
     price: "1.05_3.50",
   },
   {
-    label: "Qwen 3.5 Flash",
-    value: "qwen/qwen3.5-flash-02-23",
-    price: "0.065_0.26",
+    label: "Kimi K.2.6",
+    value: "moonshotai/kimi-k2.6",
+    price: "0.60_2.80",
+  },
+  {
+    label: "DeepSeek V4 Flash",
+    value: "deepseek/deepseek-v4-flash",
+    price: "0.14_0.28",
   },
 ] as const;
 
@@ -124,6 +119,7 @@ export function createSupervisorAgent({
   return new Agent(components.agent, {
     name: "Supervisor",
     stopWhen: stepCountIs(20),
+    instructions: generateSupervisorSystemPrompt(),
     languageModel: model ?? defaultModels.nole,
     tools: getToolsForAgent({
       agentName: toolAgentNames.supervisor,

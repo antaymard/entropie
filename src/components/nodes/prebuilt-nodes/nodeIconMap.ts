@@ -9,6 +9,7 @@ import {
   TbNews,
   TbCode,
   TbTable,
+  TbAppWindow,
 } from "react-icons/tb";
 
 export const NODE_TYPE_ICON_MAP: Record<string, IconType> = {
@@ -21,4 +22,5 @@ export const NODE_TYPE_ICON_MAP: Record<string, IconType> = {
   fetch: TbApi,
   embed: TbCode,
   table: TbTable,
+  app: TbAppWindow,
 };

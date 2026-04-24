@@ -9,6 +9,7 @@ const nodeTypeValues = [
   "title",
   "pdf",
   "table",
+  "app",
 ] as const;
 
 const nodeTypeValidator = v.union(

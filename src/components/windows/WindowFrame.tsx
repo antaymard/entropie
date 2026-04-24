@@ -11,13 +11,14 @@ import { useNodeDataTitle } from "@/hooks/useNodeTitle";
 import { useNodeData } from "@/hooks/useNodeData";
 import { getNodeIcon } from "@/components/utils/nodeDataDisplayUtils";
 import { X, Minus, Save } from "lucide-react";
-import { TbLocation } from "react-icons/tb";
+import { TbLocation, TbRefresh } from "react-icons/tb";
 import { useReactFlow } from "@xyflow/react";
 import DocumentWindow from "./prebuilt/DocumentWindow";
 import EmbedWindow from "./prebuilt/EmbedWindow";
 import ImageWindow from "./prebuilt/ImageWindow";
 import PdfWindow from "./prebuilt/PdfWindow";
 import TableWindow from "./prebuilt/TableWindow";
+import AppWindow from "./prebuilt/AppWindow";
 import { WindowFrameContext } from "./WindowFrameContext";
 import ConfirmableButton from "@/components/ui/ConfirmableButton";
 import { useIsNodeAttached, useNoleStore } from "@/stores/noleStore";
@@ -31,6 +32,8 @@ function WindowContent({ openedWindow }: { openedWindow: OpenedWindow }) {
       return <DocumentWindow xyNodeId={xyNodeId} nodeDataId={nodeDataId} />;
     case "embed":
       return <EmbedWindow nodeDataId={nodeDataId} />;
+    case "app":
+      return <AppWindow xyNodeId={xyNodeId} nodeDataId={nodeDataId} />;
     case "pdf":
       return <PdfWindow xyNodeId={xyNodeId} nodeDataId={nodeDataId} />;
     case "image":
@@ -71,6 +74,9 @@ export default function WindowFrame({
   const { xyNodeId, nodeDataId } = openedWindow;
   const [isDirty, setDirty] = useState(false);
   const [saveHandler, setSaveHandler] = useState<(() => void) | null>(null);
+  const [refreshHandler, setRefreshHandler] = useState<(() => void) | null>(
+    null,
+  );
   const moveWindow = useWindowsStore((s) => s.moveWindow);
   const resizeWindow = useWindowsStore((s) => s.resizeWindow);
   const closeWindow = useWindowsStore((s) => s.closeWindow);
@@ -261,7 +267,13 @@ export default function WindowFrame({
   }, [xyNodeId, moveWindow, resizeWindow, snapWindow, updateSnapPreview]);
 
   return (
-    <WindowFrameContext.Provider value={{ setDirty, setSaveHandler }}>
+    <WindowFrameContext.Provider
+      value={{
+        setDirty,
+        setSaveHandler: (fn) => setSaveHandler(() => fn),
+        setRefreshHandler: (fn) => setRefreshHandler(() => fn),
+      }}
+    >
       <div
         className={cn(
           "relative h-full w-full",
@@ -351,6 +363,17 @@ export default function WindowFrame({
             <span className="min-w-0 flex-1 truncate text-sm font-medium">
               {title ?? "—"}
             </span>
+            {refreshHandler && (
+              <button
+                data-window-control="true"
+                className="shrink-0 rounded p-0.5 opacity-50 hover:bg-blue-500/15 hover:text-blue-600 hover:opacity-100 h-full aspect-square flex items-center justify-center"
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={refreshHandler}
+                title="Refresh window"
+              >
+                <TbRefresh size={13} />
+              </button>
+            )}
             {saveHandler && (
               <button
                 data-window-control="true"

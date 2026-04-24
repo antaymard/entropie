@@ -10,6 +10,7 @@ import { useAppNodeBridge } from "@/hooks/useAppNodeBridge";
 import { buildSrcdoc } from "@/lib/buildSrcdoc";
 import NodeFrame from "../NodeFrame";
 import { getNodeDataTitle } from "@/components/utils/nodeDataDisplayUtils";
+import { cn } from "@/lib/utils";
 
 type SourceNode = {
   id: string;
@@ -103,15 +104,26 @@ function AppNode(xyNode: Node) {
     return buildSrcdoc(code, state);
   }, [values?.code, values?.state]);
 
+  const appTitle = "App";
+
   return (
     <NodeFrame xyNode={xyNode}>
-      <iframe
-        ref={iframeRef}
-        srcDoc={srcdoc}
-        sandbox="allow-scripts"
-        className="w-full h-full border-0"
-        title="App Node"
-      />
+      <div className="w-full h-full flex flex-col overflow-hidden rounded-[4px]">
+        <div
+          className={cn(
+            "h-8 shrink-0 px-2 py-1.5 truncate line-clamp-1 font-medium rounded-t-[4px] border-b bg-white/60",
+          )}
+        >
+          {appTitle}
+        </div>
+        <iframe
+          ref={iframeRef}
+          srcDoc={srcdoc}
+          sandbox="allow-scripts"
+          className="w-full flex-1 min-h-0 border-0"
+          title="App Node"
+        />
+      </div>
     </NodeFrame>
   );
 }

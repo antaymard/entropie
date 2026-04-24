@@ -35,6 +35,7 @@ import type * as ia_subagentRuntime from "../ia/subagentRuntime.js";
 import type * as ia_systemPrompts_noleSystemPrompt from "../ia/systemPrompts/noleSystemPrompt.js";
 import type * as ia_systemPrompts_supervisorSystemPrompt from "../ia/systemPrompts/supervisorSystemPrompt.js";
 import type * as ia_tools__toolTemplate from "../ia/tools/_toolTemplate.js";
+import type * as ia_tools_appNodeStringReplaceContentTool from "../ia/tools/appNodeStringReplaceContentTool.js";
 import type * as ia_tools_createConnectionTool from "../ia/tools/createConnectionTool.js";
 import type * as ia_tools_createNodeTool from "../ia/tools/createNodeTool.js";
 import type * as ia_tools_documentInsertContentTool from "../ia/tools/documentInsertContentTool.js";
@@ -139,6 +140,7 @@ declare const fullApi: ApiFromModules<{
   "ia/systemPrompts/noleSystemPrompt": typeof ia_systemPrompts_noleSystemPrompt;
   "ia/systemPrompts/supervisorSystemPrompt": typeof ia_systemPrompts_supervisorSystemPrompt;
   "ia/tools/_toolTemplate": typeof ia_tools__toolTemplate;
+  "ia/tools/appNodeStringReplaceContentTool": typeof ia_tools_appNodeStringReplaceContentTool;
   "ia/tools/createConnectionTool": typeof ia_tools_createConnectionTool;
   "ia/tools/createNodeTool": typeof ia_tools_createNodeTool;
   "ia/tools/documentInsertContentTool": typeof ia_tools_documentInsertContentTool;

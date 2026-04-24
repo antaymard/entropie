@@ -76,7 +76,7 @@ const nodeUiConfig: Record<string, NodeUiConfigItem> = {
   app: {
     nodeComponent: AppNode,
     nodeIcon: NODE_TYPE_ICON_MAP.app,
-    canBeOpenInWindow: false,
+    canBeOpenInWindow: true,
   },
 };
 

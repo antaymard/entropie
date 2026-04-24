@@ -21,6 +21,7 @@ const WINDOW_SIZE_BY_TYPE: Partial<Record<NodeType, WindowSizePreset>> = {
   document: { widthRatio: 1 / 2.66, heightRatio: 0.9 },
   image: { width: 600, height: 600 },
   embed: { width: 500, height: 500 },
+  app: { widthRatio: 1 / 2, heightRatio: 0.9 },
   link: { width: 480, height: 360 },
   pdf: { widthRatio: 1 / 2.66, heightRatio: 0.9 },
   value: { width: 400, height: 300 },

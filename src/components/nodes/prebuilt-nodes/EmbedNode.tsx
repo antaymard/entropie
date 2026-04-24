@@ -10,7 +10,7 @@ import {
 } from "@/components/shadcn/popover";
 import { Button } from "@/components/shadcn/button";
 import { Input } from "@/components/shadcn/input";
-import { TbCode, TbMaximize, TbPencil } from "react-icons/tb";
+import { TbMaximize, TbPencil, TbRefresh } from "react-icons/tb";
 import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
 import { useNodeDataValues } from "@/hooks/useNodeData";
 import { useNodeDataTitle } from "@/hooks/useNodeTitle";
@@ -19,6 +19,7 @@ import { useWindowsStore } from "@/stores/windowsStore";
 import { colors } from "@/components/ui/styles";
 import type { colorsEnum } from "@/types/domain";
 import { cn } from "@/lib/utils";
+import { NODE_TYPE_ICON_MAP } from "./nodeIconMap";
 
 type EmbedType =
   | "youtube"
@@ -115,10 +116,13 @@ function EmbedNode(xyNode: Node) {
   const [inputUrl, setInputUrl] = useState("");
   const [inputTitle, setInputTitle] = useState("");
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const embedValue = values?.embed as EmbedValueType | undefined;
   const isTitleVariant = xyNode.data.variant === "title";
   const nodeColor = colors[(xyNode.data?.color as colorsEnum) || "default"];
+
+  const Icon = NODE_TYPE_ICON_MAP.embed;
 
   const handleOpenWindow = useCallback(() => {
     if (!nodeDataId) return;
@@ -209,7 +213,7 @@ function EmbedNode(xyNode: Node) {
               nodeColor.textColor,
             )}
           >
-            <TbCode size={18} className="shrink-0" />
+            <Icon size={18} className="shrink-0" />
             <p className="truncate flex-1 min-w-0" title={embedTitle}>
               {embedTitle}
             </p>
@@ -218,12 +222,30 @@ function EmbedNode(xyNode: Node) {
           <div className="w-full h-full flex flex-col overflow-hidden rounded-[4px]">
             <div
               className={cn(
-                "h-8 shrink-0 px-2 py-1.5 truncate line-clamp-1 font-medium rounded-t-[4px]",
+                "flex items-center gap-2 h-8 shrink-0 px-2 py-1.5 font-medium rounded-t-[4px]",
               )}
             >
-              {embedValue.title ?? "Embed"}
+              <Icon size={18} className="shrink-0" />
+              <p
+                className="truncate flex-1 min-w-0"
+                title={embedValue.title ?? "Embed"}
+              >
+                {embedValue.title ?? "Embed"}
+              </p>
+              <button
+                className="shrink-0 text-slate-500 hover:text-slate-900 transition-colors p-1 rounded hover:bg-slate-100"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setRefreshKey((k) => k + 1);
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+                title="Refresh embed"
+              >
+                <TbRefresh size={14} />
+              </button>
             </div>
             <iframe
+              key={refreshKey}
               src={embedValue.embedUrl}
               title={embedValue.title ?? "Embedded content"}
               className="w-full flex-1 min-h-0 border-0"
@@ -234,7 +256,7 @@ function EmbedNode(xyNode: Node) {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground select-none">
-            <TbCode size={28} />
+            <Icon size={28} />
             <span className="text-sm">
               Paste a URL or &lt;iframe&gt; embed code
             </span>

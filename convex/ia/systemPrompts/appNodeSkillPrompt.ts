@@ -32,19 +32,38 @@ Previously saved state, or "null" on first run. Available immediately at first r
 Returns all data from nodes connected via edges. No arguments needed.
 
 Signature:
-\`\`\`typescript
 async getData(): Promise<Record<string, {
   id: string;
-  type: "table" | "document" | "value" | "image" | "link";
+  type: "table" | "document" | "value" | "image" | "link" | "title" | "pdf";
   name: string;
-  columns?: { id: string; name: string; type: string }[];  // table
-  rows?: Record<string, any>[];                              // table
-  value?: string | number;                                   // value
-  markdown?: string;                                         // document
-  url?: string;                                              // image, link
-  title?: string;                                            // link
+  // --- table ---
+  columns?: { id: string; name: string; type: string }[];
+  // rows properties are flattened: row.annee NOT row.cells.annee
+  rows?: Record<string, any>[];
+  // --- document ---
+  markdown?: string;
+  // --- value ---
+  value?: string | number;
+  label?: string;
+  unit?: string;
+  // --- image ---
+  url?: string;              // first image URL
+  images?: { url: string }[]; // all images
+  // --- link ---
+  title?: string;
+  // --- title node ---
+  text?: string;
+  level?: string;
+  // --- pdf ---
+  files?: { url: string; filename: string; mimeType?: string }[];
 }>>
-\`\`\`
+
+**Important**: For table rows, properties are directly on the row object. Use row.annee, not row.cells.annee:
+
+// correct
+const labels = rows.map((r) => r.annee);
+// incorrect: rows are already flattened
+const labels = rows.map((r) => r.cells?.annee);
 
 #### "nolenor.saveState(state)" (async)
 

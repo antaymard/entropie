@@ -19,6 +19,8 @@ function preprocessTextWithNodeLinks(text: string): string {
   // 3: a000a000a (1 lettre puis blocs de 3 chiffres, 1 lettre)
   return text.replace(
     /\b((?:\d{3}[A-Za-z])+|(?:[A-Za-z]{3}\d)+|[A-Za-z](?:\d{3}[A-Za-z])+)\b/g,
+    (match) => `[${match}](#node-${match})`,
+  );
 }
 
 const markdownComponents: Components = {

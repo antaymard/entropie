@@ -1,4 +1,8 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 // Configuration du client R2
@@ -54,5 +58,7 @@ export async function deleteObject(key: string): Promise<void> {
     Bucket: BUCKET_NAME,
     Key: key,
   });
+  console.log(`[deleteObject] Deleting R2 object with key: ${key}`);
   await r2Client.send(command);
+  console.log(`[deleteObject] Successfully deleted R2 object with key: ${key}`);
 }

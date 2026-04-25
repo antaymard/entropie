@@ -115,6 +115,44 @@ export async function deleteNodeDataWithCascade(
   ctx: MutationCtx,
   { nodeDataId }: { nodeDataId: Id<"nodeDatas"> },
 ): Promise<void> {
+  const nodeData = await ctx.db.get(nodeDataId);
+  const r2Keys: string[] = [];
+
+  if (nodeData) {
+    if (nodeData.type === "pdf") {
+      const files = nodeData.values?.files;
+      if (Array.isArray(files)) {
+        for (const file of files) {
+          if (
+            file &&
+            typeof file === "object" &&
+            typeof (file as Record<string, unknown>).key === "string"
+          ) {
+            r2Keys.push((file as Record<string, unknown>).key as string);
+          }
+        }
+      }
+    } else if (nodeData.type === "image") {
+      const publicUrlBase = process.env.R2_PUBLIC_URL;
+      const images = nodeData.values?.images;
+      if (Array.isArray(images) && publicUrlBase) {
+        for (const image of images) {
+          if (
+            image &&
+            typeof image === "object" &&
+            typeof (image as Record<string, unknown>).url === "string"
+          ) {
+            const url = (image as Record<string, unknown>).url as string;
+            const prefix = `${publicUrlBase}/`;
+            if (url.startsWith(prefix)) {
+              r2Keys.push(url.slice(prefix.length));
+            }
+          }
+        }
+      }
+    }
+  }
+
   // Delete memories
   const memories = await ctx.db
     .query("memories")
@@ -129,6 +167,12 @@ export async function deleteNodeDataWithCascade(
 
   // Delete the nodeData itself
   await ctx.db.delete(nodeDataId);
+
+  if (r2Keys.length > 0) {
+    await ctx.scheduler.runAfter(0, internal.uploads.deleteR2Files, {
+      keys: r2Keys,
+    });
+  }
 }
 
 export async function updateValues(

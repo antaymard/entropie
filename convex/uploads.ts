@@ -1,6 +1,7 @@
+"use node";
 import { v } from "convex/values";
-import { action } from "./_generated/server";
-import { generatePresignedUrl, getPublicUrl } from "./lib/r2";
+import { action, internalAction } from "./_generated/server";
+import { generatePresignedUrl, getPublicUrl, deleteObject } from "./lib/r2";
 import { requireAuth } from "./lib/auth";
 
 // Single file upload - Action publique
@@ -29,6 +30,21 @@ export const generateUploadUrl = action({
       publicUrl, // À sauvegarder dans le node après upload
       key, // Pour référence/delete futur
     };
+  },
+});
+
+export const deleteR2Files = internalAction({
+  args: { keys: v.array(v.string()) },
+  returns: v.null(),
+  handler: async (_ctx, { keys }) => {
+    await Promise.allSettled(
+      keys.map((key) =>
+        deleteObject(key).catch((err) =>
+          console.error(`[deleteR2Files] Failed to delete key "${key}":`, err),
+        ),
+      ),
+    );
+    return null;
   },
 });
 

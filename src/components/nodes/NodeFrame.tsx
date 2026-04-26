@@ -1,5 +1,5 @@
 import { NodeResizer, type Node } from "@xyflow/react";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
 import { cn } from "@/lib/utils";
 import { colors } from "@/components/ui/styles";
 import type { colorsEnum } from "@/types/domain";
@@ -20,6 +20,7 @@ function NodeFrame({
   resizable?: boolean;
 }) {
   const nodeColor = colors[(xyNode?.data?.color as colorsEnum) || "default"];
+  const [isResizing, setIsResizing] = useState(false);
   const canDrag = true;
   const openWindow = useWindowsStore((state) => state.openWindow);
   const isAttachedToNole = useIsNodeAttached(xyNode.id);
@@ -44,6 +45,8 @@ function NodeFrame({
       <AutomationIndicator xyNode={xyNode} />
       <NodeResizer
         isVisible={resizable && xyNode?.selected}
+        onResizeStart={() => setIsResizing(true)}
+        onResizeEnd={() => setIsResizing(false)}
         lineStyle={{
           borderWidth: 2,
         }}
@@ -71,12 +74,13 @@ function NodeFrame({
       >
         <div
           className={cn(
-            "h-full rounded-[4px]",
+            "h-full rounded-[4px] relative",
             xyNode.data.color === "transparent"
               ? "bg-transparent"
               : "bg-white/80",
           )}
         >
+          {isResizing && <div className="absolute inset-0 z-10" />}
           {children}
         </div>
       </div>

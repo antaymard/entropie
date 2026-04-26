@@ -50,7 +50,9 @@ export const readImageTool = createTool({
       const ONE_MB = 1024 * 1024;
       if (nodeBuffer.length > ONE_MB) {
         console.log(`Image size is ${nodeBuffer.length} bytes, resizing...`);
-        const sharp = (await import("sharp")).default;
+        const sharpModule = "sharp";
+        // Tell the bundler to ignore this dynamic import so it doesn't blow up Edge/V8 runtimes
+        const sharp = (await import(/* @vite-ignore */ sharpModule)).default;
         nodeBuffer = await sharp(nodeBuffer)
           .resize({
             width: 1024,

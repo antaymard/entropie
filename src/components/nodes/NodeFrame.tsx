@@ -24,9 +24,9 @@ function NodeFrame({
   const canDrag = true;
   const openWindow = useWindowsStore((state) => state.openWindow);
   const isAttachedToNole = useIsNodeAttached(xyNode.id);
+  const nodeType = xyNode.type;
 
   const handleDoubleClick = useCallback(() => {
-    const nodeType = xyNode.type;
     const nodeDataId = xyNode.data?.nodeDataId as Id<"nodeDatas"> | undefined;
 
     if (nodeDataId && canNodeTypeBeOpenedInWindow(nodeType)) {
@@ -36,9 +36,12 @@ function NodeFrame({
         nodeType: nodeType as any,
       });
     }
-  }, [xyNode, openWindow]);
+  }, [xyNode.data?.nodeDataId, xyNode.id, nodeType, openWindow]);
 
   if (!xyNode) return null;
+
+  const hasDragAndResizeLatencyBug = nodeType === "app" || nodeType === "embed";
+
   return (
     <>
       <NodeHandles showSourceHandles={xyNode?.selected} nodeId={xyNode.id} />
@@ -80,7 +83,9 @@ function NodeFrame({
               : "bg-white/80",
           )}
         >
-          {isResizing && <div className="absolute inset-0 z-10" />}
+          {hasDragAndResizeLatencyBug && (isResizing || xyNode.dragging) && (
+            <div className="absolute inset-0 z-10" />
+          )}
           {children}
         </div>
       </div>

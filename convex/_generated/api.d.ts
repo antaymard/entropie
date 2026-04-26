@@ -57,7 +57,6 @@ import type * as ia_tools_tableInsertRowsTool from "../ia/tools/tableInsertRowsT
 import type * as ia_tools_tableUpdateRowsTool from "../ia/tools/tableUpdateRowsTool.js";
 import type * as ia_tools_tableUpdateSchemaTool from "../ia/tools/tableUpdateSchemaTool.js";
 import type * as ia_tools_toolHelpers from "../ia/tools/toolHelpers.js";
-import type * as ia_tools_viewImageTool from "../ia/tools/viewImageTool.js";
 import type * as ia_tools_websearchTool from "../ia/tools/websearchTool.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_getNodeDataTitle from "../lib/getNodeDataTitle.js";
@@ -163,7 +162,6 @@ declare const fullApi: ApiFromModules<{
   "ia/tools/tableUpdateRowsTool": typeof ia_tools_tableUpdateRowsTool;
   "ia/tools/tableUpdateSchemaTool": typeof ia_tools_tableUpdateSchemaTool;
   "ia/tools/toolHelpers": typeof ia_tools_toolHelpers;
-  "ia/tools/viewImageTool": typeof ia_tools_viewImageTool;
   "ia/tools/websearchTool": typeof ia_tools_websearchTool;
   "lib/auth": typeof lib_auth;
   "lib/getNodeDataTitle": typeof lib_getNodeDataTitle;

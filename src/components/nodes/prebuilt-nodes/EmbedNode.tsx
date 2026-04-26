@@ -16,6 +16,7 @@ import { useNodeDataValues } from "@/hooks/useNodeData";
 import { useNodeDataTitle } from "@/hooks/useNodeTitle";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { useWindowsStore } from "@/stores/windowsStore";
+import { useIframeCtrlOverlay } from "@/hooks/useIframeCtrlOverlay";
 import { colors } from "@/components/ui/styles";
 import type { colorsEnum } from "@/types/domain";
 import { cn } from "@/lib/utils";
@@ -121,6 +122,7 @@ function EmbedNode(xyNode: Node) {
   const embedValue = values?.embed as EmbedValueType | undefined;
   const isTitleVariant = xyNode.data.variant === "title";
   const nodeColor = colors[(xyNode.data?.color as colorsEnum) || "default"];
+  const { showOverlay, onMouseEnter, onMouseLeave } = useIframeCtrlOverlay();
 
   const Icon = NODE_TYPE_ICON_MAP.embed;
 
@@ -244,15 +246,22 @@ function EmbedNode(xyNode: Node) {
                 <TbRefresh size={14} />
               </button>
             </div>
-            <iframe
-              key={refreshKey}
-              src={embedValue.embedUrl}
-              title={embedValue.title ?? "Embedded content"}
-              className="w-full flex-1 min-h-0 border-0"
-              allow="autoplay; fullscreen; clipboard-read; clipboard-write"
-              allowFullScreen
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
-            />
+            <div
+              className="relative flex-1 min-h-0"
+              onMouseEnter={onMouseEnter}
+              onMouseLeave={onMouseLeave}
+            >
+              <iframe
+                key={refreshKey}
+                src={embedValue.embedUrl}
+                title={embedValue.title ?? "Embedded content"}
+                className="w-full h-full border-0"
+                allow="autoplay; fullscreen; clipboard-read; clipboard-write"
+                allowFullScreen
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
+              />
+              {showOverlay && <div className="absolute inset-0" />}
+            </div>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground select-none">

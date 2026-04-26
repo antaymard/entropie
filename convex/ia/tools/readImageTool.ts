@@ -2,7 +2,6 @@
 
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
-import { reportToolProgress } from "../../automation/progressReporter";
 import { toolAgentNames } from "../agentConfig";
 import { type ToolConfig } from "./toolHelpers";
 
@@ -26,12 +25,8 @@ export const readImageTool = createTool({
   inputSchema: z.object({
     url: z.string().describe("The URL of the image to fetch and view."),
   }),
-  execute: async (ctx, input): Promise<ReadImageOutput> => {
+  execute: async (_ctx, input): Promise<ReadImageOutput> => {
     console.log(`🖼️ Reading image from URL: ${input.url}`);
-
-    await reportToolProgress(ctx, {
-      stepType: "tool_launched=view_image",
-    });
 
     try {
       const response = await fetch(input.url);
@@ -49,11 +44,6 @@ export const readImageTool = createTool({
 
       const buffer = await response.arrayBuffer();
       const data = Buffer.from(buffer).toString("base64");
-
-      await reportToolProgress(ctx, {
-        stepType: "tool_completed=view_image",
-        data: {},
-      });
 
       console.log(
         `✅ Image fetched (${buffer.byteLength} bytes, ${mediaType})`,

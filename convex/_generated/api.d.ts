@@ -46,6 +46,7 @@ import type * as ia_tools_listNodesTool from "../ia/tools/listNodesTool.js";
 import type * as ia_tools_loadSkillTool from "../ia/tools/loadSkillTool.js";
 import type * as ia_tools_memoryTool from "../ia/tools/memoryTool.js";
 import type * as ia_tools_openWebPageTool from "../ia/tools/openWebPageTool.js";
+import type * as ia_tools_readImageTool from "../ia/tools/readImageTool.js";
 import type * as ia_tools_readNodesTool from "../ia/tools/readNodesTool.js";
 import type * as ia_tools_readTaskTool from "../ia/tools/readTaskTool.js";
 import type * as ia_tools_runSubagent from "../ia/tools/runSubagent.js";
@@ -151,6 +152,7 @@ declare const fullApi: ApiFromModules<{
   "ia/tools/loadSkillTool": typeof ia_tools_loadSkillTool;
   "ia/tools/memoryTool": typeof ia_tools_memoryTool;
   "ia/tools/openWebPageTool": typeof ia_tools_openWebPageTool;
+  "ia/tools/readImageTool": typeof ia_tools_readImageTool;
   "ia/tools/readNodesTool": typeof ia_tools_readNodesTool;
   "ia/tools/readTaskTool": typeof ia_tools_readTaskTool;
   "ia/tools/runSubagent": typeof ia_tools_runSubagent;

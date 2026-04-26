@@ -20,7 +20,7 @@ import listNodesTool, { listNodesToolConfig } from "./listNodesTool";
 import loadSkillTool, { loadSkillToolConfig } from "./loadSkillTool";
 import memoryToolFactory, { memoryToolConfig } from "./memoryTool";
 import { openWebPageTool, openWebPageToolConfig } from "./openWebPageTool";
-import { readImageTool, readImageToolConfig } from "./readImageTool";
+import { viewImageTool, viewImageToolConfig } from "./viewImageTool";
 import readNodesTool, { readNodesToolConfig } from "./readNodesTool";
 import runSubagent, { runSubagentToolConfig } from "./runSubagent";
 import setNodeDataTool, { setNodeDataToolConfig } from "./setNodeDataTool";
@@ -75,8 +75,8 @@ const toolRegistry: ToolRegistration[] = [
     factory: ({ threadCtx }) => readNodesTool({ threadCtx }),
   },
   {
-    config: readImageToolConfig,
-    factory: () => readImageTool,
+    config: viewImageToolConfig,
+    factory: () => viewImageTool,
   },
   {
     config: openWebPageToolConfig,

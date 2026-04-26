@@ -46,7 +46,6 @@ import type * as ia_tools_listNodesTool from "../ia/tools/listNodesTool.js";
 import type * as ia_tools_loadSkillTool from "../ia/tools/loadSkillTool.js";
 import type * as ia_tools_memoryTool from "../ia/tools/memoryTool.js";
 import type * as ia_tools_openWebPageTool from "../ia/tools/openWebPageTool.js";
-import type * as ia_tools_readImageTool from "../ia/tools/readImageTool.js";
 import type * as ia_tools_readNodesTool from "../ia/tools/readNodesTool.js";
 import type * as ia_tools_readTaskTool from "../ia/tools/readTaskTool.js";
 import type * as ia_tools_runSubagent from "../ia/tools/runSubagent.js";
@@ -57,6 +56,7 @@ import type * as ia_tools_tableInsertRowsTool from "../ia/tools/tableInsertRowsT
 import type * as ia_tools_tableUpdateRowsTool from "../ia/tools/tableUpdateRowsTool.js";
 import type * as ia_tools_tableUpdateSchemaTool from "../ia/tools/tableUpdateSchemaTool.js";
 import type * as ia_tools_toolHelpers from "../ia/tools/toolHelpers.js";
+import type * as ia_tools_viewImageTool from "../ia/tools/viewImageTool.js";
 import type * as ia_tools_websearchTool from "../ia/tools/websearchTool.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_getNodeDataTitle from "../lib/getNodeDataTitle.js";
@@ -151,7 +151,6 @@ declare const fullApi: ApiFromModules<{
   "ia/tools/loadSkillTool": typeof ia_tools_loadSkillTool;
   "ia/tools/memoryTool": typeof ia_tools_memoryTool;
   "ia/tools/openWebPageTool": typeof ia_tools_openWebPageTool;
-  "ia/tools/readImageTool": typeof ia_tools_readImageTool;
   "ia/tools/readNodesTool": typeof ia_tools_readNodesTool;
   "ia/tools/readTaskTool": typeof ia_tools_readTaskTool;
   "ia/tools/runSubagent": typeof ia_tools_runSubagent;
@@ -162,6 +161,7 @@ declare const fullApi: ApiFromModules<{
   "ia/tools/tableUpdateRowsTool": typeof ia_tools_tableUpdateRowsTool;
   "ia/tools/tableUpdateSchemaTool": typeof ia_tools_tableUpdateSchemaTool;
   "ia/tools/toolHelpers": typeof ia_tools_toolHelpers;
+  "ia/tools/viewImageTool": typeof ia_tools_viewImageTool;
   "ia/tools/websearchTool": typeof ia_tools_websearchTool;
   "lib/auth": typeof lib_auth;
   "lib/getNodeDataTitle": typeof lib_getNodeDataTitle;

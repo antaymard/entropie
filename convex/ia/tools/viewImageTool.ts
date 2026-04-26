@@ -1,12 +1,10 @@
-"use node";
-
 import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
 import { toolAgentNames } from "../agentConfig";
 import { type ToolConfig } from "./toolHelpers";
 
-export const readImageToolConfig: ToolConfig = {
-  name: "read_image",
+export const viewImageToolConfig: ToolConfig = {
+  name: "view_image",
   authorized_agents: [
     toolAgentNames.nole,
     toolAgentNames.clone,
@@ -15,16 +13,16 @@ export const readImageToolConfig: ToolConfig = {
   ],
 };
 
-type ReadImageOutput =
+type ViewImageOutput =
   | { success: true; url: string }
   | { success: false; message: string };
 
-export const readImageTool = createTool({
+export const viewImageTool = createTool({
   description: "See an image from an URL (not a nodeId).",
   inputSchema: z.object({
     url: z.string().describe("The URL of the image to fetch and view."),
   }),
-  execute: async (_ctx, input): Promise<ReadImageOutput> => {
+  execute: async (_ctx, input): Promise<ViewImageOutput> => {
     console.log(`🖼️ Routing image URL to model: ${input.url}`);
     return { success: true, url: input.url };
   },
@@ -44,4 +42,4 @@ export const readImageTool = createTool({
   },
 });
 
-export default readImageTool;
+export default viewImageTool;

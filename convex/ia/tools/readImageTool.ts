@@ -20,8 +20,7 @@ type ReadImageOutput =
   | { success: false; message: string };
 
 export const readImageTool = createTool({
-  description:
-    "Fetch an image from a URL and inject it into the conversation so the multimodal model can see it directly. Use this when you need to visually inspect an image rather than receiving a textual description from another model.",
+  description: "See an image from an URL (not a nodeId).",
   inputSchema: z.object({
     url: z.string().describe("The URL of the image to fetch and view."),
   }),
@@ -39,16 +38,37 @@ export const readImageTool = createTool({
         "image/jpeg";
 
       if (!mediaType.startsWith("image/")) {
-        throw new Error(`Resource is not an image (content-type: ${mediaType})`);
+        throw new Error(
+          `Resource is not an image (content-type: ${mediaType})`,
+        );
       }
 
       const buffer = await response.arrayBuffer();
-      const data = Buffer.from(buffer).toString("base64");
+      let nodeBuffer: Buffer = Buffer.from(buffer);
+      let outputMediaType = mediaType;
+
+      const ONE_MB = 1024 * 1024;
+      if (nodeBuffer.length > ONE_MB) {
+        console.log(`Image size is ${nodeBuffer.length} bytes, resizing...`);
+        const sharp = (await import("sharp")).default;
+        nodeBuffer = await sharp(nodeBuffer)
+          .resize({
+            width: 1024,
+            height: 1024,
+            fit: "inside",
+            withoutEnlargement: true,
+          })
+          .jpeg({ quality: 80 })
+          .toBuffer();
+        outputMediaType = "image/jpeg";
+      }
+
+      const data = nodeBuffer.toString("base64");
 
       console.log(
-        `✅ Image fetched (${buffer.byteLength} bytes, ${mediaType})`,
+        `✅ Image fetched (${nodeBuffer.length} bytes, ${outputMediaType})`,
       );
-      return { success: true, data, mediaType };
+      return { success: true, data, mediaType: outputMediaType };
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
       console.error("Read image error:", error);

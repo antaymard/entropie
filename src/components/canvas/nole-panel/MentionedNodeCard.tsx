@@ -3,7 +3,6 @@ import { useNodeDataStore } from "@/stores/nodeDataStore";
 import { NODE_TYPE_ICON_MAP } from "@/components/nodes/prebuilt-nodes/nodeIconMap";
 import { getNodeDataTitle } from "@/components/utils/nodeDataDisplayUtils";
 import { cn } from "@/lib/utils";
-import { TbTrash } from "react-icons/tb";
 
 interface MentionedNodeCardProps {
   nodeId: string;
@@ -20,20 +19,19 @@ export function MentionedNodeCard({ nodeId, inline }: MentionedNodeCardProps) {
   const nodeData = nodeDataId ? nodeDatas.get(nodeDataId as any) : undefined;
 
   if (!xyNode || !nodeData) {
-    return (
-      <span
-        className={cn(
-          "group flex items-center gap-1.5 rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-400 shadow-sm cursor-not-allowed opacity-80",
-          inline
-            ? "inline-flex align-middle mx-1 -translate-y-0.5"
-            : "w-fit max-w-50",
-        )}
-        title="Node introuvable ou supprimé"
-      >
-        <TbTrash size={12} className="shrink-0" />
-        <span className="truncate max-w-37.5 italic">Node introuvable</span>
-      </span>
-    );
+    return null;
+    // <span
+    //   className={cn(
+    //     "group flex items-center gap-1.5 rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-400 shadow-sm cursor-not-allowed opacity-80",
+    //     inline
+    //       ? "inline-flex align-middle mx-1 -translate-y-0.5"
+    //       : "w-fit max-w-50",
+    //   )}
+    //   title="Node introuvable ou supprimé"
+    // >
+    //   <TbTrash size={12} className="shrink-0" />
+    //   <span className="truncate max-w-37.5 italic">Node introuvable</span>
+    // </span>
   }
 
   const title = getNodeDataTitle(nodeData);

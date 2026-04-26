@@ -21,6 +21,7 @@ import { TbPencil, TbMaximize, TbRefresh } from "react-icons/tb";
 import { colors } from "@/components/ui/styles";
 import type { colorsEnum } from "@/types/domain";
 import { useAppNodeRunner } from "@/hooks/useAppNodeRunner";
+import { useIframeCtrlOverlay } from "@/hooks/useIframeCtrlOverlay";
 import { NODE_TYPE_ICON_MAP } from "./nodeIconMap";
 
 function AppNode(xyNode: Node) {
@@ -40,6 +41,7 @@ function AppNode(xyNode: Node) {
   const Icon = NODE_TYPE_ICON_MAP.app;
 
   const { iframeRef, srcdoc } = useAppNodeRunner(xyNode.id, nodeDataId, values, refreshKey);
+  const { showOverlay, onMouseEnter, onMouseLeave } = useIframeCtrlOverlay();
 
   const handleOpenWindow = useCallback(() => {
     if (!nodeDataId) return;
@@ -142,14 +144,21 @@ function AppNode(xyNode: Node) {
                 <TbRefresh size={14} />
               </button>
             </div>
-            <iframe
-              key={refreshKey}
-              ref={iframeRef}
-              srcDoc={srcdoc}
-              sandbox="allow-scripts"
-              className="w-full flex-1 min-h-0 border-0"
-              title={appTitle ?? "App Node"}
-            />
+            <div
+              className="relative flex-1 min-h-0"
+              onMouseEnter={onMouseEnter}
+              onMouseLeave={onMouseLeave}
+            >
+              <iframe
+                key={refreshKey}
+                ref={iframeRef}
+                srcDoc={srcdoc}
+                sandbox="allow-scripts"
+                className="w-full h-full border-0"
+                title={appTitle ?? "App Node"}
+              />
+              {showOverlay && <div className="absolute inset-0" />}
+            </div>
           </div>
         )}
       </NodeFrame>

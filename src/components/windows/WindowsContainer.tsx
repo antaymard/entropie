@@ -54,7 +54,7 @@ export default function WindowsContainer() {
         .filter((openedWindow) =>
           existingNodeIds.includes(openedWindow.xyNodeId),
         )
-        .map((openedWindow, index) => (
+        .map((openedWindow) => (
           <div
             key={openedWindow.xyNodeId}
             className={cn(
@@ -69,7 +69,7 @@ export default function WindowsContainer() {
               top: openedWindow.position.y,
               width: openedWindow.width,
               height: openedWindow.height,
-              zIndex: 100 + index,
+              zIndex: 100 + openedWindow.zIndex,
             }}
           >
             <WindowFrame

@@ -160,6 +160,7 @@ export interface OpenedWindow {
   nodeDataId: Id<"nodeDatas">;
   nodeType: NodeType;
   windowState: OpenedWindowState;
+  zIndex: number;
   preSnapSize?: { width: number; height: number };
 }
 
@@ -170,6 +171,7 @@ type OpenedWindowPayload = Pick<
 
 interface WindowsStore {
   openedWindows: OpenedWindow[];
+  topZIndex: number;
   dirtyNodeIds: string[];
   addDirtyNode: (xyNodeId: string) => void;
   removeDirtyNode: (xyNodeId: string) => void;
@@ -193,6 +195,7 @@ export const useWindowsStore = create<WindowsStore>()(
   devtools(
     (set) => ({
       openedWindows: [],
+      topZIndex: 0,
       dirtyNodeIds: [],
       addDirtyNode: (xyNodeId: string) => {
         set((store) => {
@@ -219,27 +222,32 @@ export const useWindowsStore = create<WindowsStore>()(
             const currentWindow = store.openedWindows[existingWindowIndex];
 
             const isAlreadyOnTopAndVisible =
-              existingWindowIndex === store.openedWindows.length - 1 &&
+              currentWindow.zIndex === store.topZIndex &&
               currentWindow.windowState !== "minimized";
 
             if (isAlreadyOnTopAndVisible) return store;
 
-            // Unminimize if needed, then move to top (end of array = highest z-order)
-            const newWindow: OpenedWindow =
-              currentWindow.windowState === "minimized"
-                ? { ...currentWindow, windowState: "normal" }
-                : currentWindow;
+            const nextTopZIndex = store.topZIndex + 1;
+            const updatedWindow: OpenedWindow = {
+              ...currentWindow,
+              zIndex: nextTopZIndex,
+              windowState:
+                currentWindow.windowState === "minimized"
+                  ? "normal"
+                  : currentWindow.windowState,
+            };
 
-            const newOpenedWindows = [
-              ...store.openedWindows.filter((w) => w.xyNodeId !== xyNodeId),
-              newWindow,
-            ];
-
-            return { openedWindows: newOpenedWindows };
+            return {
+              openedWindows: store.openedWindows.map((w) =>
+                w.xyNodeId === xyNodeId ? updatedWindow : w,
+              ),
+              topZIndex: nextTopZIndex,
+            };
           }
 
           // If the window is not open, create a new one
           const { width, height } = getDefaultWindowSize(nodeType);
+          const nextTopZIndex = store.topZIndex + 1;
           const newWindow: OpenedWindow = {
             xyNodeId,
             nodeDataId,
@@ -248,10 +256,12 @@ export const useWindowsStore = create<WindowsStore>()(
             width,
             height,
             windowState: "normal",
+            zIndex: nextTopZIndex,
           };
 
           return {
             openedWindows: [...store.openedWindows, newWindow],
+            topZIndex: nextTopZIndex,
           };
         });
       },
@@ -262,17 +272,19 @@ export const useWindowsStore = create<WindowsStore>()(
           );
 
           if (existingWindowIndex < 0) return store;
-          if (existingWindowIndex === store.openedWindows.length - 1) {
-            return store;
-          }
 
-          const windowToBring = store.openedWindows[existingWindowIndex];
-          const nextOpenedWindows = [
-            ...store.openedWindows.filter((w) => w.xyNodeId !== xyNodeId),
-            windowToBring,
-          ];
+          const currentWindow = store.openedWindows[existingWindowIndex];
+          if (currentWindow.zIndex === store.topZIndex) return store;
 
-          return { openedWindows: nextOpenedWindows };
+          const nextTopZIndex = store.topZIndex + 1;
+          return {
+            openedWindows: store.openedWindows.map((w) =>
+              w.xyNodeId === xyNodeId
+                ? { ...w, zIndex: nextTopZIndex }
+                : w,
+            ),
+            topZIndex: nextTopZIndex,
+          };
         });
       },
       closeWindow: (xyNodeId: string) => {

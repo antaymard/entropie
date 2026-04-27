@@ -12,7 +12,27 @@ import {
 
 type BridgeMessage =
   | { type: "nolenor:getData"; requestId: string }
-  | { type: "nolenor:saveState"; requestId: string; state: unknown };
+  | { type: "nolenor:saveState"; requestId: string; state: unknown }
+  | { type: "nolenor:fetch"; requestId: string; url: string; options: RequestInit };
+
+function isPrivateUrl(raw: string): boolean {
+  let url: URL;
+  try { url = new URL(raw); } catch { return true; }
+  if (url.protocol !== "https:" && url.protocol !== "http:") return true;
+  const h = url.hostname;
+  if (h === "localhost") return true;
+  const parts = h.split(".").map(Number);
+  if (parts.length === 4 && parts.every((n) => !isNaN(n))) {
+    const [a, b] = parts;
+    if (a === 10) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && b === 168) return true;
+    if (a === 127) return true;
+    if (a === 0) return true;
+    if (a === 169 && b === 254) return true;
+  }
+  return false;
+}
 
 export function useAppNodeRunner(
   xyNodeId: string,
@@ -71,6 +91,21 @@ export function useAppNodeRunner(
         // e.data.state relies on the type coercion, so we cast it quietly
         await updateState((e.data as { state: unknown }).state);
         payload = { ok: true };
+      } else if (type === "nolenor:fetch") {
+        const { url, options } = e.data as { url: string; options: RequestInit; requestId: string; type: string };
+        if (isPrivateUrl(url)) {
+          payload = { ok: false, status: 0, statusText: "Blocked: private or invalid URL", data: null };
+        } else {
+          try {
+            const response = await fetch(url, options);
+            const text = await response.text();
+            let data: unknown;
+            try { data = JSON.parse(text); } catch { data = text; }
+            payload = { ok: response.ok, status: response.status, statusText: response.statusText, data };
+          } catch (err) {
+            payload = { ok: false, status: 0, statusText: String(err), data: null };
+          }
+        }
       } else {
         return;
       }

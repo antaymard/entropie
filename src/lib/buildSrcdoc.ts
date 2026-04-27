@@ -33,8 +33,9 @@ export function buildSrcdoc(code: string, state: unknown | null): string {
           window.parent.postMessage({ type, requestId, ...payload }, "*");
         });
       },
-      getData()        { return this._request("nolenor:getData", {}); },
-      saveState(state) { return this._request("nolenor:saveState", { state }); },
+      getData()              { return this._request("nolenor:getData", {}); },
+      saveState(state)       { return this._request("nolenor:saveState", { state }); },
+      fetch(url, options={}) { return this._request("nolenor:fetch", { url, options }); },
     };
 
     ${

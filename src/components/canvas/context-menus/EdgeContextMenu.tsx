@@ -2,29 +2,11 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
 } from "@/components/shadcn/dropdown-menu";
 import { useReactFlow, type Edge } from "@xyflow/react";
-import { HiOutlineTrash } from "react-icons/hi2";
-import {
-  TbPalette,
-  TbLineHeight,
-  TbArrowRight,
-  TbCircle,
-  TbTagOff,
-  TbTrash,
-} from "react-icons/tb";
-import nodeColors from "@/components/nodes/nodeColors";
-import type {
-  EdgeCustomData,
-  EdgeStrokeWidth,
-  EdgeMarker,
-  colorsEnum,
-} from "@/types/domain";
+import { TbTag, TbPencil, TbTagOff, TbTrash } from "react-icons/tb";
+import type { EdgeCustomData } from "@/types/domain";
+import { useUpdateCanvasEdge } from "@/hooks/useUpdateCanvasEdge";
 
 export default function EdgeContextMenu({
   closeMenu,
@@ -36,56 +18,26 @@ export default function EdgeContextMenu({
   xyEdge: Edge;
 }) {
   const { deleteElements, updateEdge } = useReactFlow();
+  const { updateCanvasEdge } = useUpdateCanvasEdge();
 
   const edgeData = (xyEdge.data || {}) as EdgeCustomData;
+  const hasLabel = Boolean(edgeData.label);
 
-  const updateEdgeData = (newData: Partial<EdgeCustomData>) => {
+  const triggerInlineLabelEdit = () => {
     updateEdge(xyEdge.id, {
       ...xyEdge,
-      data: { ...edgeData, ...newData },
-    });
-  };
-
-  const handleRemoveLabel = () => {
-    const { label, ...restData } = edgeData;
-    updateEdge(xyEdge.id, {
-      ...xyEdge,
-      data: restData,
+      data: { ...edgeData, _editMode: true },
     });
     closeMenu();
   };
 
-  const handleColorChange = (color: colorsEnum) => {
-    updateEdgeData({ color });
+  const handleRemoveLabel = () => {
+    const nextData: Record<string, unknown> = { ...edgeData };
+    delete nextData.label;
+    delete nextData._editMode;
+    void updateCanvasEdge({ edgeId: xyEdge.id, data: nextData });
+    closeMenu();
   };
-
-  const handleStrokeWidthChange = (strokeWidth: EdgeStrokeWidth) => {
-    updateEdgeData({ strokeWidth });
-  };
-
-  const handleMarkerStartChange = (markerStart: EdgeMarker) => {
-    updateEdgeData({ markerStart });
-  };
-
-  const handleMarkerEndChange = (markerEnd: EdgeMarker) => {
-    updateEdgeData({ markerEnd });
-  };
-
-  const strokeWidthLabels = {
-    thin: "Thin",
-    regular: "Regular",
-    thick: "Thick",
-  };
-
-  const markerLabels = {
-    none: "None",
-    arrow: "Arrow",
-  };
-
-  // Filtrer les couleurs disponibles (sans transparent)
-  const availableColors = Object.entries(nodeColors).filter(
-    ([key]) => key !== "transparent",
-  );
 
   return (
     <>
@@ -94,18 +46,31 @@ export default function EdgeContextMenu({
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
 
-      {/* Supprimer le label */}
-      {edgeData.label && (
+      {/* Label actions */}
+      {hasLabel ? (
         <>
+          <DropdownMenuItem
+            className="whitespace-nowrap"
+            onClick={triggerInlineLabelEdit}
+          >
+            <TbPencil size={16} /> Edit label
+          </DropdownMenuItem>
           <DropdownMenuItem
             className="whitespace-nowrap"
             onClick={handleRemoveLabel}
           >
             <TbTagOff size={16} /> Remove label
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
         </>
+      ) : (
+        <DropdownMenuItem
+          className="whitespace-nowrap"
+          onClick={triggerInlineLabelEdit}
+        >
+          <TbTag size={16} /> Add label
+        </DropdownMenuItem>
       )}
+      <DropdownMenuSeparator />
 
       {/* Couleur */}
       {/* <DropdownMenuSub>

@@ -8,6 +8,7 @@ import {
 import { memo, useState, useRef, useEffect } from "react";
 import nodeColors from "../nodes/nodeColors";
 import type { EdgeCustomData } from "@/types/domain";
+import { useUpdateCanvasEdge } from "@/hooks/useUpdateCanvasEdge";
 
 const strokeWidthMap = {
   thin: 1,
@@ -30,6 +31,7 @@ const CustomEdge = memo(function CustomEdge({
 }: EdgeProps) {
   const customData = data as EdgeCustomData | undefined;
   const { setEdges } = useReactFlow();
+  const { updateCanvasEdge } = useUpdateCanvasEdge();
   const [isEditing, setIsEditing] = useState(false);
   const [labelValue, setLabelValue] = useState(customData?.label || "");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -78,13 +80,18 @@ const CustomEdge = memo(function CustomEdge({
 
   const saveLabel = () => {
     setIsEditing(false);
-    setEdges((edges) =>
-      edges.map((edge) =>
-        edge.id === id
-          ? { ...edge, data: { ...edge.data, label: labelValue } }
-          : edge
-      )
-    );
+    const trimmed = labelValue.trim();
+    const baseData: Record<string, unknown> = { ...(customData ?? {}) };
+    delete baseData._editMode;
+    if (trimmed) {
+      baseData.label = trimmed;
+    } else {
+      delete baseData.label;
+    }
+    if ((customData?.label ?? "") === trimmed) {
+      return;
+    }
+    void updateCanvasEdge({ edgeId: id, data: baseData });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

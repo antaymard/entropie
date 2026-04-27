@@ -1,6 +1,13 @@
-import { TbCalendar, TbLink } from "react-icons/tb";
+import { TbCalendar, TbLink, TbNetwork } from "react-icons/tb";
+import { useStore } from "@xyflow/react";
 import { Checkbox } from "@/components/shadcn/checkbox";
-import type { ColumnType, CellValue, LinkCellValue } from "./types";
+import {
+  getNodeDataTitle,
+  getNodeIcon,
+} from "@/components/utils/nodeDataDisplayUtils";
+import { useNodeDataStore } from "@/stores/nodeDataStore";
+import type { Id } from "@/../convex/_generated/dataModel";
+import type { ColumnType, CellValue, LinkCellValue, NodeCellValue } from "./types";
 
 export interface CellDisplayProps {
   type: ColumnType;
@@ -8,6 +15,42 @@ export interface CellDisplayProps {
 }
 
 export function CellDisplay({ type, value }: CellDisplayProps) {
+  const nodes = useStore((state) => state.nodes);
+  const nodeDatas = useNodeDataStore((state) => state.nodeDatas);
+
+  if (type === "node") {
+    const nodeVal = value as NodeCellValue | null | undefined;
+    const node = nodeVal?.nodeId
+      ? nodes.find((n) => n.id === nodeVal.nodeId)
+      : undefined;
+    const nodeDataId = node?.data?.nodeDataId as Id<"nodeDatas"> | undefined;
+    const nodeData = nodeDataId ? nodeDatas.get(nodeDataId) : undefined;
+    const title = nodeData
+      ? getNodeDataTitle(nodeData)
+      : nodeVal?.nodeId
+        ? "Node supprimé"
+        : null;
+    const Icon = nodeData ? getNodeIcon(nodeData.type) : null;
+
+    if (!title) {
+      return <span className="block w-full min-h-[1.4em] px-1" />;
+    }
+    return (
+      <span className="flex items-center gap-1 w-full min-h-[1.4em] px-1">
+        <span
+          className={`inline-flex items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 text-sm font-medium max-w-full${!nodeData ? " opacity-50" : ""}`}
+        >
+          {Icon ? (
+            <Icon size={13} className="shrink-0 text-muted-foreground" />
+          ) : (
+            <TbNetwork size={13} className="shrink-0 text-muted-foreground" />
+          )}
+          <span className="truncate">{title}</span>
+        </span>
+      </span>
+    );
+  }
+
   if (type === "checkbox") {
     return <Checkbox checked={!!value} disabled className="block" />;
   }

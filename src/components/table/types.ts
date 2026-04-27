@@ -1,4 +1,4 @@
-export type ColumnType = "text" | "number" | "checkbox" | "date" | "link";
+export type ColumnType = "text" | "number" | "checkbox" | "date" | "link" | "node";
 
 export interface LinkCellValue {
   href: string;
@@ -7,7 +7,11 @@ export interface LinkCellValue {
   pageDescription?: string;
 }
 
-export type CellValue = string | number | boolean | LinkCellValue | null;
+export interface NodeCellValue {
+  nodeId: string;
+}
+
+export type CellValue = string | number | boolean | LinkCellValue | NodeCellValue | null;
 
 export interface TableColumn {
   id: string;
@@ -32,4 +36,5 @@ export const COLUMN_TYPE_LABELS: Record<ColumnType, string> = {
   checkbox: "Checkbox",
   date: "Date",
   link: "Link",
+  node: "Node",
 };

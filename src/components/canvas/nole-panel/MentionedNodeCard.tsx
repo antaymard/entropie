@@ -3,6 +3,9 @@ import { useNodeDataStore } from "@/stores/nodeDataStore";
 import { NODE_TYPE_ICON_MAP } from "@/components/nodes/prebuilt-nodes/nodeIconMap";
 import { getNodeDataTitle } from "@/components/utils/nodeDataDisplayUtils";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useWindowsStore } from "@/stores/windowsStore";
+import { canNodeTypeBeOpenedInWindow } from "@/components/nodes/prebuilt-nodes/prebuiltNodesConfig";
 
 interface MentionedNodeCardProps {
   nodeId: string;
@@ -13,6 +16,8 @@ export function MentionedNodeCard({ nodeId, inline }: MentionedNodeCardProps) {
   const nodes = useStore((state) => state.nodes);
   const nodeDatas = useNodeDataStore((state) => state.nodeDatas);
   const { fitView } = useReactFlow();
+  const isMobile = useIsMobile();
+  const openWindow = useWindowsStore((state) => state.openWindow);
 
   const xyNode = nodes.find((n) => n.id === nodeId);
   const nodeDataId = xyNode?.data?.nodeDataId as string | undefined;
@@ -40,6 +45,22 @@ export function MentionedNodeCard({ nodeId, inline }: MentionedNodeCardProps) {
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isMobile) {
+      if (
+        nodeDataId &&
+        nodeData &&
+        canNodeTypeBeOpenedInWindow(nodeData.type)
+      ) {
+        openWindow({
+          xyNodeId: nodeId,
+          nodeDataId: nodeDataId as Parameters<
+            typeof openWindow
+          >[0]["nodeDataId"],
+          nodeType: nodeData.type,
+        });
+      }
+      return;
+    }
     fitView({
       nodes: [{ id: nodeId }],
       duration: 800,

@@ -1,0 +1,177 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Save } from "lucide-react";
+import { TbArrowLeft, TbRefresh } from "react-icons/tb";
+import { Button } from "@/components/shadcn/button";
+import { useWindowsStore, type OpenedWindow } from "@/stores/windowsStore";
+import { useNodeData } from "@/hooks/useNodeData";
+import { useNodeDataTitle } from "@/hooks/useNodeTitle";
+import { getNodeIcon } from "@/components/utils/nodeDataDisplayUtils";
+import { WindowFrameContext } from "@/components/windows/WindowFrameContext";
+import ConfirmableButton from "@/components/ui/ConfirmableButton";
+import DocumentWindow from "@/components/windows/prebuilt/DocumentWindow";
+import EmbedWindow from "@/components/windows/prebuilt/EmbedWindow";
+import ImageWindow from "@/components/windows/prebuilt/ImageWindow";
+import PdfWindow from "@/components/windows/prebuilt/PdfWindow";
+import TableWindow from "@/components/windows/prebuilt/TableWindow";
+import AppWindow from "@/components/windows/prebuilt/AppWindow";
+import { cn } from "@/lib/utils";
+
+const BOTTOM_PADDING_PX = 220; // approx height of mobile chat input — tunable
+
+export default function MobileNodeOverlay() {
+  const openedWindows = useWindowsStore((s) => s.openedWindows);
+
+  // The "top" opened window = the most recently opened/brought-to-front.
+  const topWindow = useMemo(() => {
+    const visible = openedWindows.filter((w) => w.windowState !== "minimized");
+    if (visible.length === 0) return null;
+    return visible.reduce((a, b) => (a.zIndex > b.zIndex ? a : b));
+  }, [openedWindows]);
+
+  if (!topWindow) return null;
+
+  return <NodeOverlayInner key={topWindow.xyNodeId} window={topWindow} />;
+}
+
+function NodeOverlayInner({ window: openedWindow }: { window: OpenedWindow }) {
+  const { xyNodeId, nodeDataId, nodeType } = openedWindow;
+  const closeWindow = useWindowsStore((s) => s.closeWindow);
+  const addDirtyNode = useWindowsStore((s) => s.addDirtyNode);
+  const removeDirtyNode = useWindowsStore((s) => s.removeDirtyNode);
+
+  const [isDirty, setDirty] = useState(false);
+  const [saveHandler, setSaveHandlerState] = useState<(() => void) | null>(
+    null,
+  );
+  const [refreshHandler, setRefreshHandlerState] = useState<
+    (() => void) | null
+  >(null);
+
+  const title = useNodeDataTitle(nodeDataId);
+  const nodeData = useNodeData(nodeDataId);
+  const NodeIcon = getNodeIcon(nodeData?.type);
+
+  useEffect(() => {
+    if (isDirty) {
+      addDirtyNode(xyNodeId);
+    } else {
+      removeDirtyNode(xyNodeId);
+    }
+    return () => removeDirtyNode(xyNodeId);
+  }, [isDirty, xyNodeId, addDirtyNode, removeDirtyNode]);
+
+  const contextValue = useMemo(
+    () => ({
+      setDirty,
+      setSaveHandler: (fn: (() => void) | null) =>
+        setSaveHandlerState(() => fn),
+      setRefreshHandler: (fn: (() => void) | null) =>
+        setRefreshHandlerState(() => fn),
+    }),
+    [],
+  );
+
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  return (
+    <WindowFrameContext.Provider value={contextValue}>
+      <div
+        ref={containerRef}
+        className="fixed inset-0 z-40 bg-white animate-in slide-in-from-bottom duration-200"
+        style={{ paddingBottom: BOTTOM_PADDING_PX }}
+      >
+        <div className="flex flex-col h-full">
+          <div className="flex items-center gap-2 border-b px-2 py-2 shrink-0">
+            <ConfirmableButton
+              title="Close without saving?"
+              text="You have unsaved changes. Do you want to close this window?"
+              onCancel={() => closeWindow(xyNodeId)}
+              onConfirm={() => {
+                if (isDirty) saveHandler?.();
+                closeWindow(xyNodeId);
+              }}
+              shouldConfirm={isDirty}
+              cancelLabel="Close without saving"
+              confirmLabel="Save and close"
+              autoFocusConfirm
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Back to chat"
+                className="h-10 w-10"
+              >
+                <TbArrowLeft size={20} />
+              </Button>
+            </ConfirmableButton>
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              {NodeIcon ? (
+                <NodeIcon className="size-4 shrink-0 text-slate-600" />
+              ) : null}
+              <span className="truncate text-sm font-medium">
+                {title || nodeType}
+              </span>
+            </div>
+            {refreshHandler && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={refreshHandler}
+                aria-label="Refresh"
+                className="h-10 w-10"
+              >
+                <TbRefresh size={18} />
+              </Button>
+            )}
+            {saveHandler && (
+              <Button
+                variant={isDirty ? "default" : "ghost"}
+                size="sm"
+                disabled={!isDirty}
+                onClick={saveHandler}
+                className={cn(!isDirty && "text-slate-400")}
+              >
+                <Save size={14} />
+                Save
+              </Button>
+            )}
+          </div>
+          <div className="flex-1 min-h-0 overflow-auto">
+            <NodeContent
+              xyNodeId={xyNodeId}
+              nodeDataId={nodeDataId}
+              nodeType={nodeType}
+            />
+          </div>
+        </div>
+      </div>
+    </WindowFrameContext.Provider>
+  );
+}
+
+function NodeContent({
+  xyNodeId,
+  nodeDataId,
+  nodeType,
+}: Pick<OpenedWindow, "xyNodeId" | "nodeDataId" | "nodeType">) {
+  switch (nodeType) {
+    case "document":
+      return <DocumentWindow xyNodeId={xyNodeId} nodeDataId={nodeDataId} />;
+    case "embed":
+      return <EmbedWindow nodeDataId={nodeDataId} />;
+    case "app":
+      return <AppWindow xyNodeId={xyNodeId} nodeDataId={nodeDataId} />;
+    case "pdf":
+      return <PdfWindow xyNodeId={xyNodeId} nodeDataId={nodeDataId} />;
+    case "image":
+      return <ImageWindow nodeDataId={nodeDataId} />;
+    case "table":
+      return <TableWindow nodeDataId={nodeDataId} />;
+    default:
+      return (
+        <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+          {nodeType}
+        </div>
+      );
+  }
+}

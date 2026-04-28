@@ -66,6 +66,47 @@ export const listByCanvasId = query({
   },
 });
 
+export const listRecentByCanvasId = query({
+  args: {
+    canvasId: v.id("canvases"),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, { canvasId, limit }) => {
+    const authUserId = await optionalAuth(ctx);
+    const { canvas } = await requireCanvasAccess(
+      ctx,
+      canvasId,
+      authUserId,
+      "viewer",
+      { allowPublic: true },
+    );
+
+    const nodeByDataId = new Map<Id<"nodeDatas">, string>();
+    for (const node of canvas.nodes || []) {
+      if (node.nodeDataId) {
+        nodeByDataId.set(node.nodeDataId, node.id);
+      }
+    }
+
+    if (nodeByDataId.size === 0) return [];
+
+    const nodeDatas = await Promise.all(
+      Array.from(nodeByDataId.keys()).map((id) => ctx.db.get(id)),
+    );
+
+    const filtered = nodeDatas
+      .filter((nd) => nd !== null)
+      .sort((a, b) => (b!.updatedAt ?? 0) - (a!.updatedAt ?? 0));
+
+    const sliced = limit ? filtered.slice(0, limit) : filtered;
+
+    return sliced.map((nd) => ({
+      nodeData: nd!,
+      xyNodeId: nodeByDataId.get(nd!._id)!,
+    }));
+  },
+});
+
 // TODO : use NodeConfiig to validate values schema based on type
 export const updateValues = mutation({
   args: {

@@ -3,11 +3,99 @@ import { z } from "zod";
 import { internal } from "../../_generated/api";
 import { Id } from "../../_generated/dataModel";
 import { getNodeDataTitle } from "../../lib/getNodeDataTitle";
-import { toXmlCdata } from "../../lib/xml";
+import { escapeXmlText, toXmlCdata } from "../../lib/xml";
 import { makeNodeDataLLMFriendly } from "../helpers/makeNodeDataLLMFriendly";
+import {
+  buildPdfPagesMarkdown,
+  buildPdfTocMarkdown,
+} from "../helpers/pdfChunkFormatters";
+import type { PdfPageChunk } from "../../models/searchableChunkModels";
 import { toolAgentNames, type ThreadCtx } from "../agentConfig";
 import { nodeDataConfig } from "../../config/nodeConfig";
 import { type ToolConfig, toolError } from "./toolHelpers";
+
+const PDF_HINTS = {
+  toc: "Call read_nodes with pdfPages=[{nodeId, pages:[…]}] to read full markdown of specific pages.",
+  notIndexed:
+    "PDF content not yet indexed (Mistral OCR pending or failed). Files are listed above; retry later.",
+  noHeadings:
+    "No headings detected in OCR output. Use pdfPages to read pages directly by 1-based page number.",
+  truncated:
+    "Output truncated: too many pages or characters requested. Re-call with fewer pages.",
+  notAPdf: "pdfPages was provided for a non-pdf node and was ignored.",
+} as const;
+
+type PdfFile = { url?: string; filename?: string; mimeType?: string };
+
+function renderPdfFiles(files: PdfFile[]): string {
+  if (files.length === 0) {
+    return "<pdfFiles />";
+  }
+  const lines = files.map((f) => {
+    const filename = f.filename ?? "(no filename)";
+    const mimeType = f.mimeType ?? "(no mime type)";
+    const url = f.url ?? "";
+    return `- ${filename} | ${mimeType} | ${url}`;
+  });
+  return `<pdfFiles>\n${lines.join("\n")}\n</pdfFiles>`;
+}
+
+function renderPdfTocBlock(pageChunks: PdfPageChunk[]): string {
+  const toc = buildPdfTocMarkdown(pageChunks);
+  const inner = toc.structured
+    ? `\n${toXmlCdata(toc.markdown)}\n`
+    : escapeXmlText(PDF_HINTS.noHeadings);
+  return [
+    `<pdfToc totalPages="${toc.totalPages}" structured="${toc.structured}">${inner}</pdfToc>`,
+    `<pdfHint>${escapeXmlText(PDF_HINTS.toc)}</pdfHint>`,
+  ].join("\n");
+}
+
+function renderPdfPagesBlock(
+  pageChunks: PdfPageChunk[],
+  requestedPages: number[],
+): string {
+  const result = buildPdfPagesMarkdown(pageChunks, requestedPages);
+  const pagesXml = result.pages
+    .map((p) => {
+      if ("error" in p) {
+        return `<pdfPage n="${p.n}" error="page not found" />`;
+      }
+      const totalAttr =
+        typeof p.totalPages === "number" ? ` totalPages="${p.totalPages}"` : "";
+      return `<pdfPage n="${p.n}"${totalAttr}>\n${toXmlCdata(p.markdown)}\n</pdfPage>`;
+    })
+    .join("\n");
+  const truncatedHint = result.truncated
+    ? `\n<pdfHint>${escapeXmlText(PDF_HINTS.truncated)}</pdfHint>`
+    : "";
+  return `${pagesXml}${truncatedHint}`;
+}
+
+function buildPdfNodeBody(opts: {
+  files: PdfFile[];
+  pageChunks: PdfPageChunk[];
+  requestedPages: number[] | undefined;
+}): string {
+  const filesXml = renderPdfFiles(opts.files);
+
+  if (opts.pageChunks.length === 0) {
+    return `${filesXml}\n<pdfStatus>${escapeXmlText(PDF_HINTS.notIndexed)}</pdfStatus>`;
+  }
+
+  if (!opts.requestedPages) {
+    return `${filesXml}\n${renderPdfTocBlock(opts.pageChunks)}`;
+  }
+
+  return `${filesXml}\n${renderPdfPagesBlock(opts.pageChunks, opts.requestedPages)}`;
+}
+
+function getPdfTotalPages(pageChunks: PdfPageChunk[]): number | undefined {
+  for (const chunk of pageChunks) {
+    if (typeof chunk.totalPages === "number") return chunk.totalPages;
+  }
+  return undefined;
+}
 
 export const readNodesToolConfig: ToolConfig = {
   name: "read_nodes",
@@ -52,7 +140,10 @@ export default function readNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
 
   return createTool({
     description:
-      "A tool to read multiple nodes from the current canvas and return their nodeData as LLM-friendly XML.",
+      "A tool to read multiple nodes from the current canvas and return their nodeData as LLM-friendly XML. " +
+      "For pdf nodes, by default returns a paginated table of contents in markdown ('# Heading [pageNumber]') along with the total page count. " +
+      "Pass `pdfPages=[{nodeId, pages:[…]}]` to read the full OCR markdown of specific 1-based pages instead. " +
+      "PDF chunks come from cached Mistral OCR; nodes not yet indexed are flagged.",
     inputSchema: z.object({
       nodeIds: z
         .array(z.string())
@@ -63,6 +154,18 @@ export default function readNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
         .optional()
         .describe(
           "Whether to include x/y position and dimensions attributes in each node tag",
+        ),
+      pdfPages: z
+        .array(
+          z.object({
+            nodeId: z.string(),
+            pages: z.array(z.number().int().positive()).min(1),
+          }),
+        )
+        .optional()
+        .describe(
+          "For pdf nodes only: request specific 1-based page numbers per nodeId. " +
+            "If omitted, the pdf returns its paginated table of contents and a hint.",
         ),
     }),
     execute: async (ctx, input): Promise<string> => {
@@ -84,6 +187,11 @@ export default function readNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
         );
 
         const requestedNodeIdSet = new Set(input.nodeIds);
+
+        const pdfPagesByNodeId = new Map<string, number[]>();
+        for (const entry of input.pdfPages ?? []) {
+          pdfPagesByNodeId.set(entry.nodeId, entry.pages);
+        }
 
         const nodes = await Promise.all(
           input.nodeIds.map(async (nodeId) => {
@@ -107,6 +215,29 @@ export default function readNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
                     })
                   : null;
 
+              let content = makeNodeDataLLMFriendly(nodeData);
+              let pdfBody: string | null = null;
+              let pdfTotalPages: number | null = null;
+
+              if (node.type === "pdf") {
+                const files =
+                  (nodeData.values.files as PdfFile[] | undefined) ?? [];
+                const pageChunks = await ctx.runQuery(
+                  internal.wrappers.searchableChunkWrappers
+                    .listPdfPagesByNodeDataId,
+                  { nodeDataId: nodeData._id },
+                );
+                const requestedPages = pdfPagesByNodeId.get(nodeId);
+                pdfBody = buildPdfNodeBody({
+                  files,
+                  pageChunks,
+                  requestedPages,
+                });
+                pdfTotalPages = getPdfTotalPages(pageChunks) ?? null;
+              } else if (pdfPagesByNodeId.has(nodeId)) {
+                content = `<warning>${escapeXmlText(PDF_HINTS.notAPdf)}</warning>\n${content}`;
+              }
+
               return {
                 nodeId,
                 nodeType: node.type,
@@ -121,7 +252,9 @@ export default function readNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
                     ? Math.trunc(node.height)
                     : null,
                 title: getNodeDataTitle(nodeData),
-                content: makeNodeDataLLMFriendly(nodeData),
+                content,
+                pdfBody,
+                pdfTotalPages,
                 embedUrl:
                   typeof embed?.url === "string" && embed.url.length > 0
                     ? embed.url
@@ -147,6 +280,8 @@ export default function readNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
                 height: null as number | null,
                 title: "Untitled",
                 content: "",
+                pdfBody: null as string | null,
+                pdfTotalPages: null as number | null,
                 embedUrl: null as string | null,
                 embedIframeUrl: null as string | null,
                 embedType: null as string | null,
@@ -254,6 +389,8 @@ export default function readNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
                   height,
                   title,
                   content,
+                  pdfBody,
+                  pdfTotalPages,
                   embedUrl,
                   embedIframeUrl,
                   embedType,
@@ -269,6 +406,16 @@ export default function readNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
 
                   if (nodeType === "embed") {
                     return `<node id="${nodeId}" type="embed" title="${title}"${embedUrl ? ` url="${embedUrl}"` : ""}${embedIframeUrl ? ` embedUrl="${embedIframeUrl}"` : ""}${embedType ? ` embedType="${embedType}"` : ""}${error ? ` readError="${error}"` : ""}${positionAttributes} />`;
+                  }
+
+                  if (nodeType === "pdf" && pdfBody !== null) {
+                    const totalPagesAttr =
+                      pdfTotalPages !== null
+                        ? ` totalPages="${pdfTotalPages}"`
+                        : "";
+                    return `<node id="${nodeId}" type="pdf" sourceNodes="${sourceNodes.join(" ; ")}" targetNodes="${targetNodes.join(" ; ")}"${positionAttributes} title="${title}"${totalPagesAttr}>
+${error ? `<readError>${toXmlCdata(error)}</readError>\n` : ""}${pdfBody}
+</node>`;
                   }
 
                   return `<node id="${nodeId}" type="${nodeType}" sourceNodes="${sourceNodes.join(" ; ")}" targetNodes="${targetNodes.join(" ; ")}"${positionAttributes} title="${title}">

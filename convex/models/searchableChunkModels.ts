@@ -83,6 +83,80 @@ export async function listByNodeDataId(
     .collect();
 }
 
+export type PdfPageChunk = {
+  order: number;
+  text: string;
+  page: number | undefined;
+  totalPages: number | undefined;
+  sections: Array<{ level: string; title: string }>;
+  hasImages: boolean;
+  imageCount: number | undefined;
+};
+
+function parsePdfPageMetadata(metadata: unknown): {
+  page: number | undefined;
+  totalPages: number | undefined;
+  sections: Array<{ level: string; title: string }>;
+  hasImages: boolean;
+  imageCount: number | undefined;
+} {
+  if (!metadata || typeof metadata !== "object") {
+    return {
+      page: undefined,
+      totalPages: undefined,
+      sections: [],
+      hasImages: false,
+      imageCount: undefined,
+    };
+  }
+
+  const m = metadata as {
+    page?: unknown;
+    totalPages?: unknown;
+    sections?: unknown;
+    hasImages?: unknown;
+    imageCount?: unknown;
+  };
+
+  const sections = Array.isArray(m.sections)
+    ? m.sections.flatMap((entry) => {
+        if (!entry || typeof entry !== "object") return [];
+        const e = entry as { level?: unknown; title?: unknown };
+        const level = typeof e.level === "string" ? e.level : null;
+        const title = typeof e.title === "string" ? e.title.trim() : "";
+        if (!level || !title) return [];
+        return [{ level, title }];
+      })
+    : [];
+
+  return {
+    page: typeof m.page === "number" ? m.page : undefined,
+    totalPages: typeof m.totalPages === "number" ? m.totalPages : undefined,
+    sections,
+    hasImages: m.hasImages === true,
+    imageCount: typeof m.imageCount === "number" ? m.imageCount : undefined,
+  };
+}
+
+export async function listPdfPagesByNodeDataId(
+  ctx: QueryCtx,
+  { nodeDataId }: { nodeDataId: Id<"nodeDatas"> },
+): Promise<PdfPageChunk[]> {
+  const chunks = await ctx.db
+    .query("searchableChunks")
+    .withIndex("by_nodeDataId", (q) => q.eq("nodeDataId", nodeDataId))
+    .collect();
+
+  return chunks
+    .filter((chunk) => chunk.chunkType === "page")
+    .map((chunk) => ({
+      order: chunk.order,
+      text: chunk.text,
+      ...parsePdfPageMetadata(chunk.metadata),
+    }))
+    .sort((a, b) => a.order - b.order);
+}
+
 type FullTextSearchHit = {
   nodeId: string;
   nodeDataId: Id<"nodeDatas">;

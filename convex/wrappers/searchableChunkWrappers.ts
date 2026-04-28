@@ -47,6 +47,30 @@ export const listByNodeDataId = internalQuery({
     SearchableChunkModels.listByNodeDataId(ctx, args),
 });
 
+export const listPdfPagesByNodeDataId = internalQuery({
+  args: {
+    nodeDataId: v.id("nodeDatas"),
+  },
+  returns: v.array(
+    v.object({
+      order: v.number(),
+      text: v.string(),
+      page: v.optional(v.number()),
+      totalPages: v.optional(v.number()),
+      sections: v.array(
+        v.object({
+          level: v.string(),
+          title: v.string(),
+        }),
+      ),
+      hasImages: v.boolean(),
+      imageCount: v.optional(v.number()),
+    }),
+  ),
+  handler: async (ctx, args) =>
+    SearchableChunkModels.listPdfPagesByNodeDataId(ctx, args),
+});
+
 export const fullTextSearch = internalQuery({
   args: {
     canvasId: v.id("canvases"),

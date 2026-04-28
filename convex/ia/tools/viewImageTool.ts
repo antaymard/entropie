@@ -11,6 +11,7 @@ export const viewImageToolConfig: ToolConfig = {
     toolAgentNames.supervisor,
     toolAgentNames.worker,
   ],
+  requireMultiModal: true,
 };
 
 type ViewImageOutput =

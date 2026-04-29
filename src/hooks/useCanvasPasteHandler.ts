@@ -229,10 +229,10 @@ export function useCanvasPasteHandler() {
         // Upload to R2
         const fileData = await uploadFile(file);
 
-        // Update the nodeData with the uploaded URL
+        // Update the nodeData with the uploaded URL and metadata
         await updateNodeDataValues({
           _id: nodeDataId,
-          values: { images: [{ url: fileData.url }] },
+          values: { images: [fileData] },
         });
         toast.success("Image added to canvas");
       } catch (error) {

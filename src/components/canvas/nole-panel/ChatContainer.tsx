@@ -34,7 +34,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/shadcn/dropdown-menu";
 import toast from "react-hot-toast";
-import { getCanvasNodeTitle } from "./messageContextGenerator";
+import { getCanvasNodeTitle } from "@/lib/getCanvasNodeTitle";
 import { useNoleChat } from "@/hooks/useNoleChat";
 
 const INPUT_MAX_HEIGHT_PX = 182;

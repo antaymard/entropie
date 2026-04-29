@@ -16,9 +16,9 @@ import { useNodeDataStore } from "@/stores/nodeDataStore";
 import { useWindowsStore } from "@/stores/windowsStore";
 import { useNoleThread } from "@/hooks/useNoleThread";
 import { useSpeechToText } from "@/hooks/useSpeechToText";
+import { getCanvasNodeTitle } from "@/lib/getCanvasNodeTitle";
 import {
   generateMessageContext,
-  getCanvasNodeTitle,
 } from "@/components/canvas/nole-panel/messageContextGenerator";
 
 export function useNoleChat() {

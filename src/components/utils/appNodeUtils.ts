@@ -35,7 +35,12 @@ export function resolveSourceNode(
   nodeId: string,
 ): SourceNode {
   const type = nodeData.type;
-  const name = getNodeDataTitle(nodeData as Record<string, unknown> & { type: string; values?: Record<string, unknown> });
+  const name = getNodeDataTitle(
+    nodeData as Record<string, unknown> & {
+      type: string;
+      values?: Record<string, unknown>;
+    },
+  );
   const base: SourceNode = { id: nodeId, type, name };
 
   switch (type) {

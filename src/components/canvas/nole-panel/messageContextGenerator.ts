@@ -1,7 +1,4 @@
 import type { CanvasNode } from "@/types";
-import prebuiltNodesConfig from "@/components/nodes/prebuilt-nodes/prebuiltNodesConfig";
-import { getNodeDataTitle } from "@/components/utils/nodeDataDisplayUtils";
-import type { Doc, Id } from "@/../convex/_generated/dataModel";
 
 type ViewportState = {
   x: number;
@@ -27,8 +24,6 @@ type MessageContextParams = {
   getNodeTitle: (node: CanvasNode) => string;
   time?: Date;
 };
-
-type NodeDatasMap = Map<Id<"nodeDatas">, Doc<"nodeDatas">>;
 
 export type MessageContextNodeSummary = {
   id: string;
@@ -59,20 +54,6 @@ export type MessageContextPayload = {
   attachedPosition: { x: number; y: number } | null;
   attachedNodes: MessageContextNodeSummary[];
 };
-
-export function getCanvasNodeTitle(
-  node: CanvasNode,
-  nodeDatas: NodeDatasMap,
-): string {
-  const nodeConfig = prebuiltNodesConfig.find(
-    (config) => config.type === node.type,
-  );
-  const nodeDataId =
-    node.nodeDataId ?? (node.data?.nodeDataId as Id<"nodeDatas"> | undefined);
-  const nodeData = nodeDataId ? nodeDatas.get(nodeDataId) : undefined;
-
-  return nodeData ? getNodeDataTitle(nodeData) : nodeConfig?.label || node.type;
-}
 
 function nodeToMessageContextNodeSummary(
   node: CanvasNode,

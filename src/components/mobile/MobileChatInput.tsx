@@ -31,7 +31,7 @@ import SoundWaveAnimation from "@/components/canvas/nole-panel/SoundWaveAnimatio
 import { useNodeDataStore } from "@/stores/nodeDataStore";
 import prebuiltNodesConfig from "@/components/nodes/prebuilt-nodes/prebuiltNodesConfig";
 import type { CanvasNode } from "@/types";
-import { getCanvasNodeTitle } from "@/components/canvas/nole-panel/messageContextGenerator";
+import { getCanvasNodeTitle } from "@/lib/getCanvasNodeTitle";
 import { useMobileNoleChat } from "./mobileNoleContextValue";
 
 const INPUT_MAX_HEIGHT_PX = 140;

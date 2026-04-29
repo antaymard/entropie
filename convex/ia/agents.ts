@@ -26,7 +26,7 @@ export const chatModelOptions = [
     label: "Kimi K.2.6",
     value: "moonshotai/kimi-k2.6",
     price: "0.60_2.80",
-    isMultimodal: false,
+    isMultimodal: true,
   },
   {
     label: "DeepSeek V4 Flash",

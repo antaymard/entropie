@@ -46,7 +46,6 @@ export default function MobileChatInput() {
     isAssistantResponding,
     isCancelling,
     stopAssistantResponse,
-    startNewThread,
     modelOptions,
     selectedModel,
     setSelectedModel,
@@ -237,15 +236,6 @@ export default function MobileChatInput() {
               ) : (
                 <TbMicrophone size={16} />
               )}
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => void startNewThread()}
-              aria-label="New chat"
-              className="h-9 w-9"
-            >
-              <TbPlus size={16} />
             </Button>
           </div>
           <div className="flex items-center gap-2">

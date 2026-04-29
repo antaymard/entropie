@@ -9,6 +9,7 @@ import { useWindowsStore } from "@/stores/windowsStore";
 import ErrorDisplay from "@/components/ui/ErrorDisplay";
 import { Spinner } from "@/components/shadcn/spinner";
 import MobileChatScreen from "./MobileChatScreen";
+import MobileChatInput from "./MobileChatInput";
 import MobileLeftSidebar from "./MobileLeftSidebar";
 import MobileSearchSidebar from "./MobileSearchSidebar";
 import MobileNodeOverlay from "./MobileNodeOverlay";
@@ -117,6 +118,8 @@ function MobileCanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           onOpenLeft={() => setLeftSidebarOpen(true)}
           onOpenSearch={() => setSearchSidebarOpen(true)}
         />
+        <MobileNodeOverlay />
+        <MobileChatInput />
         <MobileLeftSidebar
           canvasId={canvasId}
           open={leftSidebarOpen}
@@ -127,7 +130,6 @@ function MobileCanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
           open={searchSidebarOpen}
           onOpenChange={setSearchSidebarOpen}
         />
-        <MobileNodeOverlay />
       </div>
     </MobileNoleProvider>
   );

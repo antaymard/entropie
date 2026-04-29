@@ -16,8 +16,6 @@ import TableWindow from "@/components/windows/prebuilt/TableWindow";
 import AppWindow from "@/components/windows/prebuilt/AppWindow";
 import { cn } from "@/lib/utils";
 
-const BOTTOM_PADDING_PX = 220; // approx height of mobile chat input — tunable
-
 export default function MobileNodeOverlay() {
   const openedWindows = useWindowsStore((s) => s.openedWindows);
 
@@ -77,8 +75,8 @@ function NodeOverlayInner({ window: openedWindow }: { window: OpenedWindow }) {
     <WindowFrameContext.Provider value={contextValue}>
       <div
         ref={containerRef}
-        className="fixed inset-0 z-40 bg-white animate-in slide-in-from-bottom duration-200"
-        style={{ paddingBottom: BOTTOM_PADDING_PX }}
+        className="fixed left-0 right-0 top-0 z-40 bg-white animate-in slide-in-from-bottom duration-200"
+        style={{ bottom: "var(--mobile-chat-input-h, 0px)" }}
       >
         <div className="flex flex-col h-full">
           <div className="flex items-center gap-2 border-b px-2 py-2 shrink-0">

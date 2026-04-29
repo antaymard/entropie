@@ -2,6 +2,7 @@ import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import errors from "../config/errorsConfig";
+import { internal } from "../_generated/api";
 
 type UserCanvasListItem = {
   _id: Id<"canvases">;
@@ -147,6 +148,31 @@ export async function deleteCanvasAndShares(
 
   for (const share of shares) {
     await ctx.db.delete(share._id);
+  }
+
+  const nodeDatas = await ctx.db
+    .query("nodeDatas")
+    .withIndex("by_canvasId", (q) => q.eq("canvasId", canvasId))
+    .collect();
+  for (const nodeData of nodeDatas) {
+    await ctx.scheduler.runAfter(
+      0,
+      internal.wrappers.nodeDataWrappers.deleteWithCascade,
+      { nodeDataId: nodeData._id },
+    );
+  }
+  if (nodeDatas.length > 0) {
+    console.log(
+      `🗑️ Scheduled cascade deletion for ${nodeDatas.length} nodeDatas on canvas ${canvasId}`,
+    );
+  }
+
+  const tasks = await ctx.db
+    .query("tasks")
+    .withIndex("by_canvasId_and_status", (q) => q.eq("canvasId", canvasId))
+    .collect();
+  for (const task of tasks) {
+    await ctx.db.delete(task._id);
   }
 
   await ctx.db.delete(canvasId);

@@ -20,6 +20,7 @@ import listNodesTool, { listNodesToolConfig } from "./listNodesTool";
 import loadSkillTool, { loadSkillToolConfig } from "./loadSkillTool";
 import memoryToolFactory, { memoryToolConfig } from "./memoryTool";
 import { openWebPageTool, openWebPageToolConfig } from "./openWebPageTool";
+import { viewImageTool, viewImageToolConfig } from "./viewImageTool";
 import readNodesTool, { readNodesToolConfig } from "./readNodesTool";
 import runSubagent, { runSubagentToolConfig } from "./runSubagent";
 import setNodeDataTool, { setNodeDataToolConfig } from "./setNodeDataTool";
@@ -72,6 +73,10 @@ const toolRegistry: ToolRegistration[] = [
   {
     config: readNodesToolConfig,
     factory: ({ threadCtx }) => readNodesTool({ threadCtx }),
+  },
+  {
+    config: viewImageToolConfig,
+    factory: () => viewImageTool,
   },
   {
     config: openWebPageToolConfig,
@@ -140,15 +145,21 @@ export function getToolsForAgent({
   agentName,
   threadCtx,
   extraTools = {},
+  isMultimodal = false,
 }: {
   agentName: ToolAgentName;
   threadCtx: ThreadCtx;
   extraTools?: ToolSet;
+  isMultimodal?: boolean;
 }): ToolSet {
   const resolvedTools: ToolSet = {};
 
   for (const registration of toolRegistry) {
     if (!registration.config.authorized_agents.includes(agentName)) {
+      continue;
+    }
+
+    if (registration.config.requireMultiModal && !isMultimodal) {
       continue;
     }
 

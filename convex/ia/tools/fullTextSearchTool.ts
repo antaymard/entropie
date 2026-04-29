@@ -114,7 +114,7 @@ export default function fullTextSearchTool({
 
   return createTool({
     description:
-      "Search exact tokens in the current canvas using full-text indexed chunks. Use this for precise lookup (names, acronyms, reference IDs, rare words). Returns compact snippets and metadata to quickly decide what to read next.",
+      "Search exact tokens in the current canvas using full-text indexed chunks, every node type is searchable (pdf inclduded). Use this for precise lookup (names, acronyms, reference IDs, rare words). Returns compact snippets and metadata to quickly decide what to read next.",
     inputSchema: z.object({
       query: z
         .string()

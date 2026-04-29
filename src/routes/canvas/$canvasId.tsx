@@ -148,6 +148,7 @@ function CanvasContent({
   const { screenToFlowPosition, getNodes } = useReactFlow();
   const addNoleAttachments = useNoleStore((state) => state.addAttachments);
   const focus = useCanvasStore((state) => state.focus);
+  const setEditingEdgeId = useCanvasStore((state) => state.setEditingEdgeId);
   const { duplicateNode } = useDuplicateNode();
   const canDuplicateNodes = !!canvas && canvas._permission !== "viewer";
 
@@ -316,6 +317,9 @@ function CanvasContent({
         onNodeClick={onNodeClick}
         onSelectionContextMenu={onSelectionContextMenu}
         onEdgeContextMenu={onEdgeContextMenu}
+        onEdgeDoubleClick={(_, edge) => {
+          setEditingEdgeId(edge.id);
+        }}
         deleteKeyCode={null}
         nodes={nodes}
         edges={edges}

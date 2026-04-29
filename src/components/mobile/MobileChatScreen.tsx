@@ -70,13 +70,18 @@ export default function MobileChatScreen({
       </div>
 
       {/* Chat — leave room for the fixed input below */}
-      <div
-        className="flex-1 min-h-0"
-        style={{ paddingBottom: "var(--mobile-chat-input-h, 0px)" }}
-      >
-        <ChatInterface
-          threadId={threadId}
-          onRetry={(userMessage) => setUserInput(userMessage)}
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        <div className="flex-1 min-h-0">
+          <ChatInterface
+            threadId={threadId}
+            onRetry={(userMessage) => setUserInput(userMessage)}
+          />
+        </div>
+        {/* Spacer to avoid content going under the fixed input */}
+        <div
+          className="shrink-0"
+          style={{ height: "var(--mobile-chat-input-h, 0px)" }}
+          aria-hidden="true"
         />
       </div>
     </div>

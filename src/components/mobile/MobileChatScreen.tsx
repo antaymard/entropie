@@ -1,0 +1,84 @@
+import { Button } from "@/components/shadcn/button";
+import {
+  TbChevronDown,
+  TbLoader,
+  TbMenu2,
+  TbSearch,
+} from "react-icons/tb";
+import { useMobileNoleChat } from "./mobileNoleContextValue";
+import ChatInterface from "@/components/canvas/nole-panel/ChatInterface";
+
+interface MobileChatScreenProps {
+  canvasName?: string;
+  onOpenLeft: () => void;
+  onOpenSearch: () => void;
+}
+
+export default function MobileChatScreen({
+  canvasName,
+  onOpenLeft,
+  onOpenSearch,
+}: MobileChatScreenProps) {
+  const { threadId, isLoading, setUserInput } = useMobileNoleChat();
+
+  if (isLoading) {
+    return (
+      <div className="h-dvh flex items-center justify-center text-slate-500">
+        <TbLoader className="h-5 w-5 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!threadId) {
+    return (
+      <div className="h-dvh flex items-center justify-center text-slate-500">
+        Error loading chat
+      </div>
+    );
+  }
+
+  return (
+    <div className="absolute inset-0 flex flex-col bg-white">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-2 border-b px-2 py-2 shrink-0">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onOpenLeft}
+          aria-label="Open menu"
+        >
+          <TbMenu2 size={20} />
+        </Button>
+        <button
+          type="button"
+          className="flex items-center gap-1 truncate text-sm font-medium px-2 py-1 rounded hover:bg-slate-100"
+          onClick={onOpenLeft}
+        >
+          <span className="truncate max-w-[55vw]">
+            {canvasName ?? "Workspace"}
+          </span>
+          <TbChevronDown size={14} className="shrink-0 opacity-70" />
+        </button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onOpenSearch}
+          aria-label="Open search"
+        >
+          <TbSearch size={20} />
+        </Button>
+      </div>
+
+      {/* Chat — leave room for the fixed input below */}
+      <div
+        className="flex-1 min-h-0"
+        style={{ paddingBottom: "var(--mobile-chat-input-h, 0px)" }}
+      >
+        <ChatInterface
+          threadId={threadId}
+          onRetry={(userMessage) => setUserInput(userMessage)}
+        />
+      </div>
+    </div>
+  );
+}

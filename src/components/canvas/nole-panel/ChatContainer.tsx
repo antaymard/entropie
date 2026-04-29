@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import RichTextArea from "./RichTextArea";
 import { Button } from "@/components/shadcn/button";
 import {
@@ -11,30 +11,17 @@ import {
   TbPlus,
   TbSend,
   TbX,
+  TbBrain,
 } from "react-icons/tb";
 import { HiMiniXMark } from "react-icons/hi2";
 import { LuMousePointerClick } from "react-icons/lu";
-import { useNodes, useViewport } from "@xyflow/react";
 import type { CanvasNode } from "@/types";
 import prebuiltNodesConfig from "@/components/nodes/prebuilt-nodes/prebuiltNodesConfig";
 import { useNodeDataStore } from "@/stores/nodeDataStore";
-import { useNoleStore } from "@/stores/noleStore";
-import type { Id } from "@/../convex/_generated/dataModel";
-import type { ChatModelValues } from "@/types/convex";
 import { cn } from "@/lib/utils";
-import { useWindowsStore } from "@/stores/windowsStore";
 import ChatInterface from "./ChatInterface";
-import { useNoleThread } from "@/hooks/useNoleThread";
-import { api } from "@/../convex/_generated/api";
-import { useAction, useMutation, useQuery } from "convex/react";
-import {
-  optimisticallySendMessage,
-  useUIMessages,
-} from "@convex-dev/agent/react";
-import { useParams } from "@tanstack/react-router";
 import ThreadSelector from "./ThreadSelector";
 import SoundWaveAnimation from "./SoundWaveAnimation";
-import { useSpeechToText } from "@/hooks/useSpeechToText";
 import { Kbd } from "@/components/shadcn/kbd";
 import {
   Tooltip,
@@ -47,12 +34,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/shadcn/dropdown-menu";
-import { TbBrain } from "react-icons/tb";
 import toast from "react-hot-toast";
-import {
-  generateMessageContext,
-  getCanvasNodeTitle,
-} from "./messageContextGenerator";
+import { getCanvasNodeTitle } from "@/lib/getCanvasNodeTitle";
+import { useNoleChat } from "@/hooks/useNoleChat";
 
 const INPUT_MAX_HEIGHT_PX = 182;
 
@@ -61,48 +45,39 @@ type ChatContainerProps = {
 };
 
 export default function ChatContainer({ onClose }: ChatContainerProps) {
-  const { threadId: initialThreadId, isLoading, resetThread } = useNoleThread();
-  const { canvasId } = useParams({ strict: false }) as {
-    canvasId?: Id<"canvases">;
-  };
-
-  const [overrideThreadId, setOverrideThreadId] = useState<string | null>(null);
-  const threadId = overrideThreadId ?? initialThreadId;
-  const modelOptions = useQuery(api.ia.nole.listChatModels, {});
-
-  const [userInput, setUserInput] = useState("");
-  const [selectedModel, setSelectedModel] = useState<ChatModelValues>();
-  const [isSending, setIsSending] = useState(false);
-  const [isCancelling, setIsCancelling] = useState(false);
-  const attachedNodes = useNoleStore((state) => state.attachedNodes);
-  const attachedPosition = useNoleStore((state) => state.attachedPosition);
-  const addAttachments = useNoleStore((state) => state.addAttachments);
-  const removeAttachments = useNoleStore((state) => state.removeAttachments);
-  const resetAttachments = useNoleStore((state) => state.resetAttachments);
-
-  // Speech-to-text: hold Ctrl+Alt to record
-  const onTranscript = useCallback(
-    (text: string) => setUserInput((prev) => (prev ? prev + " " + text : text)),
-    [],
-  );
   const {
-    status: sttStatus,
-    start: startSTT,
-    stop: stopSTT,
-  } = useSpeechToText(onTranscript);
-  const isRecording = sttStatus === "recording";
-  const isTranscribing = sttStatus === "transcribing";
-  const sttBusy = isRecording || isTranscribing;
+    threadId,
+    isLoading,
+    userInput,
+    setUserInput,
+    sendCurrentMessage,
+    isSending,
+    isAssistantResponding,
+    isCancelling,
+    stopAssistantResponse,
+    selectThread,
+    startNewThread,
+    modelOptions,
+    selectedModel,
+    setSelectedModel,
+    attachedNodes,
+    attachedPosition,
+    selectableNodes,
+    addAttachments,
+    removeAttachments,
+    isRecording,
+    isTranscribing,
+    sttBusy,
+    startSTT,
+    stopSTT,
+    dirtyNodeIds,
+    hasDirtyWindows,
+    threadInfo,
+  } = useNoleChat();
 
-  // Track Ctrl+Alt hold for push-to-talk
+  // Desktop push-to-talk: hold Ctrl+Alt
   const keysHeldRef = useRef<Set<string>>(new Set());
   const sttActiveRef = useRef(false);
-
-  useEffect(() => {
-    if (!selectedModel && modelOptions && modelOptions.length > 0) {
-      setSelectedModel(modelOptions[0]?.value);
-    }
-  }, [modelOptions, selectedModel]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -144,124 +119,15 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
     };
   }, [startSTT, stopSTT]);
 
-  const { results: lastMessages } = useUIMessages(
-    api.threads.listMessages,
-    threadId ? { threadId } : "skip",
-    { initialNumItems: 1, stream: true },
-  );
-
-  const lastMessage =
-    lastMessages.length > 0 ? lastMessages[lastMessages.length - 1] : null;
-  const isAssistantResponding =
-    lastMessage !== null &&
-    lastMessage.role === "assistant" &&
-    lastMessage.status === "streaming";
-
-  const sendMessage = useMutation(api.ia.nole.saveMessage).withOptimisticUpdate(
-    optimisticallySendMessage(api.threads.listMessages),
-  );
-  const abortStream = useMutation(api.threads.abortStream);
-  const updateThreadTitle = useAction(api.threads.updateThreadTitle);
-  const threadInfo = useQuery(
-    api.threads.getThreadInfo,
-    threadId ? { threadId } : "skip",
-  );
-
-  const dirtyNodeIds = useWindowsStore((s) => s.dirtyNodeIds);
-  const openedWindows = useWindowsStore((s) => s.openedWindows);
-  const hasDirtyWindows = dirtyNodeIds.length > 0;
-  const nodeDatas = useNodeDataStore((state) => state.nodeDatas);
-  const { x: viewportX, y: viewportY, zoom: viewportZoom } = useViewport();
-
-  const nodes = useNodes();
-  const selectedNodesOnCanvas = nodes.filter((n) => n.selected) as CanvasNode[];
-  const attachedNodeIds = new Set(attachedNodes.map((node) => node.id));
-  const selectableNodes = selectedNodesOnCanvas.filter(
-    (node) => !attachedNodeIds.has(node.id),
-  );
-
-  const onSendClicked = async () => {
-    if (
-      !threadId ||
-      !canvasId ||
-      !userInput.trim() ||
-      isSending ||
-      isAssistantResponding ||
-      hasDirtyWindows ||
-      sttBusy
-    ) {
+  const handleSend = () => {
+    if (hasDirtyWindows) {
+      toast.error(
+        "Veuillez enregistrer ou fermer les fenêtres modifiées avant d'envoyer votre message.",
+        { position: "bottom-left", duration: 5000 },
+      );
       return;
     }
-
-    const prompt = userInput;
-    const messageContext = generateMessageContext({
-      nodes: nodes as CanvasNode[],
-      openedNodeIds: openedWindows.map((openedWindow) => openedWindow.xyNodeId),
-      attachedNodes,
-      attachedPosition,
-      viewport: {
-        x: viewportX,
-        y: viewportY,
-        zoom: viewportZoom,
-      },
-      viewportWidth: window.innerWidth,
-      viewportHeight: window.innerHeight,
-      getNodeTitle: (node) => getCanvasNodeTitle(node, nodeDatas),
-    });
-    setUserInput("");
-    setIsSending(true);
-
-    try {
-      await sendMessage({
-        threadId,
-        prompt,
-        metadata: {
-          messageContext,
-          model: selectedModel,
-        },
-        canvasId,
-      });
-      resetAttachments();
-      void updateThreadTitle({ threadId, onlyIfUntitled: true });
-    } catch (error) {
-      console.error("Erreur lors de l'envoi:", error);
-      setUserInput(prompt);
-      toast.error("Impossible d'envoyer le message. Réessayez.", {
-        position: "bottom-left",
-      });
-    } finally {
-      setIsSending(false);
-    }
-  };
-
-  const onNewThreadClicked = async () => {
-    setOverrideThreadId(null);
-    setUserInput("");
-    resetAttachments();
-    await resetThread();
-  };
-
-  const onStopClicked = async () => {
-    if (!threadId || !isAssistantResponding || isCancelling) {
-      return;
-    }
-
-    setIsCancelling(true);
-    try {
-      const result = await abortStream({ threadId });
-      if (!result.aborted) {
-        toast("Aucun stream actif a interrompre", {
-          position: "bottom-left",
-        });
-      }
-    } catch (error) {
-      console.error("Erreur lors de l'interruption du stream:", error);
-      toast.error("Impossible d'interrompre la reponse en cours", {
-        position: "bottom-left",
-      });
-    } finally {
-      setIsCancelling(false);
-    }
+    void sendCurrentMessage();
   };
 
   if (isLoading) {
@@ -291,18 +157,14 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={() => void onNewThreadClicked()}
+            onClick={() => void startNewThread()}
           >
             <TbPlus size={14} />
           </Button>
           {threadId ? (
             <ThreadSelector
               currentThreadId={threadId}
-              onSelectThread={(selectedThreadId) => {
-                setOverrideThreadId(selectedThreadId);
-                setUserInput("");
-                resetAttachments();
-              }}
+              onSelectThread={selectThread}
             />
           ) : null}
           <Button
@@ -374,7 +236,7 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
             <RichTextArea
               value={userInput}
               onChange={setUserInput}
-              onSubmit={() => void onSendClicked()}
+              onSubmit={handleSend}
               maxHeightPx={INPUT_MAX_HEIGHT_PX}
             />
           </div>
@@ -456,7 +318,7 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
               {isAssistantResponding && (
                 <Button
                   disabled={isCancelling || isSending}
-                  onClick={() => void onStopClicked()}
+                  onClick={() => void stopAssistantResponse()}
                   className={cn(hasDirtyWindows && "")}
                   variant="outline"
                 >
@@ -471,20 +333,11 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
               <Button
                 disabled={
                   !userInput.trim() ||
-                  !canvasId ||
                   isAssistantResponding ||
                   isSending ||
                   sttBusy
                 }
-                onClick={() => {
-                  if (hasDirtyWindows) {
-                    return toast.error(
-                      "Veuillez enregistrer ou fermer les fenêtres modifiées avant d'envoyer votre message.",
-                      { position: "bottom-left", duration: 5000 },
-                    );
-                  }
-                  void onSendClicked();
-                }}
+                onClick={handleSend}
                 className={cn(hasDirtyWindows && "")}
               >
                 Send

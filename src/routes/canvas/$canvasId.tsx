@@ -51,6 +51,7 @@ import SearchModale from "@/components/canvas/search-modale/SearchModale";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { useDuplicateNode } from "@/hooks/useDuplicateNode";
 import { useHotspotHotkeys } from "@/hooks/useHotspotHotkeys";
+import MobileCanvas from "@/components/mobile/MobileCanvas";
 
 // Additional helper to prevent hotkeys from triggering when typing in inputs, textareas, selects or contenteditable elements
 function isEditableTarget(target: EventTarget | null): target is HTMLElement {
@@ -70,6 +71,16 @@ export const Route = createFileRoute("/canvas/$canvasId")({
 function RouteComponent() {
   const { canvasId } = Route.useParams() as { canvasId: Id<"canvases"> };
   const { isAuthenticated } = useConvexAuth();
+  const isMobile = useIsMobile();
+
+  if (isMobile && isAuthenticated) {
+    return (
+      <div className="bg-white">
+        <OnboardingModal />
+        <MobileCanvas canvasId={canvasId} />
+      </div>
+    );
+  }
 
   const canvasContent = (
     <div className={cn("h-screen w-full")}>

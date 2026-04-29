@@ -135,17 +135,18 @@ export async function deleteNodeDataWithCascade(
     } else if (nodeData.type === "image") {
       const publicUrlBase = process.env.R2_PUBLIC_URL;
       const images = nodeData.values?.images;
-      if (Array.isArray(images) && publicUrlBase) {
+      if (Array.isArray(images)) {
         for (const image of images) {
-          if (
-            image &&
-            typeof image === "object" &&
-            typeof (image as Record<string, unknown>).url === "string"
-          ) {
-            const url = (image as Record<string, unknown>).url as string;
-            const prefix = `${publicUrlBase}/`;
-            if (url.startsWith(prefix)) {
-              r2Keys.push(url.slice(prefix.length));
+          if (image && typeof image === "object") {
+            const imgRecord = image as Record<string, unknown>;
+            if (typeof imgRecord.key === "string") {
+              r2Keys.push(imgRecord.key);
+            } else if (publicUrlBase && typeof imgRecord.url === "string") {
+              const url = imgRecord.url;
+              const prefix = `${publicUrlBase}/`;
+              if (url.startsWith(prefix)) {
+                r2Keys.push(url.slice(prefix.length));
+              }
             }
           }
         }

@@ -406,10 +406,10 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
                       )}
                     >
                       <span className="flex items-center gap-1.5">
-                        {model.isMultimodal && (
-                          <TbPhoto size={13} className="text-slate-400" />
-                        )}
                         <p>{model.label}</p>
+                        {model.isMultimodal && (
+                          <TbPhoto size={8} className="text-slate-400" />
+                        )}
                       </span>
                       <span className="text-xs text-slate-400">
                         {model.price.replace("_", " - ")}

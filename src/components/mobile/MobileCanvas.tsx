@@ -3,6 +3,8 @@ import { ReactFlowProvider, useReactFlow } from "@xyflow/react";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { api } from "@/../convex/_generated/api";
 import useRichQuery from "@/components/utils/useRichQuery";
+import { fromCanvasNodesToXyNodes } from "@/lib/node-types-converter";
+import type { CanvasNode } from "@/types";
 import { useNodeDataStore } from "@/stores/nodeDataStore";
 import { useCanvasStore } from "@/stores/canvasStore";
 import { useWindowsStore } from "@/stores/windowsStore";
@@ -63,8 +65,13 @@ function MobileCanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
 
   // Inject canvas nodes/edges into the (off-screen) react-flow store so that
   // hooks like `useNodes`, `useStore` keep working even though we don't render.
+  // We must convert Convex CanvasNode -> xy-flow Node (notably to expose
+  // `data.nodeDataId`, which mention cards read from).
   useEffect(() => {
-    setNodes((canvas?.nodes ?? []) as Parameters<typeof setNodes>[0]);
+    const xyNodes = canvas?.nodes
+      ? fromCanvasNodesToXyNodes(canvas.nodes as CanvasNode[])
+      : [];
+    setNodes(xyNodes);
     setEdges((canvas?.edges ?? []) as Parameters<typeof setEdges>[0]);
   }, [canvas?.nodes, canvas?.edges, setNodes, setEdges]);
 

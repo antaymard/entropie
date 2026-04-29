@@ -66,6 +66,18 @@ function TitleNode(xyNode: Node) {
         <div className={cn(textClassName, textColor, "p-1 px-2")}>
           <InlineEditableText
             value={text}
+            transformInput={(val) => {
+              const match = val.match(/^(#{1,3}) (.*)$/);
+              if (!match) return undefined;
+              const newLevel = `h${match[1].length}`;
+              if (nodeDataId && newLevel !== level) {
+                updateNodeDataValues({
+                  nodeDataId,
+                  values: { level: newLevel },
+                });
+              }
+              return match[2];
+            }}
             onSave={(newText) => {
               if (nodeDataId) {
                 // Sauvegarder le texte

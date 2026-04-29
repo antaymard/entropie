@@ -54,6 +54,13 @@ interface InlineEditableTextProps {
    * Callback appelé à chaque modification du texte en mode édition
    */
   onChange?: (value: string) => void;
+
+  /**
+   * Transforme la valeur saisie avant qu'elle ne soit appliquée à l'input.
+   * Retourner `undefined` pour conserver la valeur d'origine.
+   * Utile pour intercepter une syntaxe (ex: `# ` markdown) et la réécrire en direct.
+   */
+  transformInput?: (value: string) => string | undefined;
 }
 
 /**
@@ -88,6 +95,7 @@ function InlineEditableText({
   as: Element = "span",
   disabled = false,
   onChange,
+  transformInput,
 }: InlineEditableTextProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
@@ -138,11 +146,17 @@ function InlineEditableText({
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const val = e.target.value;
+      let val = e.target.value;
+      if (transformInput) {
+        const transformed = transformInput(val);
+        if (transformed !== undefined) {
+          val = transformed;
+        }
+      }
       setEditValue(val);
       onChange?.(val);
     },
-    [onChange],
+    [onChange, transformInput],
   );
 
   const handleKeyDown = useCallback(

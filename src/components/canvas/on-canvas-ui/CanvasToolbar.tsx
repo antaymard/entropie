@@ -4,6 +4,7 @@ import { useCanvasStore } from "@/stores/canvasStore";
 import SlideshowContainer from "./slideshow/SlideshowContainer";
 import SlideshowProgressToolbar from "./slideshow/SlideshowProgressToolbar";
 import HotspotContainer from "./hotspot/HotspotContainer";
+import HotspotAltOverlay from "./hotspot/HotspotAltOverlay";
 import { BiSlideshow } from "react-icons/bi";
 import { TbGps, TbPlus, TbSearch, TbX } from "react-icons/tb";
 import { Kbd } from "@/components/shadcn/kbd";
@@ -100,6 +101,7 @@ export default function CanvasToolbar({
           {tool === "hotspots" ? <TbX size={20} /> : <TbGps size={20} />}
         </Button>
       </div>
+      <HotspotAltOverlay />
       {tool === "slides" && <SlideshowContainer canvasId={canvasId} />}
       {tool === "hotspots" && <HotspotContainer canvasId={canvasId} />}
     </div>

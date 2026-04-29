@@ -91,6 +91,7 @@ export interface CompactionConfig {
 export interface ToolConfig {
   name: string;
   authorized_agents: ToolAgentName[];
+  requireMultiModal?: boolean;
   compactionForSuccessResult?: CompactionConfig;
   compactionForFailureResult?: CompactionConfig;
 }

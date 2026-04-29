@@ -145,15 +145,21 @@ export function getToolsForAgent({
   agentName,
   threadCtx,
   extraTools = {},
+  isMultimodal = false,
 }: {
   agentName: ToolAgentName;
   threadCtx: ThreadCtx;
   extraTools?: ToolSet;
+  isMultimodal?: boolean;
 }): ToolSet {
   const resolvedTools: ToolSet = {};
 
   for (const registration of toolRegistry) {
     if (!registration.config.authorized_agents.includes(agentName)) {
+      continue;
+    }
+
+    if (registration.config.requireMultiModal && !isMultimodal) {
       continue;
     }
 

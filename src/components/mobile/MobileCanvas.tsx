@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ReactFlowProvider, useReactFlow } from "@xyflow/react";
+import { ReactFlowProvider, useStoreApi } from "@xyflow/react";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { api } from "@/../convex/_generated/api";
 import useRichQuery from "@/components/utils/useRichQuery";
@@ -38,7 +38,7 @@ function MobileCanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(false);
   const [searchSidebarOpen, setSearchSidebarOpen] = useState(false);
 
-  const { setNodes, setEdges } = useReactFlow();
+  const flowStore = useStoreApi();
 
   useEffect(() => {
     useWindowsStore.getState().closeAllWindows();
@@ -63,17 +63,23 @@ function MobileCanvasContent({ canvasId }: { canvasId: Id<"canvases"> }) {
     canvasId ? { canvasId } : "skip",
   );
 
-  // Inject canvas nodes/edges into the (off-screen) react-flow store so that
-  // hooks like `useNodes`, `useStore` keep working even though we don't render.
-  // We must convert Convex CanvasNode -> xy-flow Node (notably to expose
-  // `data.nodeDataId`, which mention cards read from).
+  // Inject canvas nodes/edges directly into the xy-flow store so that hooks
+  // like `useStore`, `useNodes` keep working even though we don't render
+  // <ReactFlow>. `useReactFlow().setNodes()` is a no-op in that case (the
+  // queue is only flushed when ReactFlow holds the nodes), so we write to
+  // the store directly. We must also convert Convex CanvasNode -> xy-flow
+  // Node so `data.nodeDataId` (read by mention cards) is populated.
   useEffect(() => {
     const xyNodes = canvas?.nodes
       ? fromCanvasNodesToXyNodes(canvas.nodes as CanvasNode[])
       : [];
-    setNodes(xyNodes);
-    setEdges((canvas?.edges ?? []) as Parameters<typeof setEdges>[0]);
-  }, [canvas?.nodes, canvas?.edges, setNodes, setEdges]);
+    const state = flowStore.getState();
+    state.setNodes(xyNodes);
+    const edges = (canvas?.edges ?? []) as Parameters<
+      typeof state.setEdges
+    >[0];
+    state.setEdges(edges);
+  }, [canvas?.nodes, canvas?.edges, flowStore]);
 
   const canvasForStore = useMemo(() => {
     if (!canvas) return null;

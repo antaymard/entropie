@@ -7,6 +7,7 @@ import {
   TbExclamationCircle,
   TbLoader,
   TbMicrophone,
+  TbPhoto,
   TbPlus,
   TbSend,
   TbX,
@@ -404,7 +405,12 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
                         "capitalize flex items-center justify-between",
                       )}
                     >
-                      <p>{model.label}</p>
+                      <span className="flex items-center gap-1.5">
+                        {model.isMultimodal && (
+                          <TbPhoto size={13} className="text-slate-400" />
+                        )}
+                        <p>{model.label}</p>
+                      </span>
                       <span className="text-xs text-slate-400">
                         {model.price.replace("_", " - ")}
                       </span>

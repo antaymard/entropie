@@ -16,6 +16,11 @@ export type { LinkCellEditorProps } from "./LinkCellEditor";
 export { ColHeader } from "./ColHeader";
 export type { ColHeaderProps } from "./ColHeader";
 
+export { TableImportDialog } from "./TableImportDialog";
+export type { TableImportResult } from "./TableImportDialog";
+
+export { buildCsv, downloadCsv } from "./csv";
+
 export type {
   ColumnType,
   CellValue,

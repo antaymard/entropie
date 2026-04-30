@@ -4,7 +4,15 @@ import { useUpdateNodeDataValues } from "@/hooks/useUpdateNodeDataValues";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { useWindowFrameContext } from "@/components/windows/WindowFrameContext";
 import InlineEditableText from "@/components/form-ui/InlineEditableText";
-import { Table } from "@/components/table";
+import { Button } from "@/components/shadcn/button";
+import { TbDownload, TbUpload } from "react-icons/tb";
+import {
+  Table,
+  TableImportDialog,
+  buildCsv,
+  downloadCsv,
+  type TableImportResult,
+} from "@/components/table";
 import type {
   TableData,
   TableColumn,
@@ -195,6 +203,46 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
     [markDirty],
   );
 
+  // --- CSV import / export ---
+
+  const [importOpen, setImportOpen] = useState(false);
+
+  const handleExportCsv = useCallback(() => {
+    const csv = buildCsv(columnsRef.current, rowsRef.current);
+    // Use the table's title as the filename when available, fall back to a
+    // generic name. Strip filesystem-unfriendly chars.
+    const base = (titleRef.current || "table").replace(/[\\/:*?"<>|]/g, "_");
+    downloadCsv(base, csv);
+  }, []);
+
+  const handleImport = useCallback(
+    (result: TableImportResult) => {
+      if (result.replace) {
+        setLocalColumns(result.columns);
+        setLocalRows(result.rows);
+      } else {
+        // Append: keep existing columns/rows, then add the new ones. Existing
+        // rows need null cells for any newly-added columns so the editors
+        // don't blow up on undefined.
+        const newColIds = result.columns
+          .filter((c) => !columnsRef.current.some((ec) => ec.id === c.id))
+          .map((c) => c.id);
+        setLocalColumns(result.columns);
+        setLocalRows((rows) => [
+          ...rows.map((row) => {
+            if (newColIds.length === 0) return row;
+            const cells = { ...row.cells };
+            for (const id of newColIds) cells[id] = null;
+            return { ...row, cells };
+          }),
+          ...result.rows,
+        ]);
+      }
+      markDirty();
+    },
+    [markDirty],
+  );
+
   const updateColumnWidth = useCallback(
     (colId: string, width: number) => {
       setLocalColumns((cols) =>
@@ -220,7 +268,35 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
           className="font-semibold text-lg min-w-0 flex-1"
           disabled={isLocked}
         />
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setImportOpen(true)}
+          disabled={isLocked}
+          title="Importer un fichier CSV"
+        >
+          <TbUpload size={14} className="mr-1" />
+          Importer
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={handleExportCsv}
+          disabled={localColumns.length === 0}
+          title="Exporter au format CSV"
+        >
+          <TbDownload size={14} className="mr-1" />
+          Exporter
+        </Button>
       </div>
+      <TableImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        existingColumns={localColumns}
+        hasExistingData={localRows.length > 0 || localColumns.length > 0}
+        onImport={handleImport}
+      />
+
       <Table
         columns={localColumns}
         rows={localRows}

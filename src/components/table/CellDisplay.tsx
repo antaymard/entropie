@@ -7,14 +7,24 @@ import {
 } from "@/components/utils/nodeDataDisplayUtils";
 import { useNodeDataStore } from "@/stores/nodeDataStore";
 import type { Id } from "@/../convex/_generated/dataModel";
-import type { ColumnType, CellValue, LinkCellValue, NodeCellValue } from "./types";
+import {
+  SELECT_COLOR_CLASSES,
+  type ColumnType,
+  type CellValue,
+  type LinkCellValue,
+  type NodeCellValue,
+  type SelectCellValue,
+  type SelectOption,
+} from "./types";
+import { cn } from "@/lib/utils";
 
 export interface CellDisplayProps {
   type: ColumnType;
   value: CellValue | undefined;
+  options?: SelectOption[];
 }
 
-export function CellDisplay({ type, value }: CellDisplayProps) {
+export function CellDisplay({ type, value, options }: CellDisplayProps) {
   const nodes = useStore((state) => state.nodes);
   const nodeDatas = useNodeDataStore((state) => state.nodeDatas);
 
@@ -47,6 +57,39 @@ export function CellDisplay({ type, value }: CellDisplayProps) {
           )}
           <span className="truncate">{title}</span>
         </span>
+      </span>
+    );
+  }
+
+  if (type === "select") {
+    const ids = Array.isArray(value)
+      ? (value as SelectCellValue)
+      : typeof value === "string" && value.length > 0
+        ? [value]
+        : [];
+    if (ids.length === 0 || !options) {
+      return <span className="block w-full min-h-[1.4em] px-1" />;
+    }
+    const optionMap = new Map(options.map((o) => [o.id, o]));
+    return (
+      <span className="flex items-center gap-1 flex-wrap w-full min-h-[1.4em] px-1">
+        {ids.map((id) => {
+          const opt = optionMap.get(id);
+          if (!opt) return null;
+          const c = SELECT_COLOR_CLASSES[opt.color];
+          return (
+            <span
+              key={id}
+              className={cn(
+                "inline-flex items-center max-w-full rounded-md px-1.5 py-0.5 text-xs font-medium",
+                c.bg,
+                c.text,
+              )}
+            >
+              <span className="truncate">{opt.label}</span>
+            </span>
+          );
+        })}
       </span>
     );
   }

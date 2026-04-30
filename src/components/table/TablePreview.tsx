@@ -32,7 +32,7 @@ export function TablePreview({ columns, rows, className }: TablePreviewProps) {
           <TableRow key={row.id}>
             {columns.map((col) => (
               <TableCell key={col.id} style={col.width ? { width: col.width } : undefined}>
-                <CellDisplay type={col.type} value={row.cells[col.id]} />
+                <CellDisplay type={col.type} value={row.cells[col.id]} options={col.options} />
               </TableCell>
             ))}
           </TableRow>

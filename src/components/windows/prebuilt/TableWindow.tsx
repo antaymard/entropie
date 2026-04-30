@@ -11,6 +11,7 @@ import type {
   TableRowData,
   CellValue,
   ColumnType,
+  SelectOption,
 } from "@/components/table";
 
 function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
@@ -205,6 +206,35 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
     [markDirty],
   );
 
+  const updateColumnOptions = useCallback(
+    (colId: string, options: SelectOption[], isMulti: boolean) => {
+      const validIds = new Set(options.map((o) => o.id));
+      setLocalColumns((cols) =>
+        cols.map((c) => (c.id === colId ? { ...c, options, isMulti } : c)),
+      );
+      // Drop cell values that point to deleted options; for non-multi, keep at most one.
+      setLocalRows((rows) =>
+        rows.map((row) => {
+          const current = row.cells[colId];
+          if (!Array.isArray(current)) return row;
+          const filtered = (current as string[]).filter((id) =>
+            validIds.has(id),
+          );
+          const next = isMulti ? filtered : filtered.slice(0, 1);
+          if (
+            next.length === current.length &&
+            next.every((id, i) => id === (current as string[])[i])
+          ) {
+            return row;
+          }
+          return { ...row, cells: { ...row.cells, [colId]: next } };
+        }),
+      );
+      markDirty();
+    },
+    [markDirty],
+  );
+
   if (!nodeDataValues) return null;
 
   return (
@@ -235,6 +265,7 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
         onColumnOrderChange={reorderColumns}
         onRowOrderChange={reorderRows}
         onColumnWidthChange={updateColumnWidth}
+        onColumnOptionsChange={updateColumnOptions}
         className="flex-1 min-h-0"
       />
     </div>

@@ -50,10 +50,12 @@ import { TbPlus, TbSearch, TbTrash } from "react-icons/tb";
 import { cn } from "@/lib/utils";
 import { CellEditor } from "./CellEditor";
 import { ColHeader } from "./ColHeader";
+import { SelectOptionsDialog } from "./SelectOptionsDialog";
 import type {
   CellValue,
   ColumnType,
   LinkCellValue,
+  SelectOption,
   TableColumn,
   TableRowData,
 } from "./types";
@@ -72,6 +74,11 @@ export interface TableProps {
   onColumnOrderChange?: (orderedIds: string[]) => void;
   onRowOrderChange?: (orderedIds: string[]) => void;
   onColumnWidthChange?: (colId: string, width: number) => void;
+  onColumnOptionsChange?: (
+    colId: string,
+    options: SelectOption[],
+    isMulti: boolean,
+  ) => void;
   className?: string;
 }
 
@@ -243,6 +250,7 @@ export function Table({
   onColumnOrderChange,
   onRowOrderChange,
   onColumnWidthChange,
+  onColumnOptionsChange,
   className,
 }: TableProps) {
   const tableRootRef = useRef<HTMLDivElement>(null);
@@ -250,6 +258,9 @@ export function Table({
   const [globalFilter, setGlobalFilter] = useState("");
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
   const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
+  const [optionsDialogColumnId, setOptionsDialogColumnId] = useState<
+    string | null
+  >(null);
   const [columnOrder, setColumnOrder] = useState<string[]>(() => [
     ...(!readOnly ? ["__drag__"] : []),
     ...tableColumns.map((c) => c.id),
@@ -305,6 +316,7 @@ export function Table({
               onNameChange={(name) => onColumnNameChange?.(col.id, name)}
               onTypeChange={(type) => onColumnTypeChange?.(col.id, type)}
               onDelete={() => onDeleteColumn?.(col.id)}
+              onEditOptions={() => setOptionsDialogColumnId(col.id)}
             />
           ),
           cell: ({ row }) => {
@@ -318,10 +330,14 @@ export function Table({
                 value={value}
                 isEditing={isEditing}
                 readOnly={readOnly}
+                options={col.options}
+                isMulti={col.isMulti}
                 onClick={() => {
                   if (readOnly) return;
                   if (col.type === "checkbox") {
                     onCellChange?.(row.original.id, col.id, !value);
+                  } else if (col.type === "select" && (!col.options || col.options.length === 0)) {
+                    setOptionsDialogColumnId(col.id);
                   } else {
                     setEditingCell({
                       rowId: row.original.id,
@@ -471,6 +487,10 @@ export function Table({
     (id) => id !== "__delete__" && id !== "__drag__",
   );
 
+  const optionsDialogColumn = optionsDialogColumnId
+    ? tableColumns.find((c) => c.id === optionsDialogColumnId)
+    : undefined;
+
   return (
     <DndContext
       collisionDetection={closestCenter}
@@ -614,6 +634,20 @@ export function Table({
           </ShadcnTable>
         </div>
       </div>
+      {optionsDialogColumn && (
+        <SelectOptionsDialog
+          open={true}
+          columnName={optionsDialogColumn.name}
+          options={optionsDialogColumn.options ?? []}
+          isMulti={optionsDialogColumn.isMulti ?? false}
+          onOpenChange={(open) => {
+            if (!open) setOptionsDialogColumnId(null);
+          }}
+          onSave={(opts, isMulti) => {
+            onColumnOptionsChange?.(optionsDialogColumn.id, opts, isMulti);
+          }}
+        />
+      )}
     </DndContext>
   );
 }

@@ -3,14 +3,20 @@ import { cn } from "@/lib/utils";
 import { useWindowsStore, type SnapSide } from "@/stores/windowsStore";
 import { useStore } from "@xyflow/react";
 import WindowFrame from "./WindowFrame";
+import FullscreenDocumentWindow from "./FullscreenDocumentWindow";
 
 export default function WindowsContainer() {
   const openedWindows = useWindowsStore((s) => s.openedWindows);
+  const fullscreenNodeId = useWindowsStore((s) => s.fullscreenNodeId);
   const bringWindowToFront = useWindowsStore((s) => s.bringWindowToFront);
   const existingNodeIds = useStore((state) =>
     state.nodes.map((node) => node.id),
   );
   const [snapPreview, setSnapPreview] = useState<SnapSide | null>(null);
+
+  const fullscreenWindow = fullscreenNodeId
+    ? openedWindows.find((w) => w.xyNodeId === fullscreenNodeId)
+    : undefined;
 
   const handleSnapPreviewChange = useCallback(
     (side: SnapSide | null) => setSnapPreview(side),
@@ -36,6 +42,14 @@ export default function WindowsContainer() {
       data-slot="windows-container"
       className="pointer-events-none fixed inset-0 z-10 h-full w-full"
     >
+      {/* Fullscreen layer (rendered below regular windows) */}
+      {fullscreenWindow &&
+        existingNodeIds.includes(fullscreenWindow.xyNodeId) && (
+          <div className="pointer-events-auto">
+            <FullscreenDocumentWindow openedWindow={fullscreenWindow} />
+          </div>
+        )}
+
       {/* Snap preview overlay */}
       {snapPreview && (
         <div
@@ -54,6 +68,7 @@ export default function WindowsContainer() {
         .filter((openedWindow) =>
           existingNodeIds.includes(openedWindow.xyNodeId),
         )
+        .filter((openedWindow) => openedWindow.xyNodeId !== fullscreenNodeId)
         .map((openedWindow) => (
           <div
             key={openedWindow.xyNodeId}

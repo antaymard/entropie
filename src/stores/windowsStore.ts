@@ -173,6 +173,7 @@ interface WindowsStore {
   openedWindows: OpenedWindow[];
   topZIndex: number;
   dirtyNodeIds: string[];
+  fullscreenNodeId: string | null;
   addDirtyNode: (xyNodeId: string) => void;
   removeDirtyNode: (xyNodeId: string) => void;
   openWindow: (payload: OpenedWindowPayload) => void;
@@ -189,6 +190,8 @@ interface WindowsStore {
   setWindowState: (xyNodeId: string, state: OpenedWindowState) => void;
   toggleMinimizeWindow: (xyNodeId: string) => void;
   snapWindow: (xyNodeId: string, side: SnapSide) => void;
+  toggleFullscreenWindow: (xyNodeId: string) => void;
+  exitFullscreen: () => void;
 }
 
 export const useWindowsStore = create<WindowsStore>()(
@@ -197,6 +200,7 @@ export const useWindowsStore = create<WindowsStore>()(
       openedWindows: [],
       topZIndex: 0,
       dirtyNodeIds: [],
+      fullscreenNodeId: null,
       addDirtyNode: (xyNodeId: string) => {
         set((store) => {
           if (store.dirtyNodeIds.includes(xyNodeId)) return store;
@@ -301,6 +305,10 @@ export const useWindowsStore = create<WindowsStore>()(
           return {
             openedWindows: newOpenedWindows,
             dirtyNodeIds: store.dirtyNodeIds.filter((id) => id !== xyNodeId),
+            fullscreenNodeId:
+              store.fullscreenNodeId === xyNodeId
+                ? null
+                : store.fullscreenNodeId,
           };
         });
       },
@@ -323,6 +331,10 @@ export const useWindowsStore = create<WindowsStore>()(
             dirtyNodeIds: store.dirtyNodeIds.filter(
               (id) => !idsToClose.has(id),
             ),
+            fullscreenNodeId:
+              store.fullscreenNodeId && idsToClose.has(store.fullscreenNodeId)
+                ? null
+                : store.fullscreenNodeId,
           };
         });
       },
@@ -331,6 +343,7 @@ export const useWindowsStore = create<WindowsStore>()(
         set(() => ({
           openedWindows: [],
           dirtyNodeIds: [],
+          fullscreenNodeId: null,
         }));
       },
       moveWindow: (xyNodeId: string, delta: Delta) => {
@@ -454,6 +467,23 @@ export const useWindowsStore = create<WindowsStore>()(
           };
           return { openedWindows: nextOpenedWindows };
         });
+      },
+      toggleFullscreenWindow: (xyNodeId: string) => {
+        set((store) => {
+          if (store.fullscreenNodeId === xyNodeId) {
+            return { fullscreenNodeId: null };
+          }
+          const exists = store.openedWindows.some(
+            (w) => w.xyNodeId === xyNodeId,
+          );
+          if (!exists) return store;
+          return { fullscreenNodeId: xyNodeId };
+        });
+      },
+      exitFullscreen: () => {
+        set((store) =>
+          store.fullscreenNodeId === null ? store : { fullscreenNodeId: null },
+        );
       },
       snapWindow: (xyNodeId: string, side: SnapSide) => {
         set((store) => {

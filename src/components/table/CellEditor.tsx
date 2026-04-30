@@ -11,7 +11,15 @@ import { cn } from "@/lib/utils";
 import { CellDisplay } from "./CellDisplay";
 import { LinkCellEditor } from "./LinkCellEditor";
 import { NodeCellEditor } from "./NodeCellEditor";
-import type { ColumnType, CellValue, LinkCellValue, NodeCellValue } from "./types";
+import { SelectCellEditor } from "./SelectCellEditor";
+import type {
+  ColumnType,
+  CellValue,
+  LinkCellValue,
+  NodeCellValue,
+  SelectCellValue,
+  SelectOption,
+} from "./types";
 
 export interface CellEditorProps {
   type: ColumnType;
@@ -21,6 +29,8 @@ export interface CellEditorProps {
   onClick: () => void;
   onChange: (val: CellValue) => void;
   onBlur: () => void;
+  options?: SelectOption[];
+  isMulti?: boolean;
 }
 
 export function CellEditor({
@@ -31,12 +41,14 @@ export function CellEditor({
   onClick,
   onChange,
   onBlur,
+  options,
+  isMulti,
 }: CellEditorProps) {
   if (readOnly) {
     if (type === "checkbox") {
       return <Checkbox checked={!!value} disabled className="block" />;
     }
-    return <CellDisplay type={type} value={value} />;
+    return <CellDisplay type={type} value={value} options={options} />;
   }
 
   if (type === "checkbox") {
@@ -108,6 +120,21 @@ export function CellEditor({
     return (
       <NodeCellEditor
         value={value as NodeCellValue | null | undefined}
+        isEditing={isEditing}
+        readOnly={readOnly}
+        onClick={onClick}
+        onChange={onChange}
+        onBlur={onBlur}
+      />
+    );
+  }
+
+  if (type === "select") {
+    return (
+      <SelectCellEditor
+        options={options ?? []}
+        isMulti={!!isMulti}
+        value={value as SelectCellValue | null | undefined}
         isEditing={isEditing}
         readOnly={readOnly}
         onClick={onClick}

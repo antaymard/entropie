@@ -17,6 +17,7 @@ import {
   TbArrowDown,
   TbArrowsSort,
   TbTrash,
+  TbList,
 } from "react-icons/tb";
 import { cn } from "@/lib/utils";
 import type { TableColumn, TableRowData, ColumnType } from "./types";
@@ -32,6 +33,7 @@ export interface ColHeaderProps {
   onNameChange: (name: string) => void;
   onTypeChange: (type: ColumnType) => void;
   onDelete: () => void;
+  onEditOptions?: () => void;
 }
 
 export function ColHeader({
@@ -44,6 +46,7 @@ export function ColHeader({
   onNameChange,
   onTypeChange,
   onDelete,
+  onEditOptions,
 }: ColHeaderProps) {
   const sorted = tanstackCol.getIsSorted();
   return (
@@ -121,6 +124,12 @@ export function ColHeader({
                   ))}
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
+              {col.type === "select" && onEditOptions && (
+                <DropdownMenuItem onClick={onEditOptions}>
+                  <TbList size={14} className="mr-2" />
+                  Edit options…
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={onDelete}

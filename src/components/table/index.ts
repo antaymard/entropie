@@ -13,6 +13,12 @@ export type { CellEditorProps } from "./CellEditor";
 export { LinkCellEditor } from "./LinkCellEditor";
 export type { LinkCellEditorProps } from "./LinkCellEditor";
 
+export { SelectCellEditor } from "./SelectCellEditor";
+export type { SelectCellEditorProps } from "./SelectCellEditor";
+
+export { SelectOptionsDialog } from "./SelectOptionsDialog";
+export type { SelectOptionsDialogProps } from "./SelectOptionsDialog";
+
 export { ColHeader } from "./ColHeader";
 export type { ColHeaderProps } from "./ColHeader";
 
@@ -20,8 +26,16 @@ export type {
   ColumnType,
   CellValue,
   LinkCellValue,
+  NodeCellValue,
+  SelectColor,
+  SelectCellValue,
+  SelectOption,
   TableColumn,
   TableRowData,
   TableData,
 } from "./types";
-export { COLUMN_TYPE_LABELS } from "./types";
+export {
+  COLUMN_TYPE_LABELS,
+  SELECT_COLOR_CLASSES,
+  SELECT_COLOR_PALETTE,
+} from "./types";

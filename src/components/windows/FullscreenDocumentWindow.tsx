@@ -20,6 +20,8 @@ import DocumentWindow from "./prebuilt/DocumentWindow";
 import ChatContainer from "@/components/canvas/nole-panel/ChatContainer";
 import ConfirmableButton from "@/components/ui/ConfirmableButton";
 import NoleIcon from "@/assets/svg-components/NoleIcon";
+import { Button } from "@/components/shadcn/button";
+import { Kbd } from "@/components/shadcn/kbd";
 import { parseStoredPlateDocument } from "@/../convex/lib/plateDocumentStorage";
 
 interface FullscreenDocumentWindowProps {
@@ -100,6 +102,8 @@ export default function FullscreenDocumentWindow({
     exitFullscreen();
   });
 
+  useHotkey("N", () => setIsChatOpen((v) => !v));
+
   const contextValue = useMemo(
     () => ({
       setDirty,
@@ -140,17 +144,6 @@ export default function FullscreenDocumentWindow({
       >
         {/* ── Header ────────────────────────────────────────────────── */}
         <div className="flex select-none items-center gap-2 border-b bg-white px-4 py-2">
-          {!isChatOpen && (
-            <button
-              data-window-control="true"
-              className="shrink-0 rounded p-1 opacity-70 hover:bg-slate-100 hover:opacity-100"
-              onClick={() => setIsChatOpen(true)}
-              aria-label="Open Nolë"
-              title="Open Nolë"
-            >
-              <NoleIcon />
-            </button>
-          )}
           {NodeIcon ? (
             <NodeIcon className="size-4 shrink-0 text-slate-600" />
           ) : null}
@@ -245,10 +238,19 @@ export default function FullscreenDocumentWindow({
         {/* ── 3-column body ─────────────────────────────────────────── */}
         <div className="flex min-h-0 flex-1">
           {/* Left: Nolë chat (always reserved to keep content centered) */}
-          <aside className="flex w-95 shrink-0 flex-col border-r bg-white [&>div]:shadow-none!">
+          <aside className="relative flex w-95 shrink-0 flex-col border-r bg-white [&>div]:shadow-none!">
             {isChatOpen ? (
               <ChatContainer onClose={() => setIsChatOpen(false)} />
-            ) : null}
+            ) : (
+              <div className="absolute bottom-4 left-4">
+                <div className="canvas-ui-container px-0!">
+                  <Button variant="ghost" onClick={() => setIsChatOpen(true)}>
+                    <NoleIcon /> Nolë
+                    <Kbd>N</Kbd>
+                  </Button>
+                </div>
+              </div>
+            )}
           </aside>
 
           {/* Middle: editor (full width container, content centered) */}

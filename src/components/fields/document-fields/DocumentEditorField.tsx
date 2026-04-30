@@ -24,6 +24,7 @@ interface DocumentEditorFieldProps extends BaseFieldProps<{ doc: Value }> {
   plugins?: typeof EditorKit;
   isLocked?: boolean;
   onDirtyChange?: (isDirty: boolean) => void;
+  onDocChange?: (doc: Value) => void;
 }
 
 const DocumentEditorField = forwardRef<
@@ -38,6 +39,7 @@ const DocumentEditorField = forwardRef<
     plugins = EditorKit,
     isLocked,
     onDirtyChange,
+    onDocChange,
   },
   ref,
 ) {
@@ -107,12 +109,13 @@ const DocumentEditorField = forwardRef<
   useImperativeHandle(ref, () => ({ save }), [save]);
 
   const handleChange = useCallback(() => {
+    onDocChange?.(editor.children as Value);
     if (skipNextChangeRef.current) {
       skipNextChangeRef.current = false;
       return;
     }
     onDirtyChange?.(true);
-  }, [onDirtyChange]);
+  }, [onDirtyChange, onDocChange, editor]);
 
   const handleFocus = useCallback(() => {
     if (isLocked) return;

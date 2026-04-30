@@ -10,7 +10,7 @@ import {
 import { useNodeDataTitle } from "@/hooks/useNodeTitle";
 import { useNodeData } from "@/hooks/useNodeData";
 import { getNodeIcon } from "@/components/utils/nodeDataDisplayUtils";
-import { X, Minus, Save } from "lucide-react";
+import { X, Minus, Save, Maximize2 } from "lucide-react";
 import { TbLocation, TbRefresh } from "react-icons/tb";
 import { useReactFlow } from "@xyflow/react";
 import DocumentWindow from "./prebuilt/DocumentWindow";
@@ -81,6 +81,9 @@ export default function WindowFrame({
   const resizeWindow = useWindowsStore((s) => s.resizeWindow);
   const closeWindow = useWindowsStore((s) => s.closeWindow);
   const toggleMinimizeWindow = useWindowsStore((s) => s.toggleMinimizeWindow);
+  const toggleFullscreenWindow = useWindowsStore(
+    (s) => s.toggleFullscreenWindow,
+  );
   const snapWindow = useWindowsStore((s) => s.snapWindow);
   const addDirtyNode = useWindowsStore((s) => s.addDirtyNode);
   const removeDirtyNode = useWindowsStore((s) => s.removeDirtyNode);
@@ -388,6 +391,21 @@ export default function WindowFrame({
               >
                 <Save size={12} />
                 Save
+              </button>
+            )}
+            {openedWindow.nodeType === "document" && (
+              <button
+                data-window-control="true"
+                className="shrink-0 rounded p-0.5 opacity-50 hover:bg-blue-500/15 hover:text-blue-600 hover:opacity-100 h-full aspect-square flex items-center justify-center"
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={() => {
+                  if (isDirty) saveHandler?.();
+                  toggleFullscreenWindow(xyNodeId);
+                }}
+                aria-label="Expand to fullscreen"
+                title="Expand"
+              >
+                <Maximize2 size={13} />
               </button>
             )}
             <button

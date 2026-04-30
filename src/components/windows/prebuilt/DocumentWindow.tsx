@@ -13,9 +13,14 @@ import { Spinner } from "@/components/shadcn/spinner";
 interface DocumentWindowProps {
   xyNodeId: string;
   nodeDataId: Id<"nodeDatas">;
+  onDocChange?: (doc: Value) => void;
 }
 
-function DocumentWindow({ xyNodeId, nodeDataId }: DocumentWindowProps) {
+function DocumentWindow({
+  xyNodeId,
+  nodeDataId,
+  onDocChange,
+}: DocumentWindowProps) {
   const editorRef = useRef<DocumentEditorFieldHandle>(null);
   // Keep track of scheduled hydration work to cancel stale frames.
   const hydrationFrameRef = useRef<number | null>(null);
@@ -124,6 +129,7 @@ function DocumentWindow({ xyNodeId, nodeDataId }: DocumentWindowProps) {
         onChange={handleSave}
         isLocked={isLocked}
         onDirtyChange={setIsDirty}
+        onDocChange={onDocChange}
       />
       {!isEditorReady && (
         <div className="absolute inset-0 flex items-center justify-center bg-white/65">
@@ -140,5 +146,7 @@ function DocumentWindow({ xyNodeId, nodeDataId }: DocumentWindowProps) {
 export default memo(
   DocumentWindow,
   (prev, next) =>
-    prev.xyNodeId === next.xyNodeId && prev.nodeDataId === next.nodeDataId,
+    prev.xyNodeId === next.xyNodeId &&
+    prev.nodeDataId === next.nodeDataId &&
+    prev.onDocChange === next.onDocChange,
 );

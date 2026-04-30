@@ -244,12 +244,12 @@ export default function FullscreenDocumentWindow({
 
         {/* ── 3-column body ─────────────────────────────────────────── */}
         <div className="flex min-h-0 flex-1">
-          {/* Left: Nolë chat (collapsible) */}
-          {isChatOpen && (
-            <aside className="flex w-95 shrink-0 flex-col border-r bg-white [&>div]:shadow-none!">
+          {/* Left: Nolë chat (always reserved to keep content centered) */}
+          <aside className="flex w-95 shrink-0 flex-col border-r bg-white [&>div]:shadow-none!">
+            {isChatOpen ? (
               <ChatContainer onClose={() => setIsChatOpen(false)} />
-            </aside>
-          )}
+            ) : null}
+          </aside>
 
           {/* Middle: editor (full width container, content centered) */}
           <main className="flex min-w-0 flex-1 overflow-hidden [&_[data-slate-editor]]:px-[max(2rem,calc((100%-56rem)/2))]!">

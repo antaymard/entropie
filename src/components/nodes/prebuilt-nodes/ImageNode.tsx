@@ -253,16 +253,30 @@ function ImageNode(xyNode: Node) {
 
   const handleDownload = useCallback(async () => {
     for (const [i, image] of currentValue.entries()) {
-      const response = await fetch(image.url);
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = blobUrl;
-      link.download = image.filename ?? `image-${i + 1}`;
-      document.body.append(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(blobUrl);
+      const filename = image.filename ?? `image-${i + 1}`;
+      try {
+        const response = await fetch(image.url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const blob = await response.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = filename;
+        document.body.append(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(blobUrl);
+      } catch (err) {
+        console.warn("Download via fetch failed, falling back to anchor", err);
+        const link = document.createElement("a");
+        link.href = image.url;
+        link.download = filename;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        document.body.append(link);
+        link.click();
+        link.remove();
+      }
     }
   }, [currentValue]);
 

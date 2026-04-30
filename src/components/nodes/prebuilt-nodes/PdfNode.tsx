@@ -5,7 +5,7 @@ import NodeFrame from "../NodeFrame";
 import { useNodeDataValues } from "@/hooks/useNodeData";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { RiAttachment2 } from "react-icons/ri";
-import { TbExternalLink, TbMaximize, TbPencil } from "react-icons/tb";
+import { TbDownload, TbExternalLink, TbMaximize, TbPencil } from "react-icons/tb";
 import CanvasNodeToolbar from "../toolbar/CanvasNodeToolbar";
 import { Button } from "@/components/shadcn/button";
 import {
@@ -93,6 +93,34 @@ function PdfNode(xyNode: Node) {
 
   const isPdf = file?.mimeType === "application/pdf";
 
+  const handleDownload = async () => {
+    for (const f of currentValue) {
+      try {
+        const response = await fetch(f.url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const blob = await response.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = f.filename;
+        document.body.append(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(blobUrl);
+      } catch (err) {
+        console.warn("Download via fetch failed, falling back to anchor", err);
+        const link = document.createElement("a");
+        link.href = f.url;
+        link.download = f.filename;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        document.body.append(link);
+        link.click();
+        link.remove();
+      }
+    }
+  };
+
   return (
     <>
       <CanvasNodeToolbar xyNode={xyNode}>
@@ -106,6 +134,16 @@ function PdfNode(xyNode: Node) {
             }}
           >
             <TbMaximize />
+          </Button>
+        )}
+        {file && (
+          <Button
+            variant="outline"
+            size="icon"
+            title="Télécharger"
+            onClick={handleDownload}
+          >
+            <TbDownload />
           </Button>
         )}
         <Popover open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>

@@ -7,6 +7,7 @@ import type { Id } from "@/../convex/_generated/dataModel";
 import {
   TbChevronLeft,
   TbChevronRight,
+  TbDownload,
   TbGripVertical,
   TbMaximize,
   TbPencil,
@@ -250,6 +251,35 @@ function ImageNode(xyNode: Node) {
 
   const hasMultiple = currentValue.length > 1;
 
+  const handleDownload = useCallback(async () => {
+    for (const [i, image] of currentValue.entries()) {
+      const filename = image.filename ?? `image-${i + 1}`;
+      try {
+        const response = await fetch(image.url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const blob = await response.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = filename;
+        document.body.append(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(blobUrl);
+      } catch (err) {
+        console.warn("Download via fetch failed, falling back to anchor", err);
+        const link = document.createElement("a");
+        link.href = image.url;
+        link.download = filename;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        document.body.append(link);
+        link.click();
+        link.remove();
+      }
+    }
+  }, [currentValue]);
+
   return (
     <>
       <CanvasNodeToolbar xyNode={xyNode}>
@@ -261,6 +291,16 @@ function ImageNode(xyNode: Node) {
         >
           <TbMaximize />
         </Button>
+        {currentValue.length > 0 && (
+          <Button
+            variant="outline"
+            size="icon"
+            title="Télécharger"
+            onClick={handleDownload}
+          >
+            <TbDownload />
+          </Button>
+        )}
         <Dialog>
           <DialogTrigger asChild>
             <Button variant="outline" size="icon" title="Gérer les images">

@@ -19,6 +19,7 @@ import { WindowFrameContext } from "./WindowFrameContext";
 import DocumentWindow from "./prebuilt/DocumentWindow";
 import ChatContainer from "@/components/canvas/nole-panel/ChatContainer";
 import ConfirmableButton from "@/components/ui/ConfirmableButton";
+import NoleIcon from "@/assets/svg-components/NoleIcon";
 import { parseStoredPlateDocument } from "@/../convex/lib/plateDocumentStorage";
 
 interface FullscreenDocumentWindowProps {
@@ -71,6 +72,7 @@ export default function FullscreenDocumentWindow({
   const [refreshHandler, setRefreshHandler] = useState<(() => void) | null>(
     null,
   );
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const editorScrollRef = useRef<HTMLDivElement>(null);
@@ -138,6 +140,17 @@ export default function FullscreenDocumentWindow({
       >
         {/* ── Header ────────────────────────────────────────────────── */}
         <div className="flex select-none items-center gap-2 border-b bg-white px-4 py-2">
+          {!isChatOpen && (
+            <button
+              data-window-control="true"
+              className="shrink-0 rounded p-1 opacity-70 hover:bg-slate-100 hover:opacity-100"
+              onClick={() => setIsChatOpen(true)}
+              aria-label="Open Nolë"
+              title="Open Nolë"
+            >
+              <NoleIcon />
+            </button>
+          )}
           {NodeIcon ? (
             <NodeIcon className="size-4 shrink-0 text-slate-600" />
           ) : null}
@@ -231,10 +244,12 @@ export default function FullscreenDocumentWindow({
 
         {/* ── 3-column body ─────────────────────────────────────────── */}
         <div className="flex min-h-0 flex-1">
-          {/* Left: Nolë chat */}
-          <aside className="flex w-95 shrink-0 flex-col border-r bg-white [&>div]:shadow-none!">
-            <ChatContainer />
-          </aside>
+          {/* Left: Nolë chat (collapsible) */}
+          {isChatOpen && (
+            <aside className="flex w-95 shrink-0 flex-col border-r bg-white [&>div]:shadow-none!">
+              <ChatContainer onClose={() => setIsChatOpen(false)} />
+            </aside>
+          )}
 
           {/* Middle: editor (full width container, content centered) */}
           <main className="flex min-w-0 flex-1 overflow-hidden [&_[data-slate-editor]]:px-[max(2rem,calc((100%-56rem)/2))]!">

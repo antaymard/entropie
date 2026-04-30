@@ -232,16 +232,13 @@ export default function FullscreenDocumentWindow({
         {/* ── 3-column body ─────────────────────────────────────────── */}
         <div className="flex min-h-0 flex-1">
           {/* Left: Nolë chat */}
-          <aside className="flex w-80 shrink-0 flex-col border-r bg-slate-50">
+          <aside className="flex w-95 shrink-0 flex-col border-r bg-white [&>div]:shadow-none!">
             <ChatContainer />
           </aside>
 
-          {/* Middle: editor */}
-          <main className="flex min-w-0 flex-1 justify-center overflow-hidden">
-            <div
-              ref={editorScrollRef}
-              className="h-full w-full max-w-3xl"
-            >
+          {/* Middle: editor (full width container, content centered) */}
+          <main className="flex min-w-0 flex-1 overflow-hidden [&_[data-slate-editor]]:px-[max(2rem,calc((100%-56rem)/2))]!">
+            <div ref={editorScrollRef} className="h-full w-full">
               <DocumentWindow
                 xyNodeId={xyNodeId}
                 nodeDataId={nodeDataId}
@@ -251,7 +248,7 @@ export default function FullscreenDocumentWindow({
           </main>
 
           {/* Right: outline */}
-          <aside className="flex w-80 shrink-0 flex-col border-l bg-slate-50">
+          <aside className="flex w-95 shrink-0 flex-col border-l bg-white">
             <DocumentOutline
               headings={headings}
               onSelect={scrollToHeading}

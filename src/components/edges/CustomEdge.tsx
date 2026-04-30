@@ -3,11 +3,12 @@ import {
   EdgeLabelRenderer,
   getBezierPath,
   type EdgeProps,
-  useReactFlow,
 } from "@xyflow/react";
 import { memo, useState, useRef, useEffect } from "react";
 import nodeColors from "../nodes/nodeColors";
 import type { EdgeCustomData } from "@/types/domain";
+import { useUpdateCanvasEdge } from "@/hooks/useUpdateCanvasEdge";
+import { useCanvasStore } from "@/stores/canvasStore";
 
 const strokeWidthMap = {
   thin: 1,
@@ -24,38 +25,31 @@ const CustomEdge = memo(function CustomEdge({
   sourcePosition,
   targetPosition,
   style = {},
-  markerEnd,
-  markerStart,
   data,
 }: EdgeProps) {
   const customData = data as EdgeCustomData | undefined;
-  const { setEdges } = useReactFlow();
+  const { updateCanvasEdge } = useUpdateCanvasEdge();
+  const editingEdgeId = useCanvasStore((s) => s.editingEdgeId);
+  const setEditingEdgeId = useCanvasStore((s) => s.setEditingEdgeId);
+
   const [isEditing, setIsEditing] = useState(false);
   const [labelValue, setLabelValue] = useState(customData?.label || "");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Check if edit mode was triggered externally
+  const label = customData?.label;
+
+  // Enter edit mode when this edge is the one being edited (set by double-click)
   useEffect(() => {
-    if ((customData as any)?._editMode) {
-      setIsEditing(true);
+    if (editingEdgeId === id) {
       setLabelValue(customData?.label || "");
-      // Clear the edit mode flag
-      setEdges((edges) =>
-        edges.map((edge) => {
-          if (edge.id === id) {
-            const { _editMode, ...restData } = edge.data || {};
-            return { ...edge, data: restData };
-          }
-          return edge;
-        })
-      );
+      setIsEditing(true);
+      setEditingEdgeId(null);
     }
-  }, [(customData as any)?._editMode]);
+  }, [editingEdgeId, id, customData?.label, setEditingEdgeId]);
 
   // Get edge customization from data
   const color = customData?.color || "default";
   const strokeWidth = strokeWidthMap[customData?.strokeWidth || "regular"];
-  const label = customData?.label;
   const customMarkerStart = customData?.markerStart || "none";
   const customMarkerEnd = customData?.markerEnd || "none";
 
@@ -67,30 +61,31 @@ const CustomEdge = memo(function CustomEdge({
     }
   }, [isEditing]);
 
-  const handleLabelClick = () => {
-    setIsEditing(true);
-    setLabelValue(label || "");
-  };
-
   const handleLabelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLabelValue(e.target.value);
   };
 
   const saveLabel = () => {
     setIsEditing(false);
-    setEdges((edges) =>
-      edges.map((edge) =>
-        edge.id === id
-          ? { ...edge, data: { ...edge.data, label: labelValue } }
-          : edge
-      )
-    );
+    const trimmed = labelValue.trim();
+    if ((customData?.label ?? "") === trimmed) {
+      return;
+    }
+    const nextData: Record<string, unknown> = { ...(customData ?? {}) };
+    if (trimmed) {
+      nextData.label = trimmed;
+    } else {
+      delete nextData.label;
+    }
+    void updateCanvasEdge({ edgeId: id, data: nextData });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
+      e.preventDefault();
       saveLabel();
     } else if (e.key === "Escape") {
+      e.preventDefault();
       setIsEditing(false);
       setLabelValue(label || "");
     }
@@ -200,7 +195,8 @@ const CustomEdge = memo(function CustomEdge({
             className="nodrag nopan"
             onDoubleClick={(e) => {
               e.stopPropagation();
-              handleLabelClick();
+              setLabelValue(label || "");
+              setIsEditing(true);
             }}
           >
             {isEditing ? (
@@ -211,10 +207,11 @@ const CustomEdge = memo(function CustomEdge({
                 onChange={handleLabelChange}
                 onKeyDown={handleKeyDown}
                 onBlur={handleBlur}
+                placeholder="Label"
                 className="px-2 py-1 bg-white border-2 border-blue-500 rounded text-xs shadow-sm outline-none min-w-[80px]"
               />
             ) : (
-              <div className="px-2 py-1 bg-white border border-gray-300 rounded text-xs shadow-sm cursor-pointer hover:border-blue-400 transition-colors">
+              <div className="px-2 py-1 bg-white border border-gray-300 rounded text-xs shadow-sm cursor-text hover:border-blue-400 transition-colors">
                 {label}
               </div>
             )}

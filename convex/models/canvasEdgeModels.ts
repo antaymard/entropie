@@ -176,9 +176,13 @@ export async function updateCanvasEdges(
       return edge;
     }
 
+    if (update.data === undefined) {
+      return edge;
+    }
+
     return {
       ...edge,
-      data: update.data ? { ...(edge.data ?? {}), ...update.data } : edge.data,
+      data: update.data,
     };
   });
 

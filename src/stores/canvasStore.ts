@@ -18,6 +18,7 @@ interface CanvasStore {
   tool: Tool;
   isSearchModalOpen: boolean;
   searchQuery: string;
+  editingEdgeId: string | null;
 
   setCanvas: (canvas: CanvasInStore | null) => void;
   setStatus: (status: Status) => void;
@@ -28,6 +29,7 @@ interface CanvasStore {
   toggleSearchModal: () => void;
   setSearchQuery: (query: string) => void;
   resetSearchModal: () => void;
+  setEditingEdgeId: (edgeId: string | null) => void;
 }
 
 export const useCanvasStore = create<CanvasStore>()(
@@ -39,6 +41,7 @@ export const useCanvasStore = create<CanvasStore>()(
       tool: "edit",
       isSearchModalOpen: false,
       searchQuery: "",
+      editingEdgeId: null,
 
       setTool: (tool) => {
         set({ tool });
@@ -69,6 +72,9 @@ export const useCanvasStore = create<CanvasStore>()(
       },
       resetSearchModal: () => {
         set({ isSearchModalOpen: false, searchQuery: "" });
+      },
+      setEditingEdgeId: (edgeId) => {
+        set({ editingEdgeId: edgeId });
       },
     }),
     { name: "canvas-store" },

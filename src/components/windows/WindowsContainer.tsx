@@ -4,6 +4,7 @@ import { useWindowsStore, type SnapSide } from "@/stores/windowsStore";
 import { useStore } from "@xyflow/react";
 import WindowFrame from "./WindowFrame";
 import FullscreenDocumentWindow from "./FullscreenDocumentWindow";
+import FullscreenTableWindow from "./FullscreenTableWindow";
 
 export default function WindowsContainer() {
   const openedWindows = useWindowsStore((s) => s.openedWindows);
@@ -46,7 +47,11 @@ export default function WindowsContainer() {
       {fullscreenWindow &&
         existingNodeIds.includes(fullscreenWindow.xyNodeId) && (
           <div className="pointer-events-auto">
-            <FullscreenDocumentWindow openedWindow={fullscreenWindow} />
+            {fullscreenWindow.nodeType === "document" ? (
+              <FullscreenDocumentWindow openedWindow={fullscreenWindow} />
+            ) : fullscreenWindow.nodeType === "table" ? (
+              <FullscreenTableWindow openedWindow={fullscreenWindow} />
+            ) : null}
           </div>
         )}
 

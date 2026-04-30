@@ -393,7 +393,8 @@ export default function WindowFrame({
                 Save
               </button>
             )}
-            {openedWindow.nodeType === "document" && (
+            {(openedWindow.nodeType === "document" ||
+              openedWindow.nodeType === "table") && (
               <button
                 data-window-control="true"
                 className="shrink-0 rounded p-0.5 opacity-50 hover:bg-blue-500/15 hover:text-blue-600 hover:opacity-100 h-full aspect-square flex items-center justify-center"

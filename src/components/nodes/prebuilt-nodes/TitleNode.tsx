@@ -86,6 +86,12 @@ function TitleNode(xyNode: Node) {
   const ghostRef = useRef<HTMLSpanElement>(null);
   const composingRef = useRef(false);
   const initialResizeWidthRef = useRef<number | null>(null);
+  // Forces "manual" between the end of a resize and the moment props catch
+  // up with the optimistic data.titleSizing flip. Without this, the convex
+  // sync briefly emits a snapshot where titleSizing has not yet been merged,
+  // so for one render the hook would re-run in auto mode and snap width back
+  // to the text-fit value.
+  const sizingOverrideRef = useRef<SizingMode | null>(null);
 
   const [isEditing, setIsEditing] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
@@ -94,13 +100,20 @@ function TitleNode(xyNode: Node) {
   // React (writes happen via ref) to avoid caret jumps.
   const [liveText, setLiveText] = useState(text);
 
-  // While the user is actively resizing, treat the node as manual locally.
-  // This avoids two problems on auto-mode resizes: (1) re-measurement in the
-  // sizing hook would override width back to the text width every frame so
-  // the node wouldn't follow the cursor; (2) we'd fire updateCanvasNode on
-  // every onResize, spamming Convex with display-props mutations. The switch
-  // to manual is committed once on resize end.
-  const effectiveSizingMode: SizingMode = isResizing ? "manual" : sizingMode;
+  // While the user is actively resizing we treat the node as manual locally
+  // so the sizing hook stops fighting the drag width. Once isResizing flips
+  // back to false, sizingOverrideRef takes over until the persisted prop
+  // reflects the new mode.
+  const effectiveSizingMode: SizingMode = isResizing
+    ? "manual"
+    : (sizingOverrideRef.current ?? sizingMode);
+
+  // Clear the override as soon as props (the persisted titleSizing) change,
+  // whatever the new value: a toggle to auto must not be shadowed by a
+  // stale "manual" override left by a previous resize.
+  useEffect(() => {
+    sizingOverrideRef.current = null;
+  }, [sizingMode]);
 
   // Keep liveText in sync with persisted text outside of edit mode.
   useEffect(() => {
@@ -256,6 +269,9 @@ function TitleNode(xyNode: Node) {
         sizingMode !== "manual" &&
         Math.abs(params.width - initial) >= RESIZE_THRESHOLD_PX
       ) {
+        // Force the local hook to keep behaving as manual until the
+        // titleSizing prop round-trips back as "manual".
+        sizingOverrideRef.current = "manual";
         void updateCanvasNode({
           nodeId: xyNode.id,
           data: { titleSizing: "manual" },

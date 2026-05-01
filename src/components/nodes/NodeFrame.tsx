@@ -1,4 +1,5 @@
 import { NodeResizer, type Node } from "@xyflow/react";
+import type { ComponentProps } from "react";
 import { memo, useCallback, useState } from "react";
 import { cn } from "@/lib/utils";
 import { colors } from "@/components/ui/styles";
@@ -10,14 +11,22 @@ import { useWindowsStore } from "@/stores/windowsStore";
 import { canNodeTypeBeOpenedInWindow } from "@/components/nodes/prebuilt-nodes/prebuiltNodesConfig";
 import { useIsNodeAttached } from "@/stores/noleStore";
 
+type NodeResizerProps = ComponentProps<typeof NodeResizer>;
+
 function NodeFrame({
   xyNode,
   children,
   resizable = true,
+  onResizeStart,
+  onResize,
+  onResizeEnd,
 }: {
   xyNode: Node<any>;
   children: React.ReactNode;
   resizable?: boolean;
+  onResizeStart?: NodeResizerProps["onResizeStart"];
+  onResize?: NodeResizerProps["onResize"];
+  onResizeEnd?: NodeResizerProps["onResizeEnd"];
 }) {
   const nodeColor = colors[(xyNode?.data?.color as colorsEnum) || "default"];
   const [isResizing, setIsResizing] = useState(false);
@@ -48,8 +57,15 @@ function NodeFrame({
       <AutomationIndicator xyNode={xyNode} />
       <NodeResizer
         isVisible={resizable && xyNode?.selected}
-        onResizeStart={() => setIsResizing(true)}
-        onResizeEnd={() => setIsResizing(false)}
+        onResizeStart={(event, params) => {
+          setIsResizing(true);
+          onResizeStart?.(event, params);
+        }}
+        onResize={onResize}
+        onResizeEnd={(event, params) => {
+          setIsResizing(false);
+          onResizeEnd?.(event, params);
+        }}
         lineStyle={{
           borderWidth: 2,
         }}

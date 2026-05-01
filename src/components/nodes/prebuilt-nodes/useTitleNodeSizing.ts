@@ -1,0 +1,178 @@
+import { useEffect, useLayoutEffect, useRef, type RefObject } from "react";
+import { useReactFlow } from "@xyflow/react";
+import { useMutation } from "convex/react";
+import { useParams } from "@tanstack/react-router";
+import { api } from "@/../convex/_generated/api";
+import type { Id } from "@/../convex/_generated/dataModel";
+
+const MIN_DELTA = 0.5;
+const PERSIST_DEBOUNCE_MS = 120;
+
+interface UseTitleNodeSizingArgs {
+  nodeId: string;
+  ghostRef: RefObject<HTMLElement | null>;
+  /** "auto": width follows text on a single line; "manual": width fixed, height adapts to wrapped text */
+  sizingMode: "auto" | "manual";
+  /** Current node width (px) coming from React Flow / Convex */
+  currentWidth: number;
+  /** Current node height (px) coming from React Flow / Convex */
+  currentHeight: number;
+  /** Current text — used to retrigger measurement */
+  text: string;
+  /** Current heading level — used to retrigger measurement */
+  level: string;
+  /** Live text being typed (uncontrolled). When set, measure from this instead of `text`. */
+  liveText?: string;
+  /** Padding (px) inside the NodeFrame around the editable element (left + right) */
+  paddingX?: number;
+  /** Padding (px) inside the NodeFrame around the editable element (top + bottom) */
+  paddingY?: number;
+  /** Border (px) of the NodeFrame, both horizontal and vertical sides combined. */
+  borderTotal?: number;
+}
+
+/**
+ * Drives the auto/manual sizing of a TitleNode by measuring a hidden ghost
+ * element and persisting dimensions through the canvasNodes mutation
+ * (which already does an optimistic update so React Flow reflects the change
+ * within a frame).
+ */
+export function useTitleNodeSizing({
+  nodeId,
+  ghostRef,
+  sizingMode,
+  currentWidth,
+  currentHeight,
+  text,
+  level,
+  liveText,
+  paddingX = 16, // matches "px-2" (8 each side)
+  paddingY = 8, // matches "p-1" (4 top + 4 bottom)
+  borderTotal = 2, // 1px on each side
+}: UseTitleNodeSizingArgs) {
+  const { canvasId } = useParams({ from: "/canvas/$canvasId" }) as {
+    canvasId: Id<"canvases">;
+  };
+  const { setNodes } = useReactFlow();
+  const updateDimensions = useMutation(
+    api.canvasNodes.updatePositionOrDimensions,
+  ).withOptimisticUpdate((localStore, { canvasId: targetCanvasId, nodeChanges }) => {
+    const existing = localStore.getQuery(api.canvases.readCanvas, {
+      canvasId: targetCanvasId,
+    });
+    if (!existing || !existing.nodes) return;
+    const changeById = new Map<
+      string,
+      { width: number; height: number }
+    >();
+    for (const change of nodeChanges as Array<{
+      id: string;
+      dimensions?: { width: number; height: number };
+    }>) {
+      if (change.dimensions) {
+        changeById.set(change.id, change.dimensions);
+      }
+    }
+    if (changeById.size === 0) return;
+    localStore.setQuery(
+      api.canvases.readCanvas,
+      { canvasId: targetCanvasId },
+      {
+        ...existing,
+        nodes: existing.nodes.map((node) => {
+          const dim = changeById.get(node.id);
+          if (!dim) return node;
+          return { ...node, width: dim.width, height: dim.height };
+        }),
+      },
+    );
+  });
+
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingDimensions = useRef<{ width: number; height: number } | null>(
+    null,
+  );
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, []);
+
+  const persistDimensions = (width: number, height: number) => {
+    pendingDimensions.current = { width, height };
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      const dim = pendingDimensions.current;
+      pendingDimensions.current = null;
+      debounceTimer.current = null;
+      if (!dim) return;
+      void updateDimensions({
+        canvasId,
+        nodeChanges: [
+          {
+            id: nodeId,
+            dimensions: dim,
+          },
+        ],
+      });
+    }, PERSIST_DEBOUNCE_MS);
+  };
+
+  // Apply locally first so the React Flow node grows in the same frame as the
+  // user's input. The optimistic mutation will catch up shortly after.
+  const applyLocalDimensions = (width: number, height: number) => {
+    setNodes((nodes) =>
+      nodes.map((node) =>
+        node.id === nodeId
+          ? {
+              ...node,
+              width,
+              height,
+              measured: { width, height },
+            }
+          : node,
+      ),
+    );
+  };
+
+  // Measure & sync whenever the relevant inputs change.
+  useLayoutEffect(() => {
+    const ghost = ghostRef.current;
+    if (!ghost) return;
+
+    if (sizingMode === "auto") {
+      // Single-line measurement
+      ghost.style.whiteSpace = "pre";
+      ghost.style.width = "auto";
+      const naturalWidth = ghost.offsetWidth;
+      const naturalHeight = ghost.offsetHeight;
+      const desiredWidth = Math.ceil(naturalWidth + paddingX + borderTotal);
+      const desiredHeight = Math.ceil(naturalHeight + paddingY + borderTotal);
+
+      if (
+        Math.abs(desiredWidth - currentWidth) > MIN_DELTA ||
+        Math.abs(desiredHeight - currentHeight) > MIN_DELTA
+      ) {
+        applyLocalDimensions(desiredWidth, desiredHeight);
+        persistDimensions(desiredWidth, desiredHeight);
+      }
+    } else {
+      // Manual mode: width is fixed by the user; we only adapt height to wrap.
+      const innerWidth = Math.max(0, currentWidth - paddingX - borderTotal);
+      ghost.style.whiteSpace = "pre-wrap";
+      ghost.style.width = `${innerWidth}px`;
+      const wrappedHeight = ghost.offsetHeight;
+      const desiredHeight = Math.ceil(wrappedHeight + paddingY + borderTotal);
+
+      if (Math.abs(desiredHeight - currentHeight) > MIN_DELTA) {
+        applyLocalDimensions(currentWidth, desiredHeight);
+        persistDimensions(currentWidth, desiredHeight);
+      }
+    }
+    // We deliberately depend on liveText too: while typing, we want the node
+    // to resize on every keystroke. eslint disabled because applyLocal/persist
+    // are stable closures.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [text, liveText, level, sizingMode, currentWidth]);
+}

@@ -9,6 +9,7 @@ import { toastError } from "@/components/utils/errorUtils";
 import { parseSkillFrontmatter } from "@/../convex/lib/parseSkillFrontmatter";
 import SkillAttachments from "./SkillAttachments";
 import { buildRawSkillContent } from "./skillSerialization";
+import { Textarea } from "@/components/shadcn/textarea";
 
 type SkillEditorProps = {
   skillId?: Id<"skills"> | null;
@@ -207,9 +208,8 @@ export default function SkillEditor({
         >
           Description
         </label>
-        <Input
+        <Textarea
           id="skill-description"
-          type="text"
           value={draftDescription}
           onChange={(e) => setDraftDescription(e.target.value)}
           disabled={readOnly}

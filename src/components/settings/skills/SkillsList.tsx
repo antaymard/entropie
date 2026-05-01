@@ -21,9 +21,7 @@ export default function SkillsList({
   onSelect,
 }: SkillsListProps) {
   if (skills.length === 0) {
-    return (
-      <p className="text-sm text-gray-500 italic px-2">No skills yet.</p>
-    );
+    return <p className="text-sm text-gray-500 italic px-2">No skills yet.</p>;
   }
 
   const own = skills.filter((skill) => skill.isOwn);
@@ -43,12 +41,12 @@ export default function SkillsList({
               type="button"
               onClick={() => onSelect(skill._id)}
               className={cn(
-                "w-full text-left px-3 py-2 hover:bg-gray-100 transition-colors flex flex-col gap-0.5",
+                "w-full text-left p-3 hover:bg-gray-100 transition-colors flex flex-col gap-1",
                 selectedId === skill._id && "bg-violet-50 hover:bg-violet-100",
               )}
             >
-              <span className="font-medium text-sm truncate">{skill.name}</span>
-              <span className="text-xs text-gray-500 line-clamp-2">
+              <span className="font-medium truncate">{skill.name}</span>
+              <span className="text-sm text-gray-500 line-clamp-2">
                 {skill.description}
               </span>
             </button>

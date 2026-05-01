@@ -6,6 +6,7 @@ import type { Id } from "@/../convex/_generated/dataModel";
 import { Button } from "@/components/shadcn/button";
 import SkillsList from "@/components/settings/skills/SkillsList";
 import SkillEditor from "@/components/settings/skills/SkillEditor";
+import { TbPlus } from "react-icons/tb";
 
 export const Route = createFileRoute("/settings/skills")({
   component: SkillsSettingsPage,
@@ -43,11 +44,11 @@ function SkillsSettingsPage() {
       <div className="flex flex-col gap-3 min-h-0">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-bold">Skills</h1>
-          <Button type="button" size="sm" onClick={handleNewSkill}>
-            New skill
+          <Button type="button" size="icon-sm" onClick={handleNewSkill}>
+            <TbPlus />
           </Button>
         </div>
-        <p className="text-xs text-gray-500">
+        <p className="text-sm text-gray-500">
           Skills are reusable prompt modules Nolë can load on demand. Define the
           name, description, and body for discovery and usage.
         </p>

@@ -88,10 +88,19 @@ function TitleNode(xyNode: Node) {
   const initialResizeWidthRef = useRef<number | null>(null);
 
   const [isEditing, setIsEditing] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
   // Live text drives the ghost measurer (and therefore the node size) while
   // the user types. The contentEditable element itself is NOT controlled by
   // React (writes happen via ref) to avoid caret jumps.
   const [liveText, setLiveText] = useState(text);
+
+  // While the user is actively resizing, treat the node as manual locally.
+  // This avoids two problems on auto-mode resizes: (1) re-measurement in the
+  // sizing hook would override width back to the text width every frame so
+  // the node wouldn't follow the cursor; (2) we'd fire updateCanvasNode on
+  // every onResize, spamming Convex with display-props mutations. The switch
+  // to manual is committed once on resize end.
+  const effectiveSizingMode: SizingMode = isResizing ? "manual" : sizingMode;
 
   // Keep liveText in sync with persisted text outside of edit mode.
   useEffect(() => {
@@ -106,7 +115,7 @@ function TitleNode(xyNode: Node) {
   useTitleNodeSizing({
     nodeId: xyNode.id,
     ghostRef,
-    sizingMode,
+    sizingMode: effectiveSizingMode,
     currentWidth: xyNode.width ?? 0,
     currentHeight: xyNode.height ?? 0,
     text,
@@ -232,23 +241,40 @@ function TitleNode(xyNode: Node) {
   // ── Resize detection ────────────────────────────────────────────────────
   const handleResizeStart = useCallback(() => {
     initialResizeWidthRef.current = xyNode.width ?? 0;
+    setIsResizing(true);
   }, [xyNode.width]);
 
-  const handleResize = useCallback(
+  const handleResizeEnd = useCallback(
     (
       _event: unknown,
       params: { width: number; height: number; x: number; y: number },
     ) => {
-      if (sizingMode === "manual") return;
       const initial = initialResizeWidthRef.current ?? 0;
-      if (Math.abs(params.width - initial) < RESIZE_THRESHOLD_PX) return;
-      void updateCanvasNode({
-        nodeId: xyNode.id,
-        data: { titleSizing: "manual" },
-      });
+      initialResizeWidthRef.current = null;
+      setIsResizing(false);
+      if (
+        sizingMode !== "manual" &&
+        Math.abs(params.width - initial) >= RESIZE_THRESHOLD_PX
+      ) {
+        void updateCanvasNode({
+          nodeId: xyNode.id,
+          data: { titleSizing: "manual" },
+        });
+      }
     },
     [sizingMode, updateCanvasNode, xyNode.id],
   );
+
+  // xyflow's onResizeEnd only fires if at least one onResize was emitted
+  // (resizeDetected guard). If the user clicks the handle and releases
+  // without moving, neither fires — so we always reset isResizing on the
+  // global pointerup as a safety net.
+  useEffect(() => {
+    if (!isResizing) return;
+    const handleUp = () => setIsResizing(false);
+    document.addEventListener("pointerup", handleUp);
+    return () => document.removeEventListener("pointerup", handleUp);
+  }, [isResizing]);
 
   // ── Auto-fit toggle from the toolbar ────────────────────────────────────
   const handleToggleSizing = useCallback(
@@ -320,7 +346,7 @@ function TitleNode(xyNode: Node) {
             minWidth={50}
             style={RESIZE_LINE_STYLE}
             onResizeStart={handleResizeStart}
-            onResize={handleResize}
+            onResizeEnd={handleResizeEnd}
           />
           <NodeResizeControl
             variant={ResizeControlVariant.Line}
@@ -329,7 +355,7 @@ function TitleNode(xyNode: Node) {
             minWidth={50}
             style={RESIZE_LINE_STYLE}
             onResizeStart={handleResizeStart}
-            onResize={handleResize}
+            onResizeEnd={handleResizeEnd}
           />
         </>
       ) : null}
@@ -361,7 +387,7 @@ function TitleNode(xyNode: Node) {
               textColor,
               "outline-none cursor-text",
               isEditing && "nodrag",
-              sizingMode === "auto"
+              effectiveSizingMode === "auto"
                 ? "whitespace-pre"
                 : "whitespace-pre-wrap break-words",
               showPlaceholder && "text-muted-foreground/50 italic",

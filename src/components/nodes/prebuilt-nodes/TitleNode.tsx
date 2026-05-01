@@ -7,7 +7,11 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import { type Node } from "@xyflow/react";
+import {
+  type Node,
+  NodeResizeControl,
+  ResizeControlVariant,
+} from "@xyflow/react";
 import { areNodePropsEqual } from "../areNodePropsEqual";
 import NodeFrame from "../NodeFrame";
 import { ToggleGroup, ToggleGroupItem } from "@/components/shadcn/toggle-group";
@@ -42,6 +46,10 @@ const LEVELS: Array<{
 
 const PLACEHOLDER = "Click to edit...";
 const RESIZE_THRESHOLD_PX = 2;
+
+// Match the lineStyle used by NodeFrame's default NodeResizer for visual
+// consistency with other nodes' resize handles.
+const RESIZE_LINE_STYLE: CSSProperties = { borderWidth: 2 };
 
 const GHOST_STYLE: CSSProperties = {
   position: "absolute",
@@ -296,11 +304,37 @@ function TitleNode(xyNode: Node) {
         </Toggle>
       </CanvasNodeToolbar>
 
-      <NodeFrame
-        xyNode={xyNode}
-        onResizeStart={handleResizeStart}
-        onResize={handleResize}
-      >
+      {/* Custom resizer: only horizontal line handles on left/right edges.
+          We disable NodeFrame's default resizer (which has corners + vertical
+          handles) because in manual mode height is auto-derived from the
+          wrap, not user-controlled. resizeDirection="horizontal" guarantees
+          React Flow only mutates width — height stays under our hook's
+          control, so releasing the handle no longer snaps height to one
+          line. */}
+      {xyNode.selected ? (
+        <>
+          <NodeResizeControl
+            variant={ResizeControlVariant.Line}
+            position="left"
+            resizeDirection="horizontal"
+            minWidth={50}
+            style={RESIZE_LINE_STYLE}
+            onResizeStart={handleResizeStart}
+            onResize={handleResize}
+          />
+          <NodeResizeControl
+            variant={ResizeControlVariant.Line}
+            position="right"
+            resizeDirection="horizontal"
+            minWidth={50}
+            style={RESIZE_LINE_STYLE}
+            onResizeStart={handleResizeStart}
+            onResize={handleResize}
+          />
+        </>
+      ) : null}
+
+      <NodeFrame xyNode={xyNode} resizable={false}>
         <div className="overflow-hidden p-1 px-2">
           <div
             ref={editorRef}

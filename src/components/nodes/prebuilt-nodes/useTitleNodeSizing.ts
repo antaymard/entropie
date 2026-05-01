@@ -170,9 +170,13 @@ export function useTitleNodeSizing({
         persistDimensions(currentWidth, desiredHeight);
       }
     }
-    // We deliberately depend on liveText too: while typing, we want the node
-    // to resize on every keystroke. eslint disabled because applyLocal/persist
+    // Depend on currentHeight too: when React Flow's resizer or the convex
+    // sync overwrites our height (e.g. on resize release, the resizer's
+    // dimension change persists the start height to convex even with
+    // resizeDirection="horizontal"), this re-runs and overrides height back
+    // to the wrap-computed value. liveText is also a dependency so the node
+    // grows on every keystroke. eslint-disabled because applyLocal/persist
     // are stable closures.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [text, liveText, level, sizingMode, currentWidth]);
+  }, [text, liveText, level, sizingMode, currentWidth, currentHeight]);
 }

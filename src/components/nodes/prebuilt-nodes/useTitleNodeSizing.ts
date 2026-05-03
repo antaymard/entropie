@@ -92,6 +92,16 @@ export function useTitleNodeSizing({
   const pendingDimensions = useRef<{ width: number; height: number } | null>(
     null,
   );
+  // Tracks the last (width, height) we asked Convex to persist. Lets us
+  // short-circuit re-measures that would commit the same value again — which
+  // can happen when external triggers (font loading, the ResizeObserver
+  // forwarding our own setNodes back through handleNodeChange, query
+  // invalidations on neighbouring data) re-run the measurement effect even
+  // though nothing actually changed. Without this guard, a freshly-loaded
+  // canvas can spam updatePositionOrDimensions in a loop.
+  const lastPersistedRef = useRef<{ width: number; height: number } | null>(
+    null,
+  );
 
   useEffect(() => {
     return () => {
@@ -100,6 +110,10 @@ export function useTitleNodeSizing({
   }, []);
 
   const persistDimensions = (width: number, height: number) => {
+    const last = lastPersistedRef.current;
+    if (last && last.width === width && last.height === height) {
+      return;
+    }
     pendingDimensions.current = { width, height };
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(() => {
@@ -107,6 +121,7 @@ export function useTitleNodeSizing({
       pendingDimensions.current = null;
       debounceTimer.current = null;
       if (!dim) return;
+      lastPersistedRef.current = dim;
       void updateDimensions({
         canvasId,
         nodeChanges: [

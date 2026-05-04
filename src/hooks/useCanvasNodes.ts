@@ -332,10 +332,39 @@ export function useCanvasNodes(
             lastPositionChangesWhenResizing.current = positionChanges;
           }
         } else {
+          // Drop dimension changes that match what's already persisted.
+          // ResizeObserver can fire after setNodes() (font load, neighbouring
+          // query invalidation re-running this useEffect) and re-emit the
+          // exact dimensions we just rendered. Without this guard the
+          // resulting mutation invalidates readCanvas / listByCanvasId /
+          // listUserCanvases, which re-renders, which re-fires the observer
+          // — a self-perpetuating loop on every canvas load. 0.5px absorbs
+          // sub-pixel rounding noise.
+          const meaningfulChanges = canvasNodes
+            ? dimensionChanges.filter((change) => {
+                if (!change.dimensions) return false;
+                const sourceNode = canvasNodes.find(
+                  (n) => n.id === change.id,
+                );
+                if (!sourceNode) return true;
+                return (
+                  Math.abs(change.dimensions.width - sourceNode.width) >=
+                    0.5 ||
+                  Math.abs(change.dimensions.height - sourceNode.height) >=
+                    0.5
+                );
+              })
+            : dimensionChanges;
+
+          if (meaningfulChanges.length === 0) {
+            lastPositionChangesWhenResizing.current = null;
+            return;
+          }
+
           // Merge dimension and position changes by node ID.
           const savedPositionChanges =
             lastPositionChangesWhenResizing.current || [];
-          const mergedChanges = dimensionChanges.map((dimChange) => {
+          const mergedChanges = meaningfulChanges.map((dimChange) => {
             const posChange = savedPositionChanges.find(
               (p) => p.id === dimChange.id,
             );
@@ -399,6 +428,7 @@ export function useCanvasNodes(
     },
     [
       canvasId,
+      canvasNodes,
       addCanvasNodesToConvex,
       closeWindowsForNodeIds,
       removeCanvasNodesToConvex,

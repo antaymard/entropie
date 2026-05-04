@@ -3,8 +3,11 @@ import { z } from "zod";
 import { internal } from "../../_generated/api";
 import { Id } from "../../_generated/dataModel";
 import { getNodeDataTitle } from "../../lib/getNodeDataTitle";
-import { escapeXmlText, toXmlCdata } from "../../lib/xml";
-import { makeNodeDataLLMFriendly } from "../helpers/makeNodeDataLLMFriendly";
+import { escapeXmlAttribute, escapeXmlText, toXmlCdata } from "../../lib/xml";
+import {
+  formatTableMarkdown,
+  makeNodeDataLLMFriendly,
+} from "../helpers/makeNodeDataLLMFriendly";
 import {
   buildPdfPagesMarkdown,
   buildPdfTocMarkdown,
@@ -25,7 +28,49 @@ const PDF_HINTS = {
   notAPdf: "pdfPages was provided for a non-pdf node and was ignored.",
 } as const;
 
+const TABLE_DEFAULT_ROW_LIMIT = 50;
+const TABLE_MAX_ROW_LIMIT = 200;
+const TABLE_MAX_CHARS = 60_000;
+
+const TABLE_HINTS = {
+  notATable: "tableRows was provided for a non-table node and was ignored.",
+  defaultCap: (totalRows: number, displayedCount: number) =>
+    `Showing ${displayedCount} of ${totalRows} rows (default cap: ${TABLE_DEFAULT_ROW_LIMIT}). Use full_text_search for token lookup, or call read_nodes with tableRows=[{nodeId, offset, limit}] or tableRows=[{nodeId, rowIds:[…]}] to target specific rows.`,
+  hardCap: (totalRows: number, displayedCount: number) =>
+    `Showing ${displayedCount} of ${totalRows} rows (capped at ${TABLE_MAX_ROW_LIMIT}). Re-call with a smaller limit or specific rowIds.`,
+  charLimit: (totalRows: number, displayedCount: number) =>
+    `Showing ${displayedCount} of ${totalRows} rows (output truncated at ${TABLE_MAX_CHARS} chars). Re-call with a smaller limit or specific rowIds.`,
+  rowIdsNotFound: (missing: string[]) =>
+    `Some rowIds were not found and were skipped: ${missing.join(", ")}.`,
+} as const;
+
 type PdfFile = { url?: string; filename?: string; mimeType?: string };
+
+type SelectOption = {
+  id: string;
+  label?: string;
+  color?: string;
+};
+
+type TableColumnLite = {
+  id: string;
+  name?: string;
+  type?: string;
+  options?: Array<SelectOption>;
+  isMulti?: boolean;
+};
+
+type TableValueLite = {
+  columns?: Array<TableColumnLite>;
+  rows?: Array<{ id: string; cells?: Record<string, unknown> }>;
+};
+
+type TableRowSliceInput = {
+  nodeId: string;
+  offset?: number;
+  limit?: number;
+  rowIds?: string[];
+};
 
 function renderPdfFiles(files: PdfFile[]): string {
   if (files.length === 0) {
@@ -97,6 +142,112 @@ function getPdfTotalPages(pageChunks: PdfPageChunk[]): number | undefined {
   return undefined;
 }
 
+function renderTableColumnsBlock(columns: TableColumnLite[]): string {
+  if (columns.length === 0) {
+    return "<tableColumns />";
+  }
+
+  const columnXml = columns.map((col) => {
+    const id = escapeXmlAttribute(col.id);
+    const name = escapeXmlAttribute(col.name ?? col.id);
+    const type = escapeXmlAttribute(col.type ?? "text");
+    const isMultiAttr =
+      col.type === "select"
+        ? ` isMulti="${col.isMulti ? "true" : "false"}"`
+        : "";
+
+    if (col.type === "select") {
+      const options = col.options ?? [];
+      if (options.length === 0) {
+        return `  <column id="${id}" name="${name}" type="select"${isMultiAttr} />`;
+      }
+      const optionsXml = options
+        .map((opt) => {
+          const optId = escapeXmlAttribute(opt.id);
+          const optLabel = escapeXmlAttribute(opt.label ?? opt.id);
+          const colorAttr = opt.color
+            ? ` color="${escapeXmlAttribute(opt.color)}"`
+            : "";
+          return `    <option id="${optId}" label="${optLabel}"${colorAttr} />`;
+        })
+        .join("\n");
+      return `  <column id="${id}" name="${name}" type="select"${isMultiAttr}>\n${optionsXml}\n  </column>`;
+    }
+
+    return `  <column id="${id}" name="${name}" type="${type}" />`;
+  });
+
+  return `<tableColumns>\n${columnXml.join("\n")}\n</tableColumns>`;
+}
+
+function buildTableNodeBody(opts: {
+  tableValue: unknown;
+  rowSlice: TableRowSliceInput | undefined;
+  nodeInfoById: Map<string, { type: string; title: string }>;
+}): {
+  body: string;
+  totalRows: number;
+  displayedCount: number;
+  truncated: boolean;
+} {
+  const tableValue = (opts.tableValue ?? {}) as TableValueLite;
+  const columns = Array.isArray(tableValue.columns) ? tableValue.columns : [];
+
+  const result = formatTableMarkdown(opts.tableValue, {
+    rowSlice: opts.rowSlice
+      ? {
+          offset: opts.rowSlice.offset,
+          limit: opts.rowSlice.limit,
+          rowIds: opts.rowSlice.rowIds,
+        }
+      : undefined,
+    nodeInfoById: opts.nodeInfoById,
+    defaultRowLimit: TABLE_DEFAULT_ROW_LIMIT,
+    maxRowLimit: TABLE_MAX_ROW_LIMIT,
+    maxChars: TABLE_MAX_CHARS,
+    includeColumnLegend: false,
+  });
+
+  const columnsBlock = renderTableColumnsBlock(columns);
+  const rowsBlock = `<tableRows>\n${toXmlCdata(result.markdown)}\n</tableRows>`;
+
+  const displayedCount = result.displayedRowIds.length;
+  const hints: string[] = [];
+
+  switch (result.truncationReason) {
+    case "charLimit":
+      hints.push(TABLE_HINTS.charLimit(result.totalRows, displayedCount));
+      break;
+    case "hardCap":
+      hints.push(TABLE_HINTS.hardCap(result.totalRows, displayedCount));
+      break;
+    case "defaultCap":
+      hints.push(TABLE_HINTS.defaultCap(result.totalRows, displayedCount));
+      break;
+    case null:
+      break;
+  }
+
+  if (result.missingRowIds.length > 0) {
+    hints.push(TABLE_HINTS.rowIdsNotFound(result.missingRowIds));
+  }
+
+  const hintsXml = hints
+    .map((hint) => `<tableHint>${escapeXmlText(hint)}</tableHint>`)
+    .join("\n");
+
+  const body = [columnsBlock, rowsBlock, hintsXml]
+    .filter((part) => part.length > 0)
+    .join("\n");
+
+  return {
+    body,
+    totalRows: result.totalRows,
+    displayedCount,
+    truncated: result.truncated,
+  };
+}
+
 export const readNodesToolConfig: ToolConfig = {
   name: "read_nodes",
   authorized_agents: [
@@ -143,7 +294,9 @@ export default function readNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
       "A tool to read multiple nodes from the current canvas and return their nodeData as LLM-friendly XML. " +
       "For pdf nodes, by default returns a paginated table of contents in markdown ('# Heading [pageNumber]') along with the total page count. " +
       "Pass `pdfPages=[{nodeId, pages:[…]}]` to read the full OCR markdown of specific 1-based pages instead. " +
-      "PDF chunks come from cached Mistral OCR; nodes not yet indexed are flagged.",
+      "PDF chunks come from cached Mistral OCR; nodes not yet indexed are flagged. " +
+      `For table nodes, by default returns the first ${TABLE_DEFAULT_ROW_LIMIT} rows along with column definitions (incl. select options and node references). ` +
+      "Pass `tableRows=[{nodeId, offset, limit}]` to paginate or `tableRows=[{nodeId, rowIds:[…]}]` to target specific rows (use after full_text_search to read matched rows).",
     inputSchema: z.object({
       nodeIds: z
         .array(z.string())
@@ -166,6 +319,37 @@ export default function readNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
         .describe(
           "For pdf nodes only: request specific 1-based page numbers per nodeId. " +
             "If omitted, the pdf returns its paginated table of contents and a hint.",
+        ),
+      tableRows: z
+        .array(
+          z.object({
+            nodeId: z.string(),
+            offset: z
+              .number()
+              .int()
+              .nonnegative()
+              .optional()
+              .describe("0-based offset of the first row to return."),
+            limit: z
+              .number()
+              .int()
+              .positive()
+              .optional()
+              .describe(
+                `Max rows to return (hard cap ${TABLE_MAX_ROW_LIMIT}). Defaults to ${TABLE_DEFAULT_ROW_LIMIT} when omitted.`,
+              ),
+            rowIds: z
+              .array(z.string().min(1))
+              .optional()
+              .describe(
+                "Specific row IDs to return. When provided, offset/limit are ignored.",
+              ),
+          }),
+        )
+        .optional()
+        .describe(
+          "For table nodes only: paginate rows per nodeId. Use offset/limit for ranges or rowIds for specific rows. " +
+            `If omitted, the table returns up to ${TABLE_DEFAULT_ROW_LIMIT} rows with a hint when truncated.`,
         ),
     }),
     execute: async (ctx, input): Promise<string> => {
@@ -193,7 +377,19 @@ export default function readNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
           pdfPagesByNodeId.set(entry.nodeId, entry.pages);
         }
 
-        const nodes = await Promise.all(
+        const tableRowsByNodeId = new Map<string, TableRowSliceInput>();
+        for (const entry of input.tableRows ?? []) {
+          tableRowsByNodeId.set(entry.nodeId, entry);
+        }
+
+        const referencedNodeIdsForTableCells = new Set<string>();
+
+        const nodeDataByNodeId = new Map<
+          string,
+          { type: string; title: string }
+        >();
+
+        const baseNodes = await Promise.all(
           input.nodeIds.map(async (nodeId) => {
             try {
               const { node, nodeData } = await ctx.runQuery(
@@ -215,62 +411,94 @@ export default function readNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
                     })
                   : null;
 
-              let content = makeNodeDataLLMFriendly(nodeData);
-              let pdfBody: string | null = null;
-              let pdfTotalPages: number | null = null;
-
-              if (node.type === "pdf") {
-                const files =
-                  (nodeData.values.files as PdfFile[] | undefined) ?? [];
-                const pageChunks = await ctx.runQuery(
-                  internal.wrappers.searchableChunkWrappers
-                    .listPdfPagesByNodeDataId,
-                  { nodeDataId: nodeData._id },
-                );
-                const requestedPages = pdfPagesByNodeId.get(nodeId);
-                pdfBody = buildPdfNodeBody({
-                  files,
-                  pageChunks,
-                  requestedPages,
-                });
-                pdfTotalPages = getPdfTotalPages(pageChunks) ?? null;
-              } else if (pdfPagesByNodeId.has(nodeId)) {
-                content = `<warning>${escapeXmlText(PDF_HINTS.notAPdf)}</warning>\n${content}`;
+              if (node.type === "table") {
+                const tableValue = (nodeData.values.table ?? {}) as TableValueLite;
+                const columns = Array.isArray(tableValue.columns)
+                  ? tableValue.columns
+                  : [];
+                const nodeColumnIds = columns
+                  .filter((col) => col.type === "node")
+                  .map((col) => col.id);
+                const rows = Array.isArray(tableValue.rows)
+                  ? tableValue.rows
+                  : [];
+                for (const row of rows) {
+                  for (const colId of nodeColumnIds) {
+                    const cell = row.cells?.[colId];
+                    if (cell && typeof cell === "object") {
+                      const refId = (cell as { nodeId?: unknown }).nodeId;
+                      if (typeof refId === "string" && refId.length > 0) {
+                        referencedNodeIdsForTableCells.add(refId);
+                      }
+                    }
+                  }
+                }
               }
 
               return {
                 nodeId,
-                nodeType: node.type,
-                positionX: Math.trunc(node.position.x),
-                positionY: Math.trunc(node.position.y),
-                width:
-                  typeof node.width === "number"
-                    ? Math.trunc(node.width)
-                    : null,
-                height:
-                  typeof node.height === "number"
-                    ? Math.trunc(node.height)
-                    : null,
-                title: getNodeDataTitle(nodeData),
-                content,
-                pdfBody,
-                pdfTotalPages,
-                embedUrl:
-                  typeof embed?.url === "string" && embed.url.length > 0
-                    ? embed.url
-                    : null,
-                embedIframeUrl:
-                  typeof embed?.embedUrl === "string" &&
-                  embed.embedUrl.length > 0
-                    ? embed.embedUrl
-                    : null,
-                embedType:
-                  typeof embed?.type === "string" && embed.type.length > 0
-                    ? embed.type
-                    : null,
+                node,
+                nodeData,
+                embed,
                 error: null as string | null,
               };
             } catch (error) {
+              return {
+                nodeId,
+                node: null,
+                nodeData: null,
+                embed: null,
+                error:
+                  error instanceof Error
+                    ? error.message
+                    : "Unknown node read error",
+              };
+            }
+          }),
+        );
+
+        for (const entry of baseNodes) {
+          if (entry.nodeData) {
+            nodeDataByNodeId.set(entry.nodeId, {
+              type: entry.node?.type ?? "unknown",
+              title: getNodeDataTitle(entry.nodeData),
+            });
+          }
+        }
+
+        const referencedNodeIdsToFetch = [...referencedNodeIdsForTableCells]
+          .filter((id) => !nodeDataByNodeId.has(id))
+          .filter((id) => canvasNodeTypeById.has(id));
+
+        await Promise.all(
+          referencedNodeIdsToFetch.map(async (refId) => {
+            const fallbackType = canvasNodeTypeById.get(refId) ?? "unknown";
+            try {
+              const { nodeData } = await ctx.runQuery(
+                internal.wrappers.canvasNodeWrappers.getNodeWithNodeData,
+                {
+                  canvasId: canvasId as Id<"canvases">,
+                  nodeId: refId,
+                },
+              );
+              nodeDataByNodeId.set(refId, {
+                type: fallbackType,
+                title: getNodeDataTitle(nodeData),
+              });
+            } catch {
+              nodeDataByNodeId.set(refId, {
+                type: fallbackType,
+                title: "Untitled",
+              });
+            }
+          }),
+        );
+
+        const nodes = await Promise.all(
+          baseNodes.map(async (entry) => {
+            const { nodeId, node, nodeData, embed, error } = entry;
+
+            if (error || !node || !nodeData) {
               return {
                 nodeId,
                 nodeType: canvasNodeTypeById.get(nodeId) ?? "unknown",
@@ -282,15 +510,89 @@ export default function readNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
                 content: "",
                 pdfBody: null as string | null,
                 pdfTotalPages: null as number | null,
+                tableBody: null as string | null,
+                tableTotalRows: null as number | null,
+                tableDisplayedRows: null as number | null,
                 embedUrl: null as string | null,
                 embedIframeUrl: null as string | null,
                 embedType: null as string | null,
-                error:
-                  error instanceof Error
-                    ? error.message
-                    : "Unknown node read error",
+                error: error ?? "Unknown node read error",
               };
             }
+
+            let content = makeNodeDataLLMFriendly(nodeData);
+            let pdfBody: string | null = null;
+            let pdfTotalPages: number | null = null;
+            let tableBody: string | null = null;
+            let tableTotalRows: number | null = null;
+            let tableDisplayedRows: number | null = null;
+
+            if (node.type === "pdf") {
+              const files =
+                (nodeData.values.files as PdfFile[] | undefined) ?? [];
+              const pageChunks = await ctx.runQuery(
+                internal.wrappers.searchableChunkWrappers
+                  .listPdfPagesByNodeDataId,
+                { nodeDataId: nodeData._id },
+              );
+              const requestedPages = pdfPagesByNodeId.get(nodeId);
+              pdfBody = buildPdfNodeBody({
+                files,
+                pageChunks,
+                requestedPages,
+              });
+              pdfTotalPages = getPdfTotalPages(pageChunks) ?? null;
+            } else if (pdfPagesByNodeId.has(nodeId)) {
+              content = `<warning>${escapeXmlText(PDF_HINTS.notAPdf)}</warning>\n${content}`;
+            }
+
+            if (node.type === "table") {
+              const rowSlice = tableRowsByNodeId.get(nodeId);
+              const result = buildTableNodeBody({
+                tableValue: nodeData.values.table,
+                rowSlice,
+                nodeInfoById: nodeDataByNodeId,
+              });
+              tableBody = result.body;
+              tableTotalRows = result.totalRows;
+              tableDisplayedRows = result.displayedCount;
+            } else if (tableRowsByNodeId.has(nodeId)) {
+              content = `<warning>${escapeXmlText(TABLE_HINTS.notATable)}</warning>\n${content}`;
+            }
+
+            return {
+              nodeId,
+              nodeType: node.type,
+              positionX: Math.trunc(node.position.x),
+              positionY: Math.trunc(node.position.y),
+              width:
+                typeof node.width === "number" ? Math.trunc(node.width) : null,
+              height:
+                typeof node.height === "number"
+                  ? Math.trunc(node.height)
+                  : null,
+              title: getNodeDataTitle(nodeData),
+              content,
+              pdfBody,
+              pdfTotalPages,
+              tableBody,
+              tableTotalRows,
+              tableDisplayedRows,
+              embedUrl:
+                typeof embed?.url === "string" && embed.url.length > 0
+                  ? embed.url
+                  : null,
+              embedIframeUrl:
+                typeof embed?.embedUrl === "string" &&
+                embed.embedUrl.length > 0
+                  ? embed.embedUrl
+                  : null,
+              embedType:
+                typeof embed?.type === "string" && embed.type.length > 0
+                  ? embed.type
+                  : null,
+              error: null as string | null,
+            };
           }),
         );
 
@@ -391,6 +693,9 @@ export default function readNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
                   content,
                   pdfBody,
                   pdfTotalPages,
+                  tableBody,
+                  tableTotalRows,
+                  tableDisplayedRows,
                   embedUrl,
                   embedIframeUrl,
                   embedType,
@@ -415,6 +720,20 @@ export default function readNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
                         : "";
                     return `<node id="${nodeId}" type="pdf" sourceNodes="${sourceNodes.join(" ; ")}" targetNodes="${targetNodes.join(" ; ")}"${positionAttributes} title="${title}"${totalPagesAttr}>
 ${error ? `<readError>${toXmlCdata(error)}</readError>\n` : ""}${pdfBody}
+</node>`;
+                  }
+
+                  if (nodeType === "table" && tableBody !== null) {
+                    const totalRowsAttr =
+                      tableTotalRows !== null
+                        ? ` totalRows="${tableTotalRows}"`
+                        : "";
+                    const displayedRowsAttr =
+                      tableDisplayedRows !== null
+                        ? ` displayedRows="${tableDisplayedRows}"`
+                        : "";
+                    return `<node id="${nodeId}" type="table" sourceNodes="${sourceNodes.join(" ; ")}" targetNodes="${targetNodes.join(" ; ")}"${positionAttributes} title="${title}"${totalRowsAttr}${displayedRowsAttr}>
+${error ? `<readError>${toXmlCdata(error)}</readError>\n` : ""}${tableBody}
 </node>`;
                   }
 

@@ -2,6 +2,12 @@ import { createTool } from "@convex-dev/agent";
 import { z } from "zod";
 import { toolAgentNames, type ThreadCtx } from "../agentConfig";
 import { internal } from "../../_generated/api";
+import { Id } from "../../_generated/dataModel";
+import {
+  cellValueSchema,
+  normalizeCellValueForColumn,
+  type TableColumn,
+} from "../helpers/tableCellValidation";
 import { toolError, ToolConfig } from "./toolHelpers";
 
 // Tool compaction config
@@ -13,14 +19,6 @@ export const tableUpdateRowsToolConfig: ToolConfig = {
     toolAgentNames.supervisor,
     toolAgentNames.worker,
   ],
-};
-
-type TableColumnType = "text" | "number" | "checkbox" | "date" | "link";
-
-type TableColumn = {
-  id: string;
-  name: string;
-  type: TableColumnType;
 };
 
 type TableRow = {
@@ -41,21 +39,6 @@ const ERROR_TABLE_SCHEMA_EMPTY = toolError(
   "Table schema is empty. Use table_update_schema first (operation: set or add_column) before updating rows.",
 );
 
-const linkValueSchema = z.object({
-  href: z.string().min(1),
-  pageTitle: z.string().optional(),
-  pageImage: z.string().optional(),
-  pageDescription: z.string().optional(),
-});
-
-const cellValueSchema = z.union([
-  z.string(),
-  z.number(),
-  z.boolean(),
-  z.null(),
-  linkValueSchema,
-]);
-
 const rowValuesByColumnIdSchema = z
   .record(z.string().min(1), cellValueSchema)
   .refine((row) => Object.keys(row).length > 0, {
@@ -68,113 +51,6 @@ const valuesByRowIdSchema = z
     message: "values must contain at least one row update.",
   });
 
-function normalizeCellValueForColumn({
-  rawValue,
-  column,
-}: {
-  rawValue: z.infer<typeof cellValueSchema>;
-  column: TableColumn;
-}): { ok: true; value: unknown } | { ok: false; error: string } {
-  switch (column.type) {
-    case "text":
-    case "date": {
-      if (typeof rawValue !== "string") {
-        return {
-          ok: false,
-          error: toolError(
-            `Invalid value for column "${column.name}" (type ${column.type}). Expected a string.`,
-          ),
-        };
-      }
-      return { ok: true, value: rawValue };
-    }
-
-    case "number": {
-      if (typeof rawValue === "number") {
-        return { ok: true, value: rawValue };
-      }
-      if (typeof rawValue === "string") {
-        const trimmed = rawValue.trim();
-        const parsed = Number(trimmed);
-        if (trimmed.length > 0 && Number.isFinite(parsed)) {
-          return { ok: true, value: parsed };
-        }
-      }
-      return {
-        ok: false,
-        error: toolError(
-          `Invalid value for column "${column.name}" (type number). Expected a number or numeric string.`,
-        ),
-      };
-    }
-
-    case "checkbox": {
-      if (typeof rawValue === "boolean") {
-        return { ok: true, value: rawValue };
-      }
-      if (typeof rawValue === "string") {
-        const normalized = rawValue.trim().toLowerCase();
-        if (normalized === "true") return { ok: true, value: true };
-        if (normalized === "false") return { ok: true, value: false };
-      }
-      return {
-        ok: false,
-        error: toolError(
-          `Invalid value for column "${column.name}" (type checkbox). Expected true/false.`,
-        ),
-      };
-    }
-
-    case "link": {
-      if (typeof rawValue === "string") {
-        const href = rawValue.trim();
-        if (!href) {
-          return {
-            ok: false,
-            error: toolError(
-              `Invalid value for column "${column.name}" (type link). Expected a URL string or a link object with href.`,
-            ),
-          };
-        }
-        return {
-          ok: true,
-          value: {
-            href,
-            pageTitle: href,
-          },
-        };
-      }
-
-      const parsed = linkValueSchema.safeParse(rawValue);
-      if (parsed.success) {
-        return {
-          ok: true,
-          value: {
-            href: parsed.data.href,
-            pageTitle: parsed.data.pageTitle ?? parsed.data.href,
-            pageImage: parsed.data.pageImage,
-            pageDescription: parsed.data.pageDescription,
-          },
-        };
-      }
-
-      return {
-        ok: false,
-        error: toolError(
-          `Invalid value for column "${column.name}" (type link). Expected a URL string or an object { href, pageTitle? } .`,
-        ),
-      };
-    }
-
-    default: {
-      return {
-        ok: false,
-        error: toolError(`Unsupported column type for "${column.name}".`),
-      };
-    }
-  }
-}
-
 export default function tableUpdateRowsTool({
   threadCtx,
 }: {
@@ -184,7 +60,9 @@ export default function tableUpdateRowsTool({
 
   return createTool({
     description:
-      "Update one or multiple existing rows in a table node from the current canvas.",
+      "Update one or multiple existing rows in a table node from the current canvas. " +
+      "For select columns, value can be an option id, label, or array of those (when isMulti=true). " +
+      'For node columns, value can be a nodeId string or { "nodeId": "..." } object.',
     inputSchema: z.object({
       nodeId: z.string().describe("The node ID in the current canvas."),
       values: valuesByRowIdSchema.describe(
@@ -251,6 +129,20 @@ export default function tableUpdateRowsTool({
           return ERROR_TABLE_SCHEMA_EMPTY;
         }
 
+        const needsCanvasNodeIds = columns.some((col) => col.type === "node");
+        const knownCanvasNodeIds = new Set<string>();
+        if (needsCanvasNodeIds) {
+          const { nodes: canvasNodes } = await ctx.runQuery(
+            internal.wrappers.canvasNodeWrappers.getCanvasNodesAndEdges,
+            {
+              canvasId: canvasId as Id<"canvases">,
+            },
+          );
+          for (const cn of canvasNodes) {
+            knownCanvasNodeIds.add(cn.id);
+          }
+        }
+
         for (const entry of requestedEntries) {
           const rowMatches = rows.filter(
             (row) => (row.id ?? "").trim() === entry.rowId,
@@ -309,6 +201,7 @@ export default function tableUpdateRowsTool({
             const normalized = normalizeCellValueForColumn({
               rawValue,
               column: matchedColumn,
+              ctx: { knownCanvasNodeIds },
             });
             if (!normalized.ok) {
               return normalized.error;

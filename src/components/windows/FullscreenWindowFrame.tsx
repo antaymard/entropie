@@ -83,7 +83,15 @@ export default function FullscreenWindowFrame({
         className="fixed inset-0 z-50 flex flex-col bg-white"
       >
         {/* ── Header ────────────────────────────────────────────────── */}
-        <div className="flex select-none items-center gap-2 border-b bg-white px-4 py-2">
+        <div
+          className="flex select-none items-center gap-2 border-b bg-white px-4 py-2"
+          onDoubleClick={(e) => {
+            if ((e.target as HTMLElement).closest('[data-window-control="true"]'))
+              return;
+            if (isDirty) saveHandler?.();
+            exitFullscreen();
+          }}
+        >
           {headerLeftSlot}
           {NodeIcon ? (
             <NodeIcon className="size-4 shrink-0 text-slate-600" />

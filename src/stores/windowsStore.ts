@@ -150,7 +150,16 @@ type OpenedWindowState = "normal" | "minimized" | "maximized";
 
 type Delta = { x: number; y: number };
 
-export type SnapSide = "left" | "right";
+export type SnapSide = "left" | "right" | "top";
+
+const FULLSCREEN_ELIGIBLE_NODE_TYPES: ReadonlySet<NodeType> = new Set([
+  "document",
+  "table",
+]);
+
+export function isFullscreenEligible(nodeType: NodeType): boolean {
+  return FULLSCREEN_ELIGIBLE_NODE_TYPES.has(nodeType);
+}
 
 export interface OpenedWindow {
   position: { x: number; y: number };
@@ -370,7 +379,7 @@ export const useWindowsStore = create<WindowsStore>()(
 
           const nextPosition = {
             x: windowToMove.position.x + delta.x,
-            y: windowToMove.position.y + delta.y,
+            y: Math.max(0, windowToMove.position.y + delta.y),
           };
 
           const nextOpenedWindows = store.openedWindows.slice();
@@ -410,7 +419,7 @@ export const useWindowsStore = create<WindowsStore>()(
           const nextPosition = positionDelta
             ? {
                 x: windowToResize.position.x + positionDelta.x,
-                y: windowToResize.position.y + positionDelta.y,
+                y: Math.max(0, windowToResize.position.y + positionDelta.y),
               }
             : windowToResize.position;
 
@@ -493,6 +502,12 @@ export const useWindowsStore = create<WindowsStore>()(
           if (index < 0) return store;
 
           const current = store.openedWindows[index];
+
+          if (side === "top") {
+            if (!isFullscreenEligible(current.nodeType)) return store;
+            return { fullscreenNodeId: xyNodeId };
+          }
+
           const viewportWidth = window.innerWidth;
           const viewportHeight = window.innerHeight;
           const snapWidth = Math.round(viewportWidth * 0.33) - SNAP_PADDING * 2;

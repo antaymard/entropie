@@ -59,13 +59,17 @@ export default function WindowsContainer() {
       {snapPreview && (
         <div
           className="pointer-events-none absolute z-100 rounded-lg border-2 border-blue-400/60 bg-blue-400/15 transition-all duration-150"
-          style={{
-            width: `calc(33% - 20px)`,
-            top: 10,
-            bottom: 10,
-            left: snapPreview === "left" ? 10 : undefined,
-            right: snapPreview === "right" ? 10 : undefined,
-          }}
+          style={
+            snapPreview === "top"
+              ? { top: 10, bottom: 10, left: 10, right: 10 }
+              : {
+                  width: `calc(33% - 20px)`,
+                  top: 10,
+                  bottom: 10,
+                  left: snapPreview === "left" ? 10 : undefined,
+                  right: snapPreview === "right" ? 10 : undefined,
+                }
+          }
         />
       )}
 

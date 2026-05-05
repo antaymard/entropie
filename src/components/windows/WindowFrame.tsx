@@ -6,6 +6,7 @@ import {
   type OpenedWindow,
   type SnapSide,
   SNAP_EDGE_THRESHOLD,
+  isFullscreenEligible,
 } from "@/stores/windowsStore";
 import { useNodeDataTitle } from "@/hooks/useNodeTitle";
 import { useNodeData } from "@/hooks/useNodeData";
@@ -147,6 +148,23 @@ export default function WindowFrame({
     [xyNodeId, addAttachments, getNode],
   );
 
+  const handleHeaderDoubleClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if ((e.target as HTMLElement).closest('[data-window-control="true"]'))
+        return;
+      if (!isFullscreenEligible(openedWindow.nodeType)) return;
+      if (isDirty) saveHandler?.();
+      toggleFullscreenWindow(xyNodeId);
+    },
+    [
+      openedWindow.nodeType,
+      xyNodeId,
+      isDirty,
+      saveHandler,
+      toggleFullscreenWindow,
+    ],
+  );
+
   const handleResizeMouseDown = useCallback(
     (e: React.MouseEvent, direction: ResizeDirection) => {
       if (e.button !== 0) return;
@@ -167,16 +185,23 @@ export default function WindowFrame({
   const onSnapPreviewChangeRef = useRef(onSnapPreviewChange);
   onSnapPreviewChangeRef.current = onSnapPreviewChange;
 
-  const updateSnapPreview = useCallback((clientX: number) => {
-    let side: SnapSide | null = null;
-    if (clientX <= SNAP_EDGE_THRESHOLD) side = "left";
-    else if (clientX >= window.innerWidth - SNAP_EDGE_THRESHOLD) side = "right";
+  const fullscreenEligible = isFullscreenEligible(openedWindow.nodeType);
 
-    if (side !== snapPreviewRef.current) {
-      snapPreviewRef.current = side;
-      onSnapPreviewChangeRef.current?.(side);
-    }
-  }, []);
+  const updateSnapPreview = useCallback(
+    (clientX: number, clientY: number) => {
+      let side: SnapSide | null = null;
+      if (fullscreenEligible && clientY <= SNAP_EDGE_THRESHOLD) side = "top";
+      else if (clientX <= SNAP_EDGE_THRESHOLD) side = "left";
+      else if (clientX >= window.innerWidth - SNAP_EDGE_THRESHOLD)
+        side = "right";
+
+      if (side !== snapPreviewRef.current) {
+        snapPreviewRef.current = side;
+        onSnapPreviewChangeRef.current?.(side);
+      }
+    },
+    [fullscreenEligible],
+  );
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -187,7 +212,7 @@ export default function WindowFrame({
         };
         dragRef.current = { startX: e.clientX, startY: e.clientY };
         moveWindow(xyNodeId, delta);
-        updateSnapPreview(e.clientX);
+        updateSnapPreview(e.clientX, e.clientY);
         return;
       }
 
@@ -358,6 +383,7 @@ export default function WindowFrame({
           <div
             className="flex cursor-grab select-none items-center gap-2 border-b px-3 py-2 hover:cursor-grab active:cursor-grabbing"
             onMouseDown={handleHeaderMouseDown}
+            onDoubleClick={handleHeaderDoubleClick}
             title={
               isAttachedToConversation
                 ? "Alt+click to detach from Nole"
@@ -393,8 +419,7 @@ export default function WindowFrame({
                 Save
               </button>
             )}
-            {(openedWindow.nodeType === "document" ||
-              openedWindow.nodeType === "table") && (
+            {fullscreenEligible && (
               <button
                 data-window-control="true"
                 className="shrink-0 rounded p-0.5 opacity-50 hover:bg-blue-500/15 hover:text-blue-600 hover:opacity-100 h-full aspect-square flex items-center justify-center"

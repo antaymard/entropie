@@ -379,7 +379,7 @@ export const useWindowsStore = create<WindowsStore>()(
 
           const nextPosition = {
             x: windowToMove.position.x + delta.x,
-            y: windowToMove.position.y + delta.y,
+            y: Math.max(0, windowToMove.position.y + delta.y),
           };
 
           const nextOpenedWindows = store.openedWindows.slice();
@@ -419,7 +419,7 @@ export const useWindowsStore = create<WindowsStore>()(
           const nextPosition = positionDelta
             ? {
                 x: windowToResize.position.x + positionDelta.x,
-                y: windowToResize.position.y + positionDelta.y,
+                y: Math.max(0, windowToResize.position.y + positionDelta.y),
               }
             : windowToResize.position;
 

@@ -542,7 +542,7 @@ function formatMinimapText(hubs: Hub[]): string {
 function formatRank1Hub(hub: Hub): string {
   const { title, childHubs, leaves } = hub;
   const textPart = title.text.trim() ? ` ${title.text.trim()}` : "";
-  const header = `📍 ${title.id.slice(0, 8)}${textPart} (x:${Math.round(title.position.x)}, y:${Math.round(title.position.y)})`;
+  const header = `📍 ${title.id}${textPart} (x:${Math.round(title.position.x)}, y:${Math.round(title.position.y)})`;
 
   const lines: string[] = [header];
 
@@ -565,7 +565,7 @@ function formatRank2Hub(hub: Hub, isLast: boolean): string[] {
   const indent = isLast ? "   " : "│  ";
   const textPart = title.text.trim() ? ` ${title.text.trim()}` : "";
   const childrenLabel = totalChildren > 0 ? ` (${totalChildren} children)` : "";
-  const header = `${prefix} ${title.id.slice(0, 8)} [title]${textPart}${childrenLabel}`;
+  const header = `${prefix} ${title.id} [title]${textPart}${childrenLabel}`;
 
   const leafLines = leaves.map((leaf, i) => {
     const isLastLeaf = i === leaves.length - 1;
@@ -577,5 +577,5 @@ function formatRank2Hub(hub: Hub, isLast: boolean): string[] {
 
 function formatLeaf(leaf: LeafElement): string {
   const titlePart = leaf.title ? ` ${leaf.title}` : "";
-  return `${leaf.id.slice(0, 8)} [${leaf.type}]${titlePart}`;
+  return `${leaf.id} [${leaf.type}]${titlePart}`;
 }

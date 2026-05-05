@@ -11,6 +11,13 @@ import { generateSupervisorSystemPrompt } from "./systemPrompts/supervisorSystem
 
 export const chatModelOptions = [
   {
+    label: "OWL Alpha",
+    value: "openrouter/owl-alpha",
+    price: "Free",
+    isMultimodal: false,
+    maxContext: 1000000,
+  },
+  {
     label: "Tencent Hy3 Free",
     value: "tencent/hy3-preview:free",
     price: "Free",
@@ -44,13 +51,6 @@ export const chatModelOptions = [
     price: "0.32_3.20",
     isMultimodal: false,
     maxContext: 262000,
-  },
-  {
-    label: "OWL Alpha",
-    value: "openrouter/owl-alpha",
-    price: "Free",
-    isMultimodal: false,
-    maxContext: 1000000,
   },
   {
     label: "DeepSeek V4 Pro",

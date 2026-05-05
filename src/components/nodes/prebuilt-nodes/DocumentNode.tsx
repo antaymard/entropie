@@ -74,18 +74,23 @@ function DocumentNode(xyNode: Node) {
 
   const documentTitle = useNodeDataTitle(nodeDataId) ?? "Document";
 
-  const containerRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(true);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
-  useEffect(() => {
-    const el = containerRef.current;
+  // Callback ref so the observer is (re)attached every time the container
+  // mounts. Using a useRef + useEffect([], ...) leaves the observer bound to a
+  // detached element when the variant toggles to "title" and back, which left
+  // isVisible stuck on false and rendered a blank node.
+  const setContainerRef = useCallback((el: HTMLDivElement | null) => {
+    observerRef.current?.disconnect();
+    observerRef.current = null;
     if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => setIsVisible(entry.isIntersecting),
       { rootMargin: "300px" },
     );
     observer.observe(el);
-    return () => observer.disconnect();
+    observerRef.current = observer;
   }, []);
 
   return (
@@ -103,7 +108,7 @@ function DocumentNode(xyNode: Node) {
       <NodeFrame xyNode={xyNode}>
         {xyNode.data.variant !== "title" && (
           <div
-            ref={containerRef}
+            ref={setContainerRef}
             className="h-full [content-visibility:auto] [contain-intrinsic-size:auto_300px]"
           >
             {isVisible ? (

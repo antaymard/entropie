@@ -5,6 +5,7 @@ import { useStore } from "@xyflow/react";
 import WindowFrame from "./WindowFrame";
 import FullscreenDocumentWindow from "./FullscreenDocumentWindow";
 import FullscreenTableWindow from "./FullscreenTableWindow";
+import FullscreenPdfWindow from "./FullscreenPdfWindow";
 
 export default function WindowsContainer() {
   const openedWindows = useWindowsStore((s) => s.openedWindows);
@@ -51,6 +52,8 @@ export default function WindowsContainer() {
               <FullscreenDocumentWindow openedWindow={fullscreenWindow} />
             ) : fullscreenWindow.nodeType === "table" ? (
               <FullscreenTableWindow openedWindow={fullscreenWindow} />
+            ) : fullscreenWindow.nodeType === "pdf" ? (
+              <FullscreenPdfWindow openedWindow={fullscreenWindow} />
             ) : null}
           </div>
         )}

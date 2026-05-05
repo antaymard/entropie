@@ -61,11 +61,6 @@ export default function FullscreenWindowFrame({
     { target: containerRef, enabled: !!saveHandler && isDirty },
   );
 
-  useHotkey("Escape", () => {
-    if (isDirty) saveHandler?.();
-    exitFullscreen();
-  });
-
   const contextValue = useMemo(
     () => ({
       setDirty,

@@ -16,12 +16,50 @@ export const tableUpdateSchemaToolConfig: ToolConfig = {
   ],
 };
 
-type TableColumnType = "text" | "number" | "checkbox" | "date" | "link";
+const SELECT_COLORS = [
+  "gray",
+  "red",
+  "orange",
+  "amber",
+  "yellow",
+  "lime",
+  "green",
+  "emerald",
+  "teal",
+  "cyan",
+  "sky",
+  "blue",
+  "indigo",
+  "violet",
+  "purple",
+  "fuchsia",
+  "pink",
+  "rose",
+] as const;
+
+type SelectColor = (typeof SELECT_COLORS)[number];
+
+type TableColumnType =
+  | "text"
+  | "number"
+  | "checkbox"
+  | "date"
+  | "link"
+  | "select"
+  | "node";
+
+type SelectOption = {
+  id: string;
+  label: string;
+  color: SelectColor;
+};
 
 type TableColumn = {
   id: string;
   name: string;
   type: TableColumnType;
+  options?: Array<SelectOption>;
+  isMulti?: boolean;
 };
 
 type TableRow = {
@@ -39,7 +77,31 @@ const ERROR_INVALID_TABLE_CONTENT = toolError(
   "Table content is not valid (expected table.columns and table.rows arrays).",
 );
 
-const columnTypeSchema = z.enum(["text", "number", "checkbox", "date", "link"]);
+const columnTypeSchema = z.enum([
+  "text",
+  "number",
+  "checkbox",
+  "date",
+  "link",
+  "select",
+  "node",
+]);
+
+const selectColorSchema = z.enum(SELECT_COLORS);
+
+const selectOptionInputSchema = z.object({
+  id: z
+    .string()
+    .min(1)
+    .optional()
+    .describe("Optional option id. If omitted, one is generated from label."),
+  label: z.string().min(1).describe("Option display label."),
+  color: selectColorSchema
+    .optional()
+    .describe(
+      `Option color tag. Defaults to "gray" if omitted. Allowed: ${SELECT_COLORS.join(", ")}.`,
+    ),
+});
 
 const columnInputSchema = z.object({
   id: z
@@ -49,9 +111,44 @@ const columnInputSchema = z.object({
     .describe("Optional column id. If omitted, one is generated."),
   name: z.string().min(1).describe("Column display name."),
   type: columnTypeSchema.describe("Column type."),
+  options: z
+    .array(selectOptionInputSchema)
+    .optional()
+    .describe(
+      "For select columns: list of available options. Ignored for other types.",
+    ),
+  isMulti: z
+    .boolean()
+    .optional()
+    .describe(
+      "For select columns: whether multiple options can be selected per cell. Defaults to false. Ignored for other types.",
+    ),
 });
 
-const operationSchema = z.enum(["set", "add_column", "delete_column"]);
+const operationSchema = z.enum([
+  "set",
+  "add_column",
+  "update_column",
+  "delete_column",
+]);
+
+const updateColumnPayloadSchema = z.object({
+  identifier: z
+    .string()
+    .min(1)
+    .describe("Existing column id or name to update."),
+  name: z.string().min(1).optional().describe("New display name."),
+  options: z
+    .array(selectOptionInputSchema)
+    .optional()
+    .describe(
+      "For select columns: replace the options list. Existing cell values referencing removed option ids will be cleaned automatically.",
+    ),
+  isMulti: z
+    .boolean()
+    .optional()
+    .describe("For select columns: change the isMulti flag."),
+});
 
 function normalizeLookupKey(value: string): string {
   return value.trim().toLowerCase();
@@ -73,6 +170,81 @@ function buildColumnId(name: string): string {
   }
 
   return generateLlmId();
+}
+
+function buildOptionId(label: string): string {
+  const normalized = label
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  if (normalized.length > 0) {
+    return normalized;
+  }
+
+  return generateLlmId();
+}
+
+function normalizeSelectOptions(
+  rawOptions: Array<z.infer<typeof selectOptionInputSchema>>,
+): { ok: true; options: Array<SelectOption> } | { ok: false; error: string } {
+  const seenIds = new Set<string>();
+  const seenLabels = new Set<string>();
+  const result: Array<SelectOption> = [];
+
+  for (const raw of rawOptions) {
+    const label = raw.label.trim();
+    const id = raw.id?.trim() || buildOptionId(label);
+    const color = raw.color ?? "gray";
+
+    const normalizedId = normalizeLookupKey(id);
+    const normalizedLabel = normalizeLookupKey(label);
+
+    if (seenIds.has(normalizedId)) {
+      return { ok: false, error: toolError(`Duplicate option id "${id}".`) };
+    }
+    if (seenLabels.has(normalizedLabel)) {
+      return {
+        ok: false,
+        error: toolError(`Duplicate option label "${label}".`),
+      };
+    }
+
+    seenIds.add(normalizedId);
+    seenLabels.add(normalizedLabel);
+    result.push({ id, label, color });
+  }
+
+  return { ok: true, options: result };
+}
+
+function buildColumnFromInput(
+  raw: z.infer<typeof columnInputSchema>,
+): { ok: true; column: TableColumn } | { ok: false; error: string } {
+  const name = raw.name.trim();
+  const id = raw.id?.trim() || buildColumnId(name);
+  const base: TableColumn = { id, name, type: raw.type };
+
+  if (raw.type === "select") {
+    if (raw.options && raw.options.length > 0) {
+      const normalized = normalizeSelectOptions(raw.options);
+      if (!normalized.ok) return normalized;
+      base.options = normalized.options;
+    } else {
+      base.options = [];
+    }
+    base.isMulti = raw.isMulti ?? false;
+  } else if (raw.options !== undefined || raw.isMulti !== undefined) {
+    return {
+      ok: false,
+      error: toolError(
+        `options and isMulti are only valid for select columns (got type "${raw.type}").`,
+      ),
+    };
+  }
+
+  return { ok: true, column: base };
 }
 
 function resolveColumnMatches({
@@ -119,6 +291,40 @@ function validateNoDuplicateColumns(
   return null;
 }
 
+function pruneSelectOptionValues({
+  rows,
+  columnId,
+  validOptionIds,
+}: {
+  rows: TableRow[];
+  columnId: string;
+  validOptionIds: Set<string>;
+}): TableRow[] {
+  return rows.map((row) => {
+    const cell = row.cells?.[columnId];
+    if (cell === undefined) return row;
+
+    if (Array.isArray(cell)) {
+      const next = cell.filter(
+        (id) => typeof id === "string" && validOptionIds.has(id),
+      );
+      if (next.length === cell.length) return row;
+      return {
+        ...row,
+        cells: { ...(row.cells ?? {}), [columnId]: next },
+      };
+    }
+
+    if (typeof cell === "string" && !validOptionIds.has(cell)) {
+      const nextCells = { ...(row.cells ?? {}) };
+      delete nextCells[columnId];
+      return { ...row, cells: nextCells };
+    }
+
+    return row;
+  });
+}
+
 export default function tableUpdateSchemaTool({
   threadCtx,
 }: {
@@ -128,11 +334,12 @@ export default function tableUpdateSchemaTool({
 
   return createTool({
     description:
-      "Update table schema (columns) on a table node: initialize, add columns, or delete columns.",
+      "Update table schema (columns) on a table node. Supports types: text, number, checkbox, date, link, select (with options + isMulti), node (references a canvas node). " +
+      "Operations: set (only when schema is empty), add_column, update_column (rename / change select options or isMulti), delete_column.",
     inputSchema: z.object({
       nodeId: z.string().describe("The node ID in the current canvas."),
       operation: operationSchema.describe(
-        "Operation to apply: set (only when schema is empty), add_column, or delete_column.",
+        "Operation to apply: set (only when schema is empty), add_column, update_column, or delete_column.",
       ),
       deleteColumnsValues: z
         .boolean()
@@ -149,6 +356,11 @@ export default function tableUpdateSchemaTool({
           column: columnInputSchema
             .optional()
             .describe("For add_column: one column to add."),
+          updateColumn: updateColumnPayloadSchema
+            .optional()
+            .describe(
+              "For update_column: target column and the fields to change.",
+            ),
           columnIdentifiers: z
             .array(z.string().min(1))
             .optional()
@@ -203,13 +415,12 @@ export default function tableUpdateSchemaTool({
             );
           }
 
-          const nextColumns: Array<TableColumn> = inputColumns.map(
-            (column) => ({
-              id: column.id?.trim() || buildColumnId(column.name),
-              name: column.name.trim(),
-              type: column.type,
-            }),
-          );
+          const nextColumns: Array<TableColumn> = [];
+          for (const raw of inputColumns) {
+            const built = buildColumnFromInput(raw);
+            if (!built.ok) return built.error;
+            nextColumns.push(built.column);
+          }
 
           const duplicatesError = validateNoDuplicateColumns(nextColumns);
           if (duplicatesError) {
@@ -240,13 +451,10 @@ export default function tableUpdateSchemaTool({
             return toolError("payload.column is required for add_column.");
           }
 
-          const nextColumn: TableColumn = {
-            id: inputColumn.id?.trim() || buildColumnId(inputColumn.name),
-            name: inputColumn.name.trim(),
-            type: inputColumn.type,
-          };
+          const built = buildColumnFromInput(inputColumn);
+          if (!built.ok) return built.error;
 
-          const nextColumns = [...columns, nextColumn];
+          const nextColumns = [...columns, built.column];
           const duplicatesError = validateNoDuplicateColumns(nextColumns);
           if (duplicatesError) {
             return duplicatesError;
@@ -267,7 +475,96 @@ export default function tableUpdateSchemaTool({
             },
           );
 
-          return `Successfully added column "${nextColumn.name}".`;
+          return `Successfully added column "${built.column.name}".`;
+        }
+
+        if (input.operation === "update_column") {
+          const update = input.payload.updateColumn;
+          if (!update) {
+            return toolError(
+              "payload.updateColumn is required for update_column.",
+            );
+          }
+
+          const matches = resolveColumnMatches({
+            columns,
+            identifier: update.identifier,
+          });
+          if (matches.length === 0) {
+            return toolError(
+              `No match found for column "${update.identifier}".`,
+            );
+          }
+          if (matches.length > 1) {
+            return toolError(
+              `Found ${matches.length} matches for column "${update.identifier}". Please use a unique id.`,
+            );
+          }
+
+          const target = matches[0];
+
+          const isOptionsUpdate = update.options !== undefined;
+          const isMultiUpdate = update.isMulti !== undefined;
+
+          if (
+            (isOptionsUpdate || isMultiUpdate) &&
+            target.type !== "select"
+          ) {
+            return toolError(
+              `options and isMulti can only be set on select columns (column "${target.name}" is type "${target.type}").`,
+            );
+          }
+
+          let nextOptions = target.options;
+          let prunedRows = rows;
+
+          if (isOptionsUpdate) {
+            const normalized = normalizeSelectOptions(update.options ?? []);
+            if (!normalized.ok) return normalized.error;
+            nextOptions = normalized.options;
+
+            const validOptionIds = new Set(
+              nextOptions.map((opt) => opt.id),
+            );
+            prunedRows = pruneSelectOptionValues({
+              rows,
+              columnId: target.id,
+              validOptionIds,
+            });
+          }
+
+          const updatedColumn: TableColumn = {
+            ...target,
+            name: update.name?.trim() || target.name,
+            options: nextOptions,
+            isMulti: isMultiUpdate ? update.isMulti : target.isMulti,
+          };
+
+          const nextColumns = columns.map((col) =>
+            col.id === target.id ? updatedColumn : col,
+          );
+
+          const duplicatesError = validateNoDuplicateColumns(nextColumns);
+          if (duplicatesError) {
+            return duplicatesError;
+          }
+
+          await ctx.runMutation(
+            internal.wrappers.nodeDataWrappers.updateValues,
+            {
+              _id: nodeData._id,
+              values: {
+                ...nodeData.values,
+                table: {
+                  ...tableValue,
+                  columns: nextColumns,
+                  rows: prunedRows,
+                },
+              },
+            },
+          );
+
+          return `Successfully updated column "${updatedColumn.name}".`;
         }
 
         const identifiers = input.payload.columnIdentifiers;

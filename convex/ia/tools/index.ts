@@ -7,12 +7,9 @@ import createNodeTool, { createNodeToolConfig } from "./createNodeTool";
 import patchAppNodeCodeTool, {
   patchAppNodeCodeToolConfig,
 } from "./patchAppNodeCodeTool";
-import documentInsertContentTool, {
-  documentInsertContentToolConfig,
-} from "./documentInsertContentTool";
-import documentStringReplaceContentTool, {
-  documentStringReplaceContentToolConfig,
-} from "./documentStringReplaceContentTool";
+import patchDocumentContentTool, {
+  patchDocumentContentToolConfig,
+} from "./patchDocumentContentTool";
 import fullTextSearchTool, {
   fullTextSearchToolConfig,
 } from "./fullTextSearchTool";
@@ -92,12 +89,8 @@ const toolRegistry: ToolRegistration[] = [
       runSubagent({ currentAgent: agentName, threadCtx }),
   },
   {
-    config: documentStringReplaceContentToolConfig,
-    factory: ({ threadCtx }) => documentStringReplaceContentTool({ threadCtx }),
-  },
-  {
-    config: documentInsertContentToolConfig,
-    factory: ({ threadCtx }) => documentInsertContentTool({ threadCtx }),
+    config: patchDocumentContentToolConfig,
+    factory: ({ threadCtx }) => patchDocumentContentTool({ threadCtx }),
   },
   {
     config: tableUpdateRowsToolConfig,

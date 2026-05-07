@@ -180,7 +180,7 @@ Les pages dépassant la limite sont ignorées silencieusement. Un hint est ajout
 </nodes>
 
 <nodeDataSchemas>
-  <schema nodeType="document" edition_tools="insert_document_content,string_replace_document_content"></schema>
+  <schema nodeType="document" edition_tools="patch_document_content"></schema>
   <schema nodeType="table" edition_tools="table_update_schema,table_insert_rows,table_update_rows,table_delete_rows"></schema>
   <schema nodeType="task" edition_tool="set_node_data"><![CDATA[{ … JSON Schema … }]]></schema>
 </nodeDataSchemas>

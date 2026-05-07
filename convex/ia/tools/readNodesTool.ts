@@ -520,7 +520,9 @@ export default function readNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
               };
             }
 
-            let content = makeNodeDataLLMFriendly(nodeData);
+            let content = makeNodeDataLLMFriendly(nodeData, {
+              withDocumentBlockIds: true,
+            });
             let pdfBody: string | null = null;
             let pdfTotalPages: number | null = null;
             let tableBody: string | null = null;
@@ -747,7 +749,7 @@ ${toXmlCdata(content)}
               "<nodeDataSchemas>",
               ...uniqueNodeTypes.map((nodeType) => {
                 if (nodeType === "document") {
-                  return '<schema nodeType="document" edition_tools="insert_document_content,string_replace_document_content"></schema>';
+                  return '<schema nodeType="document" edition_tools="patch_document_content"></schema>';
                 }
 
                 if (nodeType === "table") {

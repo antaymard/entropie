@@ -50,7 +50,7 @@ export default function setNodeDataTool({
       try {
         if (input.nodeType === "document") {
           return toolError(
-            "Cannot set document data: use insert_document_content or string_replace_document_content.",
+            "Cannot set document data: use patch_document_content.",
           );
         }
 

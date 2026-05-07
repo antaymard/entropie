@@ -247,7 +247,7 @@ export default function listNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
           "<nodeDataSchemas>",
           ...uniqueDisplayedNodeTypes.map((nodeType) => {
             if (nodeType === "document") {
-              return '<schema nodeType="document" edition_tools="insert_document_content,string_replace_document_content"></schema>';
+              return '<schema nodeType="document" edition_tools="patch_document_content"></schema>';
             }
 
             if (nodeType === "table") {

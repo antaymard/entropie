@@ -37,10 +37,10 @@ En pratique, un tool suit souvent ce schéma :
 2. une factory par défaut qui retourne `createTool(...)`
 3. un handler qui lit ou modifie les données Convex
 
-Exemple : `documentStringReplaceContentTool.ts` exporte :
+Exemple : `patchDocumentContentTool.ts` exporte :
 
-- `documentStringReplaceContentToolConfig`
-- `default function documentStringReplaceContentTool(...)`
+- `patchDocumentContentToolConfig`
+- `default function patchDocumentContentTool(...)`
 
 ## Ajouter un nouveau tool
 

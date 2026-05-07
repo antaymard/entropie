@@ -21,6 +21,24 @@ import type { CanvasNode } from "@/types";
 import { useWindowsStore } from "@/stores/windowsStore";
 import { pendingAutoSizeIds } from "@/components/nodes/prebuilt-nodes/useTitleNodeSizing";
 
+function isTitleSizingDebugEnabled(): boolean {
+  if (typeof window === "undefined") return false;
+  const globalDebug = (
+    window as Window & { __DEBUG_TITLE_NODE_SIZING__?: boolean }
+  ).__DEBUG_TITLE_NODE_SIZING__;
+  if (globalDebug) return true;
+  return window.localStorage.getItem("debugTitleNodeSizing") === "1";
+}
+
+function logTitleSizing(event: string, payload?: unknown) {
+  if (!isTitleSizingDebugEnabled()) return;
+  if (payload !== undefined) {
+    console.log(`[CanvasNodes][TitleSizing] ${event}`, payload);
+    return;
+  }
+  console.log(`[CanvasNodes][TitleSizing] ${event}`);
+}
+
 /**
  * Build a map of source -> target node IDs from edges (children = targets of a source).
  */
@@ -96,61 +114,65 @@ export function useCanvasNodes(
   // nodes back to their pre-mutation state.
   const updateCanvasNodesPositionOrDimensionsInConvex = useMutation(
     api.canvasNodes.updatePositionOrDimensions,
-  ).withOptimisticUpdate((localStore, { canvasId: targetCanvasId, nodeChanges }) => {
-    const existing = localStore.getQuery(api.canvases.readCanvas, {
-      canvasId: targetCanvasId,
-    });
-    if (!existing || !existing.nodes) return;
-    const changeById = new Map<
-      string,
-      {
+  ).withOptimisticUpdate(
+    (localStore, { canvasId: targetCanvasId, nodeChanges }) => {
+      const existing = localStore.getQuery(api.canvases.readCanvas, {
+        canvasId: targetCanvasId,
+      });
+      if (!existing || !existing.nodes) return;
+      const changeById = new Map<
+        string,
+        {
+          position?: { x: number; y: number };
+          dimensions?: { width: number; height: number };
+        }
+      >();
+      for (const change of nodeChanges as Array<{
+        id: string;
         position?: { x: number; y: number };
         dimensions?: { width: number; height: number };
+      }>) {
+        changeById.set(change.id, change);
       }
-    >();
-    for (const change of nodeChanges as Array<{
-      id: string;
-      position?: { x: number; y: number };
-      dimensions?: { width: number; height: number };
-    }>) {
-      changeById.set(change.id, change);
-    }
-    const nextNodes = existing.nodes.map((node: CanvasNode) => {
-      const change = changeById.get(node.id);
-      if (!change) return node;
-      const next = { ...node };
-      if (change.position) next.position = change.position;
-      if (change.dimensions) {
-        next.width = change.dimensions.width;
-        next.height = change.dimensions.height;
-      }
-      return next;
-    });
-    localStore.setQuery(
-      api.canvases.readCanvas,
-      { canvasId: targetCanvasId },
-      { ...existing, nodes: nextNodes },
-    );
-  });
+      const nextNodes = existing.nodes.map((node: CanvasNode) => {
+        const change = changeById.get(node.id);
+        if (!change) return node;
+        const next = { ...node };
+        if (change.position) next.position = change.position;
+        if (change.dimensions) {
+          next.width = change.dimensions.width;
+          next.height = change.dimensions.height;
+        }
+        return next;
+      });
+      localStore.setQuery(
+        api.canvases.readCanvas,
+        { canvasId: targetCanvasId },
+        { ...existing, nodes: nextNodes },
+      );
+    },
+  );
   const removeCanvasNodesToConvex = useMutation(
     api.canvasNodes.remove,
-  ).withOptimisticUpdate((localStore, { canvasId: targetCanvasId, nodeCanvasIds }) => {
-    const existing = localStore.getQuery(api.canvases.readCanvas, {
-      canvasId: targetCanvasId,
-    });
-    if (!existing || !existing.nodes) return;
-    const removedIds = new Set(nodeCanvasIds);
-    localStore.setQuery(
-      api.canvases.readCanvas,
-      { canvasId: targetCanvasId },
-      {
-        ...existing,
-        nodes: existing.nodes.filter(
-          (node: CanvasNode) => !removedIds.has(node.id),
-        ),
-      },
-    );
-  });
+  ).withOptimisticUpdate(
+    (localStore, { canvasId: targetCanvasId, nodeCanvasIds }) => {
+      const existing = localStore.getQuery(api.canvases.readCanvas, {
+        canvasId: targetCanvasId,
+      });
+      if (!existing || !existing.nodes) return;
+      const removedIds = new Set(nodeCanvasIds);
+      localStore.setQuery(
+        api.canvases.readCanvas,
+        { canvasId: targetCanvasId },
+        {
+          ...existing,
+          nodes: existing.nodes.filter(
+            (node: CanvasNode) => !removedIds.has(node.id),
+          ),
+        },
+      );
+    },
+  );
 
   // Sync Convex -> React Flow nodes while preserving drag/resize state
   // and selection.
@@ -336,6 +358,24 @@ export function useCanvasNodes(
         });
       } else if (dimensionChanges.length > 0) {
         // UPDATE NODE DIMENSIONS
+        const titleDimensionChanges = dimensionChanges.filter((change) =>
+          canvasNodes?.some(
+            (node) => node.id === change.id && node.type === "title",
+          ),
+        );
+        if (titleDimensionChanges.length > 0) {
+          logTitleSizing("dimension-changes-received", {
+            count: titleDimensionChanges.length,
+            changes: titleDimensionChanges.map((change) => ({
+              id: change.id,
+              resizing: change.resizing,
+              dimensions: change.dimensions,
+              pendingAutoSize: pendingAutoSizeIds.has(change.id),
+              sourceNode: canvasNodes?.find((n) => n.id === change.id),
+            })),
+          });
+        }
+
         if (
           dimensionChanges.some(
             (change) => (change as NodeDimensionChange).resizing,
@@ -356,22 +396,57 @@ export function useCanvasNodes(
           // sub-pixel rounding noise.
           const meaningfulChanges = canvasNodes
             ? dimensionChanges.filter((change) => {
-                if (pendingAutoSizeIds.has(change.id)) return false;
-                if (!change.dimensions) return false;
-                const sourceNode = canvasNodes.find(
-                  (n) => n.id === change.id,
-                );
+                if (pendingAutoSizeIds.has(change.id)) {
+                  const sourceNode = canvasNodes.find(
+                    (n) => n.id === change.id,
+                  );
+                  if (sourceNode?.type === "title") {
+                    logTitleSizing("filtered-pending-autosize", {
+                      id: change.id,
+                      dimensions: change.dimensions,
+                    });
+                  }
+                  return false;
+                }
+                if (!change.dimensions) {
+                  const sourceNode = canvasNodes.find(
+                    (n) => n.id === change.id,
+                  );
+                  if (sourceNode?.type === "title") {
+                    logTitleSizing("filtered-missing-dimensions", {
+                      id: change.id,
+                    });
+                  }
+                  return false;
+                }
+                const sourceNode = canvasNodes.find((n) => n.id === change.id);
                 if (!sourceNode) return true;
-                return (
-                  Math.abs(change.dimensions.width - sourceNode.width) >=
-                    0.5 ||
-                  Math.abs(change.dimensions.height - sourceNode.height) >=
-                    0.5
-                );
+                const isMeaningful =
+                  Math.abs(change.dimensions.width - sourceNode.width) >= 0.5 ||
+                  Math.abs(change.dimensions.height - sourceNode.height) >= 0.5;
+                if (sourceNode.type === "title") {
+                  logTitleSizing(
+                    isMeaningful
+                      ? "meaningful-dimension-change"
+                      : "filtered-same-dimensions",
+                    {
+                      id: change.id,
+                      incoming: change.dimensions,
+                      source: {
+                        width: sourceNode.width,
+                        height: sourceNode.height,
+                      },
+                    },
+                  );
+                }
+                return isMeaningful;
               })
             : dimensionChanges;
 
           if (meaningfulChanges.length === 0) {
+            if (titleDimensionChanges.length > 0) {
+              logTitleSizing("no-meaningful-dimension-change");
+            }
             lastPositionChangesWhenResizing.current = null;
             return;
           }
@@ -395,6 +470,14 @@ export function useCanvasNodes(
             canvasId,
             nodeChanges: mergedChanges,
           });
+          const titleMergedChanges = mergedChanges.filter((change) =>
+            canvasNodes?.some((n) => n.id === change.id && n.type === "title"),
+          );
+          if (titleMergedChanges.length > 0) {
+            logTitleSizing("persist-dimension-mutation", {
+              changes: titleMergedChanges,
+            });
+          }
           lastPositionChangesWhenResizing.current = null;
         }
       } else if (positionChanges.length > 0) {

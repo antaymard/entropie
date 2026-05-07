@@ -8,6 +8,24 @@ import type { Id } from "@/../convex/_generated/dataModel";
 const MIN_DELTA = 0.5;
 const PERSIST_DEBOUNCE_MS = 120;
 
+function isTitleSizingDebugEnabled(): boolean {
+  if (typeof window === "undefined") return false;
+  const globalDebug = (
+    window as Window & { __DEBUG_TITLE_NODE_SIZING__?: boolean }
+  ).__DEBUG_TITLE_NODE_SIZING__;
+  if (globalDebug) return true;
+  return window.localStorage.getItem("debugTitleNodeSizing") === "1";
+}
+
+function logTitleSizing(nodeId: string, event: string, payload?: unknown) {
+  if (!isTitleSizingDebugEnabled()) return;
+  if (payload !== undefined) {
+    console.log(`[TitleNodeSizing][${nodeId}] ${event}`, payload);
+    return;
+  }
+  console.log(`[TitleNodeSizing][${nodeId}] ${event}`);
+}
+
 // Tracks nodes with an in-flight auto-size debounce so useCanvasNodes can
 // skip the redundant dimension mutation that would otherwise fire via the
 // ResizeObserver path for the same change.
@@ -61,37 +79,36 @@ export function useTitleNodeSizing({
   const { setNodes } = useReactFlow();
   const updateDimensions = useMutation(
     api.canvasNodes.updatePositionOrDimensions,
-  ).withOptimisticUpdate((localStore, { canvasId: targetCanvasId, nodeChanges }) => {
-    const existing = localStore.getQuery(api.canvases.readCanvas, {
-      canvasId: targetCanvasId,
-    });
-    if (!existing || !existing.nodes) return;
-    const changeById = new Map<
-      string,
-      { width: number; height: number }
-    >();
-    for (const change of nodeChanges as Array<{
-      id: string;
-      dimensions?: { width: number; height: number };
-    }>) {
-      if (change.dimensions) {
-        changeById.set(change.id, change.dimensions);
+  ).withOptimisticUpdate(
+    (localStore, { canvasId: targetCanvasId, nodeChanges }) => {
+      const existing = localStore.getQuery(api.canvases.readCanvas, {
+        canvasId: targetCanvasId,
+      });
+      if (!existing || !existing.nodes) return;
+      const changeById = new Map<string, { width: number; height: number }>();
+      for (const change of nodeChanges as Array<{
+        id: string;
+        dimensions?: { width: number; height: number };
+      }>) {
+        if (change.dimensions) {
+          changeById.set(change.id, change.dimensions);
+        }
       }
-    }
-    if (changeById.size === 0) return;
-    localStore.setQuery(
-      api.canvases.readCanvas,
-      { canvasId: targetCanvasId },
-      {
-        ...existing,
-        nodes: existing.nodes.map((node) => {
-          const dim = changeById.get(node.id);
-          if (!dim) return node;
-          return { ...node, width: dim.width, height: dim.height };
-        }),
-      },
-    );
-  });
+      if (changeById.size === 0) return;
+      localStore.setQuery(
+        api.canvases.readCanvas,
+        { canvasId: targetCanvasId },
+        {
+          ...existing,
+          nodes: existing.nodes.map((node) => {
+            const dim = changeById.get(node.id);
+            if (!dim) return node;
+            return { ...node, width: dim.width, height: dim.height };
+          }),
+        },
+      );
+    },
+  );
 
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingDimensions = useRef<{ width: number; height: number } | null>(
@@ -112,16 +129,26 @@ export function useTitleNodeSizing({
     return () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
       pendingAutoSizeIds.delete(nodeId);
+      logTitleSizing(nodeId, "cleanup");
     };
   }, [nodeId]);
 
   const persistDimensions = (width: number, height: number) => {
     const last = lastPersistedRef.current;
     if (last && last.width === width && last.height === height) {
+      logTitleSizing(nodeId, "persist-skipped-same-as-last", {
+        width,
+        height,
+      });
       return;
     }
     pendingAutoSizeIds.add(nodeId);
     pendingDimensions.current = { width, height };
+    logTitleSizing(nodeId, "persist-scheduled", {
+      width,
+      height,
+      debounceMs: PERSIST_DEBOUNCE_MS,
+    });
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(() => {
       pendingAutoSizeIds.delete(nodeId);
@@ -130,6 +157,10 @@ export function useTitleNodeSizing({
       debounceTimer.current = null;
       if (!dim) return;
       lastPersistedRef.current = dim;
+      logTitleSizing(nodeId, "persist-commit-mutation", {
+        width: dim.width,
+        height: dim.height,
+      });
       void updateDimensions({
         canvasId,
         nodeChanges: [
@@ -145,6 +176,10 @@ export function useTitleNodeSizing({
   // Apply locally first so the React Flow node grows in the same frame as the
   // user's input. The optimistic mutation will catch up shortly after.
   const applyLocalDimensions = (width: number, height: number) => {
+    logTitleSizing(nodeId, "apply-local-dimensions", {
+      width,
+      height,
+    });
     setNodes((nodes) =>
       nodes.map((node) =>
         node.id === nodeId
@@ -164,6 +199,14 @@ export function useTitleNodeSizing({
     const ghost = ghostRef.current;
     if (!ghost) return;
 
+    logTitleSizing(nodeId, "measure-start", {
+      sizingMode,
+      currentWidth,
+      currentHeight,
+      textLength: (liveText ?? text).length,
+      level,
+    });
+
     if (sizingMode === "auto") {
       // Single-line measurement
       ghost.style.whiteSpace = "pre";
@@ -177,8 +220,21 @@ export function useTitleNodeSizing({
         Math.abs(desiredWidth - currentWidth) > MIN_DELTA ||
         Math.abs(desiredHeight - currentHeight) > MIN_DELTA
       ) {
+        logTitleSizing(nodeId, "measure-auto-delta", {
+          desiredWidth,
+          desiredHeight,
+          currentWidth,
+          currentHeight,
+        });
         applyLocalDimensions(desiredWidth, desiredHeight);
         persistDimensions(desiredWidth, desiredHeight);
+      } else {
+        logTitleSizing(nodeId, "measure-auto-noop", {
+          desiredWidth,
+          desiredHeight,
+          currentWidth,
+          currentHeight,
+        });
       }
     } else {
       // Manual mode: width is fixed by the user; we only adapt height to wrap.
@@ -189,8 +245,21 @@ export function useTitleNodeSizing({
       const desiredHeight = Math.ceil(wrappedHeight + paddingY + borderTotal);
 
       if (Math.abs(desiredHeight - currentHeight) > MIN_DELTA) {
+        logTitleSizing(nodeId, "measure-manual-delta", {
+          currentWidth,
+          desiredHeight,
+          currentHeight,
+          innerWidth,
+        });
         applyLocalDimensions(currentWidth, desiredHeight);
         persistDimensions(currentWidth, desiredHeight);
+      } else {
+        logTitleSizing(nodeId, "measure-manual-noop", {
+          currentWidth,
+          desiredHeight,
+          currentHeight,
+          innerWidth,
+        });
       }
     }
     // Depend on currentHeight too: when React Flow's resizer or the convex

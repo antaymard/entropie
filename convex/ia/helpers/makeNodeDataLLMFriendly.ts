@@ -1,6 +1,7 @@
 import { Doc } from "../../_generated/dataModel";
 import { plateJsonToMarkdown } from "./plateMarkdownConverter";
 import { parseStoredPlateDocument } from "../../lib/plateDocumentStorage";
+import { ensureBlockIds } from "../../lib/plateBlockHelpers";
 
 type SelectOption = {
   id: string;
@@ -361,8 +362,15 @@ export function makeTableNodeDataLLMFriendly(
 /**
  * Formate les values d'un seul nodeData en markdown lisible pour un LLM.
  * Convertit notamment le contenu PlateJS des nodes `document` en markdown.
+ *
+ * `withDocumentBlockIds` prefixes each top-level Plate block with `[block:<id>]`,
+ * for use by `patch_document_content` (used in `read_nodes`). Default `false`
+ * to avoid polluting other consumers (search indexing, automation context).
  */
-export function makeNodeDataLLMFriendly(nodeData: Doc<"nodeDatas">): string {
+export function makeNodeDataLLMFriendly(
+  nodeData: Doc<"nodeDatas">,
+  options?: { withDocumentBlockIds?: boolean },
+): string {
   const values = nodeData.values;
 
   switch (nodeData.type) {
@@ -370,6 +378,12 @@ export function makeNodeDataLLMFriendly(nodeData: Doc<"nodeDatas">): string {
       const doc = values.doc;
       const parsedDoc = parseStoredPlateDocument(doc);
       if (parsedDoc) {
+        if (options?.withDocumentBlockIds) {
+          const withIds = ensureBlockIds(
+            parsedDoc as Array<Record<string, unknown>>,
+          );
+          return plateJsonToMarkdown(withIds, { withBlockId: true });
+        }
         return plateJsonToMarkdown(parsedDoc);
       }
       return typeof doc === "string" ? doc : JSON.stringify(doc);

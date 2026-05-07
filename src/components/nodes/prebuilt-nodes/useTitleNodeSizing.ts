@@ -8,6 +8,11 @@ import type { Id } from "@/../convex/_generated/dataModel";
 const MIN_DELTA = 0.5;
 const PERSIST_DEBOUNCE_MS = 120;
 
+// Tracks nodes with an in-flight auto-size debounce so useCanvasNodes can
+// skip the redundant dimension mutation that would otherwise fire via the
+// ResizeObserver path for the same change.
+export const pendingAutoSizeIds = new Set<string>();
+
 interface UseTitleNodeSizingArgs {
   nodeId: string;
   ghostRef: RefObject<HTMLElement | null>;
@@ -106,17 +111,20 @@ export function useTitleNodeSizing({
   useEffect(() => {
     return () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      pendingAutoSizeIds.delete(nodeId);
     };
-  }, []);
+  }, [nodeId]);
 
   const persistDimensions = (width: number, height: number) => {
     const last = lastPersistedRef.current;
     if (last && last.width === width && last.height === height) {
       return;
     }
+    pendingAutoSizeIds.add(nodeId);
     pendingDimensions.current = { width, height };
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(() => {
+      pendingAutoSizeIds.delete(nodeId);
       const dim = pendingDimensions.current;
       pendingDimensions.current = null;
       debounceTimer.current = null;

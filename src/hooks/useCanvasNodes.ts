@@ -19,6 +19,7 @@ import {
 } from "@/lib/node-types-converter";
 import type { CanvasNode } from "@/types";
 import { useWindowsStore } from "@/stores/windowsStore";
+import { pendingAutoSizeIds } from "@/components/nodes/prebuilt-nodes/useTitleNodeSizing";
 
 /**
  * Build a map of source -> target node IDs from edges (children = targets of a source).
@@ -177,6 +178,19 @@ export function useCanvasNodes(
               draggedChildrenCache.current.descendantIds.includes(newNode.id))
           ) {
             return currentNode as Node;
+          }
+
+          // Preserve dimensions while useTitleNodeSizing has a pending debounce,
+          // so a readCanvas re-fetch (e.g. triggered by a concurrent mutation)
+          // doesn't reset the locally-applied size and cause an oscillation loop.
+          if (pendingAutoSizeIds.has(newNode.id) && currentNode) {
+            return {
+              ...newNode,
+              width: currentNode.width,
+              height: currentNode.height,
+              measured: currentNode.measured,
+              ...(currentNode.selected && { selected: true }),
+            } as Node;
           }
 
           // Otherwise use the fresh node from Convex, but preserve selection.
@@ -342,6 +356,7 @@ export function useCanvasNodes(
           // sub-pixel rounding noise.
           const meaningfulChanges = canvasNodes
             ? dimensionChanges.filter((change) => {
+                if (pendingAutoSizeIds.has(change.id)) return false;
                 if (!change.dimensions) return false;
                 const sourceNode = canvasNodes.find(
                   (n) => n.id === change.id,

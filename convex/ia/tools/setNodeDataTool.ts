@@ -17,6 +17,14 @@ export const setNodeDataToolConfig: ToolConfig = {
   ],
 };
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value)
+  );
+}
+
 export default function setNodeDataTool({
   threadCtx,
 }: {
@@ -26,15 +34,17 @@ export default function setNodeDataTool({
 
   return createTool({
     description:
-      "Set directement les valeurs du nodeData lié à un nodeId pour un type de node donné.",
+      "Set values on the nodeData of a given nodeId. `data` may be either a JSON object or a JSON-encoded string (it will be parsed). For app nodes, partial updates are supported: pass `{ state }` alone to update only the persisted app state and keep the existing `code` untouched, or pass `{ code }` alone to update only the source code. When a key is provided it overwrites the existing value (no deep merge of `state`).",
     inputSchema: z.object({
       nodeType: z
         .enum(nodeTypeValues)
         .describe("Type du node cible (doit correspondre au nodeId fourni)."),
       nodeId: z.string().describe("ID canvas du node à mettre à jour."),
       data: z
-        .record(z.string(), z.unknown())
-        .describe("Objet values à écrire directement dans le nodeData lié."),
+        .union([z.record(z.string(), z.unknown()), z.string()])
+        .describe(
+          "Object (or JSON-encoded string) of values to write into the nodeData. For app nodes, missing top-level keys (`code` / `state`) are kept from the current values; provided keys overwrite the existing value (no deep merge).",
+        ),
     }),
     execute: async (ctx, input): Promise<string> => {
       try {
@@ -50,12 +60,28 @@ export default function setNodeDataTool({
           );
         }
 
-        const validationError = validateNodeInputSchemaForLLM({
-          nodeType: input.nodeType,
-          input: input.data,
-        });
-        if (validationError) {
-          return toolError(validationError);
+        let parsedData: Record<string, unknown>;
+        if (typeof input.data === "string") {
+          let jsonParsed: unknown;
+          try {
+            jsonParsed = JSON.parse(input.data);
+          } catch (parseError) {
+            return toolError(
+              `\`data\` was provided as a string but is not valid JSON: ${
+                parseError instanceof Error
+                  ? parseError.message
+                  : String(parseError)
+              }. Pass either a JSON object or a JSON-encoded string.`,
+            );
+          }
+          if (!isPlainObject(jsonParsed)) {
+            return toolError(
+              "`data` parsed from string must be a JSON object (got array or primitive).",
+            );
+          }
+          parsedData = jsonParsed;
+        } else {
+          parsedData = input.data;
         }
 
         const nodeLookup = await ctx.runQuery(
@@ -72,9 +98,29 @@ export default function setNodeDataTool({
           );
         }
 
+        // For app nodes, merge with existing values at the top level so the
+        // caller can update `state` without resending `code` (and vice-versa).
+        // Provided keys overwrite the existing value entirely (no deep merge).
+        let valuesToWrite: Record<string, unknown> = parsedData;
+        if (input.nodeType === "app") {
+          const existingValues =
+            nodeLookup.nodeData.type === "app"
+              ? (nodeLookup.nodeData.values as Record<string, unknown>)
+              : {};
+          valuesToWrite = { ...existingValues, ...parsedData };
+        }
+
+        const validationError = validateNodeInputSchemaForLLM({
+          nodeType: input.nodeType,
+          input: valuesToWrite,
+        });
+        if (validationError) {
+          return toolError(validationError);
+        }
+
         await ctx.runMutation(internal.wrappers.nodeDataWrappers.updateValues, {
           _id: nodeLookup.nodeData._id,
-          values: input.data,
+          values: valuesToWrite,
         });
 
         return `Node data updated for nodeId ${input.nodeId}.`;

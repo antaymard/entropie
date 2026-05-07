@@ -254,12 +254,17 @@ export default function listNodesTool({ threadCtx }: { threadCtx: ThreadCtx }) {
               return '<schema nodeType="table" edition_tools="table_update_schema,table_insert_rows,table_update_rows,table_delete_rows"></schema>';
             }
 
+            const editionToolsAttr =
+              nodeType === "app"
+                ? 'edition_tools="set_node_data,patch_app_node_code"'
+                : 'edition_tool="set_node_data"';
+
             const schema = getExpectedNodeDataSchemaString(nodeType);
             if (!schema) {
-              return `<schema nodeType="${nodeType}" edition_tool="set_node_data">Schema JSON serialization is unavailable.</schema>`;
+              return `<schema nodeType="${nodeType}" ${editionToolsAttr}>Schema JSON serialization is unavailable.</schema>`;
             }
 
-            return `<schema nodeType="${nodeType}" edition_tool="set_node_data">${toXmlCdata(schema)}</schema>`;
+            return `<schema nodeType="${nodeType}" ${editionToolsAttr}>${toXmlCdata(schema)}</schema>`;
           }),
           "</nodeDataSchemas>",
           "",

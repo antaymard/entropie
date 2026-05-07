@@ -4,9 +4,9 @@ import createConnectionTool, {
   createConnectionToolConfig,
 } from "./createConnectionTool";
 import createNodeTool, { createNodeToolConfig } from "./createNodeTool";
-import appNodeStringReplaceContentTool, {
-  appNodeStringReplaceContentToolConfig,
-} from "./appNodeStringReplaceContentTool";
+import patchAppNodeCodeTool, {
+  patchAppNodeCodeToolConfig,
+} from "./patchAppNodeCodeTool";
 import documentInsertContentTool, {
   documentInsertContentToolConfig,
 } from "./documentInsertContentTool";
@@ -59,8 +59,8 @@ const toolRegistry: ToolRegistration[] = [
     factory: ({ threadCtx }) => listNodesTool({ threadCtx }),
   },
   {
-    config: appNodeStringReplaceContentToolConfig,
-    factory: ({ threadCtx }) => appNodeStringReplaceContentTool({ threadCtx }),
+    config: patchAppNodeCodeToolConfig,
+    factory: ({ threadCtx }) => patchAppNodeCodeTool({ threadCtx }),
   },
   {
     config: fullTextSearchToolConfig,

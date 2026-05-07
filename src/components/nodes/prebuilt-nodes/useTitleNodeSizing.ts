@@ -24,6 +24,10 @@ export const pendingAutoSizeIds = new Set<string>();
 interface UseTitleNodeSizingArgs {
   nodeId: string;
   ghostRef: RefObject<HTMLElement | null>;
+  /** False while node data values are still loading; skips sizing side effects. */
+  isHydrated?: boolean;
+  /** False until the user interacts with the node (edit/resize/toolbar). */
+  isInteractionEnabled?: boolean;
   /** "auto": width follows text on a single line; "manual": width fixed, height adapts to wrapped text */
   sizingMode: "auto" | "manual";
   /** Current node width (px) coming from React Flow / Convex */
@@ -53,6 +57,8 @@ interface UseTitleNodeSizingArgs {
 export function useTitleNodeSizing({
   nodeId,
   ghostRef,
+  isHydrated = true,
+  isInteractionEnabled = true,
   sizingMode,
   currentWidth,
   currentHeight,
@@ -186,6 +192,16 @@ export function useTitleNodeSizing({
 
   // Measure & sync whenever the relevant inputs change.
   useLayoutEffect(() => {
+    if (!isHydrated) {
+      logTitleSizing(nodeId, "measure-skipped-not-hydrated");
+      return;
+    }
+
+    if (!isInteractionEnabled) {
+      logTitleSizing(nodeId, "measure-skipped-no-user-interaction");
+      return;
+    }
+
     const ghost = ghostRef.current;
     if (!ghost) return;
 
@@ -260,5 +276,15 @@ export function useTitleNodeSizing({
     // grows on every keystroke. eslint-disabled because applyLocal/persist
     // are stable closures.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [text, liveText, level, sizingMode, currentWidth, currentHeight]);
+  }, [
+    text,
+    liveText,
+    level,
+    sizingMode,
+    currentWidth,
+    currentHeight,
+    isHydrated,
+    isInteractionEnabled,
+    nodeId,
+  ]);
 }

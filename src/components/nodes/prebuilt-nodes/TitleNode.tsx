@@ -89,6 +89,7 @@ function TitleNode(xyNode: Node) {
 
   const [isEditing, setIsEditing] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
   // Live text drives the ghost measurer (and therefore the node size) while
   // the user types. The contentEditable element itself is NOT controlled by
   // React (writes happen via ref) to avoid caret jumps.
@@ -115,6 +116,8 @@ function TitleNode(xyNode: Node) {
   useTitleNodeSizing({
     nodeId: xyNode.id,
     ghostRef,
+    isHydrated: values !== undefined,
+    isInteractionEnabled: hasUserInteracted || isEditing || isResizing,
     sizingMode: effectiveSizingMode,
     currentWidth: xyNode.width ?? 0,
     currentHeight: xyNode.height ?? 0,
@@ -163,6 +166,7 @@ function TitleNode(xyNode: Node) {
       if (isEditing) return;
       if (!xyNode.selected) return;
       e.stopPropagation();
+      setHasUserInteracted(true);
       setIsEditing(true);
     },
     [isEditing, xyNode.selected],
@@ -241,6 +245,7 @@ function TitleNode(xyNode: Node) {
   // ── Resize detection ────────────────────────────────────────────────────
   const handleResizeStart = useCallback(() => {
     initialResizeWidthRef.current = xyNode.width ?? 0;
+    setHasUserInteracted(true);
     setIsResizing(true);
   }, [xyNode.width]);
 
@@ -279,6 +284,7 @@ function TitleNode(xyNode: Node) {
   // ── Auto-fit toggle from the toolbar ────────────────────────────────────
   const handleToggleSizing = useCallback(
     (pressed: boolean) => {
+      setHasUserInteracted(true);
       void updateCanvasNode({
         nodeId: xyNode.id,
         data: { titleSizing: pressed ? "auto" : "manual" },
@@ -303,6 +309,7 @@ function TitleNode(xyNode: Node) {
           value={level}
           onValueChange={(value) => {
             if (value && nodeDataId) {
+              setHasUserInteracted(true);
               updateNodeDataValues({
                 nodeDataId,
                 values: { level: value },

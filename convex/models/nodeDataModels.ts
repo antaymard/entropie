@@ -203,9 +203,18 @@ export async function updateValues(
 
   // On patch uniquement le delta pour garder une écriture ciblée.
   const changedValues = Object.fromEntries(changedEntries);
+
+  // AppNode: quand le code change, on bump __v et on reset les erreurs runtime.
+  // Cela invalide les erreurs venant d'une iframe exécutant l'ancienne version
+  // (cf. reportAppErrors qui rejette les writes dont __v ne matche pas).
+  if (existing.type === "app" && "code" in changedValues) {
+    changedValues.__v = `${Date.now()}`;
+    changedValues.errors = [];
+  }
+
   // On passe aussi les clés modifiées au rebuild pour que l'action puisse skipper
   // les branches coûteuses quand les champs pertinents n'ont pas changé.
-  const changedKeys = changedEntries.map(([key]) => key);
+  const changedKeys = Object.keys(changedValues);
 
   const now = Date.now();
   await ctx.db.patch("nodeDatas", _id, {

@@ -177,3 +177,14 @@ const App = () => {
 ## Refresh
 
 **Do NOT add a refresh button in the component code.** The AppNode already has a built-in refresh button in its toolbar that reloads the iframe. There is no need to replicate this inside the component.
+
+---
+
+## Runtime errors
+
+The iframe automatically reports runtime errors (uncaught exceptions, unhandled promise rejections, `console.error`, React render errors caught by an injected ErrorBoundary) back to the canvas. They are stored under `values.errors` on the AppNode and exposed when you `read_nodes` it.
+
+- **You do NOT need to write any error-capture code.** The bridge installs `window.onerror`, `unhandledrejection`, a `console.error` patch, and an ErrorBoundary automatically.
+- Errors are deduplicated, debounced (~500ms), and capped at the 10 most recent.
+- When the AppNode's `code` is updated (via `set_node_data` or `patch_app_node_code`), `values.errors` is reset to `[]` automatically.
+- After patching the code, you can `read_nodes` again to verify whether new errors appeared.

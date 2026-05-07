@@ -428,6 +428,45 @@ export function makeNodeDataLLMFriendly(nodeData: Doc<"nodeDatas">): string {
       return makeTableNodeDataLLMFriendly(values.table, values.title);
     }
 
+    case "app": {
+      const code = typeof values.code === "string" ? values.code : "";
+      const state = values.state ?? null;
+      const errors = Array.isArray(values.errors)
+        ? (values.errors as Array<{
+            type?: string;
+            message?: string;
+            stack?: string;
+            source?: string;
+            line?: number;
+            col?: number;
+            timestamp?: number;
+          }>)
+        : [];
+
+      const parts: string[] = [];
+      parts.push("```jsx\n" + code + "\n```");
+      parts.push(`state: ${JSON.stringify(state)}`);
+      if (errors.length > 0) {
+        const formatted = errors
+          .map((e, i) => {
+            const head = `[${i + 1}] (${e.type ?? "error"}) ${e.message ?? ""}`;
+            const loc =
+              e.source || typeof e.line === "number"
+                ? `\n  at ${e.source ?? ""}:${e.line ?? ""}:${e.col ?? ""}`
+                : "";
+            const stack = e.stack ? `\n${e.stack}` : "";
+            return `${head}${loc}${stack}`;
+          })
+          .join("\n\n");
+        parts.push(
+          `runtime errors (most recent first ${errors.length}/10, captured from the iframe):\n${formatted}`,
+        );
+      } else {
+        parts.push("runtime errors: (none captured)");
+      }
+      return parts.join("\n\n");
+    }
+
     default:
       return JSON.stringify(values);
   }

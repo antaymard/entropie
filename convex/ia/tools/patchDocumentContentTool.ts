@@ -145,7 +145,8 @@ function trimLeadingBlankLines(lines: string[]): string[] {
   return out;
 }
 
-const HEADER_BLOCK_REGEX = /^block:([a-z0-9-]+)$/;
+const HEADER_BLOCK_REGEX = /^block:([A-Za-z0-9_-]+)$/;
+const BLOCK_MARKER_LINE_REGEX = /^\[block:[A-Za-z0-9_-]+\]\s*$/;
 
 type ResolveResult =
   | { ok: true; ops: Operation[] }
@@ -163,9 +164,19 @@ function resolveHunks(
     const bodyLines = trimLeadingBlankLines(
       trimTrailingBlankLines(hunk.bodyLines),
     );
+
+    for (const line of bodyLines) {
+      if (BLOCK_MARKER_LINE_REGEX.test(line)) {
+        return {
+          ok: false,
+          error: `Hunk ${hunk.hunkIndex}: body contains a "${line.trim()}" marker. Those markers are read-only annotations from read_nodes — do not include them when writing. Put plain markdown in the body; new blocks get ids assigned automatically.`,
+        };
+      }
+    }
+
     const body = bodyLines.join("\n");
 
-    const replaceMatch = header.match(/^replace\s+block:([a-z0-9-]+)$/);
+    const replaceMatch = header.match(/^replace\s+block:([A-Za-z0-9_-]+)$/);
     if (replaceMatch) {
       const blockId = replaceMatch[1];
       if (referencedIds.has(blockId)) {
@@ -193,7 +204,7 @@ function resolveHunks(
     }
 
     const insertMatch = header.match(
-      /^insert\s+(before|after)\s+block:([a-z0-9-]+)$/,
+      /^insert\s+(before|after)\s+block:([A-Za-z0-9_-]+)$/,
     );
     if (insertMatch) {
       const where = insertMatch[1] as "before" | "after";
@@ -249,7 +260,7 @@ function resolveHunks(
       continue;
     }
 
-    const deleteMatch = header.match(/^delete\s+block:([a-z0-9-]+)$/);
+    const deleteMatch = header.match(/^delete\s+block:([A-Za-z0-9_-]+)$/);
     if (deleteMatch) {
       const blockId = deleteMatch[1];
       if (referencedIds.has(blockId)) {
@@ -455,7 +466,7 @@ export default function patchDocumentContentTool({
       "- For `replace`, the body must produce exactly 1 top-level block.",
       "- A given `block:<id>` can be referenced by at most one hunk in the patch.",
       "- All-or-nothing: any error aborts the whole patch and writes nothing.",
-      "- Block ids are short stable strings of the form `[block:abc123]` you read in the document.",
+      "- Block ids you read in the document appear as `[block:<id>]` markers prefixing each block. Reference them in headers (e.g. `@@ replace block:<id>`), but NEVER write `[block:<id>]` markers inside the markdown body of a hunk — they're read-only annotations and the body is plain markdown. New blocks get ids assigned automatically.",
       "",
       "Note: editing a block re-parses its body from markdown, so Plate-specific metadata inside the edited block (e.g. table column widths, custom date nodes) may be normalized away. Other blocks are unaffected.",
     ].join("\n"),

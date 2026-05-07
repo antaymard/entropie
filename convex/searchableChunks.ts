@@ -2,6 +2,7 @@ import { query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireAuth, requireCanvasAccess } from "./lib/auth";
 import { chunkTypeValidator } from "./schemas/searchableChunksSchema";
+import * as SearchableChunkModels from "./models/searchableChunkModels";
 
 const SNIPPET_RADIUS = 90;
 const MAX_SNIPPETS_PER_CHUNK = 1;
@@ -102,6 +103,36 @@ export const search = query({
         .slice(0, MAX_SNIPPETS_PER_NODE),
       chunks,
     }));
+  },
+});
+
+export const listPdfPages = query({
+  args: {
+    nodeDataId: v.id("nodeDatas"),
+    canvasId: v.id("canvases"),
+  },
+  returns: v.array(
+    v.object({
+      order: v.number(),
+      text: v.string(),
+      page: v.optional(v.number()),
+      totalPages: v.optional(v.number()),
+      sections: v.array(
+        v.object({
+          level: v.string(),
+          title: v.string(),
+        }),
+      ),
+      hasImages: v.boolean(),
+      imageCount: v.optional(v.number()),
+    }),
+  ),
+  handler: async (ctx, args) => {
+    const authUserId = await requireAuth(ctx);
+    await requireCanvasAccess(ctx, args.canvasId, authUserId);
+    return await SearchableChunkModels.listPdfPagesByNodeDataId(ctx, {
+      nodeDataId: args.nodeDataId,
+    });
   },
 });
 

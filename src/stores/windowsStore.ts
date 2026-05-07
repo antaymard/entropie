@@ -155,6 +155,7 @@ export type SnapSide = "left" | "right" | "top";
 const FULLSCREEN_ELIGIBLE_NODE_TYPES: ReadonlySet<NodeType> = new Set([
   "document",
   "table",
+  "pdf",
 ]);
 
 export function isFullscreenEligible(nodeType: NodeType): boolean {

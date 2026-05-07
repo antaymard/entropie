@@ -8,17 +8,7 @@ import type { Id } from "@/../convex/_generated/dataModel";
 const MIN_DELTA = 0.5;
 const PERSIST_DEBOUNCE_MS = 120;
 
-function isTitleSizingDebugEnabled(): boolean {
-  if (typeof window === "undefined") return false;
-  const globalDebug = (
-    window as Window & { __DEBUG_TITLE_NODE_SIZING__?: boolean }
-  ).__DEBUG_TITLE_NODE_SIZING__;
-  if (globalDebug) return true;
-  return window.localStorage.getItem("debugTitleNodeSizing") === "1";
-}
-
 function logTitleSizing(nodeId: string, event: string, payload?: unknown) {
-  if (!isTitleSizingDebugEnabled()) return;
   if (payload !== undefined) {
     console.log(`[TitleNodeSizing][${nodeId}] ${event}`, payload);
     return;

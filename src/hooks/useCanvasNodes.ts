@@ -21,17 +21,7 @@ import type { CanvasNode } from "@/types";
 import { useWindowsStore } from "@/stores/windowsStore";
 import { pendingAutoSizeIds } from "@/components/nodes/prebuilt-nodes/useTitleNodeSizing";
 
-function isTitleSizingDebugEnabled(): boolean {
-  if (typeof window === "undefined") return false;
-  const globalDebug = (
-    window as Window & { __DEBUG_TITLE_NODE_SIZING__?: boolean }
-  ).__DEBUG_TITLE_NODE_SIZING__;
-  if (globalDebug) return true;
-  return window.localStorage.getItem("debugTitleNodeSizing") === "1";
-}
-
 function logTitleSizing(event: string, payload?: unknown) {
-  if (!isTitleSizingDebugEnabled()) return;
   if (payload !== undefined) {
     console.log(`[CanvasNodes][TitleSizing] ${event}`, payload);
     return;

@@ -225,12 +225,12 @@ export default function patchAppNodeCodeTool({
 
   return createTool({
     description: [
-      "Apply one or more text patches to an app node's source code, using a unified-diff style format inspired by OpenAI's Apply Patch.",
+      "Apply one or more text patches to an app node's source code, using a unified-diff style format inspired by OpenAI's Apply Patch. Use it when you want to make targeted edits to an existing app node's code, without rewriting the whole code (token-efficient). For wholesale rewrites or initial code, use `set_node_data` with `{ code }` instead.",
       "",
       "Format (single block per call):",
       "*** Begin Patch",
       "@@",
-      ' unchanged context line (prefixed with a single space)',
+      " unchanged context line (prefixed with a single space)",
       "-line to remove (must match exactly)",
       "+line to add",
       " more context",
@@ -258,9 +258,7 @@ export default function patchAppNodeCodeTool({
         .describe(
           "The patch payload, wrapped in `*** Begin Patch` / `*** End Patch`, with one or more `@@` hunks. See tool description for the exact format.",
         ),
-      explanation: z
-        .string()
-        .describe("3-5 words explaining the edit intent."),
+      explanation: z.string().describe("3-5 words explaining the edit intent."),
     }),
     execute: async (ctx, input): Promise<string> => {
       console.log(

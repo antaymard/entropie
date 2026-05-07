@@ -78,7 +78,12 @@ export function NodeCellEditor({
     .map((n) => {
       const nodeDataId = n.data?.nodeDataId as Id<"nodeDatas">;
       const nodeData = nodeDatas.get(nodeDataId)!;
-      return { nodeId: n.id, nodeDataId, nodeData, title: getNodeDataTitle(nodeData) };
+      return {
+        nodeId: n.id,
+        nodeDataId,
+        nodeData,
+        title: getNodeDataTitle(nodeData),
+      };
     });
 
   const handleSelect = (nodeId: string) => {
@@ -135,10 +140,14 @@ export function NodeCellEditor({
               title={selectedTitle}
               Icon={SelectedIcon}
               faded={!selectedNodeData}
-              onClick={selectedNodeData && isOpenableNodeType(selectedNodeData.type) ? handleOpenNode : undefined}
+              onClick={
+                selectedNodeData && isOpenableNodeType(selectedNodeData.type)
+                  ? handleOpenNode
+                  : undefined
+              }
             />
           ) : (
-            <span className="text-muted-foreground text-sm">Ajouter un node…</span>
+            <span className="text-muted-foreground">Ajouter un node…</span>
           )}
         </span>
       </PopoverTrigger>
@@ -152,11 +161,11 @@ export function NodeCellEditor({
             onKeyDown={(e) => {
               if (e.key === "Escape") onBlur();
             }}
-            className="h-7 text-sm"
+            className="h-7"
           />
           <div className="max-h-48 overflow-y-auto flex flex-col gap-0.5">
             {filteredNodes.length === 0 && (
-              <span className="text-muted-foreground text-sm px-2 py-1">
+              <span className="text-muted-foreground px-2 py-1">
                 Aucun node trouvé
               </span>
             )}
@@ -166,7 +175,7 @@ export function NodeCellEditor({
                 <button
                   key={nodeId}
                   className={cn(
-                    "flex items-center gap-2 rounded px-2 py-1 text-sm text-left hover:bg-muted w-full",
+                    "flex items-center gap-2 rounded px-2 py-1 text-left hover:bg-muted w-full",
                     value?.nodeId === nodeId && "bg-muted font-medium",
                   )}
                   onClick={() => handleSelect(nodeId)}
@@ -181,7 +190,7 @@ export function NodeCellEditor({
             <Button
               size="sm"
               variant="ghost"
-              className="w-full text-muted-foreground hover:text-destructive h-7 text-xs"
+              className="w-full text-muted-foreground hover:text-destructive h-7"
               onClick={() => {
                 onChange(null);
                 onBlur();
@@ -204,14 +213,17 @@ function NodeChip({
   onClick,
 }: {
   title: string;
-  Icon: React.ComponentType<{ size?: number; className?: string }> | null | undefined;
+  Icon:
+    | React.ComponentType<{ size?: number; className?: string }>
+    | null
+    | undefined;
   faded?: boolean;
   onClick?: (e: React.MouseEvent) => void;
 }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 text-sm font-medium max-w-full",
+        "inline-flex items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 font-medium max-w-full",
         faded && "opacity-50",
         onClick && "cursor-pointer hover:bg-muted/70",
       )}

@@ -1,4 +1,5 @@
 import { type CSSProperties, useMemo, useRef, useState } from "react";
+import type { IconType } from "react-icons";
 import {
   flexRender,
   getCoreRowModel,
@@ -59,6 +60,13 @@ import type {
   TableColumn,
   TableRowData,
 } from "./types";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/shadcn/dropdown-menu";
+import { COLUMN_TYPE_CONFIG } from "./types";
 
 export interface TableProps {
   columns: TableColumn[];
@@ -67,7 +75,7 @@ export interface TableProps {
   onCellChange?: (rowId: string, colId: string, value: CellValue) => void;
   onAddRow?: () => void;
   onDeleteRow?: (rowId: string) => void;
-  onAddColumn?: () => void;
+  onAddColumn?: (type: ColumnType) => void;
   onDeleteColumn?: (colId: string) => void;
   onColumnNameChange?: (colId: string, name: string) => void;
   onColumnTypeChange?: (colId: string, type: ColumnType) => void;
@@ -117,7 +125,9 @@ function DraggableHeader({
     opacity: isDragging ? 0.8 : 1,
     position: "relative",
     transform: CSS.Translate.toString(transform),
-    transition: isResizing ? "transform 0.2s ease-in-out" : "width transform 0.2s ease-in-out",
+    transition: isResizing
+      ? "transform 0.2s ease-in-out"
+      : "width transform 0.2s ease-in-out",
     zIndex: isDragging ? 1 : 0,
     width: header.getSize(),
     userSelect: isResizing ? "none" : undefined,
@@ -241,7 +251,6 @@ export function Table({
   rows,
   readOnly = false,
   onCellChange,
-  onAddRow,
   onDeleteRow,
   onAddColumn,
   onDeleteColumn,
@@ -266,18 +275,16 @@ export function Table({
     ...tableColumns.map((c) => c.id),
     ...(!readOnly ? ["__delete__"] : []),
   ]);
-  const [columnSizing, setColumnSizing] = useState<Record<string, number>>(
-    () =>
-      Object.fromEntries(
-        tableColumns
-          .filter((c) => c.width != null)
-          .map((c) => [c.id, c.width!]),
-      ),
+  const [columnSizing, setColumnSizing] = useState<Record<string, number>>(() =>
+    Object.fromEntries(
+      tableColumns.filter((c) => c.width != null).map((c) => [c.id, c.width!]),
+    ),
   );
 
   // Hide row drag handle when sorting or filtering is active (order becomes ambiguous)
   const canReorderRowsRef = useRef(true);
-  canReorderRowsRef.current = !readOnly && sorting.length === 0 && globalFilter === "";
+  canReorderRowsRef.current =
+    !readOnly && sorting.length === 0 && globalFilter === "";
 
   const onColumnWidthChangeRef = useRef(onColumnWidthChange);
   onColumnWidthChangeRef.current = onColumnWidthChange;
@@ -336,7 +343,10 @@ export function Table({
                   if (readOnly) return;
                   if (col.type === "checkbox") {
                     onCellChange?.(row.original.id, col.id, !value);
-                  } else if (col.type === "select" && (!col.options || col.options.length === 0)) {
+                  } else if (
+                    col.type === "select" &&
+                    (!col.options || col.options.length === 0)
+                  ) {
                     setOptionsDialogColumnId(col.id);
                   } else {
                     setEditingCell({
@@ -363,7 +373,34 @@ export function Table({
               enableSorting: false,
               enableGlobalFilter: false,
               enableColumnResizing: false,
-              header: () => null,
+              header: () => (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="icon" variant="ghost" className="h-6 w-6">
+                      <TbPlus size={13} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {(
+                      Object.entries(COLUMN_TYPE_CONFIG) as [
+                        ColumnType,
+                        { label: string; icon: IconType },
+                      ][]
+                    ).map(([value, config]) => {
+                      const Icon = config.icon;
+                      return (
+                        <DropdownMenuItem
+                          key={value}
+                          onClick={() => onAddColumn?.(value)}
+                        >
+                          <Icon size={12} className="mr-2 opacity-60" />
+                          {config.label}
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ),
               cell: ({ row }: { row: { original: TableRowData } }) => (
                 <Button
                   size="icon"
@@ -384,6 +421,7 @@ export function Table({
       editingColumnId,
       readOnly,
       onCellChange,
+      onAddColumn,
       onColumnNameChange,
       onColumnTypeChange,
       onDeleteColumn,
@@ -503,18 +541,6 @@ export function Table({
         tabIndex={-1}
         className={cn("flex flex-col outline-none", className)}
       >
-        {!readOnly && (
-          <div className="flex items-center justify-end gap-2 p-2 border-b shrink-0">
-            <Button size="sm" variant="outline" onClick={onAddColumn}>
-              <TbPlus size={14} className="mr-1" />
-              Add column
-            </Button>
-            <Button size="sm" variant="outline" onClick={onAddRow}>
-              <TbPlus size={14} className="mr-1" />
-              Add row
-            </Button>
-          </div>
-        )}
         {tableColumns.length > 0 && (
           <div className="flex items-center gap-2 px-2 py-1.5 border-b shrink-0">
             <TbSearch size={14} className="text-muted-foreground shrink-0" />
@@ -526,8 +552,10 @@ export function Table({
             />
           </div>
         )}
-        <div className="flex-1 overflow-auto">
-          <ShadcnTable style={{ tableLayout: "fixed", width: table.getTotalSize() }}>
+        <div className={cn("flex-1 overflow-auto", !readOnly && "pb-20")}>
+          <ShadcnTable
+            style={{ tableLayout: "fixed", width: table.getTotalSize() }}
+          >
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
@@ -536,11 +564,18 @@ export function Table({
                     strategy={horizontalListSortingStrategy}
                   >
                     {headerGroup.headers.map((header) => {
-                      if (
-                        header.column.id === "__delete__" ||
-                        header.column.id === "__drag__"
-                      ) {
+                      if (header.column.id === "__drag__") {
                         return <TableHead key={header.id} className="w-8" />;
+                      }
+                      if (header.column.id === "__delete__") {
+                        return (
+                          <TableHead key={header.id} className="w-8">
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                          </TableHead>
+                        );
                       }
                       return (
                         <DraggableHeader key={header.id} header={header}>
@@ -566,7 +601,8 @@ export function Table({
                   <TableRow>
                     <TableCell
                       colSpan={
-                        tableColumns.length + (readOnly ? 0 : 2) /* drag + delete */
+                        tableColumns.length +
+                        (readOnly ? 0 : 2) /* drag + delete */
                       }
                       className="text-center text-muted-foreground py-10"
                     >
@@ -603,7 +639,9 @@ export function Table({
                                       <RowDragHandle
                                         attributes={attributes}
                                         listeners={listeners}
-                                        setActivatorNodeRef={setActivatorNodeRef}
+                                        setActivatorNodeRef={
+                                          setActivatorNodeRef
+                                        }
                                       />
                                     ) : (
                                       flexRender(

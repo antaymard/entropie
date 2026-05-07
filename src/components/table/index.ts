@@ -40,6 +40,7 @@ export type {
   TableData,
 } from "./types";
 export {
+  COLUMN_TYPE_CONFIG,
   COLUMN_TYPE_LABELS,
   SELECT_COLOR_CLASSES,
   SELECT_COLOR_PALETTE,

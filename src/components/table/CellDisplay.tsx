@@ -48,7 +48,7 @@ export function CellDisplay({ type, value, options }: CellDisplayProps) {
     return (
       <span className="flex items-center gap-1 w-full min-h-[1.4em] px-1">
         <span
-          className={`inline-flex items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 text-sm font-medium max-w-full${!nodeData ? " opacity-50" : ""}`}
+          className={`inline-flex items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 font-medium max-w-full${!nodeData ? " opacity-50" : ""}`}
         >
           {Icon ? (
             <Icon size={13} className="shrink-0 text-muted-foreground" />
@@ -81,7 +81,7 @@ export function CellDisplay({ type, value, options }: CellDisplayProps) {
             <span
               key={id}
               className={cn(
-                "inline-flex items-center max-w-full rounded-md px-1.5 py-0.5 text-xs font-medium",
+                "inline-flex items-center max-w-full rounded-md px-1.5 py-0.5 font-medium",
                 c.bg,
                 c.text,
               )}

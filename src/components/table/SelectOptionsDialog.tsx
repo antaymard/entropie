@@ -178,7 +178,7 @@ export function SelectOptionsDialog({
         <div className="flex items-center justify-between rounded-md border p-3">
           <div className="space-y-0.5">
             <Label htmlFor="multi-select-toggle">Allow multiple values</Label>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground">
               Cells can hold one or several options.
             </p>
           </div>
@@ -191,7 +191,7 @@ export function SelectOptionsDialog({
 
         <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
           {draftOptions.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center py-4">
+            <p className="text-muted-foreground text-center py-4">
               No options yet.
             </p>
           )}

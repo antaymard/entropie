@@ -5,7 +5,7 @@ import type { Id } from "@/../convex/_generated/dataModel";
 import { useWindowFrameContext } from "@/components/windows/WindowFrameContext";
 import InlineEditableText from "@/components/form-ui/InlineEditableText";
 import { Button } from "@/components/shadcn/button";
-import { TbDownload, TbUpload } from "react-icons/tb";
+import { TbDownload, TbPlus, TbUpload } from "react-icons/tb";
 import {
   Table,
   TableImportDialog,
@@ -84,21 +84,24 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
 
   // --- Column management ---
 
-  const addColumn = useCallback(() => {
-    const newCol: TableColumn = {
-      id: crypto.randomUUID(),
-      name: `Column ${columnsRef.current.length + 1}`,
-      type: "text",
-    };
-    setLocalColumns((cols) => [...cols, newCol]);
-    setLocalRows((rows) =>
-      rows.map((row) => ({
-        ...row,
-        cells: { ...row.cells, [newCol.id]: null },
-      })),
-    );
-    markDirty();
-  }, [markDirty]);
+  const addColumn = useCallback(
+    (type: ColumnType = "text") => {
+      const newCol: TableColumn = {
+        id: crypto.randomUUID(),
+        name: `Column ${columnsRef.current.length + 1}`,
+        type,
+      };
+      setLocalColumns((cols) => [...cols, newCol]);
+      setLocalRows((rows) =>
+        rows.map((row) => ({
+          ...row,
+          cells: { ...row.cells, [newCol.id]: null },
+        })),
+      );
+      markDirty();
+    },
+    [markDirty],
+  );
 
   const deleteColumn = useCallback(
     (colId: string) => {
@@ -327,23 +330,36 @@ function TableWindow({ nodeDataId }: { nodeDataId: Id<"nodeDatas"> }) {
         onImport={handleImport}
       />
 
-      <Table
-        columns={localColumns}
-        rows={localRows}
-        readOnly={isLocked}
-        onCellChange={updateCell}
-        onAddRow={addRow}
-        onDeleteRow={deleteRow}
-        onAddColumn={addColumn}
-        onDeleteColumn={deleteColumn}
-        onColumnNameChange={updateColumnName}
-        onColumnTypeChange={updateColumnType}
-        onColumnOrderChange={reorderColumns}
-        onRowOrderChange={reorderRows}
-        onColumnWidthChange={updateColumnWidth}
-        onColumnOptionsChange={updateColumnOptions}
-        className="flex-1 min-h-0"
-      />
+      <div className="relative flex-1 min-h-0">
+        <Table
+          columns={localColumns}
+          rows={localRows}
+          readOnly={isLocked}
+          onCellChange={updateCell}
+          onAddRow={addRow}
+          onDeleteRow={deleteRow}
+          onAddColumn={addColumn}
+          onDeleteColumn={deleteColumn}
+          onColumnNameChange={updateColumnName}
+          onColumnTypeChange={updateColumnType}
+          onColumnOrderChange={reorderColumns}
+          onRowOrderChange={reorderRows}
+          onColumnWidthChange={updateColumnWidth}
+          onColumnOptionsChange={updateColumnOptions}
+          className="h-full min-h-0"
+        />
+        {!isLocked && (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="absolute bottom-3 left-3 z-20"
+            onClick={addRow}
+          >
+            <TbPlus size={14} className="mr-1" />
+            Add row
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

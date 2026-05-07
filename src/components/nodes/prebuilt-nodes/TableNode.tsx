@@ -57,20 +57,28 @@ function TableNode(xyNode: Node) {
             </p>
           </div>
         ) : (
-          <div ref={scrollRef} className="h-full overflow-auto">
+          <div className="flex flex-col h-full min-h-0 bg-background/50">
             {title && (
-              <p className="px-2 pt-1.5 pb-0.5 font-semibold truncate text-lg">
-                {title}
-              </p>
-            )}
-            {isTableEmpty ? (
-              <div className="h-full flex flex-col items-center justify-center gap-1.5 text-muted-foreground/40 select-none pointer-events-none">
-                <TbTable size={22} />
-                <span className="text-xs">Double click to edit</span>
+              <div className="shrink-0 pt-1.5 pb-0.5 px-2 bg-white z-20">
+                <p className="font-semibold truncate text-lg">{title}</p>
               </div>
-            ) : (
-              <TablePreview columns={tableData.columns} rows={tableData.rows} />
             )}
+            <div
+              ref={scrollRef}
+              className="flex-1 min-h-0 overflow-auto relative"
+            >
+              {isTableEmpty ? (
+                <div className="h-full flex flex-col items-center justify-center gap-1.5 text-muted-foreground/40 select-none pointer-events-none">
+                  <TbTable size={22} />
+                  <span className="text-xs">Double click to edit</span>
+                </div>
+              ) : (
+                <TablePreview
+                  columns={tableData.columns}
+                  rows={tableData.rows}
+                />
+              )}
+            </div>
           </div>
         )}
       </NodeFrame>

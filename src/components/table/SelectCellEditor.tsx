@@ -24,9 +24,7 @@ export interface SelectCellEditorProps {
   onBlur: () => void;
 }
 
-function normalizeValue(
-  value: SelectCellValue | null | undefined,
-): string[] {
+function normalizeValue(value: SelectCellValue | null | undefined): string[] {
   return Array.isArray(value) ? value : [];
 }
 
@@ -35,7 +33,7 @@ export function SelectCellChip({ option }: { option: SelectOption }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center max-w-full rounded-md px-1.5 py-0.5 text-xs font-medium",
+        "inline-flex items-center max-w-full rounded-md px-1.5 py-0.5 font-medium",
         c.bg,
         c.text,
       )}
@@ -102,7 +100,7 @@ export function SelectCellEditor({
           <span
             key={opt.id}
             className={cn(
-              "inline-flex items-center gap-0.5 max-w-full rounded-md px-1.5 py-0.5 text-xs font-medium",
+              "inline-flex items-center gap-0.5 max-w-full rounded-md px-1.5 py-0.5 font-medium",
               SELECT_COLOR_CLASSES[opt.color].bg,
               SELECT_COLOR_CLASSES[opt.color].text,
             )}
@@ -155,17 +153,17 @@ export function SelectCellEditor({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search options…"
-            className="h-7 text-sm"
+            className="h-7"
           />
         </div>
         <div className="max-h-64 overflow-y-auto p-1">
           {options.length === 0 && (
-            <p className="text-xs text-muted-foreground text-center py-3 px-2">
+            <p className="text-muted-foreground text-center py-3 px-2">
               No options yet. Configure them from the column menu.
             </p>
           )}
           {options.length > 0 && filtered.length === 0 && (
-            <p className="text-xs text-muted-foreground text-center py-3 px-2">
+            <p className="text-muted-foreground text-center py-3 px-2">
               No matches.
             </p>
           )}
@@ -177,7 +175,7 @@ export function SelectCellEditor({
                 type="button"
                 onClick={() => toggle(opt.id)}
                 className={cn(
-                  "flex items-center justify-between gap-2 w-full rounded-sm px-2 py-1 text-left hover:bg-muted text-sm",
+                  "flex items-center justify-between gap-2 w-full rounded-sm px-2 py-1 text-left hover:bg-muted",
                 )}
               >
                 <SelectCellChip option={opt} />

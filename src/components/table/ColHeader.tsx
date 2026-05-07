@@ -1,4 +1,5 @@
 import type { Column } from "@tanstack/react-table";
+import type { IconType } from "react-icons";
 import { Button } from "@/components/shadcn/button";
 import { Input } from "@/components/shadcn/input";
 import {
@@ -21,7 +22,7 @@ import {
 } from "react-icons/tb";
 import { cn } from "@/lib/utils";
 import type { TableColumn, TableRowData, ColumnType } from "./types";
-import { COLUMN_TYPE_LABELS } from "./types";
+import { COLUMN_TYPE_CONFIG } from "./types";
 
 export interface ColHeaderProps {
   col: TableColumn;
@@ -112,16 +113,23 @@ export function ColHeader({
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent>
                   {(
-                    Object.entries(COLUMN_TYPE_LABELS) as [ColumnType, string][]
-                  ).map(([value, label]) => (
-                    <DropdownMenuItem
-                      key={value}
-                      onClick={() => onTypeChange(value)}
-                      className={cn(col.type === value && "font-semibold")}
-                    >
-                      {label}
-                    </DropdownMenuItem>
-                  ))}
+                    Object.entries(COLUMN_TYPE_CONFIG) as [
+                      ColumnType,
+                      { label: string; icon: IconType },
+                    ][]
+                  ).map(([value, config]) => {
+                    const Icon = config.icon;
+                    return (
+                      <DropdownMenuItem
+                        key={value}
+                        onClick={() => onTypeChange(value)}
+                        className={cn(col.type === value && "font-semibold")}
+                      >
+                        <Icon size={12} className="mr-2 opacity-70" />
+                        {config.label}
+                      </DropdownMenuItem>
+                    );
+                  })}
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
               {col.type === "select" && onEditOptions && (

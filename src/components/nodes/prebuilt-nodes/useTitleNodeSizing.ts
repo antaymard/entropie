@@ -26,8 +26,6 @@ interface UseTitleNodeSizingArgs {
   ghostRef: RefObject<HTMLElement | null>;
   /** False while node data values are still loading; skips sizing side effects. */
   isHydrated?: boolean;
-  /** False until the user interacts with the node (edit/resize/toolbar). */
-  isInteractionEnabled?: boolean;
   /** "auto": width follows text on a single line; "manual": width fixed, height adapts to wrapped text */
   sizingMode: "auto" | "manual";
   /** Current node width (px) coming from React Flow / Convex */
@@ -58,7 +56,6 @@ export function useTitleNodeSizing({
   nodeId,
   ghostRef,
   isHydrated = true,
-  isInteractionEnabled = true,
   sizingMode,
   currentWidth,
   currentHeight,
@@ -110,16 +107,24 @@ export function useTitleNodeSizing({
   const pendingDimensions = useRef<{ width: number; height: number } | null>(
     null,
   );
-  // Tracks the last (width, height) we asked Convex to persist. Lets us
-  // short-circuit re-measures that would commit the same value again — which
-  // can happen when external triggers (font loading, the ResizeObserver
-  // forwarding our own setNodes back through handleNodeChange, query
-  // invalidations on neighbouring data) re-run the measurement effect even
-  // though nothing actually changed. Without this guard, a freshly-loaded
-  // canvas can spam updatePositionOrDimensions in a loop.
-  const lastPersistedRef = useRef<{ width: number; height: number } | null>(
-    null,
-  );
+  // Snapshot of the inputs and dimensions we last reconciled. The first
+  // hydrated run records these and skips measuring — the persisted dims in
+  // Convex are the source of truth on load. After that, we only re-measure
+  // when something we actually care about changes: a text edit, a level
+  // change, a sizing-mode toggle, or (in manual mode) an external dimension
+  // override (user resize, or React Flow's resizer dispatching a stale
+  // height on release). After applying new dims locally we record them here
+  // so the post-apply re-render doesn't look like an external override.
+  // This kills the post-load loop where pre-hydration measurements (text=""
+  // → tiny size) overwrote saved dims, then post-hydration measurements
+  // rewrote them back.
+  const lastMeasuredRef = useRef<{
+    text: string;
+    level: string;
+    sizingMode: "auto" | "manual";
+    currentWidth: number;
+    currentHeight: number;
+  } | null>(null);
 
   useEffect(() => {
     return () => {
@@ -130,14 +135,6 @@ export function useTitleNodeSizing({
   }, [nodeId]);
 
   const persistDimensions = (width: number, height: number) => {
-    const last = lastPersistedRef.current;
-    if (last && last.width === width && last.height === height) {
-      logTitleSizing(nodeId, "persist-skipped-same-as-last", {
-        width,
-        height,
-      });
-      return;
-    }
     pendingAutoSizeIds.add(nodeId);
     pendingDimensions.current = { width, height };
     logTitleSizing(nodeId, "persist-scheduled", {
@@ -152,7 +149,6 @@ export function useTitleNodeSizing({
       pendingDimensions.current = null;
       debounceTimer.current = null;
       if (!dim) return;
-      lastPersistedRef.current = dim;
       logTitleSizing(nodeId, "persist-commit-mutation", {
         width: dim.width,
         height: dim.height,
@@ -197,21 +193,71 @@ export function useTitleNodeSizing({
       return;
     }
 
-    if (!isInteractionEnabled) {
-      logTitleSizing(nodeId, "measure-skipped-no-user-interaction");
+    const ghost = ghostRef.current;
+    if (!ghost) return;
+
+    const effectiveText = liveText ?? text;
+
+    if (lastMeasuredRef.current === null) {
+      // First run after hydration: trust the persisted dimensions and just
+      // record the baseline. Without this, a node whose nodeData hydrates
+      // after the canvas dims have rendered would re-measure against the
+      // pre-hydration empty placeholder and persist a wrong size, then
+      // re-measure once the real text arrives and persist again.
+      lastMeasuredRef.current = {
+        text: effectiveText,
+        level,
+        sizingMode,
+        currentWidth,
+        currentHeight,
+      };
+      logTitleSizing(nodeId, "measure-skipped-initial-hydration", {
+        text: effectiveText,
+        level,
+        sizingMode,
+        currentWidth,
+        currentHeight,
+      });
       return;
     }
 
-    const ghost = ghostRef.current;
-    if (!ghost) return;
+    const last = lastMeasuredRef.current;
+    const textChanged = last.text !== effectiveText;
+    const levelChanged = last.level !== level;
+    const sizingModeChanged = last.sizingMode !== sizingMode;
+    // Width/height changes are only relevant in manual mode. In auto mode
+    // they're our output: React Flow / Convex echoing them back must not
+    // retrigger us. In manual mode an external override can come from a
+    // user resize (currentWidth) or React Flow's resizer dispatching a
+    // stale height on release (currentHeight) — both warrant a re-measure.
+    const manualDimsChanged =
+      sizingMode === "manual" &&
+      (Math.abs(last.currentWidth - currentWidth) > MIN_DELTA ||
+        Math.abs(last.currentHeight - currentHeight) > MIN_DELTA);
+
+    if (
+      !textChanged &&
+      !levelChanged &&
+      !sizingModeChanged &&
+      !manualDimsChanged
+    ) {
+      logTitleSizing(nodeId, "measure-skipped-no-relevant-change", {
+        currentWidth,
+        currentHeight,
+      });
+      return;
+    }
 
     logTitleSizing(nodeId, "measure-start", {
       sizingMode,
       currentWidth,
       currentHeight,
-      textLength: (liveText ?? text).length,
+      textLength: effectiveText.length,
       level,
     });
+
+    let nextWidth = currentWidth;
+    let nextHeight = currentHeight;
 
     if (sizingMode === "auto") {
       // Single-line measurement
@@ -234,6 +280,8 @@ export function useTitleNodeSizing({
         });
         applyLocalDimensions(desiredWidth, desiredHeight);
         persistDimensions(desiredWidth, desiredHeight);
+        nextWidth = desiredWidth;
+        nextHeight = desiredHeight;
       } else {
         logTitleSizing(nodeId, "measure-auto-noop", {
           desiredWidth,
@@ -259,6 +307,7 @@ export function useTitleNodeSizing({
         });
         applyLocalDimensions(currentWidth, desiredHeight);
         persistDimensions(currentWidth, desiredHeight);
+        nextHeight = desiredHeight;
       } else {
         logTitleSizing(nodeId, "measure-manual-noop", {
           currentWidth,
@@ -268,13 +317,22 @@ export function useTitleNodeSizing({
         });
       }
     }
-    // Depend on currentHeight too: when React Flow's resizer or the convex
-    // sync overwrites our height (e.g. on resize release, the resizer's
-    // dimension change persists the start height to convex even with
-    // resizeDirection="horizontal"), this re-runs and overrides height back
-    // to the wrap-computed value. liveText is also a dependency so the node
-    // grows on every keystroke. eslint-disabled because applyLocal/persist
-    // are stable closures.
+
+    // Record the dims we settled on, including any local apply. The post-
+    // apply re-render will pass currentWidth/currentHeight equal to these,
+    // so the next effect run will see no change and skip cleanly.
+    lastMeasuredRef.current = {
+      text: effectiveText,
+      level,
+      sizingMode,
+      currentWidth: nextWidth,
+      currentHeight: nextHeight,
+    };
+    // currentHeight is in the deps so manual-mode height re-runs catch the
+    // case where React Flow's resizer overwrites our height on release
+    // (the dimension change persists even with resizeDirection="horizontal").
+    // liveText is in the deps so the node grows on every keystroke.
+    // eslint-disabled because applyLocal/persist are stable closures.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     text,
@@ -284,7 +342,6 @@ export function useTitleNodeSizing({
     currentWidth,
     currentHeight,
     isHydrated,
-    isInteractionEnabled,
     nodeId,
   ]);
 }

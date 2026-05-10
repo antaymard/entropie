@@ -1,6 +1,6 @@
 ---
 name: app-node-generation-documentation
-description: Documentation for generating AppNodes in the system, including rules, SDK usage, available data, and APIs. Must be loaded before generating or updating any AppNode.
+description: Documentation for generating AppNode in the system, including rules, SDK usage, available data, and APIs. Must be loaded before generating or updating any AppNode.
 ---
 
 # AppNode Generation documentation

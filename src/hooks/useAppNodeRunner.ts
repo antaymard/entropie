@@ -10,10 +10,21 @@ import {
   resolveSourceNode,
 } from "@/components/utils/appNodeUtils";
 
+type ReportedAppError = {
+  type: string;
+  message: string;
+  stack?: string;
+  source?: string;
+  line?: number;
+  col?: number;
+  timestamp: number;
+};
+
 type BridgeMessage =
   | { type: "nolenor:getData"; requestId: string }
   | { type: "nolenor:saveState"; requestId: string; state: unknown }
-  | { type: "nolenor:fetch"; requestId: string; url: string; options: RequestInit };
+  | { type: "nolenor:fetch"; requestId: string; url: string; options: RequestInit }
+  | { type: "nolenor:reportErrors"; __v: string | null; errors: ReportedAppError[] };
 
 function isPrivateUrl(raw: string): boolean {
   let url: URL;
@@ -43,6 +54,7 @@ export function useAppNodeRunner(
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const rfStore = useStoreApi();
   const updateValuesMutation = useMutation(api.nodeDatas.updateValues);
+  const reportAppErrorsMutation = useMutation(api.nodeDatas.reportAppErrors);
 
   const resolveConnected = useCallback(async () => {
     const { edges, nodes } = rfStore.getState();
@@ -82,7 +94,8 @@ export function useAppNodeRunner(
     const handler = async (e: MessageEvent<BridgeMessage>) => {
       if (e.source !== iframeRef.current?.contentWindow) return;
 
-      const { type, requestId } = e.data;
+      const { type } = e.data;
+      const requestId = (e.data as { requestId?: string }).requestId;
       let payload: unknown;
 
       if (type === "nolenor:getData") {
@@ -91,6 +104,21 @@ export function useAppNodeRunner(
         // e.data.state relies on the type coercion, so we cast it quietly
         await updateState((e.data as { state: unknown }).state);
         payload = { ok: true };
+      } else if (type === "nolenor:reportErrors") {
+        if (!nodeDataId) return;
+        const data = e.data as { __v: string | null; errors: ReportedAppError[] };
+        if (typeof data.__v !== "string") return;
+        if (!Array.isArray(data.errors) || data.errors.length === 0) return;
+        try {
+          await reportAppErrorsMutation({
+            _id: nodeDataId,
+            __v: data.__v,
+            errors: data.errors,
+          });
+        } catch {
+          // Best-effort: ignore reporting failures.
+        }
+        return;
       } else if (type === "nolenor:fetch") {
         const { url, options } = e.data as { url: string; options: RequestInit; requestId: string; type: string };
         if (isPrivateUrl(url)) {
@@ -118,15 +146,16 @@ export function useAppNodeRunner(
 
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
-  }, [resolveConnected, updateState]);
+  }, [resolveConnected, updateState, nodeDataId, reportAppErrorsMutation]);
 
   const srcdoc = useMemo(() => {
     if (!values) return "";
     const code = (values.code as string) ?? "";
     const state = values.state ?? null;
-    return buildSrcdoc(code, state);
+    const version = typeof values.__v === "string" ? (values.__v as string) : null;
+    return buildSrcdoc(code, state, version);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [values?.code, refreshKey]); // state exclu intentionnellement : saveState ne doit pas recharger l'iframe
+  }, [values?.code, values?.__v, refreshKey]); // state exclu intentionnellement : saveState ne doit pas recharger l'iframe
 
   return { iframeRef, srcdoc };
 }

@@ -358,6 +358,26 @@ const nodeDataConfig: Array<NodeDataConfigItem> = [
       .object({
         code: z.string().default(""),
         state: z.any().nullable().default(null),
+        // Bumped automatically server-side when `code` changes. Used to
+        // discard stale runtime errors posted by an iframe still running an
+        // older version of the code.
+        __v: z.string().optional(),
+        // Captured from the iframe's runtime (window.onerror,
+        // unhandledrejection, console.error, React ErrorBoundary).
+        // Read-only for the LLM — it is reset to [] each time `code` changes.
+        errors: z
+          .array(
+            z.object({
+              type: z.string(),
+              message: z.string(),
+              stack: z.string().optional(),
+              source: z.string().optional(),
+              line: z.number().optional(),
+              col: z.number().optional(),
+              timestamp: z.number(),
+            }),
+          )
+          .optional(),
       })
       .default({ code: "", state: null }),
   },

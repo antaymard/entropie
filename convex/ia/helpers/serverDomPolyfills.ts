@@ -41,6 +41,22 @@ function makeEl(): any {
 
 export function installServerDomPolyfills() {
   const g = globalThis as any;
+
+  // navigator is read by Plate/Slate modules to detect Mac vs Windows for
+  // keyboard shortcuts (e.g. navigator.platform / navigator.userAgent). In the
+  // Convex V8 isolate it is undefined, which crashes the editor init with
+  // "Cannot read properties of undefined (reading 'platform')". Install a
+  // minimal stub before any other polyfill so subsequent imports see it.
+  if (g.navigator === undefined) {
+    g.navigator = {
+      platform: "",
+      userAgent: "",
+      language: "en-US",
+      languages: ["en-US"],
+      maxTouchPoints: 0,
+    };
+  }
+
   if (g.document !== undefined) return;
 
   g.document = {

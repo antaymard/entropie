@@ -87,6 +87,19 @@ function formatStructuredMessageContext(context: any): string {
     }
   }
 
+  let attachedPageSection = "";
+  const attachedPage = context.attachedPage;
+  if (attachedPage && typeof attachedPage === "object") {
+    const { title, url, text } = attachedPage as { title?: string; url?: string; text?: string };
+    let content = "";
+    if (title) content += `<title>${title}</title>\n  `;
+    if (url) content += `<url>${url}</url>\n  `;
+    if (text) content += `<content>${text.substring(0, 12000)}</content>`;
+    if (content) {
+      attachedPageSection = `<attached_page>\n  ${content.trim()}\n</attached_page>`;
+    }
+  }
+
   let visibleNodesSection = "";
   const visibleNodes = viewport?.visibleNodes || viewport?.visibleNodeIds;
   if (Array.isArray(visibleNodes) && visibleNodes.length > 0) {
@@ -111,6 +124,7 @@ function formatStructuredMessageContext(context: any): string {
     openNodesSection,
     attachedPosTag,
     attachedNodesSection,
+    attachedPageSection,
     visibleNodesSection,
   ].filter(Boolean); // Retire les chaînes vides
 
@@ -140,7 +154,7 @@ export function generateMessageContext({
     if (
       typeof messageContext === "object" &&
       !Array.isArray(messageContext) &&
-      "viewport" in messageContext
+      ("viewport" in messageContext || "attachedPage" in messageContext)
     ) {
       runtimeParts.push(formatStructuredMessageContext(messageContext));
     } else {

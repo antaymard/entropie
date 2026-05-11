@@ -1578,17 +1578,17 @@
   resolved "https://registry.npmjs.org/@chenglou/pretext/-/pretext-0.0.5.tgz"
   integrity sha512-A8GZN10REdFGsyuiUgLV8jjPDDFMg5GmgxGWV0I3igxBOnzj+jgz2VMmVD7g+SFyoctfeqHFxbNatKSzVRWtRg==
 
-"@composio/client@0.1.0-alpha.66":
-  version "0.1.0-alpha.66"
-  resolved "https://registry.npmjs.org/@composio/client/-/client-0.1.0-alpha.66.tgz"
-  integrity sha512-SDHcTWzz2dgdYAew/gQsRpjHpEzHKm6sW7KM4wCoJWNJuuMuey9Ahje91ZucNjfaqpI8CFW+pXY4nWkZf5LD7Q==
+"@composio/client@0.1.0-alpha.70":
+  version "0.1.0-alpha.70"
+  resolved "https://registry.yarnpkg.com/@composio/client/-/client-0.1.0-alpha.70.tgz#357eb463719e748e58beba21b48b763b6e161af9"
+  integrity sha512-bANvjHL9aYwvzcrDL9S2W/uTf6EV3slIpYRL3lAv3k74tTgB1TkYzAWgxxz1OpLK86iDB5xq3RFlritVu23Erg==
 
-"@composio/core@^0.6.10":
-  version "0.6.11"
-  resolved "https://registry.npmjs.org/@composio/core/-/core-0.6.11.tgz"
-  integrity sha512-0uNA1DhHF0l3d51GVRw4CA8oYgqsps+aGMW6J4jA6Ut53HfBHwHJ4JAa9HU/2Psho8tCoprM6NR5DxWGD50H+A==
+"@composio/core@^0.9.0":
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/@composio/core/-/core-0.9.0.tgz#2502c7d2551590d7e96dd2b75471119a21e5b0e9"
+  integrity sha512-7gZx1nzHUxGiutPZZQov4va4N69MIbvJlkfZAQd0yG/n0znqntBKbUfF6/GucmBzxwgX58gsS9z512ThVVGOEw==
   dependencies:
-    "@composio/client" "0.1.0-alpha.66"
+    "@composio/client" "0.1.0-alpha.70"
     "@composio/json-schema-to-zod" "0.1.20"
     "@types/json-schema" "^7.0.15"
     chalk "^4.1.2"
@@ -1602,10 +1602,10 @@
   resolved "https://registry.npmjs.org/@composio/json-schema-to-zod/-/json-schema-to-zod-0.1.20.tgz"
   integrity sha512-d4V34itLrUWG/VBh7ciznKcxF/T22MBLHmuEzHoX0zsBOHsUmjYz5qtDh20S2p3FE+HHvLZxpXiv8yfdd4yI+Q==
 
-"@composio/vercel@^0.6.10":
-  version "0.6.11"
-  resolved "https://registry.npmjs.org/@composio/vercel/-/vercel-0.6.11.tgz"
-  integrity sha512-sNxU8Xurc63FKhuV8QcPr+MLiqo6iZ1RtwXm8dyRbS4fjWKFw/DfYw4+d2ChoNK7l+6XHNXmK7ayzmmovFnZiQ==
+"@composio/vercel@^0.9.0":
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/@composio/vercel/-/vercel-0.9.0.tgz#f86f553a614a93a271bef7ef31a1aed533725b7e"
+  integrity sha512-QsOqs/pN39awbu0SxIxV/UhDKBdjDNshOi7ORwDM+zwHXItnqTILLN95Xlyqg4tAn7g4ryTL/bLkHWIa27nE1g==
 
 "@convex-dev/agent@^0.6.1":
   version "0.6.1"
@@ -1614,10 +1614,10 @@
   optionalDependencies:
     "@ungap/structured-clone" "^1.3.0"
 
-"@convex-dev/auth@^0.0.91":
-  version "0.0.91"
-  resolved "https://registry.npmjs.org/@convex-dev/auth/-/auth-0.0.91.tgz"
-  integrity sha512-wLD4hszo3IhhMkwPs6ozWf0cUauwmhOvjUVn0g//kC338n/jApOjeDYWKCrn/qYUkveyDsbag5zrY8mVzA09Qg==
+"@convex-dev/auth@^0.0.92":
+  version "0.0.92"
+  resolved "https://registry.yarnpkg.com/@convex-dev/auth/-/auth-0.0.92.tgz#0bd55b6ebd185c7d50cef84e796268a3b70867b8"
+  integrity sha512-tNRIMTDxi2vrbT+3vz1FgNR1321IfIBDDBy59zul7E1DyzWQKoU0OzgFqWbiVm3o8gn0eQsYTU3UHNRX9kp3wQ==
   dependencies:
     "@oslojs/crypto" "^1.0.1"
     "@oslojs/encoding" "^1.1.0"
@@ -2114,7 +2114,14 @@
   resolved "https://registry.npmjs.org/@faker-js/faker/-/faker-10.1.0.tgz"
   integrity sha512-C3mrr3b5dRVlKPJdfrAXS8+dq+rq8Qm5SNRazca0JKgw1HQERFmrVb0towvMmw5uu8hHKNiQasMaR/tydf3Zsg==
 
-"@floating-ui/core@^1.7.1", "@floating-ui/core@^1.7.3":
+"@floating-ui/core@^1.6.7", "@floating-ui/core@^1.7.5":
+  version "1.7.5"
+  resolved "https://registry.yarnpkg.com/@floating-ui/core/-/core-1.7.5.tgz#d4af157a03330af5a60e69da7a4692507ada0622"
+  integrity sha512-1Ih4WTWyw0+lKyFMcBHGbb5U5FtuHJuujoyyr5zTaWS5EYMeT6Jb2AuDeftsCsEuchO+mM2ij5+q9crhydzLhQ==
+  dependencies:
+    "@floating-ui/utils" "^0.2.11"
+
+"@floating-ui/core@^1.7.3":
   version "1.7.3"
   resolved "https://registry.npmjs.org/@floating-ui/core/-/core-1.7.3.tgz"
   integrity sha512-sGnvb5dmrJaKEZ+LDIpguvdX3bDlEllmv4/ClQ9awcmCZrlx5jQyyMWFM5kBI+EyNOCDDiKk8il0zeuX3Zlg/w==
@@ -2129,26 +2136,46 @@
     "@floating-ui/core" "^1.7.3"
     "@floating-ui/utils" "^0.2.10"
 
-"@floating-ui/react-dom@^2.0.0", "@floating-ui/react-dom@^2.1.6":
+"@floating-ui/dom@^1.7.6":
+  version "1.7.6"
+  resolved "https://registry.yarnpkg.com/@floating-ui/dom/-/dom-1.7.6.tgz#f915bba5abbb177e1f227cacee1b4d0634b187bf"
+  integrity sha512-9gZSAI5XM36880PPMm//9dfiEngYoC6Am2izES1FF406YFsjvyBMmeJ2g4SAju3xWwtuynNRFL2s9hgxpLI5SQ==
+  dependencies:
+    "@floating-ui/core" "^1.7.5"
+    "@floating-ui/utils" "^0.2.11"
+
+"@floating-ui/react-dom@^2.0.0":
   version "2.1.6"
   resolved "https://registry.npmjs.org/@floating-ui/react-dom/-/react-dom-2.1.6.tgz"
   integrity sha512-4JX6rEatQEvlmgU80wZyq9RT96HZJa88q8hp0pBd+LrczeDI4o6uA2M+uvxngVHo4Ihr8uibXxH6+70zhAFrVw==
   dependencies:
     "@floating-ui/dom" "^1.7.4"
 
-"@floating-ui/react@^0.27.12":
-  version "0.27.16"
-  resolved "https://registry.npmjs.org/@floating-ui/react/-/react-0.27.16.tgz"
-  integrity sha512-9O8N4SeG2z++TSM8QA/KTeKFBVCNEz/AGS7gWPJf6KFRzmRWixFRnCnkPHRDwSVZW6QPDO6uT0P2SpWNKCc9/g==
+"@floating-ui/react-dom@^2.1.2":
+  version "2.1.8"
+  resolved "https://registry.yarnpkg.com/@floating-ui/react-dom/-/react-dom-2.1.8.tgz#5fb5a20d10aafb9505f38c24f38d00c8e1598893"
+  integrity sha512-cC52bHwM/n/CxS87FH0yWdngEZrjdtLW/qVruo68qg+prK7ZQ4YGdut2GyDVpoGeAYe/h899rVeOVm6Oi40k2A==
   dependencies:
-    "@floating-ui/react-dom" "^2.1.6"
-    "@floating-ui/utils" "^0.2.10"
+    "@floating-ui/dom" "^1.7.6"
+
+"@floating-ui/react@^0.26.23":
+  version "0.26.28"
+  resolved "https://registry.yarnpkg.com/@floating-ui/react/-/react-0.26.28.tgz#93f44ebaeb02409312e9df9507e83aab4a8c0dc7"
+  integrity sha512-yORQuuAtVpiRjpMhdc0wJj06b9JFjrYF4qp96j++v2NBpbi6SEGF7donUJ3TMieerQ6qVkAv1tgr7L4r5roTqw==
+  dependencies:
+    "@floating-ui/react-dom" "^2.1.2"
+    "@floating-ui/utils" "^0.2.8"
     tabbable "^6.0.0"
 
 "@floating-ui/utils@^0.2.10":
   version "0.2.10"
   resolved "https://registry.npmjs.org/@floating-ui/utils/-/utils-0.2.10.tgz"
   integrity sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==
+
+"@floating-ui/utils@^0.2.11", "@floating-ui/utils@^0.2.8":
+  version "0.2.11"
+  resolved "https://registry.yarnpkg.com/@floating-ui/utils/-/utils-0.2.11.tgz#a269e055e40e2f45873bae9d1a2fdccbd314ea3f"
+  integrity sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==
 
 "@humanfs/core@^0.19.1":
   version "0.19.1"
@@ -2438,69 +2465,81 @@
   dependencies:
     pako "^1.0.10"
 
-"@platejs/ai@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/ai/-/ai-51.1.2.tgz"
-  integrity sha512-qegAoGKgue6EtcQ/mLcqixbBpFu+8ZbYRgcZkVEob0oduXKz3K7iXt9keqjaW8Zff46POgMbNsUqoKwsyYm+rg==
+"@platejs/ai@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/ai/-/ai-53.0.0.tgz#bfcb709e98f7e8b6953a727f51910583a4ba47f6"
+  integrity sha512-NQy9Jd8j7fVezJbSOlNfJMS/0+ACJaSN3VoxkDXc+qXZLUh0gCsDbEQsaxshXCz4io59LwNEpkHgpT01cIibCw==
   dependencies:
-    "@platejs/markdown" "51.1.2"
-    "@platejs/selection" "51.1.2"
-    "@platejs/suggestion" "51.1.2"
+    "@platejs/markdown" "^53.0.0"
+    "@platejs/selection" "^53.0.0"
+    "@platejs/suggestion" "^53.0.0"
+    "@platejs/table" "^53.0.0"
     fastest-levenshtein "1.0.16"
     lodash "^4.17.21"
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/autoformat@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/autoformat/-/autoformat-51.1.2.tgz"
-  integrity sha512-jbJL+2li6TH5wRxhFtwVTGAhGK94XrE1r9dZBCcG/9MR4Q+mcFYElw2bg9vj22wrThi3Nmxat0/JLlXTonqP7Q==
+"@platejs/autoformat@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/autoformat/-/autoformat-53.0.0.tgz#96e7260e21c7a9e12dc3423fc53674423eba6f4b"
+  integrity sha512-0r067yhB5FLcg+p0J8nImzRg/LK0NnMYvfYMBWRAJCoJ8aziWOMQN3TLwX82VC6ykM8MRQj72Y316wOvoS+REQ==
+
+"@platejs/basic-nodes@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/basic-nodes/-/basic-nodes-53.0.0.tgz#b0d78e71985aad7c73b172e89f3cfe6580a30b11"
+  integrity sha512-ZL5ULASsWVTcKfBgIHoloh5aa8ZmFKEFef+j9fN2/CSCElU4nadndv9uxb7gor+RowzCBfxH8cLT9RGV7Z6b6A==
   dependencies:
-    lodash "^4.17.21"
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/basic-nodes@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/basic-nodes/-/basic-nodes-51.1.2.tgz"
-  integrity sha512-qM1nRLDfbQIoJKc5XBfOWWbV+XYPRMSrnVHhY4fZtrSMft9oK03a8ICyDnONXAVr2hhI4OOpuKb6j/qWCxS2bw==
-
-"@platejs/basic-styles@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/basic-styles/-/basic-styles-51.1.2.tgz"
-  integrity sha512-gmtrFFGT4QRDyOZngneA28IpwMMTqiPofqspM8XZgucd429/Yb6G/TpNVJxiy3FxA8ZbCW1Ez3hctlXDNZVUiw==
-
-"@platejs/callout@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/callout/-/callout-51.1.2.tgz"
-  integrity sha512-nBRdhSrme7bDpt8/7f6T170cIaAtzWAbShe43zmNGPucytn09YlFq9n939m3PaX43nOk9WhpvGpCwxEu7jpTqQ==
-
-"@platejs/caption@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/caption/-/caption-51.1.2.tgz"
-  integrity sha512-OutoI9pHcVunNfV+NTLgRQ23Qb6R32zPszXAjZO1uN7fEOkIeoM+WwkC3sh9otkBcgnZPZU/lOT6WDnXGEIfXw==
+"@platejs/basic-styles@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/basic-styles/-/basic-styles-53.0.0.tgz#74fb62895553005ffbdbe16b11e93e087d4a7320"
+  integrity sha512-r7Vg2nKv9ku1QDa0AqTJW0ALaiNv6cnCmwptRFzKAHW5r9QLIRacKT+u97ffVBxCd/8ButxQ6oq22j+q3AKJgg==
   dependencies:
+    react-compiler-runtime "^1.0.0"
+
+"@platejs/callout@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/callout/-/callout-53.0.0.tgz#7f28b9db22c170d1decb80906cb9c0e5f6e7d790"
+  integrity sha512-k7wTsDIA3K/QqQR47BFzvx/qZNSy7oIGxJ7XFdN/j4lbtbjwxw08odTfZD9muoWk6EEMQGcrYg4dDAxUuGWeUA==
+  dependencies:
+    react-compiler-runtime "^1.0.0"
+
+"@platejs/caption@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/caption/-/caption-53.0.0.tgz#bf64025badef6ddd8b0878979892b4bd9c4876cf"
+  integrity sha512-UpErr8INm2Tlkb1PvuQUaCIiU2cQQaLmZeIQzx4Spqpvy3v77253gyPWqiaJ+hGQJSbYXZ/DfTVkQ2qAgTWlgQ==
+  dependencies:
+    react-compiler-runtime "^1.0.0"
     react-textarea-autosize "^8.5.9"
 
-"@platejs/code-block@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/code-block/-/code-block-51.1.2.tgz"
-  integrity sha512-xs/Kg9/1wpehb57NQydC1xn9nzTcoFM/oUXtNVtNNjfRv3voEb2kzbNpkx+0ZBGkW3xZVTEkUovMtx0ieaVqSw==
+"@platejs/code-block@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/code-block/-/code-block-53.0.0.tgz#6d2724361f62b38c813de974a8c444b6c8fd95f0"
+  integrity sha512-KOO3wUUVZxgpA8R+pc8PwAGirUtzl233//jHI2H9Icc6blUk0sQWiXTkvCdAvTeZAS+eclNW2ER7KRa+FoiC6w==
+  dependencies:
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/combobox@51.1.2", "@platejs/combobox@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/combobox/-/combobox-51.1.2.tgz"
-  integrity sha512-QJ0stMasQGJiK7MO2dT9UP1A7CTcPwtELFR7KWhkpCKHEwNVDwqPxP2Z27i2iMn1r94rK1c+i6P5JwTVnEXhMw==
+"@platejs/combobox@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/combobox/-/combobox-53.0.0.tgz#075b1ce597575d77d3d400b4251e8c2f5ed33f2e"
+  integrity sha512-uoVV0DN5jGJuNW2CS2EIEU8nn74zcpUIIudSoizLh9dF7RfLhftxpmbbcyU0qrGIb3ARhGDQS+xpYm29XsZckQ==
+  dependencies:
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/comment@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/comment/-/comment-51.1.2.tgz"
-  integrity sha512-7Vgk+sBywQmKl2rZvljroDkVNvyYVh5SYCxmAOZogNPDHpw6sjD5Z2DfDPQ9/CRb0joUp82EUvoc5jBa+o5h/A==
+"@platejs/comment@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/comment/-/comment-53.0.0.tgz#c5e3c4f306f73873cb7021ea648ebf96c4549507"
+  integrity sha512-GjOqAXx7ZsN4QUBVPUamic6y+cUycPUoaeOqa3obhNBFlN+zBrhwy5Kp+sdltj9Z4j98CuJhm8uPgyDo7jXXwA==
   dependencies:
     lodash "^4.17.21"
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/core@^52.3.21":
-  version "52.3.21"
-  resolved "https://registry.npmjs.org/@platejs/core/-/core-52.3.21.tgz"
-  integrity sha512-7aPjCmFw2VqTQK0xZVtQ9OJF9wQ85iNasrIx/O4UWI7NoqwDPrX7E8xYr5GfR5d4shdh1eMAznVbcfWC2EzJxQ==
+"@platejs/core@^53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/core/-/core-53.0.0.tgz#b78b8a28250b83883ea58caba7d64de66454c608"
+  integrity sha512-RPp7JnmTiUsMbAwxvNotUciqfP0mdZ6cSADDmcwk4koloxfGLlm5TCYbMOHFeg4NMZo6QXPYhpkLlUMo0Vha/g==
   dependencies:
-    "@platejs/slate" "52.3.21"
+    "@platejs/slate" "53.0.0"
     "@udecode/react-hotkeys" "52.0.11"
     "@udecode/react-utils" "52.3.4"
     "@udecode/utils" "52.3.4"
@@ -2514,199 +2553,241 @@
     nanoid "^5.1.5"
     optics-ts "2.4.1"
     react-compiler-runtime "^1.0.0"
-    slate "0.124.0"
-    slate-dom "0.124.0"
+    slate "0.124.1"
+    slate-dom "0.124.1"
     slate-hyperscript "0.100.0"
     slate-react "0.124.0"
     use-deep-compare "^1.3.0"
     zustand "^5.0.5"
     zustand-x "6.2.1"
 
-"@platejs/date@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/date/-/date-51.1.2.tgz"
-  integrity sha512-zEc4EpliBBdF1rwmRcwzL6AD6tuuti8cM6NYFZtrtsivFQa/P4ql1R9nFT6vliAd6pMCaK0Ba2WYjFeCBgBK1Q==
+"@platejs/date@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/date/-/date-53.0.0.tgz#502375ac38a2807eb3a742678a1758f608e96564"
+  integrity sha512-XQ28bUElHwCYxHbVmwc0gMrl/PKA1KwlTQU/nksWKhOETqQm89biirXS+J3/038EimhsAEPyMLlYntm38Uo65Q==
+  dependencies:
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/diff@51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/diff/-/diff-51.1.2.tgz"
-  integrity sha512-B6U3oKo8RG+/chXBwPq4sWnXg6w4bNU/zb71g4D9rQQcbycZZCEIS5WVP/EPS02PXHWT+QTEV0cpr8hq79qsrw==
+"@platejs/diff@^53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/diff/-/diff-53.0.0.tgz#983656a0e8c33c6559d3dd9d5812e73b46743388"
+  integrity sha512-OldWJ0SYMqy6GcTaqA/oHhdshwbcQue9bIPnRZMoCET+svo/COu3gXHdEfWJZ7ueHZwYA8zrHAiw5amRgZB6wg==
   dependencies:
     diff-match-patch-ts "^0.6.0"
     lodash "^4.17.21"
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/dnd@^51.1.3":
-  version "51.1.3"
-  resolved "https://registry.npmjs.org/@platejs/dnd/-/dnd-51.1.3.tgz"
-  integrity sha512-rZfBwGSobozjdmaGfP+6hdr0C5SeuysLlMxu/LuwtLpELghUWl8FH64eV8eIybEqQT+Slqzf/YGq3fwRHMPywg==
+"@platejs/dnd@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/dnd/-/dnd-53.0.0.tgz#0eeb5fa3d9d0a3b105a7e4eb9030afcee416d773"
+  integrity sha512-kTbphbz8EM+pU333o8+OeYnBJnZ0erBRgiTeytJhu5Ca+27a/XxAeSf+BSZslSppQGHQQxtCYQZhJT2rN8N7/A==
   dependencies:
     lodash "^4.17.21"
     raf "^3.4.1"
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/docx@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/docx/-/docx-51.1.2.tgz"
-  integrity sha512-pI68YXTI1xl2YEiqXt7yG/bN6/xoX1+/N11pXBDJ9PecqR7vcdIlJwyUfdjngUsUT1bidIx/x9+mUZfssnNgpQ==
+"@platejs/docx@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/docx/-/docx-53.0.0.tgz#8f23873ec1a8d778ef4444ecbb4b2ba45ae92299"
+  integrity sha512-Su1z61MjuFYKTHSZhS7W2L3BVn/Br58VbzTY1K8BpXZOyzwnHhPH17r9swaHxkEnC1eGw0RatT1p63Afbadukw==
   dependencies:
+    react-compiler-runtime "^1.0.0"
     validator "^13.15.15"
 
-"@platejs/emoji@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/emoji/-/emoji-51.1.2.tgz"
-  integrity sha512-hjuvmYWtBh2AFhomhBSy3PN+ujvrK6KY3croTy6bKrlTkkOcaG8DRxkikS3vqvP8EZqlCnliKZWYkKLBlIL1yA==
+"@platejs/emoji@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/emoji/-/emoji-53.0.0.tgz#7e9bd0930b4c90b9e7bdc41f2e05c22b121c6af7"
+  integrity sha512-5oOM6QE5ZYEDAAZ7goVWbYiHRVtyj/7xLJELzU7kRNtKEkr+Otzoi34PxgCyYk5fIEgBm1E+dnNgEE2O9cxtJw==
   dependencies:
-    "@platejs/combobox" "51.1.2"
+    "@platejs/combobox" "53.0.0"
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/excalidraw@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/excalidraw/-/excalidraw-51.1.2.tgz"
-  integrity sha512-5s5utyurrtHnxfaZnO25WoWyRnILeyvgDUYIx+Vpq1xK85lD6OuRD800MV4wXdiLPXFmsL/WbMY1KJdpNGfmow==
+"@platejs/excalidraw@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/excalidraw/-/excalidraw-53.0.0.tgz#e0a26ff48ada2025491fad08f45597074ad334d1"
+  integrity sha512-qrZHfIv3VRCLaD7P2UydagduLxuBIYGqBbxzZOXiZThlIzTA2WuOTTPwhQJnHzyEGqem0pWftetpaUBWXF1+gQ==
   dependencies:
     "@excalidraw/excalidraw" "0.18.0"
     lodash "^4.17.21"
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/floating@51.1.2", "@platejs/floating@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/floating/-/floating-51.1.2.tgz"
-  integrity sha512-mZ/yJxcUj2BVbssnaBvGf4BW/Vix7dSioCa7o4INXWtXlaaqURu2FB2wXI/1BghVu/ho+IgLAC26PGrOJbhX7g==
+"@platejs/floating@53.0.0", "@platejs/floating@^53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/floating/-/floating-53.0.0.tgz#21ad57bb89372d1f78d2d7ac23c99737b98d9cc0"
+  integrity sha512-malVGWRgpoVNxxBkn+8722KqrleB/rhbXzuToijjymTeD1FRyBbvSP5ANtg1LTRus3ByMUZCn/gbquIe+RXcUQ==
   dependencies:
-    "@floating-ui/core" "^1.7.1"
-    "@floating-ui/react" "^0.27.12"
+    "@floating-ui/core" "^1.6.7"
+    "@floating-ui/react" "^0.26.23"
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/indent@51.1.2", "@platejs/indent@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/indent/-/indent-51.1.2.tgz"
-  integrity sha512-o15MG3gk3OtUiNYnBnWrZsqX2/CWksM2ES183Ok19026IuIRzHZQ1xROKqS2oH8819LFDxWHNNDmJsslu6Mz3w==
+"@platejs/indent@53.0.0", "@platejs/indent@^53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/indent/-/indent-53.0.0.tgz#d66482d9b20b073d5115b8c14ad8392d8505e863"
+  integrity sha512-v7BKlIAHpQK2y4Dv2P460YYCTHcP/CCREuNzc1jfj1EhJRRVVfaQf4KwmhxUip5CSnAg1vJ06B6pzgvIUz3H7Q==
+  dependencies:
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/juice@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/juice/-/juice-51.1.2.tgz"
-  integrity sha512-9duClrMWOx/k4r+DyfH/koXFUfAi3hgCTSBG8bDfa/A16d6lJmuaHD0We8K5hP7wJ+UtZvaW+Xth2Ec6lbDSIg==
+"@platejs/juice@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/juice/-/juice-53.0.0.tgz#d840aa064e3ee8dc2706dcc33f37218a8ab9febf"
+  integrity sha512-dQDkWO8W57Atlys20No2/LVed9t8A4aCOuX8MzVP50plv+bXTR19T3uQWgvlKn6vV8Hp9E1dUfNeFModj7URsQ==
   dependencies:
     juice "^11.0.1"
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/layout@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/layout/-/layout-51.1.2.tgz"
-  integrity sha512-asRwzI2sd9DWJkja+jASrD1Chr4fav1PTV8Rz0zAbRXmOMUfWJQsNmaxTB/UJ5Nz2zlV5OD/KTAp2CmSarAzRg==
-
-"@platejs/link@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/link/-/link-51.1.2.tgz"
-  integrity sha512-X+GuQ7nFNttGlIjydeIu035I0adxqjgZI9q+pXyZp08v43yRggAonqwFc99XhusudnFsBTLdnpCwNKGot1SPig==
+"@platejs/layout@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/layout/-/layout-53.0.0.tgz#1580f3dae21a9179b9ddfd459fcb7d852e3ec2b7"
+  integrity sha512-O3fo+v7sSCnexOrmMgUauAs95Iyt5qIVEGCXAjrghXx4PaJSrpuAizDNmpYgFrcXP25GuuExnT7AOSEwRZ3HVA==
   dependencies:
-    "@platejs/floating" "51.1.2"
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/list@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/list/-/list-51.1.2.tgz"
-  integrity sha512-1Qjs0wVR4izMhx43RSxEdpaN5lf3VZSDolGj7w7AST+1L9os/bQFVYxydA59oAAdaSVxnvi9R64oyi/gPYxTpw==
+"@platejs/link@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/link/-/link-53.0.0.tgz#9c03334137f342e6001939ecee53e6e06c7069ff"
+  integrity sha512-Pvy29uLiCplTDUVUb0FCgyTB4hm71qMeRRlvzFNbCYflmvApPmYqO4dRuGOUpsDJQO3XfDKnqG/JHxBIFnEaew==
   dependencies:
-    "@platejs/indent" "51.1.2"
+    "@platejs/floating" "^53.0.0"
+    react-compiler-runtime "^1.0.0"
+
+"@platejs/list@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/list/-/list-53.0.0.tgz#e11fc16fea139d0b14e183cedc5b430a5b81ee5d"
+  integrity sha512-txHVJ8j2dZxRL9IW3gF094MOrthlTWxWr3GMAqFYvb1mY3D7rlpAQX3xoOM9DbjwvXAFxx2djdd6Gn5EUhAqCw==
+  dependencies:
+    "@platejs/indent" "^53.0.0"
     clsx "^2.1.1"
+    lodash "^4.17.23"
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/markdown@51.1.2", "@platejs/markdown@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/markdown/-/markdown-51.1.2.tgz"
-  integrity sha512-W8F9z18mdOwp1aUDbQ2kZGe1OZxPcc6lA7XZgCBGM8vbXjBzw9+aZN2gadaZB8d/o9E/RCFoEaK8h7PEIAySJA==
+"@platejs/markdown@53.0.0", "@platejs/markdown@^53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/markdown/-/markdown-53.0.0.tgz#71ec2ff68893e16c043503d4d42b620ad96cb0fe"
+  integrity sha512-HDdxcGQURwkdk1T0i2ybc/kldC+Vst9eZWyxnTnxZIasgYNlkshaOWoXHEc8JMwWZDqCnIzaVDmgQygdyk+1ZQ==
   dependencies:
+    "@platejs/date" "53.0.0"
+    lodash "^4.17.23"
     marked "^15.0.12"
     mdast-util-math "3.0.0"
     mdast-util-mdx "3.0.0"
+    react-compiler-runtime "^1.0.0"
     remark-mdx "^3.1.0"
     remark-parse "^11.0.0"
     remark-stringify "^11.0.0"
     ts-essentials "10.1.0"
     unified "^11.0.5"
+    unist-util-visit "5.0.0"
 
-"@platejs/math@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/math/-/math-51.1.2.tgz"
-  integrity sha512-Xr1EGRzEJ5JqTGC3N6Fj0uID6V5V4yKPcnP5UqZCJEht2MlkSSEF7ZVTrNnhuAnxq6RqYdB8xdwKnvWtZOSUQA==
+"@platejs/math@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/math/-/math-53.0.0.tgz#fbc75cf5f97ffeed8186b5797e3ef6c6e68c7b10"
+  integrity sha512-rXfM7L2mJ4eyjUoQUXkApkjmCPfCSYX46i2d0+bVUzfNjQI6DhB19wAAa4eW4X9MLSqC+PakBAqPnkHr4pP1+w==
   dependencies:
     katex "0.16.22"
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/media@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/media/-/media-51.1.2.tgz"
-  integrity sha512-QBzXIVFrv5ERvr3BJP4e2hcmJ9k894VGmQ6BfHaR7lmvkKygx2l705XgdtydWIX9xbxnbSQZRk5iRdeuhw/hXw==
+"@platejs/media@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/media/-/media-53.0.0.tgz#c04a3285e758420a55a7e198a57fdf4fa4a0b1bc"
+  integrity sha512-zifkAicgCtWv1b5eC6DErMGxht6ANqYcqAJBfEFeqXtoovuDmU/tEUvJYBIVD5jlwg1qQxZbFk2h/EKRdOKzvQ==
   dependencies:
     js-video-url-parser "^0.5.1"
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/mention@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/mention/-/mention-51.1.2.tgz"
-  integrity sha512-3MZ9Skuo+BExCYRAVc/R8fcd0nsvhz6nkMjNmMEcKmTQh0zxltdxgtCQEA0QtJo3vEI/MdhibS4Yps+zwfaYvg==
+"@platejs/mention@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/mention/-/mention-53.0.0.tgz#b362281d5abe772595fe2afb2966cee6b9532bda"
+  integrity sha512-x7kr9SgFlO0yoJdRcv4mIeiM47cnDEIUJBMYFAQEI42JdwcVKUBiPP4bCZwkQKpGndxmlXT9iTz8+w/UBqDJOA==
   dependencies:
-    "@platejs/combobox" "51.1.2"
+    "@platejs/combobox" "53.0.0"
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/resizable@51.1.2", "@platejs/resizable@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/resizable/-/resizable-51.1.2.tgz"
-  integrity sha512-0wmMR4XfCZN1zUUn0WrEWff3dN2BzlKFDhEQl6KajhzXcaAHRy+fLgkF3qSHDrHwqFtFyn2ZnVDHMFb99+APAg==
+"@platejs/resizable@53.0.0", "@platejs/resizable@^53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/resizable/-/resizable-53.0.0.tgz#de572a02898742a54d3ceb38d43d8a18007e585e"
+  integrity sha512-/Wl8DmjByOTib+wKAcEnE3S3PMcpKcrupCOJvUa+vnn/cqXV3cwWzapVZ3bojF6sFWttMsLprvIGhpS/gpl5FQ==
+  dependencies:
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/selection@51.1.2", "@platejs/selection@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/selection/-/selection-51.1.2.tgz"
-  integrity sha512-rG9ris9qNXR6mWKUqSDeUfU/5jfrx1zSpHI7efqivi+UTCc1TkdAc/hcIMf5KQ86c37MgyzyGvSKqpU5kJ4CFg==
+"@platejs/selection@53.0.0", "@platejs/selection@^53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/selection/-/selection-53.0.0.tgz#eb4f5996d919b173b2cd9d9f26d25c453e75971c"
+  integrity sha512-hC5boNfMixwM3ygKnGfTXXZLgMBzonjkJy3TAl+R3EEd/ki75zY1jiqYvWNkAll7gSZplE6fe+AGUNHbdhE+pA==
   dependencies:
     copy-to-clipboard "^3.3.3"
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/slash-command@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/slash-command/-/slash-command-51.1.2.tgz"
-  integrity sha512-VVqXdfmg6mSZkZXlCPX1+IGTrv1Xnk0xL9ZhAZdcwQd7fT93tTdCUvIbuOgfM6BO0wl9SOUhR4PyLjOJvlOHyw==
+"@platejs/slash-command@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/slash-command/-/slash-command-53.0.0.tgz#d9ea8cebb0fb47188d1798a9dd5f9cfb1de77006"
+  integrity sha512-JXK/HykJcGOMhw8bM7NqrlubDkeyThokDqnZoIYDu9PykR8qUupcCjjdz23X2jabNSLPbnuQJKkFvep6H5sl+Q==
   dependencies:
-    "@platejs/combobox" "51.1.2"
+    "@platejs/combobox" "53.0.0"
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/slate@52.3.21", "@platejs/slate@^52.3.21":
-  version "52.3.21"
-  resolved "https://registry.npmjs.org/@platejs/slate/-/slate-52.3.21.tgz"
-  integrity sha512-8qNQt4Up6i1sOSXqf76tB+ocibDhip7w0f+UJxXSoNY3X1mZ7KYjYlgYz19hjdxmffS7+DNKN1iVkkKh/X3Ahg==
+"@platejs/slate@53.0.0", "@platejs/slate@^53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/slate/-/slate-53.0.0.tgz#d82f7a2152edac17865fae273e3d9fedafb837ff"
+  integrity sha512-OHu0UKvoDqLlQd/WUzAsG54uZ7og0RCxexIcTCL1wONbjpxpaQeGbc9nCnBbPtM40IOLb7eSU/WwHCE6nOt2Qw==
   dependencies:
     "@udecode/utils" "^52.3.4"
     is-plain-object "^5.0.0"
     lodash "^4.17.21"
     scroll-into-view-if-needed "^3.1.0"
-    slate "0.124.0"
-    slate-dom "0.124.0"
+    slate "0.124.1"
+    slate-dom "0.124.1"
 
-"@platejs/suggestion@51.1.2", "@platejs/suggestion@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/suggestion/-/suggestion-51.1.2.tgz"
-  integrity sha512-QwYvhb47MtWqokbno5nICQ0YtWPo7jq9kZcSUntPhbI7Zn8f+l59WzOsDssoqkJvR3Sgb8fRiuwSgQA7A2ms3A==
+"@platejs/suggestion@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/suggestion/-/suggestion-53.0.0.tgz#5a7b2cdad2607c2b0210219a17916b0b0216a067"
+  integrity sha512-710aMhsmXmZBrNxaWLmmta8hz1xLrZ+D2H9kkWy9Cb2zTAuGLpYOSRRyx6iMTkJzde8AMKQXeM664ywRKzKJ8g==
   dependencies:
-    "@platejs/diff" "51.1.2"
+    "@platejs/diff" "^53.0.0"
     lodash "^4.17.21"
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/table@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/table/-/table-51.1.2.tgz"
-  integrity sha512-sIOvtDPV5zZXGXENDJb7U+dJwl7mJDh65QPvtA0L4h6i7nBA+vFTPDgFLplPiB+D6egKoeVP6z7ItrGuqZYvcA==
+"@platejs/suggestion@^53.0.0":
+  version "53.0.3"
+  resolved "https://registry.yarnpkg.com/@platejs/suggestion/-/suggestion-53.0.3.tgz#b7289fe5aef0d8d3be52fe19b47f604ae3783c2c"
+  integrity sha512-Uceon+URKbFku5QIVeEqgxRcmAh6scabSzdGSirm0gr7LDOINUVGGYTrKKEYfVaZS5avliyTDSt/Iyiy7dA4MA==
   dependencies:
-    "@platejs/resizable" "51.1.2"
+    "@platejs/diff" "^53.0.0"
     lodash "^4.17.21"
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/toc@^51.1.3":
-  version "51.1.3"
-  resolved "https://registry.npmjs.org/@platejs/toc/-/toc-51.1.3.tgz"
-  integrity sha512-9zS312mfAnr9UnzfYEJliMN1g0qqBQUYzv8BadgqofbkMznQ5NvDkBd3J+6yEVNvLTSdK8CwMX3hw9PJuXRLNw==
-
-"@platejs/toggle@^51.1.2":
-  version "51.1.2"
-  resolved "https://registry.npmjs.org/@platejs/toggle/-/toggle-51.1.2.tgz"
-  integrity sha512-7CTQ90mXixaKp8QmLTyamUJdpAiGkkbuWSB2Hl1yMA2mEXrSuuoE8lM/YNpXm5sCGc+AMeAeic7hZZB1Q6GxNA==
+"@platejs/table@53.0.0", "@platejs/table@^53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/table/-/table-53.0.0.tgz#a0ad034bfefc07767da0d3e060c5a490f1819374"
+  integrity sha512-VruP5BQwpjVpGbIp8agxb9mEz1fPwGWNFyBRs5L8xRS9B19r3cxbi+Ady+yao3iEwhcoZj/Yunx085lVJ8YGJA==
   dependencies:
-    "@platejs/indent" "51.1.2"
+    "@platejs/resizable" "^53.0.0"
     lodash "^4.17.21"
+    react-compiler-runtime "^1.0.0"
 
-"@platejs/utils@^52.3.21":
-  version "52.3.21"
-  resolved "https://registry.npmjs.org/@platejs/utils/-/utils-52.3.21.tgz"
-  integrity sha512-jVxLWcr/vO2wNpxMC9MFLNAeVUS1tsRuzq6Wk2VmA7hCvQpbb488oV1XnugDgh+KYaWQzPFUTnq2Dkmyqt55NQ==
+"@platejs/toc@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/toc/-/toc-53.0.0.tgz#684e263845ce72619e00bcf5b01afdd975e2a930"
+  integrity sha512-3JGL69IJX/gGycHcSwKv6Nc9hzT/E1wyJU0ietQwmq5Xm+6kVXGPMADN6/TPzPmO1mrzHXOXejgtooZqVZcyEA==
   dependencies:
-    "@platejs/core" "^52.3.21"
-    "@platejs/slate" "^52.3.21"
+    react-compiler-runtime "^1.0.0"
+
+"@platejs/toggle@53.0.0":
+  version "53.0.0"
+  resolved "https://registry.yarnpkg.com/@platejs/toggle/-/toggle-53.0.0.tgz#0e19e3b07d5859b21277a4dea41fee89d354fafe"
+  integrity sha512-CYyE/w0BzBCV/WvRkD6VckqrtOyYCTnudNciVx6G1+XOKqx5WhJ6ns/yMuhIbFi+QThK3tlHijKA3Qn+/bV72A==
+  dependencies:
+    "@platejs/indent" "53.0.0"
+    jotai "^2.18.0"
+    lodash "^4.17.21"
+    react-compiler-runtime "^1.0.0"
+
+"@platejs/utils@^53.0.3":
+  version "53.0.3"
+  resolved "https://registry.yarnpkg.com/@platejs/utils/-/utils-53.0.3.tgz#ebaddb7e416535f78dbb4fe1b271fc373dbd5187"
+  integrity sha512-lQafEO0Bc04qrtr0Ilx2AYmvEZiEYEvoyH5w4W0BWIyPonpvBSdVXu3YuUZTl9JbNk6EBkF6UAiYk+uM5v9b8g==
+  dependencies:
+    "@platejs/core" "^53.0.0"
+    "@platejs/slate" "^53.0.0"
     "@udecode/react-utils" "^52.3.4"
     "@udecode/utils" "^52.3.4"
     clsx "^2.1.1"
@@ -5205,7 +5286,7 @@
 
 "@udecode/react-hotkeys@52.0.11", "@udecode/react-hotkeys@^52.0.11":
   version "52.0.11"
-  resolved "https://registry.npmjs.org/@udecode/react-hotkeys/-/react-hotkeys-52.0.11.tgz"
+  resolved "https://registry.yarnpkg.com/@udecode/react-hotkeys/-/react-hotkeys-52.0.11.tgz#eaf6221f7483f317598f79c7679d9a2c15ce5007"
   integrity sha512-MwdQlfTZhrP0O+BazuNgY9g2qJSZAB05ykdVCdWmBsjv5VQvQ3R9RkXLUMGD20TqUR62iT/Phb/ca8toxiCm0w==
   dependencies:
     react-compiler-runtime "^1.0.0"
@@ -5221,7 +5302,7 @@
 
 "@udecode/react-utils@52.3.4", "@udecode/react-utils@^52.3.4":
   version "52.3.4"
-  resolved "https://registry.npmjs.org/@udecode/react-utils/-/react-utils-52.3.4.tgz"
+  resolved "https://registry.yarnpkg.com/@udecode/react-utils/-/react-utils-52.3.4.tgz#0c6cf82534898869ea9e22da84680994ee965a6c"
   integrity sha512-qN95XzH6OlzJ9UjWVhvOuLJoDrFwhBOk2itYAmSxsfdMFxF3A+SzYes4gj05Udv2kVZsRd3eAgvn/Znd9EYmJw==
   dependencies:
     "@radix-ui/react-slot" "^1.2.3"
@@ -5236,7 +5317,7 @@
 
 "@udecode/utils@52.3.4", "@udecode/utils@^52.3.4":
   version "52.3.4"
-  resolved "https://registry.npmjs.org/@udecode/utils/-/utils-52.3.4.tgz"
+  resolved "https://registry.yarnpkg.com/@udecode/utils/-/utils-52.3.4.tgz#7a3bb1aa86229d8186b4833fe1069a0a30ca0901"
   integrity sha512-I1l2FL+FacNitwSgOA3Gh/PoyP1FS7t5bmEURxClqKA2/1rtdovZ9O61qRYN9mdABTJBTyn5BxKDlwp98QvqlQ==
 
 "@ungap/structured-clone@^1.0.0", "@ungap/structured-clone@^1.3.0":
@@ -7851,6 +7932,11 @@ jotai@2.11.0:
   resolved "https://registry.npmjs.org/jotai/-/jotai-2.11.0.tgz"
   integrity sha512-zKfoBBD1uDw3rljwHkt0fWuja1B76R7CjznuBO+mSX6jpsO1EBeWNRKpeaQho9yPI/pvCv4recGfgOXGxwPZvQ==
 
+jotai@^2.18.0:
+  version "2.20.0"
+  resolved "https://registry.yarnpkg.com/jotai/-/jotai-2.20.0.tgz#0e3422f6f7141758e8212d72338f9cf3bef5fd45"
+  integrity sha512-b5GAqgmXmXzB4WPaTH26ppk9Sl7AA9WSQX7yfdM+gJ1rFROiWcVbi97gFuN/yVCojOcbcvop2sfLL+fjxW0JVg==
+
 jotai@~2.8.4:
   version "2.8.4"
   resolved "https://registry.npmjs.org/jotai/-/jotai-2.8.4.tgz"
@@ -8120,6 +8206,11 @@ lodash@^4.17.20, lodash@^4.17.21:
   version "4.17.21"
   resolved "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
+
+lodash@^4.17.23:
+  version "4.18.1"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.18.1.tgz#ff2b66c1f6326d59513de2407bf881439812771c"
+  integrity sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q==
 
 longest-streak@^3.0.0:
   version "3.1.0"
@@ -9513,14 +9604,14 @@ picomatch@^4.0.2, picomatch@^4.0.3:
   resolved "https://registry.npmjs.org/picomatch/-/picomatch-4.0.4.tgz"
   integrity sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==
 
-platejs@^52.3.21:
-  version "52.3.21"
-  resolved "https://registry.npmjs.org/platejs/-/platejs-52.3.21.tgz"
-  integrity sha512-v5geDNymvVE8H6cgaJ93qI0yNauUPR2oPE5pQXVKOY9x+PlD6QGYDE2DlhDHoGSM4jjQEghynvMldQaCnaAL8Q==
+platejs@^53.0.3:
+  version "53.0.3"
+  resolved "https://registry.yarnpkg.com/platejs/-/platejs-53.0.3.tgz#2df389b66846b78abbd6d2f9697456ad2f8c9464"
+  integrity sha512-ctGLvLOcV5GDQVDMWanpvOtbWUquU8/qYAsykt2YHZ6hJ1F1lrPfjwQBao/6+N6KNroLqzIgNdKAxmoy5/K7Mg==
   dependencies:
-    "@platejs/core" "^52.3.21"
-    "@platejs/slate" "^52.3.21"
-    "@platejs/utils" "^52.3.21"
+    "@platejs/core" "^53.0.0"
+    "@platejs/slate" "^53.0.0"
+    "@platejs/utils" "^53.0.3"
     "@udecode/react-hotkeys" "^52.0.11"
     "@udecode/react-utils" "^52.3.4"
     "@udecode/utils" "^52.3.4"
@@ -9753,7 +9844,7 @@ randombytes@^2.1.0:
 
 react-compiler-runtime@^1.0.0:
   version "1.0.0"
-  resolved "https://registry.npmjs.org/react-compiler-runtime/-/react-compiler-runtime-1.0.0.tgz"
+  resolved "https://registry.yarnpkg.com/react-compiler-runtime/-/react-compiler-runtime-1.0.0.tgz#ee565c2cd3437a41e7fc31d8ab6c662f6b568fc0"
   integrity sha512-rRfjYv66HlG8896yPUDONgKzG5BxZD1nV9U6rkm+7VCuvQc903C4MjcoZR4zPw53IKSOX9wMQVpA1IAbRtzQ7w==
 
 react-day-picker@^9.11.1:
@@ -10422,10 +10513,10 @@ signal-exit@^4.0.1:
   resolved "https://registry.npmjs.org/signal-exit/-/signal-exit-4.1.0.tgz"
   integrity sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==
 
-slate-dom@0.124.0:
-  version "0.124.0"
-  resolved "https://registry.npmjs.org/slate-dom/-/slate-dom-0.124.0.tgz"
-  integrity sha512-dPabNlzo67xWRNFT5HtSc0M/F9mfiQSnjJAEx0Uzk7oC++WaRuBy897F+rNzfvM+zH9exMc3hsTMtM7jGDhIiQ==
+slate-dom@0.124.1:
+  version "0.124.1"
+  resolved "https://registry.yarnpkg.com/slate-dom/-/slate-dom-0.124.1.tgz#76f58a8e395c44533feba7e1841e6a4c454a0fdc"
+  integrity sha512-D3yVibjLZM4Oj4MmXxOEXbjrlf4wJez3OvGABBNYrAP7gXb0d96tKNtWZ0hGm/5y84idw/LHjZ7W1uTYqFR9rQ==
   dependencies:
     "@juggle/resize-observer" "^3.4.0"
     direction "^1.0.4"
@@ -10437,14 +10528,14 @@ slate-dom@0.124.0:
 
 slate-hyperscript@0.100.0:
   version "0.100.0"
-  resolved "https://registry.npmjs.org/slate-hyperscript/-/slate-hyperscript-0.100.0.tgz"
+  resolved "https://registry.yarnpkg.com/slate-hyperscript/-/slate-hyperscript-0.100.0.tgz#79470c385e96bd3c5fb6477c610c2102d4a889a9"
   integrity sha512-fb2KdAYg6RkrQGlqaIi4wdqz3oa0S4zKNBJlbnJbNOwa23+9FLD6oPVx9zUGqCSIpy+HIpOeqXrg0Kzwh/Ii4A==
   dependencies:
     is-plain-object "^5.0.0"
 
 slate-react@0.124.0:
   version "0.124.0"
-  resolved "https://registry.npmjs.org/slate-react/-/slate-react-0.124.0.tgz"
+  resolved "https://registry.yarnpkg.com/slate-react/-/slate-react-0.124.0.tgz#a2233fc7d32f8414f29335586f39e49d9a14b821"
   integrity sha512-NLN6ME64ChOgJtiVTKwISS1sI/Y8/qN1cwmDTZM9AQJCl+jR3XNCvDsKNrW0kJU+1G3NgIGaYoVWhgIVEIL+Aw==
   dependencies:
     "@juggle/resize-observer" "^3.4.0"
@@ -10454,10 +10545,10 @@ slate-react@0.124.0:
     scroll-into-view-if-needed "^3.1.0"
     tiny-invariant "1.3.1"
 
-slate@0.124.0:
-  version "0.124.0"
-  resolved "https://registry.npmjs.org/slate/-/slate-0.124.0.tgz"
-  integrity sha512-yhtJ0MSV+Z63UTaZtGZDp1goO9XZb5VGER9bmwX+38yJUb7nijPkYEcxD5mpezsSLqL6NedUb4wyvoZa+HDWuQ==
+slate@0.124.1:
+  version "0.124.1"
+  resolved "https://registry.yarnpkg.com/slate/-/slate-0.124.1.tgz#e899490f71227f934d818b3e4871ae9048d79c33"
+  integrity sha512-ii7DwezgvbLAyKtHBIunjTR1kzbNfYLCUKLMzJELlbTZkvHzX4DzN7HKIwcakf6dPxO6AoeT/P7kHOcyTym/hA==
 
 sliced@^1.0.1:
   version "1.0.1"
@@ -11049,7 +11140,7 @@ unist-util-visit-parents@^6.0.0:
     "@types/unist" "^3.0.0"
     unist-util-is "^6.0.0"
 
-unist-util-visit@^5.0.0:
+unist-util-visit@5.0.0, unist-util-visit@^5.0.0:
   version "5.0.0"
   resolved "https://registry.npmjs.org/unist-util-visit/-/unist-util-visit-5.0.0.tgz"
   integrity sha512-MR04uvD+07cwl/yhVuVWAtw+3GOR/knlL55Nd/wAdblk27GCVt3lqpTivy/tkJcZoNPzTwS1Y+KMojlLDhoTzg==

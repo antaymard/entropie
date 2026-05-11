@@ -1,11 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-type ConvertChildrenDeserialize = (
-  children: any,
-  deco: any,
-  options: any,
-) => any;
-
 /**
  * Règles markdown pour le mark custom "pill".
  *
@@ -15,9 +9,9 @@ type ConvertChildrenDeserialize = (
  * Nécessite remarkMdx dans les remarkPlugins.
  * Fichier dupliqué de src/components/plate/pillMarkdownRules.ts pour le runtime Convex.
  */
-export function buildPillMarkdownRules(
-  convertChildrenDeserialize: ConvertChildrenDeserialize,
-) {
+export async function buildPillMarkdownRules(): Promise<Record<string, any>> {
+  const { convertChildrenDeserialize } = await import("@platejs/markdown");
+
   return {
     pill: {
       mark: true,

@@ -21,6 +21,7 @@ import type {
   TText,
   TTextAlignProps,
 } from 'platejs';
+import type { TFootnoteElement } from '@platejs/footnote';
 
 export interface MyBlockElement extends TElement, TListProps {
   id?: string;
@@ -116,6 +117,20 @@ export interface MyMentionInputElement extends TComboboxInputElement {
   type: typeof KEYS.mentionInput;
 }
 
+export interface MyFootnoteReferenceElement extends TFootnoteElement {
+  children: [EmptyText];
+  type: typeof KEYS.footnoteReference;
+}
+
+export interface MyFootnoteInputElement extends TComboboxInputElement {
+  children: [EmptyText];
+  type: typeof KEYS.footnoteInput;
+}
+
+export interface MyFootnoteDefinitionElement extends TFootnoteElement {
+  type: typeof KEYS.footnoteDefinition;
+}
+
 export type MyNestableBlock = MyParagraphElement;
 
 export interface MyParagraphElement extends MyTextBlockElement {
@@ -149,6 +164,7 @@ export interface RichText extends TBasicMarks, TCommentText, TFontMarks, TText {
 export type MyValue = (
   | MyBlockquoteElement
   | MyCodeBlockElement
+  | MyFootnoteDefinitionElement
   | MyH1Element
   | MyH2Element
   | MyH3Element

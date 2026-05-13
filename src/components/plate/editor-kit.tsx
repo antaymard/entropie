@@ -22,6 +22,7 @@ import { DocxKit } from "@/components/plate/docx-kit";
 import { StripFontOnPastePlugin } from "@/components/plate/strip-font-on-paste-plugin";
 import { ExitBreakKit } from "@/components/plate/exit-break-kit";
 import { FixedToolbarKit } from "@/components/plate/fixed-toolbar-kit";
+import { FootnoteKit } from "@/components/plate/footnote-kit";
 import { FloatingToolbarKit } from "@/components/plate/floating-toolbar-kit";
 import { FontKit } from "@/components/plate/font-kit";
 import { LineHeightKit } from "@/components/plate/line-height-kit";
@@ -49,6 +50,7 @@ export const EditorKit = [
   ...DateKit,
   ...LinkKit,
   ...MentionKit,
+  ...FootnoteKit,
 
   // Marks
   ...BasicMarksKit,

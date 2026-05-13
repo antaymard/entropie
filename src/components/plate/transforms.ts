@@ -3,6 +3,7 @@
 import type { PlateEditor } from 'platejs/react';
 
 import { insertCallout } from '@platejs/callout';
+import { insertFootnote } from '@platejs/footnote';
 import { insertCodeBlock, toggleCodeBlock } from '@platejs/code-block';
 import { insertDate } from '@platejs/date';
 import { insertExcalidraw } from '@platejs/excalidraw';
@@ -74,6 +75,8 @@ const insertInlineMap: Record<
   (editor: PlateEditor, type: string) => void
 > = {
   [KEYS.date]: (editor) => insertDate(editor, { select: true }),
+  [KEYS.footnoteReference]: (editor) =>
+    insertFootnote(editor, { focusDefinition: true }),
   [KEYS.inlineEquation]: (editor) =>
     insertInlineEquation(editor, '', { select: true }),
   [KEYS.link]: (editor) => triggerFloatingLink(editor, { focused: true }),

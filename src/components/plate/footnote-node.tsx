@@ -100,6 +100,9 @@ export function FootnoteInputElement(
 
   const handleSelect = React.useCallback(
     (identifier: string) => {
+      // withTriggerCombobox removes the trigger char ('^') but keeps the
+      // preceding '[' in the text — delete it before inserting the reference.
+      editor.tf.delete({ reverse: true, unit: "character" });
       editor.tf.insert.footnote({ identifier, focusDefinition: true });
     },
     [editor]

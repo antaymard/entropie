@@ -28,50 +28,52 @@ import { HighlightLeaf } from "@/components/plate/highlight-node";
 import { KbdLeaf } from "@/components/plate/kbd-node";
 import { PillPlugin } from "@/components/plate/pill-kit";
 
+// See basic-blocks-kit.tsx for why .configure() must take a function.
 export const BasicMarksKit = [
-  BoldPlugin.configure({
+  BoldPlugin.configure(() => ({
     inputRules: [
+      BoldRules.markdown({ variant: "*" }),
+      BoldRules.markdown({ variant: "_" }),
       MarkComboRules.markdown({ variant: "boldItalic" }),
       MarkComboRules.markdown({ variant: "boldUnderline" }),
       MarkComboRules.markdown({ variant: "boldItalicUnderline" }),
-      BoldRules.markdown({ variant: "*" }),
-    ],
-  }),
-  ItalicPlugin.configure({
-    inputRules: [
       MarkComboRules.markdown({ variant: "italicUnderline" }),
+    ],
+  })),
+  ItalicPlugin.configure(() => ({
+    inputRules: [
       ItalicRules.markdown({ variant: "*" }),
       ItalicRules.markdown({ variant: "_" }),
     ],
-  }),
-  UnderlinePlugin.configure({
+  })),
+  UnderlinePlugin.configure(() => ({
     inputRules: [UnderlineRules.markdown()],
-  }),
-  CodePlugin.configure({
+  })),
+  CodePlugin.configure(() => ({
     inputRules: [CodeRules.markdown()],
     node: { component: CodeLeaf },
     shortcuts: { toggle: { keys: "mod+e" } },
-  }),
-  StrikethroughPlugin.configure({
+  })),
+  StrikethroughPlugin.configure(() => ({
     inputRules: [StrikethroughRules.markdown()],
     shortcuts: { toggle: { keys: "mod+shift+x" } },
-  }),
-  SubscriptPlugin.configure({
+  })),
+  SubscriptPlugin.configure(() => ({
     inputRules: [SubscriptRules.markdown()],
     shortcuts: { toggle: { keys: "mod+comma" } },
-  }),
-  SuperscriptPlugin.configure({
+  })),
+  SuperscriptPlugin.configure(() => ({
     inputRules: [SuperscriptRules.markdown()],
     shortcuts: { toggle: { keys: "mod+period" } },
-  }),
-  HighlightPlugin.configure({
+  })),
+  HighlightPlugin.configure(() => ({
     inputRules: [
       HighlightRules.markdown(),
       HighlightRules.markdown({ variant: "≡" }),
     ],
     node: { component: HighlightLeaf },
     shortcuts: { toggle: { keys: "mod+shift+h" } },
-  }),
+  })),
   KbdPlugin.withComponent(KbdLeaf),
   PillPlugin,
 ];

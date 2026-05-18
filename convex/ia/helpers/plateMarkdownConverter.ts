@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { buildPillMarkdownRules } from "./pillMarkdownRules";
+import { buildDateMarkdownRules } from "./dateMarkdownRules";
 
 type MarkdownConverter = {
   api: {
@@ -22,23 +23,6 @@ type MarkdownConverter = {
  */
 let converterPromise: Promise<MarkdownConverter> | null = null;
 
-function serializeDateToMarkdown(slateNode: any) {
-  if (!slateNode.date) {
-    return { type: "text", value: "[Date non définie]" };
-  }
-
-  const date = new Date(slateNode.date);
-
-  return {
-    type: "text",
-    value: date.toLocaleDateString("fr-FR", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }),
-  };
-}
-
 async function loadConverterDependencies() {
   const [
     { createSlateEditor },
@@ -47,6 +31,7 @@ async function loadConverterDependencies() {
     { default: remarkGfm },
     { default: remarkMath },
     pillMarkdownRules,
+    dateMarkdownRules,
   ] = await Promise.all([
     import("platejs"),
     import("@platejs/markdown"),
@@ -54,6 +39,7 @@ async function loadConverterDependencies() {
     import("remark-gfm"),
     import("remark-math"),
     buildPillMarkdownRules(),
+    buildDateMarkdownRules(),
   ]);
 
   return {
@@ -65,6 +51,7 @@ async function loadConverterDependencies() {
     remarkGfm,
     remarkMath,
     pillMarkdownRules,
+    dateMarkdownRules,
   };
 }
 
@@ -80,6 +67,7 @@ async function getConverter(): Promise<MarkdownConverter> {
         remarkGfm,
         remarkMath,
         pillMarkdownRules,
+        dateMarkdownRules,
       }) => {
         return createSlateEditor({
           plugins: [
@@ -95,10 +83,7 @@ async function getConverter(): Promise<MarkdownConverter> {
                 ],
                 rules: {
                   ...pillMarkdownRules,
-                  date: {
-                    // Côté LLM on préfère du texte lisible à un nœud MDX spécifique.
-                    serialize: serializeDateToMarkdown,
-                  },
+                  ...dateMarkdownRules,
                 },
               },
             }),

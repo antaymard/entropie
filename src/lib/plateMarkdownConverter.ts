@@ -4,6 +4,7 @@ import { BaseListPlugin } from "@platejs/list";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import { pillMarkdownRules } from "@/components/plate/pillMarkdownRules";
+import { dateMarkdownRules } from "@/components/plate/dateMarkdownRules";
 
 const converter = createSlateEditor({
   plugins: [
@@ -13,6 +14,7 @@ const converter = createSlateEditor({
         remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],
         rules: {
           ...pillMarkdownRules,
+          ...dateMarkdownRules,
         },
       },
     }),

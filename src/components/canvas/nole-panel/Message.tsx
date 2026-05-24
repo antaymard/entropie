@@ -4,10 +4,20 @@ import { MarkdownText } from "@/components/ai/MarkdownText";
 import type { TextPart } from "@/types/domain/message.types";
 import { RiLoaderLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
-import { TbAlertCircle, TbBrain, TbChevronDown, TbTool } from "react-icons/tb";
+import {
+  TbAlertCircle,
+  TbBrain,
+  TbChevronDown,
+  TbLink,
+  TbTool,
+} from "react-icons/tb";
+import { LuMousePointerClick } from "react-icons/lu";
 import { buildLlmIdTextRegex, matchLlmIdsInText } from "@/../convex/lib/llmId";
 import { MentionedNodeCard } from "@/components/canvas/nole-panel/MentionedNodeCard";
 import type { Components } from "react-markdown";
+import type { Doc } from "@/../convex/_generated/dataModel";
+import type { ChatModelOption } from "@/types/convex";
+import { getModelLabel } from "@/lib/getModelLabel";
 
 type ToolPartState = "input-streaming" | "output-available" | "output-error";
 
@@ -45,8 +55,12 @@ const markdownComponents: Components = {
 
 export const Message = memo(function Message({
   message,
+  metadata,
+  modelOptions,
 }: {
   message: UIMessage;
+  metadata?: Doc<"messageMetadata">;
+  modelOptions?: readonly ChatModelOption[];
 }) {
   const isUser = message.role === "user";
   const userText = extractUserMessageForDisplay(message.text ?? "");
@@ -54,7 +68,10 @@ export const Message = memo(function Message({
   // Pour les messages utilisateur, afficher simplement le texte
   if (isUser) {
     return (
-      <div className="flex justify-end">
+      <div className="flex flex-col items-end gap-1">
+        {metadata?.attachments ? (
+          <UserMessageAttachments attachments={metadata.attachments} />
+        ) : null}
         <div className="rounded whitespace-pre-wrap p-3 bg-slate-200 border border-slate-400 text-text max-w-4/5">
           <MarkdownText>{userText}</MarkdownText>
         </div>
@@ -132,10 +149,89 @@ export const Message = memo(function Message({
         {message.status === "failed" && (
           <ErrorInline message={messageError || "Une erreur est survenue."} />
         )}
+
+        {!isProcessing && metadata && metadata.model ? (
+          <AssistantMessageFooter
+            metadata={metadata}
+            modelOptions={modelOptions}
+          />
+        ) : null}
       </div>
     </div>
   );
 });
+
+function UserMessageAttachments({
+  attachments,
+}: {
+  attachments: NonNullable<Doc<"messageMetadata">["attachments"]>;
+}) {
+  const nodes = attachments.nodes ?? [];
+  const hasAny = nodes.length > 0 || !!attachments.position || !!attachments.page;
+  if (!hasAny) return null;
+
+  return (
+    <div className="flex flex-wrap gap-1 max-w-4/5 justify-end">
+      {nodes.map((n) => (
+        <MentionedNodeCard key={n.id} nodeId={n.id} fallback={n.title} />
+      ))}
+      {attachments.position ? (
+        <span className="inline-flex items-center gap-1 rounded-sm border border-slate-300 bg-white px-2 py-0.5 text-xs text-slate-600">
+          <LuMousePointerClick size={11} />
+          ({Math.round(attachments.position.x)}, {Math.round(attachments.position.y)})
+        </span>
+      ) : null}
+      {attachments.page && (attachments.page.title || attachments.page.url) ? (
+        <a
+          href={attachments.page.url ?? "#"}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1 rounded-sm border border-slate-300 bg-white px-2 py-0.5 text-xs text-slate-600 hover:bg-slate-50 max-w-55"
+        >
+          <TbLink size={11} className="shrink-0" />
+          <span className="truncate">
+            {attachments.page.title ?? attachments.page.url}
+          </span>
+        </a>
+      ) : null}
+    </div>
+  );
+}
+
+function formatTokenCount(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+  return String(n);
+}
+
+function formatCostUsd(n: number): string {
+  if (n === 0) return "$0";
+  if (n < 0.01) return `$${n.toFixed(4)}`;
+  return `$${n.toFixed(3)}`;
+}
+
+function AssistantMessageFooter({
+  metadata,
+  modelOptions,
+}: {
+  metadata: Doc<"messageMetadata">;
+  modelOptions?: readonly ChatModelOption[];
+}) {
+  const modelLabel = getModelLabel(metadata.model, modelOptions);
+  const tokens = metadata.usage?.totalTokens;
+  const cost = metadata.costUsd;
+  const parts: string[] = [];
+  if (tokens !== undefined) parts.push(`${formatTokenCount(tokens)} tk`);
+  if (cost !== undefined && cost > 0) parts.push(formatCostUsd(cost));
+
+  return (
+    <div className="flex items-center gap-1 px-1 text-[10px] text-slate-400">
+      <TbBrain size={10} />
+      <span>{modelLabel}</span>
+      {parts.length > 0 && <span>· {parts.join(" · ")}</span>}
+    </div>
+  );
+}
 
 const ReasoningPartRenderer = memo(function ReasoningPartRenderer({
   part,

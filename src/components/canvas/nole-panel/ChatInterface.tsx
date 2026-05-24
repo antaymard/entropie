@@ -1,10 +1,12 @@
 import { useUIMessages, type UIMessage } from "@convex-dev/agent/react";
+import { useQuery } from "convex/react";
 import { api } from "@/../convex/_generated/api";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RiLoaderLine } from "react-icons/ri";
 import { TbAlertCircle, TbCheck } from "react-icons/tb";
 import { cn } from "@/lib/utils";
 import { extractUserMessageForDisplay, Message } from "./Message";
+import type { Doc } from "@/../convex/_generated/dataModel";
 
 const ChatInterface = memo(function ChatInterface({
   threadId,
@@ -24,6 +26,19 @@ const ChatInterface = memo(function ChatInterface({
     { threadId },
     { initialNumItems: 20, stream: true },
   );
+
+  const modelOptions = useQuery(api.ia.nole.listChatModels, {});
+  const messageMetadataList = useQuery(
+    api.messageMetadata.getThreadMessageMetadata,
+    threadId ? { threadId } : "skip",
+  );
+  const metadataByMessageId = useMemo(() => {
+    const map = new Map<string, Doc<"messageMetadata">>();
+    for (const m of messageMetadataList ?? []) {
+      map.set(m.messageId, m);
+    }
+    return map;
+  }, [messageMetadataList]);
 
   const scrollViewportRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
@@ -168,7 +183,12 @@ const ChatInterface = memo(function ChatInterface({
               </button>
             )}
             {messages.map((m) => (
-              <Message key={m.key} message={m} />
+              <Message
+                key={m.key}
+                message={m}
+                metadata={metadataByMessageId.get(m.id)}
+                modelOptions={modelOptions}
+              />
             ))}
           </div>
         ) : (

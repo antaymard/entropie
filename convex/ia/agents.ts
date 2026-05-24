@@ -1,4 +1,4 @@
-import { components } from "../_generated/api";
+import { components, internal } from "../_generated/api";
 import { Agent } from "@convex-dev/agent";
 import { openrouter } from "@openrouter/ai-sdk-provider";
 import { v } from "convex/values";
@@ -8,6 +8,26 @@ import { stepCountIs } from "ai";
 import { toolAgentNames, type ThreadCtx } from "./agentConfig";
 import { getToolsForAgent } from "./tools";
 import { generateSupervisorSystemPrompt } from "./systemPrompts/supervisorSystemPrompt";
+
+type RawUsage = {
+  inputTokens?: number;
+  outputTokens?: number;
+  totalTokens?: number;
+  cachedInputTokens?: number;
+} | undefined;
+
+function normalizeUsage(usage: RawUsage) {
+  if (!usage) return undefined;
+  const inputTokens = usage.inputTokens ?? 0;
+  const outputTokens = usage.outputTokens ?? 0;
+  const totalTokens = usage.totalTokens ?? inputTokens + outputTokens;
+  return {
+    inputTokens,
+    outputTokens,
+    totalTokens,
+    cachedInputTokens: usage.cachedInputTokens,
+  };
+}
 
 export const chatModelOptions = [
   {
@@ -119,6 +139,20 @@ export function createNoleAgent({
       extraTools,
       isMultimodal: isModelMultimodal(languageModel),
     }),
+    usageHandler: async (ctx, args) => {
+      if (!args.threadId) return;
+      const usage = normalizeUsage(args.usage as RawUsage);
+      await ctx.runMutation(
+        internal.wrappers.messageMetadataWrappers.recordAssistantUsage,
+        {
+          threadId: args.threadId,
+          model: typeof args.model === "string" ? args.model : undefined,
+          provider:
+            typeof args.provider === "string" ? args.provider : undefined,
+          usage,
+        },
+      );
+    },
   });
 }
 

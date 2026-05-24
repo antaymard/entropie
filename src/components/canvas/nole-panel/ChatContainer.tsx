@@ -4,6 +4,7 @@ import { Button } from "@/components/shadcn/button";
 import {
   TbCheck,
   TbCloudExclamation,
+  TbDatabase,
   TbExclamationCircle,
   TbLoader,
   TbMicrophone,
@@ -37,6 +38,9 @@ import {
 import toast from "react-hot-toast";
 import { getCanvasNodeTitle } from "@/lib/getCanvasNodeTitle";
 import { useNoleChat } from "@/hooks/useNoleChat";
+import { useThreadStats } from "@/hooks/useThreadStats";
+import { getModelLabel } from "@/lib/getModelLabel";
+import type { ChatModelOption } from "@/types/convex";
 
 const INPUT_MAX_HEIGHT_PX = 182;
 
@@ -155,10 +159,15 @@ export default function ChatContainer({ onClose }: ChatContainerProps) {
   return (
     <div className="w-full h-full flex flex-col shadow-2xl/10">
       {/* Header */}
-      <div className="pl-2 rounded-t-lg border-b flex items-center justify-between">
-        <p className="text-sm font-medium truncate">
+      <div className="pl-2 rounded-t-lg border-b flex items-center justify-between gap-2">
+        <p className="text-sm font-medium truncate flex-1">
           {threadInfo?.title || "Untitled"}
         </p>
+        <ThreadStatsBadge
+          threadId={threadId}
+          selectedModel={selectedModel}
+          modelOptions={modelOptions}
+        />
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
@@ -431,5 +440,79 @@ function NodeAttachment({
       {NodeIcon ? <NodeIcon size={12} className="min-w-3" /> : null}
       <span className="truncate">{nodeTitle}</span>
     </div>
+  );
+}
+
+function formatTokens(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+  return String(n);
+}
+
+function formatCost(n: number): string {
+  if (n === 0) return "$0";
+  if (n < 0.01) return `$${n.toFixed(4)}`;
+  return `$${n.toFixed(3)}`;
+}
+
+function ThreadStatsBadge({
+  threadId,
+  selectedModel,
+  modelOptions,
+}: {
+  threadId: string | null | undefined;
+  selectedModel: string | undefined;
+  modelOptions: readonly ChatModelOption[] | undefined;
+}) {
+  const stats = useThreadStats({ threadId, selectedModel, modelOptions });
+
+  if (stats.isLoading || stats.totalTokens === 0) return null;
+
+  const percentLabel =
+    stats.contextPercent !== undefined
+      ? `${stats.contextPercent < 1 ? stats.contextPercent.toFixed(1) : Math.round(stats.contextPercent)}%`
+      : null;
+  const maxLabel = stats.maxContext ? formatTokens(stats.maxContext) : null;
+
+  return (
+    <Tooltip delayDuration={200}>
+      <TooltipTrigger asChild>
+        <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 px-1.5 py-0.5 rounded-sm hover:bg-slate-100 cursor-default">
+          <TbDatabase size={10} />
+          {percentLabel ? <span>{percentLabel}</span> : null}
+          <span>
+            {percentLabel ? "— " : ""}
+            {formatTokens(stats.totalTokens)}
+            {maxLabel ? ` / ${maxLabel}` : ""}
+          </span>
+          {stats.totalCostUsd > 0 ? (
+            <span>· {formatCost(stats.totalCostUsd)}</span>
+          ) : null}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent className="text-xs max-w-xs">
+        <div className="flex flex-col gap-1">
+          <p className="font-medium">Thread usage</p>
+          {stats.perModel.length > 0 ? (
+            <div className="flex flex-col gap-0.5">
+              {stats.perModel.map((m) => (
+                <div key={m.model} className="flex justify-between gap-2">
+                  <span>{getModelLabel(m.model, modelOptions)}</span>
+                  <span className="text-slate-300">
+                    {formatTokens(m.totalTokens)} tk
+                    {m.costUsd > 0 ? ` · ${formatCost(m.costUsd)}` : ""}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : null}
+          {stats.maxContext ? (
+            <p className="text-slate-300 mt-1">
+              Max context du modèle actuel: {formatTokens(stats.maxContext)} tk
+            </p>
+          ) : null}
+        </div>
+      </TooltipContent>
+    </Tooltip>
   );
 }

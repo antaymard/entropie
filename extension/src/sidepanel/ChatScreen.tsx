@@ -90,12 +90,18 @@ export default function ChatScreen() {
 
   const handleAttachPage = useCallback(async () => {
     try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
       if (!tab?.id) {
         toast.error("No active tab found");
         return;
       }
-      if (tab.url?.startsWith("chrome://") || tab.url?.startsWith("chrome-extension://")) {
+      if (
+        tab.url?.startsWith("chrome://") ||
+        tab.url?.startsWith("chrome-extension://")
+      ) {
         toast.error("Cannot read browser pages");
         return;
       }
@@ -107,7 +113,12 @@ export default function ChatScreen() {
             title: document.title,
             url: window.location.href,
             text: body ? body.innerText.substring(0, 15000) : "",
-            favIconUrl: (document.querySelector('link[rel*="icon"]') as HTMLLinkElement | null)?.href || "",
+            favIconUrl:
+              (
+                document.querySelector(
+                  'link[rel*="icon"]',
+                ) as HTMLLinkElement | null
+              )?.href || "",
           };
         },
       });
@@ -118,12 +129,20 @@ export default function ChatScreen() {
       }
     } catch (error) {
       console.error("Error extracting page content:", error);
-      toast.error(`Unable to read page: ${error instanceof Error ? error.message : String(error)}`);
+      toast.error(
+        `Unable to read page: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }, [attachPage]);
 
   const handleSend = () => {
-    if (isAssistantResponding || isSending || !userInput.trim() || !selectedCanvasId) return;
+    if (
+      isAssistantResponding ||
+      isSending ||
+      !userInput.trim() ||
+      !selectedCanvasId
+    )
+      return;
     void sendCurrentMessage();
   };
 
@@ -152,37 +171,47 @@ export default function ChatScreen() {
 
   if (!threadId) {
     return (
-      <div className="h-full flex items-center justify-center text-slate-400">Loading chat...</div>
+      <div className="h-full flex items-center justify-center text-slate-400">
+        Loading chat...
+      </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-white">
       {/* Header */}
-      <div className="shrink-0 px-3 py-2 border-b flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1 min-w-0">
-          <CanvasSelector
-            canvases={canvases ?? []}
-            selectedId={selectedCanvasId}
-            selectedName={canvasName}
-            onSelect={handleCanvasChange}
-          />
-        </div>
-        <div className="flex items-center gap-0.5 shrink-0">
-          <button
-            type="button"
-            onClick={() => void startNewThread()}
-            className="p-1.5 rounded-md hover:bg-gray-100 text-slate-400 hover:text-slate-600"
-            title="New conversation"
-          >
-            <TbPlus size={15} />
-          </button>
-          <ThreadSelector currentThreadId={threadId} onSelectThread={selectThread} />
+      <div className="shrink-0 border-b border-slate-200 bg-white px-2 py-2">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <CanvasSelector
+              canvases={canvases ?? []}
+              selectedId={selectedCanvasId}
+              selectedName={canvasName}
+              onSelect={handleCanvasChange}
+            />
+            <p className="mt-1 truncate text-sm font-medium text-slate-900">
+              {threadInfo?.title || "Untitled"}
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            <button
+              type="button"
+              onClick={() => void startNewThread()}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+              title="New conversation"
+            >
+              <TbPlus size={15} />
+            </button>
+            <ThreadSelector
+              currentThreadId={threadId}
+              onSelectThread={selectThread}
+            />
+          </div>
         </div>
       </div>
 
       {/* Chat */}
-      <div className="flex-1 min-h-0">
+      <div className="w-full flex-1 min-h-0">
         <ChatInterface
           threadId={threadId}
           onRetry={handleRetry}
@@ -192,10 +221,13 @@ export default function ChatScreen() {
 
       {/* Input */}
       <div className="shrink-0 p-2 pt-0">
-        <div className="bg-gray-100 border border-gray-300 shadow rounded-lg flex flex-col gap-2 mt-2">
+        <div className="mt-2 flex flex-col gap-2 rounded-lg border border-slate-400 bg-slate-200 shadow-lg">
           {attachedPage && (
             <div className="p-2 pb-0 flex flex-wrap gap-1">
-              <PageAttachment page={attachedPage} onRemove={removeAttachedPage} />
+              <PageAttachment
+                page={attachedPage}
+                onRemove={removeAttachedPage}
+              />
             </div>
           )}
           <div className="p-2">
@@ -207,7 +239,7 @@ export default function ChatScreen() {
               placeholder="Message Nolê..."
               disabled={isSending || isAssistantResponding}
               rows={1}
-              className="w-full resize-none bg-transparent text-sm text-gray-700 placeholder:text-gray-400 outline-none min-h-6"
+              className="min-h-7 w-full resize-none bg-transparent text-sm leading-6 text-slate-800 outline-none placeholder:text-slate-500"
             />
           </div>
           <div className="flex items-center justify-between gap-2 pr-2 pb-2">
@@ -216,7 +248,7 @@ export default function ChatScreen() {
                 type="button"
                 onClick={handleAttachPage}
                 disabled={isSending || isAssistantResponding}
-                className="p-1 rounded hover:bg-gray-200 text-slate-400 hover:text-slate-600 disabled:opacity-30"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-white/70 hover:text-slate-700 disabled:opacity-30"
                 title="Attach current page"
               >
                 <TbGlobe size={14} />
@@ -232,14 +264,17 @@ export default function ChatScreen() {
                       isAssistantResponding ||
                       (modelOptions?.length ?? 0) === 0
                     }
-                    className="p-1 rounded hover:bg-gray-200 text-slate-500 text-xs disabled:opacity-30"
+                    className="inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-slate-500 transition hover:bg-white/70 hover:text-slate-700 disabled:opacity-30"
                   >
                     <TbBrain size={14} />
                   </button>
                   {modelOpen && (
                     <>
-                      <div className="fixed inset-0 z-10" onClick={() => setModelOpen(false)} />
-                      <div className="absolute bottom-full left-0 mb-1 z-20 w-52 bg-white border rounded-lg shadow-lg py-1 max-h-60 overflow-y-auto">
+                      <div
+                        className="fixed inset-0 z-10"
+                        onClick={() => setModelOpen(false)}
+                      />
+                      <div className="absolute bottom-full left-0 z-20 mb-1 max-h-60 w-52 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-xl">
                         {(modelOptions ?? []).map((model) => (
                           <button
                             key={model.value}
@@ -249,8 +284,9 @@ export default function ChatScreen() {
                               setModelOpen(false);
                             }}
                             className={cn(
-                              "w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 flex items-center justify-between",
-                              selectedModel === model.value && "font-medium bg-gray-50",
+                              "flex w-full items-center justify-between px-3 py-1.5 text-left text-sm hover:bg-slate-50",
+                              selectedModel === model.value &&
+                                "bg-slate-50 font-medium",
                             )}
                           >
                             <span className="flex items-center gap-1.5">
@@ -263,7 +299,10 @@ export default function ChatScreen() {
                               {model.price.replace("_", " - ")}
                             </span>
                             {selectedModel === model.value && (
-                              <TbCheck size={12} className="shrink-0 text-green-500 ml-1" />
+                              <TbCheck
+                                size={12}
+                                className="shrink-0 text-green-500 ml-1"
+                              />
                             )}
                           </button>
                         ))}
@@ -280,7 +319,7 @@ export default function ChatScreen() {
                   type="button"
                   disabled={isCancelling}
                   onClick={() => void stopAssistantResponse()}
-                  className="flex items-center gap-1 px-2.5 py-1 text-sm rounded-md border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                  className="inline-flex h-9 items-center gap-1 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
                 >
                   Stop
                   {isCancelling ? (
@@ -299,7 +338,7 @@ export default function ChatScreen() {
                   isSending ||
                   !selectedCanvasId
                 }
-                className="flex items-center gap-1 px-2.5 py-1 text-sm rounded-md text-white disabled:opacity-30"
+                className="inline-flex h-9 items-center gap-1 rounded-md px-3 text-sm font-medium text-white shadow-sm transition hover:brightness-95 disabled:opacity-40"
                 style={{ backgroundColor: "oklch(0.623 0.214 259.815)" }}
               >
                 Send
@@ -337,15 +376,17 @@ function CanvasSelector({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1 text-sm text-slate-600 font-medium hover:text-slate-800 truncate max-w-[160px]"
+        className="inline-flex max-w-[180px] items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-200 hover:text-slate-800"
       >
-        <span className="truncate">{selectedName || canvases[0]?.name || "Canvas"}</span>
+        <span className="truncate">
+          {selectedName || canvases[0]?.name || "Canvas"}
+        </span>
         <TbSelector size={12} className="shrink-0 text-slate-400" />
       </button>
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute top-full left-0 mt-1 z-20 w-48 bg-white border rounded-lg shadow-lg py-1 max-h-60 overflow-y-auto">
+          <div className="absolute left-0 top-full z-20 mt-1 max-h-60 w-48 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-xl">
             {canvases.map((c) => (
               <button
                 key={c._id}
@@ -355,12 +396,14 @@ function CanvasSelector({
                   setOpen(false);
                 }}
                 className={cn(
-                  "w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 flex items-center justify-between",
-                  c._id === selectedId && "font-medium text-gray-900",
+                  "flex w-full items-center justify-between px-3 py-1.5 text-left text-sm hover:bg-slate-50",
+                  c._id === selectedId && "font-medium text-slate-900",
                 )}
               >
                 <span className="truncate">{c.name}</span>
-                {c._id === selectedId && <TbCheck size={12} className="shrink-0 text-green-500" />}
+                {c._id === selectedId && (
+                  <TbCheck size={12} className="shrink-0 text-green-500" />
+                )}
               </button>
             ))}
           </div>
@@ -385,15 +428,25 @@ function ThreadSelector({
 
   const threads =
     threadsResult && !Array.isArray(threadsResult) && "threads" in threadsResult
-      ? (threadsResult as { threads: { page: Array<{ _id: string; title?: string; _creationTime: number }> } }).threads.page
+      ? (
+          threadsResult as {
+            threads: {
+              page: Array<{
+                _id: string;
+                title?: string;
+                _creationTime: number;
+              }>;
+            };
+          }
+        ).threads.page
       : [];
 
   return (
-    <>
+    <div className="relative">
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="p-1.5 rounded-md hover:bg-gray-100 text-slate-400"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
         title="Previous conversations"
       >
         <TbHistory size={15} />
@@ -401,32 +454,34 @@ function ThreadSelector({
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute top-full right-0 mt-1 z-20 w-56 bg-white border rounded-lg shadow-lg py-1 max-h-72 overflow-y-auto">
+          <div className="absolute right-0 top-full z-20 mt-1 max-h-72 w-56 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-xl">
             {threads.length === 0 && (
-              <div className="px-3 py-2 text-sm text-gray-400 text-center">No conversations yet</div>
+              <div className="px-3 py-2 text-center text-sm text-slate-400">
+                No conversations yet
+              </div>
             )}
             {threads.map((thread) => (
               <div
                 key={thread._id}
                 className={cn(
-                  "flex items-center justify-between px-3 py-1.5 text-sm hover:bg-gray-50 cursor-pointer",
-                  thread._id === currentThreadId && "bg-gray-50 font-medium",
+                  "flex cursor-pointer items-center justify-between px-3 py-2 text-sm hover:bg-slate-50",
+                  thread._id === currentThreadId && "bg-slate-50 font-medium",
                 )}
                 onClick={() => {
                   onSelectThread(thread._id);
                   setOpen(false);
                 }}
               >
-                <div className="flex-1 min-w-0 mr-2">
+                <div className="mr-2 min-w-0 flex-1">
                   <div className="truncate">{thread.title || "Untitled"}</div>
-                  <div className="text-xs text-gray-400">
+                  <div className="text-xs text-slate-400">
                     {new Date(thread._creationTime).toLocaleDateString()}
                   </div>
                 </div>
                 {thread._id !== currentThreadId && (
                   <button
                     type="button"
-                    className="p-0.5 rounded hover:text-red-500 shrink-0"
+                    className="shrink-0 rounded p-0.5 text-slate-400 hover:text-red-500"
                     onClick={async (e) => {
                       e.stopPropagation();
                       try {
@@ -444,7 +499,7 @@ function ThreadSelector({
           </div>
         </>
       )}
-    </>
+    </div>
   );
 }
 
@@ -456,11 +511,11 @@ function PageAttachment({
   onRemove: () => void;
 }) {
   return (
-    <div className="group flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1 text-sm text-slate-600 max-w-full">
+    <div className="group relative flex max-w-full items-center gap-1 rounded-sm border border-slate-300 bg-white px-2 py-1 text-sm text-slate-700">
       <button
         type="button"
         onClick={onRemove}
-        className="text-slate-400 hover:text-red-500 shrink-0"
+        className="shrink-0 text-slate-500 hover:text-red-500"
       >
         <HiMiniXMark size={13} />
       </button>

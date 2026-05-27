@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { useAction, useMutation as useConvexMutation, useQuery as useConvexQuery } from "convex/react";
+import {
+  useAction,
+  useMutation as useConvexMutation,
+  useQuery as useConvexQuery,
+} from "convex/react";
 import { optimisticallySendMessage } from "@convex-dev/agent/react";
 import toast from "react-hot-toast";
 import { api } from "@convex/_generated/api";
@@ -21,19 +25,22 @@ export function useExtensionNoleChat() {
   const [isCancelling, setIsCancelling] = useState(false);
   const [isAssistantResponding, setIsAssistantResponding] = useState(false);
   const [overrideThreadId, setOverrideThreadId] = useState<string | null>(null);
+  const effectiveThreadId = overrideThreadId ?? threadId;
 
   const selectedCanvasId = useExtensionStore((s) => s.selectedCanvasId);
   const attachedPage = useExtensionStore((s) => s.attachedPage);
   const removeAttachedPage = useExtensionStore((s) => s.removeAttachedPage);
 
-  const modelOptions = useConvexQuery(api.ia.nole.listChatModels, {}) as ChatModelOption[] | undefined;
+  const modelOptions = useConvexQuery(api.ia.nole.listChatModels, {}) as
+    | ChatModelOption[]
+    | undefined;
   const [selectedModel, setSelectedModel] = useState<string>();
 
   const latestThread = useConvexQuery(api.threads.getLatestThread);
   const startThreadMutation = useConvexMutation(api.threads.startThread);
   const threadInfo = useConvexQuery(
     api.threads.getThreadInfo,
-    threadId ? { threadId } : "skip",
+    effectiveThreadId ? { threadId: effectiveThreadId } : "skip",
   );
 
   useEffect(() => {
@@ -62,11 +69,9 @@ export function useExtensionNoleChat() {
     void initThread();
   }, [startThreadMutation, latestThread]);
 
-  const effectiveThreadId = overrideThreadId ?? threadId;
-
-  const sendMessageMutation = useConvexMutation(api.ia.nole.saveMessage).withOptimisticUpdate(
-    optimisticallySendMessage(api.threads.listMessages),
-  );
+  const sendMessageMutation = useConvexMutation(
+    api.ia.nole.saveMessage,
+  ).withOptimisticUpdate(optimisticallySendMessage(api.threads.listMessages));
   const abortStreamMutation = useConvexMutation(api.threads.abortStream);
   const updateThreadTitleMutation = useAction(api.threads.updateThreadTitle);
 
@@ -96,13 +101,17 @@ export function useExtensionNoleChat() {
         threadId: effectiveThreadId,
         prompt,
         metadata: {
-          messageContext: Object.keys(messageContext).length > 0 ? messageContext : undefined,
+          messageContext:
+            Object.keys(messageContext).length > 0 ? messageContext : undefined,
           model: selectedModel,
         },
         canvasId: selectedCanvasId as Id<"canvases">,
       });
       removeAttachedPage();
-      void updateThreadTitleMutation({ threadId: effectiveThreadId, onlyIfUntitled: true });
+      void updateThreadTitleMutation({
+        threadId: effectiveThreadId,
+        onlyIfUntitled: true,
+      });
     } catch (error) {
       console.error("Error sending message:", error);
       setUserInput(prompt);
@@ -133,7 +142,12 @@ export function useExtensionNoleChat() {
     } finally {
       setIsCancelling(false);
     }
-  }, [effectiveThreadId, isAssistantResponding, isCancelling, abortStreamMutation]);
+  }, [
+    effectiveThreadId,
+    isAssistantResponding,
+    isCancelling,
+    abortStreamMutation,
+  ]);
 
   const startNewThread = useCallback(async () => {
     setOverrideThreadId(null);

@@ -5,6 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { copyFileSync, mkdirSync } from "fs";
 
 export default defineConfig({
+  root: __dirname,
   base: "./",
   plugins: [
     react(),
@@ -36,7 +37,7 @@ export default defineConfig({
       "@convex/_generated": path.resolve(__dirname, "../convex/_generated"),
     },
   },
-build: {
+  build: {
     outDir: "dist",
     emptyOutDir: true,
     copyPublicDir: false,

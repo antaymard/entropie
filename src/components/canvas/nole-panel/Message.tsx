@@ -142,7 +142,7 @@ const ReasoningPartRenderer = memo(function ReasoningPartRenderer({
   part: { type: "reasoning"; text: string; state?: "streaming" | "done" };
 }) {
   const isStreaming = part.state === "streaming";
-  const [isExpanded, setIsExpanded] = useState(isStreaming);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [visibleText] = useSmoothText(part.text ?? "", {
     startStreaming: isStreaming,
   });

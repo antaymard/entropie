@@ -222,13 +222,12 @@ function ThreadStatsBadge({
 }) {
   const stats = useThreadStats({ threadId, selectedModel, modelOptions });
 
-  if (stats.isLoading || stats.totalTokens === 0) return "null";
+  if (stats.isLoading || stats.contextWindowUsed === 0) return null;
 
   const percentLabel =
     stats.contextPercent !== undefined
       ? `${stats.contextPercent < 1 ? stats.contextPercent.toFixed(1) : Math.round(stats.contextPercent)}%`
       : null;
-  const maxLabel = stats.maxContext ? formatTokens(stats.maxContext) : null;
 
   return (
     <Tooltip delayDuration={200}>
@@ -236,11 +235,6 @@ function ThreadStatsBadge({
         <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 px-1.5 py-0.5 rounded-sm hover:bg-slate-100 cursor-default">
           <TbDatabase size={10} />
           {percentLabel ? <span>{percentLabel}</span> : null}
-          <span>
-            {percentLabel ? "— " : ""}
-            {formatTokens(stats.totalTokens)}
-            {maxLabel ? ` / ${maxLabel}` : ""}
-          </span>
           {stats.totalCostUsd > 0 ? (
             <span>· {formatCost(stats.totalCostUsd)}</span>
           ) : null}
@@ -262,11 +256,10 @@ function ThreadStatsBadge({
               ))}
             </div>
           ) : null}
-          {stats.maxContext ? (
-            <p className="text-slate-300 mt-1">
-              Max context du modèle actuel: {formatTokens(stats.maxContext)} tk
-            </p>
-          ) : null}
+          <p className="text-slate-300 mt-1">
+            Contexte actuel : {formatTokens(stats.contextWindowUsed)} tk
+            {stats.maxContext ? ` / ${formatTokens(stats.maxContext)} tk` : ""}
+          </p>
         </div>
       </TooltipContent>
     </Tooltip>

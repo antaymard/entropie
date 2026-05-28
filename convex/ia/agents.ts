@@ -41,7 +41,7 @@ export const chatModelOptions = [
     value: "deepseek/deepseek-v4-flash",
     price: "0.10_0.20",
     isMultimodal: false,
-    maxContext: 131072,
+    maxContext: 1000000,
   },
   {
     label: "Tencent Hy3",

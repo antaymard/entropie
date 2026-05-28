@@ -1,4 +1,3 @@
-import { components } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { type Usage } from "../ia/helpers/useHandler";
@@ -121,6 +120,7 @@ export async function recordAssistantUsage(
     model,
     provider,
     usage,
+    costUsd: typeof usage?.cost === "number" ? usage.cost : undefined,
     messageId: "NOT_IMPLEMENTED",
   });
 }

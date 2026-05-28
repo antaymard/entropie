@@ -84,7 +84,7 @@ export const Message = memo(function Message({
   const messageError = getMessageErrorText(message);
 
   return (
-    <div className="flex justify-start">
+    <div className="flex justify-start group">
       <div
         className={cn(
           "whitespace-pre-wrap flex flex-col gap-2",
@@ -150,10 +150,12 @@ export const Message = memo(function Message({
         )}
 
         {!isProcessing && metadata && metadata.model ? (
-          <AssistantMessageFooter
-            metadata={metadata}
-            modelOptions={modelOptions}
-          />
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+            <AssistantMessageFooter
+              metadata={metadata}
+              modelOptions={modelOptions}
+            />
+          </div>
         ) : null}
       </div>
     </div>

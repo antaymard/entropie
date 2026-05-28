@@ -37,11 +37,24 @@ const ChatInterface = memo(function ChatInterface({
   );
   const metadataByMessageId = useMemo(() => {
     const map = new Map<string, Doc<"messageMetadata">>();
-    for (const m of messageMetadataList ?? []) {
+    for (const m of messageMetadataList?.messageMetadata ?? []) {
       map.set(m.messageId, m);
     }
     return map;
   }, [messageMetadataList]);
+
+  const assistantMetadataByKey = useMemo(() => {
+    const assistantMeta = (messageMetadataList?.messageMetadata ?? [])
+      .filter((m) => m.role === "assistant")
+      .sort((a, b) => a._creationTime - b._creationTime);
+    const assistantMessages = messages.filter((m) => m.role === "assistant");
+    const map = new Map<string, Doc<"messageMetadata">>();
+    assistantMessages.forEach((msg, idx) => {
+      const meta = assistantMeta[idx];
+      if (meta) map.set(msg.key, meta);
+    });
+    return map;
+  }, [messages, messageMetadataList]);
 
   const scrollViewportRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
@@ -200,7 +213,11 @@ const ChatInterface = memo(function ChatInterface({
               <Message
                 key={m.key}
                 message={m}
-                metadata={metadataByMessageId.get(m.id)}
+                metadata={
+                  m.role === "user"
+                    ? metadataByMessageId.get(m.id)
+                    : assistantMetadataByKey.get(m.key)
+                }
                 modelOptions={modelOptions}
               />
             ))}

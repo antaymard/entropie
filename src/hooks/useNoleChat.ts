@@ -65,11 +65,7 @@ export function useNoleChat() {
   );
 
   const lastUsedModel = useMemo<ChatModelValues | undefined>(() => {
-    if (!threadMessageMetadata) return undefined;
-    const lastAssistant = [...threadMessageMetadata]
-      .filter((m) => m.role === "assistant" && m.model)
-      .sort((a, b) => b._creationTime - a._creationTime)[0];
-    return lastAssistant?.model as ChatModelValues | undefined;
+    return threadMessageMetadata?.lastModelUsed as ChatModelValues | undefined;
   }, [threadMessageMetadata]);
 
   const selectedModel: ChatModelValues | undefined = useMemo(() => {

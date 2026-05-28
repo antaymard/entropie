@@ -58,6 +58,12 @@ export const getThreadMessageMetadata = query({
         : null;
     }
 
+    console.log({
+      totalCostUsd,
+      lastModelUsed,
+      contextWindowUsed,
+    });
+
     return {
       totalCostUsd,
       lastModelUsed,

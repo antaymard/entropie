@@ -6,7 +6,7 @@ import type { ChatModelOption } from "@/types/convex";
 
 export type ThreadStats = {
   isLoading: boolean;
-  totalTokens: number;
+  contextWindowUsed: number;
   totalCostUsd: number;
   maxContext: number | undefined;
   contextPercent: number | undefined;
@@ -28,14 +28,14 @@ export function useThreadStats({
   selectedModel: string | undefined;
   modelOptions: readonly ChatModelOption[] | undefined;
 }): ThreadStats {
-  const metadata = useQuery(
+  const data = useQuery(
     api.messageMetadata.getThreadMessageMetadata,
     threadId ? { threadId } : "skip",
   );
 
   return useMemo(() => {
-    const isLoading = metadata === undefined;
-    const rows = metadata ?? [];
+    const isLoading = data === undefined;
+    const rows = data?.messageMetadata ?? [];
 
     const perModelMap = new Map<
       string,
@@ -46,13 +46,9 @@ export function useThreadStats({
         costUsd: number;
       }
     >();
-    let totalTokens = 0;
-    let totalCostUsd = 0;
 
     for (const row of rows) {
       if (row.role !== "assistant" || !row.usage) continue;
-      totalTokens += row.usage.totalTokens;
-      totalCostUsd += row.costUsd ?? 0;
 
       const modelKey = row.model ?? "unknown";
       const prev = perModelMap.get(modelKey) ?? {
@@ -69,15 +65,17 @@ export function useThreadStats({
       });
     }
 
+    const contextWindowUsed = data?.contextWindowUsed ?? 0;
+    const totalCostUsd = data?.totalCostUsd ?? 0;
     const maxContext = getModelMaxContext(selectedModel, modelOptions);
     const contextPercent =
       maxContext && maxContext > 0
-        ? (totalTokens / maxContext) * 100
+        ? (contextWindowUsed / maxContext) * 100
         : undefined;
 
     return {
       isLoading,
-      totalTokens,
+      contextWindowUsed,
       totalCostUsd,
       maxContext,
       contextPercent,
@@ -86,5 +84,5 @@ export function useThreadStats({
         ...v,
       })),
     };
-  }, [metadata, selectedModel, modelOptions]);
+  }, [data, selectedModel, modelOptions]);
 }

@@ -68,12 +68,12 @@ export const Message = memo(function Message({
   if (isUser) {
     return (
       <div className="flex flex-col items-end gap-1">
-        {metadata?.attachments ? (
-          <UserMessageAttachments attachments={metadata.attachments} />
-        ) : null}
         <div className="rounded whitespace-pre-wrap p-3 bg-slate-200 border border-slate-400 text-text max-w-4/5">
           <MarkdownText>{userText}</MarkdownText>
         </div>
+        {metadata?.attachments ? (
+          <UserMessageAttachments attachments={metadata.attachments} />
+        ) : null}
       </div>
     );
   }

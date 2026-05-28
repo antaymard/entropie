@@ -85,8 +85,9 @@ export const saveMessage = mutation({
         : undefined;
 
       await MessageMetadataModels.recordUserAttachments(ctx, {
-        messageId,
+        messageId: messageId,
         threadId,
+        userId: authUserId,
         attachments: { nodes, position, page },
       });
     }

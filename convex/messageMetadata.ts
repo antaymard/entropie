@@ -18,6 +18,51 @@ export const getThreadMessageMetadata = query({
       throw new Error(errors.THREAD_NOT_FOUND_OR_FORBIDDEN);
     }
 
-    return await MessageMetadataModels.listByThreadId(ctx, { threadId });
+    const messageMetadata = await MessageMetadataModels.listByThreadId(ctx, {
+      threadId,
+    });
+
+    // Prepare
+    const assistantMessageMetadatas = messageMetadata.filter(
+      (m) => m.role === "assistant",
+    );
+    const lastAssistantMessageMetadata =
+      assistantMessageMetadatas.length > 0
+        ? assistantMessageMetadatas[assistantMessageMetadatas.length - 1]
+        : null;
+
+    let totalCostUsd: number;
+    let lastModelUsed: string | null | undefined;
+    let contextWindowUsed: number | null;
+
+    // Calculate costs and context
+    if (!lastAssistantMessageMetadata) {
+      totalCostUsd = 0;
+      lastModelUsed = null;
+      contextWindowUsed = null;
+    } else {
+      // Calculate total cost for the thread (only from assistant metadata)
+      totalCostUsd = assistantMessageMetadatas.reduce(
+        (sum, m) => sum + (m.costUsd ?? 0),
+        0,
+      );
+
+      // Get the last model used
+      lastModelUsed = lastAssistantMessageMetadata
+        ? lastAssistantMessageMetadata.model
+        : null;
+
+      // Get the used context window
+      contextWindowUsed = lastAssistantMessageMetadata
+        ? lastAssistantMessageMetadata.usage?.totalTokens
+        : null;
+    }
+
+    return {
+      totalCostUsd,
+      lastModelUsed,
+      contextWindowUsed,
+      messageMetadata,
+    };
   },
 });

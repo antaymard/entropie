@@ -3,19 +3,14 @@ import { v } from "convex/values";
 const messageMetadataValidator = v.object({
   messageId: v.string(),
   threadId: v.string(),
+  userId: v.id("users"),
   role: v.union(v.literal("user"), v.literal("assistant")),
+  agentName: v.optional(v.string()),
 
   // assistant only (filled by usageHandler)
   model: v.optional(v.string()),
   provider: v.optional(v.string()),
-  usage: v.optional(
-    v.object({
-      inputTokens: v.number(),
-      outputTokens: v.number(),
-      totalTokens: v.number(),
-      cachedInputTokens: v.optional(v.number()),
-    }),
-  ),
+  usage: v.optional(v.record(v.string(), v.any())),
   costUsd: v.optional(v.number()),
 
   // user only (filled by saveMessage)

@@ -17,7 +17,7 @@ import {
 } from "@/components/shadcn/popover";
 import { Button } from "@/components/shadcn/button";
 import { Input } from "@/components/shadcn/input";
-import { TbPencil, TbMaximize, TbRefresh } from "react-icons/tb";
+import { TbPencil, TbMaximize, TbRefresh, TbAlertTriangle } from "react-icons/tb";
 import { colors } from "@/components/ui/styles";
 import type { colorsEnum } from "@/types/domain";
 import { useAppNodeRunner } from "@/hooks/useAppNodeRunner";
@@ -37,6 +37,12 @@ function AppNode(xyNode: Node) {
 
   const isTitleVariant = xyNode.data.variant === "title";
   const nodeColor = colors[(xyNode.data?.color as colorsEnum) || "default"];
+
+  // Runtime errors reported by the iframe (stored on values.errors). Surfaced
+  // here so a partially-working app still shows feedback at the node level.
+  const appErrors = (
+    Array.isArray(values?.errors) ? values?.errors : []
+  ) as Array<{ type?: string; message?: string }>;
 
   const Icon = NODE_TYPE_ICON_MAP.app;
 
@@ -132,6 +138,42 @@ function AppNode(xyNode: Node) {
               <p className="truncate flex-1 min-w-0" title={appTitle}>
                 {appTitle}
               </p>
+              {appErrors.length > 0 && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      className="shrink-0 text-red-500 hover:text-red-700 transition-colors p-1 rounded hover:bg-red-50"
+                      onClick={(e) => e.stopPropagation()}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      title={`${appErrors.length} runtime error(s)`}
+                    >
+                      <TbAlertTriangle size={14} />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-96 max-h-72 overflow-auto p-0"
+                    onDoubleClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="p-3 border-b font-medium text-sm flex items-center gap-2 text-red-600">
+                      <TbAlertTriangle size={16} />
+                      {appErrors.length} runtime error
+                      {appErrors.length > 1 ? "s" : ""}
+                    </div>
+                    <ul className="divide-y">
+                      {appErrors.map((err, i) => (
+                        <li key={i} className="p-3 text-xs">
+                          <div className="font-semibold text-red-600">
+                            {err.type ?? "error"}
+                          </div>
+                          <div className="font-mono whitespace-pre-wrap break-words text-slate-700">
+                            {err.message ?? ""}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </PopoverContent>
+                </Popover>
+              )}
               <button
                 className="shrink-0 text-slate-500 hover:text-slate-900 transition-colors p-1 rounded hover:bg-slate-100"
                 onClick={(e) => {

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { toolAgentNames, type ThreadCtx } from "../agentConfig";
 import { internal } from "../../_generated/api";
 import { toolError, ToolConfig } from "./toolHelpers";
+import { parseImports } from "../../lib/appNodeImports";
 
 export const patchAppNodeCodeToolConfig: ToolConfig = {
   name: "patch_app_node_code",
@@ -292,6 +293,18 @@ export default function patchAppNodeCodeTool({
         if (!applied.ok) {
           return toolError(
             `Patch aborted (no changes written). ${applied.error}`,
+          );
+        }
+
+        // Reject disallowed `// @import` CDNs in the resulting code before write.
+        const { errors: importErrors } = parseImports(applied.code);
+        if (importErrors.length > 0) {
+          return toolError(
+            [
+              "Patch aborted (no changes written): invalid @import(s) in the resulting code:",
+              ...importErrors.map((e) => `- ${e}`),
+              "Only HTTPS URLs from jsdelivr.net, unpkg.com, or cdnjs.cloudflare.com are allowed.",
+            ].join("\n"),
           );
         }
 

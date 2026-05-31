@@ -3,6 +3,7 @@ import { internal } from "../../_generated/api";
 import { toolAgentNames, type ThreadCtx } from "../agentConfig";
 import { nodeTypeValues } from "../../schemas/nodeTypeSchema";
 import { validateNodeInputSchemaForLLM } from "../helpers/nodeInputSchemaValidatorForLLM";
+import { parseImports } from "../../lib/appNodeImports";
 import z from "zod";
 import { ToolConfig, toolError } from "./toolHelpers";
 
@@ -115,6 +116,21 @@ export default function setNodeDataTool({
         });
         if (validationError) {
           return toolError(validationError);
+        }
+
+        // Reject disallowed `// @import` CDNs early so the model fixes the URL
+        // instead of shipping an app that silently fails to load the library.
+        if (input.nodeType === "app" && typeof valuesToWrite.code === "string") {
+          const { errors: importErrors } = parseImports(valuesToWrite.code);
+          if (importErrors.length > 0) {
+            return toolError(
+              [
+                "Invalid @import(s) in the app code — nothing was written:",
+                ...importErrors.map((e) => `- ${e}`),
+                "Only HTTPS URLs from jsdelivr.net, unpkg.com, or cdnjs.cloudflare.com are allowed.",
+              ].join("\n"),
+            );
+          }
         }
 
         await ctx.runMutation(internal.wrappers.nodeDataWrappers.updateValues, {

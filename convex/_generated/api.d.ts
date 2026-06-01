@@ -69,6 +69,7 @@ import type * as lib_parseModelPrice from "../lib/parseModelPrice.js";
 import type * as lib_parseSkillFrontmatter from "../lib/parseSkillFrontmatter.js";
 import type * as lib_plateDocumentStorage from "../lib/plateDocumentStorage.js";
 import type * as lib_r2 from "../lib/r2.js";
+import type * as lib_searchScoring from "../lib/searchScoring.js";
 import type * as lib_xml from "../lib/xml.js";
 import type * as links from "../links.js";
 import type * as memories from "../memories.js";
@@ -182,6 +183,7 @@ declare const fullApi: ApiFromModules<{
   "lib/parseSkillFrontmatter": typeof lib_parseSkillFrontmatter;
   "lib/plateDocumentStorage": typeof lib_plateDocumentStorage;
   "lib/r2": typeof lib_r2;
+  "lib/searchScoring": typeof lib_searchScoring;
   "lib/xml": typeof lib_xml;
   links: typeof links;
   memories: typeof memories;

@@ -23,6 +23,7 @@ export const listUserCanvases = query({
     v.object({
       _id: v.id("canvases"),
       name: v.string(),
+      description: v.optional(v.string()),
       shared: v.optional(v.boolean()),
       permission: v.optional(v.union(v.literal("viewer"), v.literal("editor"))),
     }),
@@ -91,19 +92,21 @@ export const createCanvas = mutation({
   },
 });
 
-export const updateProps = mutation({
+export const updateCanvasDetails = mutation({
   args: {
     canvasId: v.id("canvases"),
     name: v.string(),
+    description: v.optional(v.string()),
   },
   returns: v.id("canvases"),
   handler: async (ctx, args) => {
     const authUserId = await requireAuth(ctx);
     await requireCanvasAccess(ctx, args.canvasId, authUserId, "owner");
 
-    return await CanvasModels.updateCanvasName(ctx, {
+    return await CanvasModels.updateCanvasDetails(ctx, {
       canvasId: args.canvasId,
       name: args.name,
+      description: args.description,
     });
   },
 });

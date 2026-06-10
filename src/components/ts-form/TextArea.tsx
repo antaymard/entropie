@@ -53,6 +53,7 @@ function TextArea({
   maxRows = 10,
   className,
   disabled = false,
+  validators,
 }: TextAreaProps) {
   const generatedId = useId();
   const id = `textarea-${name}-${generatedId}`;
@@ -91,7 +92,7 @@ function TextArea({
   }, []);
 
   return (
-    <form.Field name={name}>
+    <form.Field name={name} validators={validators}>
       {(field: {
         state: {
           value: string;

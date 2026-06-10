@@ -26,6 +26,7 @@ function TextInput({
   label,
   helperText,
   required = false,
+  validators,
   className,
   inputClassName,
   ...props
@@ -34,7 +35,7 @@ function TextInput({
   const id = `input-${name}-${generatedId}`;
 
   return (
-    <form.Field name={name}>
+    <form.Field name={name} validators={validators}>
       {(field: {
         state: {
           value: string;

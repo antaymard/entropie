@@ -60,6 +60,7 @@ import type * as ia_tools_viewImageTool from "../ia/tools/viewImageTool.js";
 import type * as ia_tools_websearchTool from "../ia/tools/websearchTool.js";
 import type * as ia_worker from "../ia/worker.js";
 import type * as lib_auth from "../lib/auth.js";
+import type * as lib_debouncer from "../lib/debouncer.js";
 import type * as lib_getNodeDataTitle from "../lib/getNodeDataTitle.js";
 import type * as lib_jsonSchemaMinimap from "../lib/jsonSchemaMinimap.js";
 import type * as lib_llmId from "../lib/llmId.js";
@@ -175,6 +176,7 @@ declare const fullApi: ApiFromModules<{
   "ia/tools/websearchTool": typeof ia_tools_websearchTool;
   "ia/worker": typeof ia_worker;
   "lib/auth": typeof lib_auth;
+  "lib/debouncer": typeof lib_debouncer;
   "lib/getNodeDataTitle": typeof lib_getNodeDataTitle;
   "lib/jsonSchemaMinimap": typeof lib_jsonSchemaMinimap;
   "lib/llmId": typeof lib_llmId;
@@ -260,4 +262,5 @@ export declare const internal: FilterApi<
 
 export declare const components: {
   agent: import("@convex-dev/agent/_generated/component.js").ComponentApi<"agent">;
+  debouncer: import("../debouncer/_generated/component.js").ComponentApi<"debouncer">;
 };

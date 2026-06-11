@@ -15,6 +15,7 @@ import { Block, BlockNoteEditor, PartialBlock } from "@blocknote/core";
 import "@blocknote/shadcn/style.css";
 import { useMemo, useEffect } from "react";
 import useRichQuery from "@/components/utils/useRichQuery";
+import { cn } from "@udecode/cn";
 
 export const Route = createFileRoute("/settings/recipes/edit/$recipeId")({
   component: RouteComponent,
@@ -39,9 +40,6 @@ function RouteComponent() {
       onChange({ value }) {
         if (!value.name) {
           return "Recipe name is required";
-        }
-        if (!value.content) {
-          return "Recipe content is required";
         }
         return undefined;
       },
@@ -111,16 +109,42 @@ function RouteComponent() {
           inputClassName="bg-white"
         />
         {editor ? (
-          <>
-            <label className="block mb-2 mt-4 text-sm">Content</label>
-            <BlockNoteView
-              theme="light"
-              editor={editor}
-              onChange={() => {
-                form.setFieldValue("content", JSON.stringify(editor.document));
-              }}
-            />
-          </>
+          <form.Field
+            name="content"
+            validators={{
+              onChange: ({ value }: { value: string }) =>
+                !value ? "Recipe content is required" : undefined,
+              onSubmit: ({ value }: { value: string }) =>
+                !value ? "Recipe content is required" : undefined,
+            }}
+          >
+            {(field) => {
+              const errors = field.state.meta.errors;
+              const hasError = errors.length > 0;
+
+              return (
+                <div className="flex flex-col gap-1.5 mt-4">
+                  <label className="text-sm font-medium">Content</label>
+                  <BlockNoteView
+                    theme="light"
+                    editor={editor}
+                    className={cn(
+                      hasError && "border border-destructive",
+                      "rounded",
+                    )}
+                    onChange={() => {
+                      field.handleChange(JSON.stringify(editor.document));
+                    }}
+                  />
+                  {hasError && (
+                    <span className="text-sm text-destructive">
+                      {errors[0]}
+                    </span>
+                  )}
+                </div>
+              );
+            }}
+          </form.Field>
         ) : (
           <div>Loading editor...</div>
         )}

@@ -29,7 +29,7 @@ import type * as ia_helpers_pdfChunkFormatters from "../ia/helpers/pdfChunkForma
 import type * as ia_helpers_pillMarkdownRules from "../ia/helpers/pillMarkdownRules.js";
 import type * as ia_helpers_plateMarkdownConverter from "../ia/helpers/plateMarkdownConverter.js";
 import type * as ia_helpers_tableCellValidation from "../ia/helpers/tableCellValidation.js";
-import type * as ia_helpers_useHandler from "../ia/helpers/useHandler.js";
+import type * as ia_helpers_usageHandler from "../ia/helpers/usageHandler.js";
 import type * as ia_nole from "../ia/nole.js";
 import type * as ia_noleCompletion from "../ia/noleCompletion.js";
 import type * as ia_systemPrompts_noleSystemPrompt from "../ia/systemPrompts/noleSystemPrompt.js";
@@ -94,6 +94,7 @@ import type * as schemas_sharesSchema from "../schemas/sharesSchema.js";
 import type * as schemas_skillAttachmentsSchema from "../schemas/skillAttachmentsSchema.js";
 import type * as schemas_skillsSchema from "../schemas/skillsSchema.js";
 import type * as schemas_taskExecutionsSchema from "../schemas/taskExecutionsSchema.js";
+import type * as schemas_threadMetadataSchema from "../schemas/threadMetadataSchema.js";
 import type * as schemas_wishlistEmailsSchema from "../schemas/wishlistEmailsSchema.js";
 import type * as searchableChunks from "../searchableChunks.js";
 import type * as searchable_chunkBuilder from "../searchable/chunkBuilder.js";
@@ -112,6 +113,7 @@ import type * as wrappers_messageMetadataWrappers from "../wrappers/messageMetad
 import type * as wrappers_nodeDataWrappers from "../wrappers/nodeDataWrappers.js";
 import type * as wrappers_searchableChunkWrappers from "../wrappers/searchableChunkWrappers.js";
 import type * as wrappers_skillWrappers from "../wrappers/skillWrappers.js";
+import type * as wrappers_threadMetadataWrappers from "../wrappers/threadMetadataWrappers.js";
 import type * as wrappers_userWrappers from "../wrappers/userWrappers.js";
 
 import type {
@@ -142,7 +144,7 @@ declare const fullApi: ApiFromModules<{
   "ia/helpers/pillMarkdownRules": typeof ia_helpers_pillMarkdownRules;
   "ia/helpers/plateMarkdownConverter": typeof ia_helpers_plateMarkdownConverter;
   "ia/helpers/tableCellValidation": typeof ia_helpers_tableCellValidation;
-  "ia/helpers/useHandler": typeof ia_helpers_useHandler;
+  "ia/helpers/usageHandler": typeof ia_helpers_usageHandler;
   "ia/nole": typeof ia_nole;
   "ia/noleCompletion": typeof ia_noleCompletion;
   "ia/systemPrompts/noleSystemPrompt": typeof ia_systemPrompts_noleSystemPrompt;
@@ -207,6 +209,7 @@ declare const fullApi: ApiFromModules<{
   "schemas/skillAttachmentsSchema": typeof schemas_skillAttachmentsSchema;
   "schemas/skillsSchema": typeof schemas_skillsSchema;
   "schemas/taskExecutionsSchema": typeof schemas_taskExecutionsSchema;
+  "schemas/threadMetadataSchema": typeof schemas_threadMetadataSchema;
   "schemas/wishlistEmailsSchema": typeof schemas_wishlistEmailsSchema;
   searchableChunks: typeof searchableChunks;
   "searchable/chunkBuilder": typeof searchable_chunkBuilder;
@@ -225,6 +228,7 @@ declare const fullApi: ApiFromModules<{
   "wrappers/nodeDataWrappers": typeof wrappers_nodeDataWrappers;
   "wrappers/searchableChunkWrappers": typeof wrappers_searchableChunkWrappers;
   "wrappers/skillWrappers": typeof wrappers_skillWrappers;
+  "wrappers/threadMetadataWrappers": typeof wrappers_threadMetadataWrappers;
   "wrappers/userWrappers": typeof wrappers_userWrappers;
 }>;
 

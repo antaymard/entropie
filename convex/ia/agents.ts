@@ -8,31 +8,10 @@ import { stepCountIs } from "ai";
 import { toolAgentNames, type ThreadCtx } from "./agentConfig";
 import { getToolsForAgent } from "./tools";
 import { generateSupervisorSystemPrompt } from "./systemPrompts/supervisorSystemPrompt";
-import { recordAssistantUsage } from "./helpers/useHandler";
-
-type RawUsage =
-  | {
-      inputTokens?: number;
-      inputTokenDetails?: object;
-      outputTokens?: number;
-      outputTokenDetails?: object;
-      totalTokens?: number;
-      cachedInputTokens?: number;
-    }
-  | undefined;
-
-function normalizeUsage(usage: RawUsage) {
-  if (!usage) return undefined;
-  const inputTokens = usage.inputTokens ?? 0;
-  const outputTokens = usage.outputTokens ?? 0;
-  const totalTokens = usage.totalTokens ?? inputTokens + outputTokens;
-  return {
-    inputTokens,
-    outputTokens,
-    totalTokens,
-    cachedInputTokens: usage.cachedInputTokens,
-  };
-}
+import {
+  recordUsageInMessageMetadata,
+  recordUsageInThreadMetadata,
+} from "./helpers/usageHandler";
 
 // MODELS CONF ==============================================================
 export const chatModelOptions = [
@@ -168,12 +147,18 @@ export function createNoleAgent({
         }
       }*/
 
-      await recordAssistantUsage(ctx, {
+      await recordUsageInMessageMetadata(ctx, {
         userId: args.userId,
         agentName: args.agentName,
         threadId: args.threadId,
         model: args.model,
         provider: args.provider,
+        usage: args.usage,
+      });
+      await recordUsageInThreadMetadata(ctx, {
+        threadId: args.threadId,
+        userId: args.userId,
+        agentName: args.agentName,
         usage: args.usage,
       });
     },

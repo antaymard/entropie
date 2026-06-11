@@ -12,6 +12,7 @@ import { skillsValidator } from "./schemas/skillsSchema";
 import { skillAttachmentsValidator } from "./schemas/skillAttachmentsSchema";
 import { messageMetadataValidator } from "./schemas/messageMetadataSchema";
 import { recipesValidor } from "./schemas/recipesSchema";
+import { threadMetadataValidator } from "./schemas/threadMetadataSchema";
 
 const schema = defineSchema({
   ...authTables,
@@ -92,6 +93,9 @@ const schema = defineSchema({
   messageMetadata: defineTable(messageMetadataValidator)
     .index("by_messageId", ["messageId"])
     .index("by_threadId", ["threadId"]),
+  threadMetadata: defineTable(threadMetadataValidator)
+    .index("by_threadId", ["threadId"])
+    .index("by_userId", ["userId"]),
 });
 
 export default schema;

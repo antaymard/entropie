@@ -81,6 +81,7 @@ import type * as models_nodeDataModels from "../models/nodeDataModels.js";
 import type * as models_nodeDataVersionModels from "../models/nodeDataVersionModels.js";
 import type * as models_searchableChunkModels from "../models/searchableChunkModels.js";
 import type * as models_skillModels from "../models/skillModels.js";
+import type * as models_threadMetadataModels from "../models/threadMetadataModels.js";
 import type * as nodeDataVersions from "../nodeDataVersions.js";
 import type * as nodeDatas from "../nodeDatas.js";
 import type * as recipes from "../recipes.js";
@@ -199,6 +200,7 @@ declare const fullApi: ApiFromModules<{
   "models/nodeDataVersionModels": typeof models_nodeDataVersionModels;
   "models/searchableChunkModels": typeof models_searchableChunkModels;
   "models/skillModels": typeof models_skillModels;
+  "models/threadMetadataModels": typeof models_threadMetadataModels;
   nodeDataVersions: typeof nodeDataVersions;
   nodeDatas: typeof nodeDatas;
   recipes: typeof recipes;

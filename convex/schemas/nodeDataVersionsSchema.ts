@@ -33,6 +33,7 @@ type NodeDataVersionTrigger = Infer<typeof nodeDataVersionTriggerValidator>;
 // différer de l'état courant si le node a été déplacé ou supprimé depuis.
 
 const nodeDataVersionsValidator = v.object({
+  name: v.optional(v.string()),
   nodeDataId: v.id("nodeDatas"),
   canvasId: v.id("canvases"),
   nodeType: nodeTypeValidator,

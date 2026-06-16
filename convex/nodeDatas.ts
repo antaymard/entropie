@@ -197,7 +197,9 @@ export const updateValues = mutation({
   handler: async (ctx, { _id, values }): Promise<boolean> => {
     const authUserId = await requireAuth(ctx);
     const existing = await ctx.db.get(_id);
+
     if (!existing) throw new ConvexError("NodeData not found");
+
     await requireCanvasAccess(ctx, existing.canvasId, authUserId, "editor");
     // L'actor est dérivé de l'auth server-side : un client ne doit jamais
     // pouvoir s'attribuer une autre identité (ni se faire passer pour un agent).

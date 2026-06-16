@@ -7,7 +7,7 @@ import type {
 
 // Un même acteur qui édite en continu ne produit au plus qu'un checkpoint par
 // fenêtre : les versions matérialisent des sessions d'édition, pas des writes.
-export const COALESCE_WINDOW_MS = 15 * 60 * 1000;
+export const COALESCE_WINDOW_MS = 3 * 60 * 1000; // 3 min
 
 // App nodes uniquement :
 // - NOISE_KEYS : clés opérationnelles (bump de version d'iframe, erreurs
@@ -16,9 +16,9 @@ export const COALESCE_WINDOW_MS = 15 * 60 * 1000;
 //   (nolenor:saveState) ; son churn ne rouvre pas une session du même acteur,
 //   mais un changement d'acteur force toujours un checkpoint.
 const APP_NOISE_KEYS = new Set(["__v", "errors"]);
-const APP_SESSION_ONLY_KEYS = new Set(["state"]);
+const APP_SESSION_ONLY_KEYS = new Set(["state"]); // "state" used to be here
 
-export const VERSION_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+export const VERSION_RETENTION_MS = 30 * 24 * 60 * 60 * 1000; // 30 jours
 export const PRUNE_BATCH_SIZE = 200;
 
 export function actorsEqual(

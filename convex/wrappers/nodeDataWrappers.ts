@@ -37,8 +37,8 @@ export const deleteWithCascade = internalMutation({
     actor: v.optional(nodeDataVersionActorValidator),
   },
   returns: v.null(),
-  handler: async (ctx, { nodeDataId, actor }) => {
-    await NodeDataModels.deleteNodeDataWithCascade(ctx, { nodeDataId, actor });
+  handler: async (ctx, args) => {
+    await NodeDataModels.deleteNodeDataWithCascade(ctx, args);
     return null;
   },
 });

@@ -175,6 +175,9 @@ export const getThreadsThatCreatedVersions = query({
               _creationTime: thread._creationTime,
               title: thread.title ?? null,
               summary: thread.summary ?? null,
+              // Seuls les threads de l'utilisateur courant sont réellement
+              // ouvrables (listMessages/getThreadInfo exigent l'appartenance).
+              isOwner: authUserId !== null && thread.userId === authUserId,
             },
           ],
     );

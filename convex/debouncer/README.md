@@ -35,16 +35,19 @@ const debouncer = new Debouncer(components.debouncer, {
 export const onUserMessage = mutation({
   args: { threadId: v.string() },
   handler: async (ctx, args) => {
-    await debouncer.schedule(
-      ctx,
-      "ai-response",          // namespace : groupe logique
-      args.threadId,          // key : identifiant unique dans le namespace
-      internal.ia.runAgent,   // fonction cible (mutation ou action internal)
-      { threadId: args.threadId }, // args de la fonction cible
-    );
+    await debouncer.schedule(ctx, {
+      namespace: "ai-response",     // groupe logique
+      key: args.threadId,           // identifiant unique dans le namespace
+      fn: internal.ia.runAgent,     // fonction cible (mutation ou action internal)
+      args: { threadId: args.threadId }, // args de la fonction cible
+      // delay / mode / combine / maxWait : overrides optionnels (à plat)
+    });
   },
 });
 ```
+
+`ctx` reste le premier argument positionnel ; tout le reste passe dans un objet nommé. Idem pour
+`status` / `cancel` / `flush`, qui prennent `(ctx, { namespace, key })`.
 
 Une **session de debounce** = un couple `(namespace, key)` avec un appel en attente. La session se
 termine quand la fonction cible s'exécute, ou sur `cancel()` / `flush()`.
@@ -91,10 +94,14 @@ Pour : feedback immédiat + garantie de traiter l'état final.
 
 ```ts
 // merge : chaque appel porte un fragment de l'état final
-await debouncer.schedule(ctx, "autosave", docId, internal.docs.save,
-  { title: "Hello" }, { combine: "merge" });
-await debouncer.schedule(ctx, "autosave", docId, internal.docs.save,
-  { body: "World" }, { combine: "merge" });
+await debouncer.schedule(ctx, {
+  namespace: "autosave", key: docId, fn: internal.docs.save,
+  args: { title: "Hello" }, combine: "merge",
+});
+await debouncer.schedule(ctx, {
+  namespace: "autosave", key: docId, fn: internal.docs.save,
+  args: { body: "World" }, combine: "merge",
+});
 // → la cible reçoit { title: "Hello", body: "World" }
 ```
 
@@ -106,10 +113,14 @@ export const processBatch = internalMutation({
   handler: async (ctx, { calls }) => { /* ... */ },
 });
 
-await debouncer.schedule(ctx, "batch", key, internal.x.processBatch,
-  { msg: "A" }, { combine: "accumulate" });
-await debouncer.schedule(ctx, "batch", key, internal.x.processBatch,
-  { msg: "B" }, { combine: "accumulate" });
+await debouncer.schedule(ctx, {
+  namespace: "batch", key, fn: internal.x.processBatch,
+  args: { msg: "A" }, combine: "accumulate",
+});
+await debouncer.schedule(ctx, {
+  namespace: "batch", key, fn: internal.x.processBatch,
+  args: { msg: "B" }, combine: "accumulate",
+});
 // → la cible reçoit { calls: [{ msg: "A" }, { msg: "B" }] }
 ```
 
@@ -145,24 +156,37 @@ const debouncer = new Debouncer(components.debouncer, {
 `options: { delay: number; mode?: DebouncerMode; combine?: CombineMode; maxWait?: number }` —
 valeurs par défaut pour tous les `schedule()` de l'instance.
 
-### `schedule(ctx, namespace, key, functionRef, args, options?)`
+### `schedule(ctx, params)`
 
-Depuis une **mutation**. `functionRef` : mutation ou action `internal`. `options` : overrides
-ponctuels (appliqués seulement si cet appel crée la session — first-call-wins).
+Depuis une **mutation**. `params` :
+
+```ts
+{
+  namespace: string;
+  key: string;
+  fn: FunctionReference<"mutation" | "action", "internal">; // cible
+  args: object;                  // args de la cible
+  // overrides ponctuels (appliqués seulement si cet appel crée la session) :
+  delay?: number;
+  mode?: DebouncerMode;
+  combine?: CombineMode;
+  maxWait?: number;
+}
+```
 
 Retourne `{ executed: boolean, scheduledFor: number }` — `executed: true` uniquement pour le
 premier appel en mode `eager` (exécution leading déclenchée).
 
-### `status(ctx, namespace, key)`
+### `status(ctx, { namespace, key })`
 
 Depuis une query ou mutation. Retourne `null` si rien n'est en attente, sinon
 `{ pending, scheduledFor, retriggerCount, mode, combine, hasTrailingCall }`.
 
-### `cancel(ctx, namespace, key)`
+### `cancel(ctx, { namespace, key })`
 
 Annule la session en attente sans exécuter. Retourne `true` si quelque chose a été annulé.
 
-### `flush(ctx, namespace, key)`
+### `flush(ctx, { namespace, key })`
 
 Exécute **immédiatement** l'appel en attente et annule le timer. Retourne `true` si une exécution
 a été déclenchée (`false` si rien en attente, ou session `eager` sans trailing call — la leading

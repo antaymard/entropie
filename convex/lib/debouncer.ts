@@ -97,6 +97,40 @@ export interface ScheduleResult {
 }
 
 /**
+ * Identifies a single debounce session.
+ */
+export interface SessionRef {
+  /** Logical grouping for debounced calls (e.g., "ai-response"). */
+  namespace: string;
+  /** Unique identifier within the namespace (e.g., threadId). */
+  key: string;
+}
+
+/**
+ * Parameters for {@link Debouncer.schedule}.
+ *
+ * The override fields (`delay`, `mode`, `combine`, `maxWait`) apply only when
+ * this call creates the session — first-call-wins, ignored on retriggers.
+ */
+export interface ScheduleArgs<
+  Args extends Record<string, unknown>,
+  C extends CombineMode,
+> extends SessionRef {
+  /** The mutation or action to call (e.g., `internal.ia.runAgent`). */
+  fn: FunctionReference<"mutation" | "action", "internal", TargetArgs<Args, C>>;
+  /** Arguments passed to the target function. */
+  args: Args;
+  /** Override the instance default delay (ms). */
+  delay?: number;
+  /** Override the instance default mode. */
+  mode?: DebouncerMode;
+  /** Override the instance default combine strategy. */
+  combine?: C;
+  /** Override the instance default maxWait (ms, sliding mode only). */
+  maxWait?: number;
+}
+
+/**
  * The component API type for the debouncer.
  * This is a minimal structural type matching what `components.debouncer` exposes.
  */
@@ -161,7 +195,12 @@ type QueryCtx = GenericQueryCtx<GenericDataModel>;
  * });
  *
  * // In your mutation
- * await debouncer.schedule(ctx, "ai-response", threadId, internal.ia.run, { threadId });
+ * await debouncer.schedule(ctx, {
+ *   namespace: "ai-response",
+ *   key: threadId,
+ *   fn: internal.ia.run,
+ *   args: { threadId },
+ * });
  * ```
  */
 export class Debouncer<DefaultCombine extends CombineMode = "overwrite"> {
@@ -197,42 +236,41 @@ export class Debouncer<DefaultCombine extends CombineMode = "overwrite"> {
    * alone (`{ calls: [args] }`) and the trailing execution receives the rest.
    *
    * @param ctx - The mutation context
-   * @param namespace - A logical grouping for debounced calls (e.g., "ai-response")
-   * @param key - A unique identifier within the namespace (e.g., threadId)
-   * @param functionRef - The mutation or action to call (e.g., `internal.ia.run`)
-   * @param args - Arguments to pass to the function
-   * @param options - Override defaults for this call (applied only if this call creates the session)
+   * @param params - Session ref, target function, args, and optional overrides
    * @returns Result indicating if immediate execution happened and when scheduled execution will occur
+   *
+   * @example
+   * ```ts
+   * await debouncer.schedule(ctx, {
+   *   namespace: "ai-response",
+   *   key: threadId,
+   *   fn: internal.ia.runAgent,
+   *   args: { threadId },
+   * });
+   * ```
    */
   async schedule<
     Args extends Record<string, unknown>,
     C extends CombineMode = DefaultCombine,
   >(
     ctx: MutationCtx,
-    namespace: string,
-    key: string,
-    functionRef: FunctionReference<
-      "mutation" | "action",
-      "internal",
-      TargetArgs<Args, C>
-    >,
-    args: Args,
-    options?: Partial<DebouncerOptions<C>>,
+    params: ScheduleArgs<Args, C>,
   ): Promise<ScheduleResult> {
-    const delay = options?.delay ?? this.defaultDelay;
-    const mode = options?.mode ?? this.defaultMode;
-    const combine = options?.combine ?? this.defaultCombine;
-    const maxWait = options?.maxWait ?? this.defaultMaxWait;
+    const { namespace, key, fn, args } = params;
+    const delay = params.delay ?? this.defaultDelay;
+    const mode = params.mode ?? this.defaultMode;
+    const combine = params.combine ?? this.defaultCombine;
+    const maxWait = params.maxWait ?? this.defaultMaxWait;
 
     // Get the function path from the function reference (for debugging)
-    const functionPath = getFunctionPath(functionRef);
+    const functionPath = getFunctionPath(fn);
 
     // Create a function handle that can be used across component boundaries.
     // This allows the component's scheduled execute mutation to invoke
     // the target function in the parent app's context.
     const functionHandle = await createFunctionHandle(
       // widened: TargetArgs<Args, C> stays conditional until the call site
-      functionRef as FunctionReference<"mutation" | "action", "internal">,
+      fn as FunctionReference<"mutation" | "action", "internal">,
     );
 
     const result = await ctx.runMutation(this.component.lib.schedule, {
@@ -261,18 +299,16 @@ export class Debouncer<DefaultCombine extends CombineMode = "overwrite"> {
    * Get the status of a pending debounced call.
    *
    * @param ctx - The query or mutation context
-   * @param namespace - The namespace of the debounced call
-   * @param key - The key of the debounced call
+   * @param session - The namespace + key identifying the session
    * @returns Status object or null if no pending call exists
    */
   async status(
     ctx: QueryCtx | MutationCtx,
-    namespace: string,
-    key: string,
+    session: SessionRef,
   ): Promise<DebouncerStatus | null> {
     return await ctx.runQuery(this.component.lib.status, {
-      namespace,
-      key,
+      namespace: session.namespace,
+      key: session.key,
     });
   }
 
@@ -280,18 +316,13 @@ export class Debouncer<DefaultCombine extends CombineMode = "overwrite"> {
    * Cancel a pending debounced call.
    *
    * @param ctx - The mutation context
-   * @param namespace - The namespace of the debounced call
-   * @param key - The key of the debounced call
+   * @param session - The namespace + key identifying the session
    * @returns True if a call was cancelled, false if no pending call existed
    */
-  async cancel(
-    ctx: MutationCtx,
-    namespace: string,
-    key: string,
-  ): Promise<boolean> {
+  async cancel(ctx: MutationCtx, session: SessionRef): Promise<boolean> {
     return await ctx.runMutation(this.component.lib.cancel, {
-      namespace,
-      key,
+      namespace: session.namespace,
+      key: session.key,
     });
   }
 
@@ -299,18 +330,13 @@ export class Debouncer<DefaultCombine extends CombineMode = "overwrite"> {
    * Execute a pending debounced call immediately and cancel its timer.
    *
    * @param ctx - The mutation context
-   * @param namespace - The namespace of the debounced call
-   * @param key - The key of the debounced call
+   * @param session - The namespace + key identifying the session
    * @returns True if a call was executed, false if nothing was pending
    */
-  async flush(
-    ctx: MutationCtx,
-    namespace: string,
-    key: string,
-  ): Promise<boolean> {
+  async flush(ctx: MutationCtx, session: SessionRef): Promise<boolean> {
     return await ctx.runMutation(this.component.lib.flush, {
-      namespace,
-      key,
+      namespace: session.namespace,
+      key: session.key,
     });
   }
 }

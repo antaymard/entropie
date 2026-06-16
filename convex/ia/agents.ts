@@ -1,6 +1,5 @@
 import { components, internal } from "../_generated/api";
 import { Agent } from "@convex-dev/agent";
-import { Debouncer } from "../lib/debouncer";
 import { openrouter } from "@openrouter/ai-sdk-provider";
 import { v } from "convex/values";
 import type { LanguageModelV3 } from "@ai-sdk/provider";
@@ -83,11 +82,6 @@ const defaultModels = {
 
 // AGENTS CONF =================================================================
 
-const debouncer = new Debouncer(components.debouncer, {
-  delay: 5000, // 5 second delay
-  mode: "sliding", // Options: "eager" | "fixed" | "sliding"
-});
-
 // Minimal agent used for utility operations (e.g. saveMessage) that don't require a specific model.
 export function createBaseAgent({ model }: { model?: LanguageModelV3 } = {}) {
   return new Agent(components.agent, {
@@ -167,6 +161,14 @@ export function createNoleAgent({
         agentName: args.agentName,
         usage: args.usage,
       });
+      if (args.threadId) {
+        await ctx.runMutation(
+          internal.ia.helpers.usageHandler.debouncedDreamAboutThread,
+          {
+            threadId: args.threadId,
+          },
+        );
+      }
     },
   });
 }

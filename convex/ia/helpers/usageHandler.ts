@@ -1,5 +1,27 @@
-import { internal } from "../../_generated/api";
-import { Id } from "../../_generated/dataModel";
+import { v } from "convex/values";
+import { internalMutation } from "../../_generated/server";
+import { Debouncer } from "../../lib/debouncer";
+import { components, internal } from "../../_generated/api";
+
+const debouncer = new Debouncer(components.debouncer, {
+  delay: 1000 * 60 * 60 * 6, // 6 hour delay
+  mode: "sliding", // Options: "eager" | "fixed" | "sliding"
+});
+
+export const debouncedDreamAboutThread = internalMutation({
+  args: {
+    threadId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await debouncer.schedule(ctx, {
+      args: { threadId: args.threadId },
+      fn: internal.ia.helpers.dream.dreamAboutThread,
+      namespace: "dream-about-thread",
+      key: args.threadId,
+    });
+    return { success: true };
+  },
+});
 
 export type Usage = {
   inputTokens?: number;

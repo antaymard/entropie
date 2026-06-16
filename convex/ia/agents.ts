@@ -77,8 +77,6 @@ export function isModelMultimodal(model: LanguageModelV3): boolean {
 
 const defaultModels = {
   nole: getChatModel(defaultChatModelValue),
-  // Workers run up to 15 tool-calling steps in isolation. The free default model
-  // is unreliable for that, so use a cheap but solid paid model instead.
   worker: getChatModel("deepseek/deepseek-v4-flash"),
   fast: openrouter("mistralai/mistral-small-2603"),
 };

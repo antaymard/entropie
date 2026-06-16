@@ -18,6 +18,7 @@ import {
   TbDotsVertical,
   TbHistory,
   TbLocation,
+  TbMessageSearch,
   TbRefresh,
 } from "react-icons/tb";
 import { useReactFlow } from "@xyflow/react";
@@ -46,6 +47,7 @@ import {
   DialogDescription,
 } from "../shadcn/dialog";
 import VersionHistoryViewer from "./VersionHistoryViewer";
+import AssociatedThreadsViewer from "./AssociatedThreadsViewer";
 
 function WindowContent({ openedWindow }: { openedWindow: OpenedWindow }) {
   const { nodeType, xyNodeId, nodeDataId } = openedWindow;
@@ -121,6 +123,7 @@ export default function WindowFrame({
 
   const [isDraggingOrResizing, setIsDraggingOrResizing] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [associatedThreadsOpen, setAssociatedThreadsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useHotkey(
@@ -487,6 +490,13 @@ export default function WindowFrame({
                   <TbHistory size={13} />
                   History
                 </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="flex items-center text-sm"
+                  onSelect={() => setAssociatedThreadsOpen(true)}
+                >
+                  <TbMessageSearch size={13} />
+                  Associated threads
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <button
@@ -553,7 +563,22 @@ export default function WindowFrame({
           </DialogHeader>
           <VersionHistoryViewer
             nodeDataId={nodeDataId}
-            onRestored={() => setHistoryOpen(false)}
+            closeModale={() => setHistoryOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={associatedThreadsOpen}
+        onOpenChange={setAssociatedThreadsOpen}
+      >
+        <DialogContent className="flex h-[70vh] max-h-175 flex-col sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Associated threads</DialogTitle>
+            <DialogDescription>{title ?? "—"}</DialogDescription>
+          </DialogHeader>
+          <AssociatedThreadsViewer
+            nodeDataId={nodeDataId}
+            closeModale={() => setAssociatedThreadsOpen(false)}
           />
         </DialogContent>
       </Dialog>

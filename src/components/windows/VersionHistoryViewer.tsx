@@ -99,17 +99,18 @@ function VersionContentPreview({
 
 export default function VersionHistoryViewer({
   nodeDataId,
-  onRestored,
+  closeModale,
 }: {
   nodeDataId: Id<"nodeDatas">;
-  onRestored?: () => void;
+  closeModale?: () => void;
 }) {
   const { data, isSuccess, isPending } = useRichQuery(
     api.nodeDataVersions.listByNodeDataId,
     { nodeDataId },
   );
-  const [selectedId, setSelectedId] =
-    useState<Id<"nodeDataVersions"> | null>(null);
+  const [selectedId, setSelectedId] = useState<Id<"nodeDataVersions"> | null>(
+    null,
+  );
   const restore = useMutation(api.nodeDataVersions.restore);
   const [isRestoring, setIsRestoring] = useState(false);
 
@@ -134,7 +135,7 @@ export default function VersionHistoryViewer({
     try {
       await restore({ versionId: selected });
       toast.success("Version restored.");
-      onRestored?.();
+      closeModale?.();
     } catch (error) {
       toastError(error, "Error restoring version");
     } finally {

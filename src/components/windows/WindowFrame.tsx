@@ -551,7 +551,10 @@ export default function WindowFrame({
             <DialogTitle>Version history</DialogTitle>
             <DialogDescription>{title ?? "—"}</DialogDescription>
           </DialogHeader>
-          <VersionHistoryViewer nodeDataId={nodeDataId} />
+          <VersionHistoryViewer
+            nodeDataId={nodeDataId}
+            onRestored={() => setHistoryOpen(false)}
+          />
         </DialogContent>
       </Dialog>
     </WindowFrameContext.Provider>

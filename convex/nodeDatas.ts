@@ -199,6 +199,12 @@ export const updateValues = mutation({
     const existing = await ctx.db.get(_id);
     if (!existing) throw new ConvexError("NodeData not found");
     await requireCanvasAccess(ctx, existing.canvasId, authUserId, "editor");
-    return NodeDataModel.updateValues(ctx, { _id, values });
+    // L'actor est dérivé de l'auth server-side : un client ne doit jamais
+    // pouvoir s'attribuer une autre identité (ni se faire passer pour un agent).
+    return NodeDataModel.updateValues(ctx, {
+      _id,
+      values,
+      actor: { type: "user", userId: authUserId },
+    });
   },
 });

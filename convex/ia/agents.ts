@@ -8,20 +8,9 @@ import { stepCountIs } from "ai";
 import { toolAgentNames, type ThreadCtx } from "./agentConfig";
 import { getToolsForAgent } from "./tools";
 import { generateSupervisorSystemPrompt } from "./systemPrompts/supervisorSystemPrompt";
-import {
-  recordUsageInMessageMetadata,
-  recordUsageInThreadMetadata,
-} from "./helpers/usageHandler";
 
 // MODELS CONF ==============================================================
 export const chatModelOptions = [
-  {
-    label: "Laguna M.1 Free",
-    value: "poolside/laguna-m.1:free",
-    price: "Free",
-    isMultimodal: false,
-    maxContext: 128000,
-  },
   {
     label: "DeepSeek V4 Flash",
     value: "deepseek/deepseek-v4-flash",
@@ -30,11 +19,11 @@ export const chatModelOptions = [
     maxContext: 1000000,
   },
   {
-    label: "Minimax M3",
-    value: "minimax/minimax-m3",
-    price: "0.30_1.20",
-    isMultimodal: true,
-    maxContext: 1000000,
+    label: "Nemotron 3 Ultra",
+    value: "nvidia/nemotron-3-ultra-550b-a55b:free",
+    price: "Free",
+    isMultimodal: false,
+    maxContext: 128000,
   },
   {
     label: "DeepSeek V4 Pro",
@@ -54,7 +43,7 @@ export const chatModelOptions = [
 
 export const chatModelValues = chatModelOptions.map((model) => model.value);
 
-const defaultChatModelValue = chatModelValues[0];
+export const defaultChatModelValue = chatModelValues[0];
 
 export const vChatModelValues = v.union(
   ...chatModelValues.map((model) => v.literal(model)),
@@ -77,8 +66,6 @@ export function isModelMultimodal(model: LanguageModelV3): boolean {
 
 const defaultModels = {
   nole: getChatModel(defaultChatModelValue),
-  // Workers run up to 15 tool-calling steps in isolation. The free default model
-  // is unreliable for that, so use a cheap but solid paid model instead.
   worker: getChatModel("deepseek/deepseek-v4-flash"),
   fast: openrouter("mistralai/mistral-small-2603"),
 };
@@ -115,55 +102,25 @@ export function createNoleAgent({
       isMultimodal: isModelMultimodal(languageModel),
     }),
     usageHandler: async (ctx, args) => {
-      console.log("Agent usage reported:", args);
-      /* Args are
-      {
-        userId: 'jx73vs22b97g3td1ja6gqcd3sn7tber0',
-        threadId: 'm579nvm58s54wg4ws1e8ws2n0d87kv9p',
-        agentName: 'Nolë',
-        model: 'deepseek/deepseek-v4-flash',
-        provider: 'openrouter',
-        usage: {
-          inputTokens: 18506,
-          inputTokenDetails: { noCacheTokens: 18506, cacheReadTokens: 0, cacheWriteTokens: 0 },
-          outputTokens: 80,
-          outputTokenDetails: { textTokens: 50, reasoningTokens: 30 },
-          totalTokens: 18586,
-          raw: {
-            prompt_tokens: 18506,
-            prompt_tokens_details: [Object],
-            completion_tokens: 80,
-            completion_tokens_details: [Object],
-            total_tokens: 18586,
-            cost: 0.002501244,
-            cost_details: [Object],
-            is_byok: false
-          },
-          reasoningTokens: 30,
-          cachedInputTokens: 0
+      // Called once per LLM step. Per-message metadata (model/usage/cost) is
+      // recorded once per turn after the stream completes (see noleCompletion);
+      // here we only accumulate the thread-level cost across all steps.
+      if (
+        !args.threadId ||
+        !args.usage ||
+        !args.usage.raw ||
+        typeof args.usage.raw.cost !== "number"
+      ) {
+        console.error(`Cannot update usage. Wrong `);
+        return;
+      }
+      await ctx.runMutation(
+        internal.wrappers.threadMetadataWrappers.updateUsage,
+        {
+          threadId: args.threadId,
+          additionalUsageUsd: args.usage.raw.cost || 0, // Use the cost from usage data, default to 0 if not available
         },
-        providerMetadata: {
-          openrouter: {
-            usage: [Object],
-            provider: 'Alibaba',
-            reasoning_details: [Array]
-        }
-      }*/
-
-      await recordUsageInMessageMetadata(ctx, {
-        userId: args.userId,
-        agentName: args.agentName,
-        threadId: args.threadId,
-        model: args.model,
-        provider: args.provider,
-        usage: args.usage,
-      });
-      await recordUsageInThreadMetadata(ctx, {
-        threadId: args.threadId,
-        userId: args.userId,
-        agentName: args.agentName,
-        usage: args.usage,
-      });
+      );
     },
   });
 }

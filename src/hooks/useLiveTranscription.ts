@@ -152,6 +152,7 @@ export function useLiveTranscription(
   const workletUrlRef = useRef<string | null>(null);
   const readyRef = useRef(false);
   const stoppingRef = useRef(false);
+  const stopRequestedRef = useRef(false);
   const genRef = useRef(0);
   const doneTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastLevelRef = useRef(0);
@@ -225,6 +226,7 @@ export function useLiveTranscription(
       workletUrlRef.current = null;
     }
     readyRef.current = false;
+    stopRequestedRef.current = false;
     lastLevelRef.current = 0;
     pendingFramesRef.current = [];
   }, []);
@@ -246,6 +248,24 @@ export function useLiveTranscription(
     [teardownAll],
   );
 
+  // Envoie le `stop` au serveur et arme le filet de sécurité `done`.
+  const requestServerStop = useCallback(() => {
+    setStatus("stopping");
+    setLevel(0);
+    const ws = wsRef.current;
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      try {
+        ws.send(JSON.stringify({ type: "stop" }));
+      } catch {
+        /* noop */
+      }
+      if (doneTimerRef.current) clearTimeout(doneTimerRef.current);
+      doneTimerRef.current = setTimeout(() => finalizeStop(), 5000);
+    } else {
+      finalizeStop();
+    }
+  }, [finalizeStop]);
+
   const handleServerMessage = useCallback(
     (ev: MessageEvent) => {
       if (typeof ev.data !== "string") return;
@@ -261,13 +281,19 @@ export function useLiveTranscription(
       switch (type) {
         case "ready": {
           readyRef.current = true;
-          setStatus("listening");
           // Flush des trames captées pendant le warm-up (sinon 1re phrase perdue).
           const ws = wsRef.current;
           const pending = pendingFramesRef.current;
           pendingFramesRef.current = [];
           if (ws && ws.readyState === WebSocket.OPEN) {
             for (const frame of pending) ws.send(frame);
+          }
+          if (stopRequestedRef.current) {
+            // Stop demandé pendant le warm-up : audio flushé, on finalise.
+            stopRequestedRef.current = false;
+            requestServerStop();
+          } else {
+            setStatus("listening");
           }
           break;
         }
@@ -316,7 +342,7 @@ export function useLiveTranscription(
           break;
       }
     },
-    [failWith, finalizeStop],
+    [failWith, finalizeStop, requestServerStop],
   );
 
   const start = useCallback(async () => {
@@ -336,6 +362,7 @@ export function useLiveTranscription(
     const gen = ++genRef.current;
     stoppingRef.current = false;
     readyRef.current = false;
+    stopRequestedRef.current = false;
     pendingFramesRef.current = [];
     setStatus("connecting");
     setTranscript("");
@@ -480,30 +507,29 @@ export function useLiveTranscription(
   const stop = useCallback(() => {
     if (status !== "connecting" && status !== "listening") return;
     stoppingRef.current = true;
-    setStatus("stopping");
-    setLevel(0);
 
-    // On coupe l'entrée audio pour ne plus rien envoyer.
+    // Couper l'entrée audio : plus aucune nouvelle trame n'est captée (l'audio
+    // déjà bufferisé est conservé).
     try {
       sourceRef.current?.disconnect();
     } catch {
       /* noop */
     }
 
-    const ws = wsRef.current;
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      try {
-        ws.send(JSON.stringify({ type: "stop" }));
-      } catch {
-        /* noop */
-      }
-      // On attend le `done`, avec un filet de sécurité si le serveur ne répond pas.
-      if (doneTimerRef.current) clearTimeout(doneTimerRef.current);
-      doneTimerRef.current = setTimeout(() => finalizeStop(), 5000);
+    if (readyRef.current) {
+      // Session active : le buffer a déjà été flushé au `ready`, on finalise.
+      requestServerStop();
     } else {
-      finalizeStop();
+      // Warm-up pas terminé : on diffère le stop jusqu'au `ready`, qui flushera
+      // l'audio capté avant de finaliser. Filet de sécurité si `ready` n'arrive
+      // jamais (serveur injoignable).
+      stopRequestedRef.current = true;
+      setStatus("stopping");
+      setLevel(0);
+      if (doneTimerRef.current) clearTimeout(doneTimerRef.current);
+      doneTimerRef.current = setTimeout(() => finalizeStop(), 6000);
     }
-  }, [status, finalizeStop]);
+  }, [status, requestServerStop, finalizeStop]);
 
   const reset = useCallback(() => {
     if (

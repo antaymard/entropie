@@ -28,7 +28,7 @@ export default function SoundWaveAnimation({
         return (
           <div
             key={i}
-            className="w-0.75 rounded-full bg-current transition-[height] duration-100 ease-out"
+            className="nole-eq-bar w-0.75 rounded-full bg-current transition-[height] duration-100 ease-out"
             style={{ height: `${height}%` }}
           />
         );
